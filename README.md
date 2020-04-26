@@ -1,4 +1,8 @@
-# Dados Abertos Brasil
+<div align="center">
+  <img src="https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/assets/logo.png"><br>
+</div>
+
+---
 
 ### **(Documentação incompleta)**
 
@@ -38,6 +42,8 @@ Módulo para captura dos dados abertos das APIs do IBGE.
   - ibge.[referencias](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilibgereferenciascod-indexfalse)
   - ibge.[Sidra](https://github.com/GusFurtado/DadosAbertosBrasil#class-dadosabertosbrasilibgesidraagregadonone-periodosnone-variaveisnone-localidadesn1-all-classificacoesnone)
 
+Importe o módulo com `from DadosAbertosBrasil import ibge`
+
 ### def DadosAbertosBrasil.ibge.**nomes**(*nomes, sexo=None, localidade=None*)
 
 Obtém a frequência de nascimentos por década para o(s) nome(s) consultado(s).
@@ -48,15 +54,15 @@ Obtém a frequência de nascimentos por década para o(s) nome(s) consultado(s).
 
 Nome(s) que se deseja pesquisar
 
-- **sexo:** (Opcional) 'M' ou 'F'
+- **sexo:** (Opcional) `'M'` ou `'F'`
 
-'M' se deseja pesquisar apenas por ocorrências do sexo masculino e 'F' se deseja pesquisar apenas por ocorrências do sexo feminino.
+`'M'` se deseja pesquisar apenas por ocorrências do sexo masculino e `'F'` se deseja pesquisar apenas por ocorrências do sexo feminino.
 
 - **localidade:** (Opcional) int
 
 Código da localidade que se deseja limitar a pesquisa.
 
-Utilizar a função `DadosAbertosBrasil.ibge.localidades()` para consultar os códigos das localidades.
+Utilizar a função `ibge.localidades()` para consultar os códigos das localidades.
 
 ##### *Retorna:*
 
@@ -122,7 +128,7 @@ Nome que se deseja pesquisar
 
 Contém três columns: Frequência de nascimento do nome pesquisado, população total da localidade e proporção de nascimentos por 100.000 habitantes.
 
-Utilizar a função `DadosAbertosBrasil.ibge.localidades()` para consultar os códigos das localidades.
+Utilizar a função `ibge.localidades()` para consultar os códigos das localidades.
 
 ##### *Exemplos:*
 
@@ -161,15 +167,15 @@ Deve estar no formato *AAAA*, sendo múltiplo de 10.
 
 *Exemplos: 1930, 1980, 2000...*
 
-- **sexo:** (Opcional) 'M' ou 'F'
+- **sexo:** (Opcional) `'M'` ou `'F'`
 
-'M' se deseja pesquisar apenas por ocorrências do sexo masculino e 'F' se deseja pesquisar apenas por ocorrências do sexo feminino.
+`'M'` se deseja pesquisar apenas por ocorrências do sexo masculino e `'F'` se deseja pesquisar apenas por ocorrências do sexo feminino.
 
 - **localidade:** (Opcional) int
 
 Código da localidade que se deseja limitar a pesquisa.
 
-Utilizar a função `DadosAbertosBrasil.ibge.localidades()` para consultar os códigos das localidades.
+Utilizar a função `ibge.localidades()` para consultar os códigos das localidades.
 
 ##### *Retorna:*
 
@@ -236,7 +242,7 @@ Obtém a URL para a malha referente ao identificador da localidade.
 
 Código da localidade que se deseja pesquisar. Caso omitido, assume o valor Brasil.
 
-Utilizar a função `DadosAbertosBrasil.ibge.localidades()` para consultar os códigos das localidades.
+Utilizar a função `ibge.localidades()` para consultar os códigos das localidades.
 
 ##### *Retorna:*
 
@@ -270,7 +276,7 @@ Obtém a URL para a malha referente ao identificador da localidade.
 
 ##### *Parâmetros:*
 
-- **projecao:** (Opcional) 'populacao', 'nascimento' ou 'obito'.
+- **projecao:** (Opcional) `'populacao'`, `'nascimento'` ou `'obito'`.
 
 Define que variável pesquisar. Se omitido, obtém um dictionary com todos os valores.
 
@@ -278,7 +284,7 @@ Define que variável pesquisar. Se omitido, obtém um dictionary com todos os va
 
 Código da localidade que se deseja pesquisar. Caso omitido, assume o valor Brasil.
 
-Utilizar a função `DadosAbertosBrasil.ibge.localidades()` para consultar os códigos das localidades.
+Utilizar a função `ibge.localidades()` para consultar os códigos das localidades.
 
 ##### *Retorna:*
 
@@ -319,6 +325,46 @@ https://servicodados.ibge.gov.br/api/docs/projecoes?versao=1
 
 ---
 
+### def DadosAbertosBrasil.ibge.**coordenadas**()
+
+Obtém as coordenadas de todas as localidades brasileiras.
+
+##### *Parâmetros:*
+
+- **Nenhum**
+
+##### *Retorna:*
+
+- **pandas.DataFrame** contendo latitude, longitude e altitude de bairros, distritos e povoados brasileiros.
+
+##### *Exemplos:*
+
+Pesquisar pelas coordenadas de todos os setores de Joinville:
+
+```pycon
+>>> l = ibge.coordenadas()
+>>> l[l.NM_MUNICIPIO == 'JOINVILLE']
+```
+
+|     |GM_PONTO|ID   |CD_GEOCODIGO   |TIPO  |CD_GEOCODBA |NM_BAIRRO     |CD_GEOCODSD|NM_SUBDISTRITO|CD_GEOCODDS|NM_DISTRITO|...|NM_MESO          |NM_UF         |CD_NIVEL|CD_CATEGORIA|NM_CATEGORIA|NM_LOCALIDADE     |LONG      |LAT       |ALT      |GM_PONTO_sk |
+|:----|-------:|----:|--------------:|-----:|-----------:|-------------:|----------:|-------------:|----------:|----------:|--:|----------------:|-------------:|-------:|-----------:|-----------:|-----------------:|---------:|---------:|--------:|-----------:|
+|18796|NaN     |18797|420910205000001|URBANO|4.209102e+11|Centro        |42091020500|NaN           |420910205  |JOINVILLE  |...|NORTE CATARINENSE|SANTA CATARINA|1       |5 	      |CIDADE      |JOINVILLE         |-48.849409|-26.304518|10.296596|1J6SeWA.76m-|
+|18797|NaN     |18798|420910205000488|URBANO|4.209102e+11|Espinheiros   |42091020500|NaN           |420910205  |JOINVILLE  |...|NORTE CATARINENSE|SANTA CATARINA|6       |3 	      |AUI         |ESPINHEIROS       |-48.799454|-26.217098|4.518122 |1J6SeU*vQ:X-|
+|18798|NaN     |18799|420910205000490|URBANO|4.209102e+11|Vila Cubatão  |42091020500|NaN           |420910205  |JOINVILLE  |...|NORTE CATARINENSE|SANTA CATARINA|6       |2 	      |AUI         |VILA CUBATÃO      |-48.770058|-26.281902|14.757318|1J6SeUwSrXDp|
+|18799|NaN     |18800|420910205000498|URBANO|4.209102e+11|Morro do Meio |42091020500|NaN           |420910205  |JOINVILLE  |...|NORTE CATARINENSE|SANTA CATARINA|6       |5 	      |AUI         |MORRO DO MEIO     |-48.897157|-26.332775|17.335947|1J6Sevu.:L6f|
+|18800|NaN     |18801|420910205000506|URBANO|4.209102e+11|Jardim Paraíso|42091020500|NaN           |420910205  |JOINVILLE  |...|NORTE CATARINENSE|SANTA CATARINA|6       |1 	      |AUI         |JARDIM PARAÍSO    |-48.808627|-26.217094|5.828033 |1J6SeU)vR6j>|
+|18801|NaN     |18802|420910205000543|RURAL |NaN         |NaN           |42091020500|NaN           |420910205  |JOINVILLE  |...|NORTE CATARINENSE|SANTA CATARINA|3       |2 	      |POVOADO     |MORRO DO AMARAL   |-48.776351|-26.304859|3.824058 |1J6SeYA,]ecp|
+|18802|NaN     |18803|420910205000739|RURAL |NaN         |NaN           |42091020500|NaN           |420910205  |JOINVILLE  |...|NORTE CATARINENSE|SANTA CATARINA|3       |5 	      |POVOADO     |VIGORELLI         |-48.766511|-26.224330|1.000000 |1J6SeU4grE+f|
+|18803|NaN     |18804|420910210000001|URBANO|4.209102e+11|Pirabeiraba   |42091021000|NaN           |420910210  |PIRABEIRABA|...|NORTE CATARINENSE|SANTA CATARINA|2       |10 	      |VILA        |PIRABEIRABA       |-48.908392|-26.206492|25.135213|1J6SeQXucW^-|
+|18804|NaN     |18805|420910210000034|RURAL |NaN         |NaN           |42091021000|NaN           |420910210  |PIRABEIRABA|...|NORTE CATARINENSE|SANTA CATARINA|3       |3 	      |POVOADO     |ESTRADA DO OESTE 1|-48.880583|-26.193152|20.269465|1J6SeRlD;LYf|
+|18805|NaN     |18806|420910210000036|RURAL |NaN         |NaN           |42091021000|NaN           |420910210  |PIRABEIRABA|...|NORTE CATARINENSE|SANTA CATARINA|3       |4 	      |POVOADO     |ESTRADA DO OESTE 2|-48.880570|-26.195625|22.273426|1J6SeRlT@jKp|
+
+##### *Documentação da API original:*
+
+ftp://geoftp.ibge.gov.br/organizacao_do_territorio/estrutura_territorial/localidades/
+
+---
+
 # **SIDRA**
 
 O SIDRA (Sistema IBGE de Recuperação Automática) permite consultar todo catalogo de dados armazenados no Banco de Tabelas Estatísticas do IBGE.
@@ -349,9 +395,9 @@ Obtém o conjunto de agregados, agrupados pelas respectivas pesquisas.
 
 ##### *Parâmetros:*
 
-- **index:** (Opcional) True ou False.
+- **index:** (Opcional) `True` ou `False`.
 
-True para definir o id do agregado como index do DataFrame. Caso omitido, assume o valor False.
+`True` para definir o id do agregado como index do DataFrame. Caso omitido, assume o valor `False`.
 
 ##### *Atributos:*
 
@@ -594,16 +640,16 @@ Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
 
 Define qual referência pesquisar. É possível utilizar um dos seguintes valores:
 
-  - 'A' ou 'assuntos' para obter a base de referências de assuntos;
-  - 'C' ou 'classificacoes' para obter a base de referências de classificações;
-  - 'P' ou 'periodos' para obter a base de referências de períodos;
-  - 'E' ou 'periodicidades' para obter a base de referências de periodicidades;
-  - 'V' ou 'variaveis' para obter a base de referências de variáveis;
-  - 'N', 'T', 'niveis_geograficos' ou 'territorios' para obter a base de referências de níveis geográficos;
+  - `'A'` ou `'assuntos'` para obter a base de referências de assuntos;
+  - `'C'` ou `'classificacoes'` para obter a base de referências de classificações;
+  - `'P'` ou `'periodos'` para obter a base de referências de períodos;
+  - `'E'` ou `'periodicidades'` para obter a base de referências de periodicidades;
+  - `'V'` ou `'variaveis'` para obter a base de referências de variáveis;
+  - `'N'`, `'T'`, `'niveis_geograficos'` ou `'territorios'` para obter a base de referências de níveis geográficos;
 
-- **index:** (Opcional) True ou False.
+- **index:** (Opcional) `True` ou `False`.
 
-True para definir o id da referência como index do DataFrame. Caso omitido, assume o valor False.
+`True` para definir o id da referência como index do DataFrame. Caso omitido, assume o valor `False`.
 
 ##### *Retorna:*
 
@@ -842,11 +888,11 @@ https://servicodados.ibge.gov.br/api/docs/agregados?versao=3#api-bq
 
 Módulo para captura dos dados abertos das APIs do Ipeadata.
 
-- ipea.[series](https://github.com/GusFurtado/DadosAbertosBrasil)
-- ipea.[temas](https://github.com/GusFurtado/DadosAbertosBrasil)
-- ipea.[paises](https://github.com/GusFurtado/DadosAbertosBrasil)
-- ipea.[territorios](https://github.com/GusFurtado/DadosAbertosBrasil)
-- ipea.[nivel_territoriais](https://github.com/GusFurtado/DadosAbertosBrasil)
+- ipea.[series](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilipeaseriescodnone-valorestrue)
+- ipea.[temas](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilipeatemascodnone)
+- ipea.[paises](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilipeapaisescodnone)
+- ipea.[territorios](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilipeaterritorioscodnone-nivelnone)
+- ipea.[nivel_territoriais](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilipeaniveis_territoriais)
 
 ---
 
@@ -864,7 +910,7 @@ Caso o valor seja omitido, um DataFrame com todas as séries é retornado.
 
 O código é o campo `SERNOME` do DataFrame de séries.
 
-- **valores:** (Opcional) True ou False
+- **valores:** (Opcional) `True` ou `False`
 
 `True` para obter os valores da série.
 
@@ -978,7 +1024,7 @@ O código é o campo `PAICODIGO` do DataFrame de séries.
 Pesquisar por todos os países disponíveis:
 
 ```pycon
->>> ipea.temas()
+>>> ipea.paises()
 ```
 
 |   |PAICODIGO|PAINOME       |

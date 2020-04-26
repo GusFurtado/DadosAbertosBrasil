@@ -277,7 +277,3 @@ def localidades():
 # Obtém a URL para a malha referente ao identificador da localidade
 def malha(localidade=''):
     return 'https://servicodados.ibge.gov.br/api/v2/malhas/' + str(localidade)
-
-# Obtém as coordenadas de todas as localidades brasileiras
-def coordenadas():
-    return pd.read_excel(r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/assets/BR_Localidades_2010_v1.xlsx')
