@@ -9,7 +9,7 @@ Dados Abertos Brasil é uma iniciativa para facilitar o acesso a dados abertos e
 Atualmente o pacote Dados Abertos Brasil possui quatro módulos:
 
 - DadosAbertosBrasil.[ibge](https://github.com/GusFurtado/DadosAbertosBrasil#dadosabertosbrasilibge)
-- DadosAbertosBrasil.**ipea**
+- DadosAbertosBrasil.[ipea](https://github.com/GusFurtado/DadosAbertosBrasil#dadosabertosbrasilipea)
 - DadosAbertosBrasil.**camara**
 - DadosAbertosBrasil.**favoritos**
 
@@ -33,10 +33,10 @@ Módulo para captura dos dados abertos das APIs do IBGE.
 - ibge.[malha](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilibgemalhalocalidade)
 - ibge.[populacao](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilibgepopulacaoprojecaonone-localidadenone)
 - [SIDRA](https://github.com/GusFurtado/DadosAbertosBrasil#sidra)
-  - ibge.[Agregados]()
-  - ibge.[Metadados]()
-  - ibge.[referencias]()
-  - ibge.[Sidra]()
+  - ibge.[Agregados](https://github.com/GusFurtado/DadosAbertosBrasil#class-dadosabertosbrasilibgeagregadosindexfalse)
+  - ibge.[Metadados](https://github.com/GusFurtado/DadosAbertosBrasil#class-dadosabertosbrasilibgemetadadosagregado)
+  - ibge.[referencias](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilibgereferenciascod-indexfalse)
+  - ibge.[Sidra](https://github.com/GusFurtado/DadosAbertosBrasil#class-dadosabertosbrasilibgesidraagregadonone-periodosnone-variaveisnone-localidadesn1-all-classificacoesnone)
 
 ### def DadosAbertosBrasil.ibge.**nomes**(*nomes, sexo=None, localidade=None*)
 
@@ -68,33 +68,37 @@ Pesquisar pela frequência de nascimento de Maria e Ana:
 
 ```pycon
 >>> ibge.nomes(['Maria', 'Ana'])
-	PERIODO	      ANA    MARIA
-0  	1930   		33395   336477
-1  	1930,1940	56160   749053
-2  	1940,1950  101259  1487042
-3  	1950,1960  183941  2476482
-4  	1960,1970  292835  2495491
-5  	1970,1980  421531  1616019
-6  	1980,1990  529266   917968
-7  	1990,2000  536302   544296
-8  	2000,2010  935169  1111301
 ```
+
+|  |PERIODO  |ANA   |MARIA  |
+|:-|--------:|-----:|------:|
+|0 |1930   	 |33395 |336477 |
+|1 |1930,1940|56160 |749053 |
+|2 |1940,1950|101259|1487042|
+|3 |1950,1960|183941|2476482|
+|4 |1960,1970|292835|2495491|
+|5 |1970,1980|421531|1616019|
+|6 |1980,1990|529266|917968 |
+|7 |1990,2000|536302|544296 |
+|8 |2000,2010|935169|1111301|
 
 Pesquisar pela frequência de nascimentos de Maria no estado de São Paulo (código 35):
 
 ```pycon
 >>> ibge.nomes('Maria', localidade=35)
-	PERIODO     MARIA
-0	1930   	    65218
-1  	1930,1940  150588
-2  	1940,1950  313277
-3  	1950,1960  541950
-4  	1960,1970  487742
-5  	1970,1980  252657
-6  	1980,1990  105600
-7  	1990,2000   48444
-8  	2000,2010  177756
 ```
+
+|  |PERIODO  |ANA   |
+|:-|--------:|-----:|
+|0 |1930   	 |65218 |
+|1 |1930,1940|150588|
+|2 |1940,1950|313277|
+|3 |1950,1960|541950|
+|4 |1960,1970|487742|
+|5 |1970,1980|252657|
+|6 |1980,1990|105600|
+|7 |1990,2000|48444 |
+|8 |2000,2010|177756|
 
 ##### *Documentação da API original:*
 
@@ -126,15 +130,16 @@ Pesquisar pela frequência de nascimento de Maria por UF:
 
 ```pycon
 >>> ibge.nomes_uf('Maria')
-           frequencia  populacao  proporcao
-localidade                                  
-11              72579    1562409    4645.33
-12              63172     733559    8611.71
-13             173034    3483985   	4966.55
-14              20848     450479   	4627.96
-15             472891    7581051   	6237.80
-...               ...        ...        ...
 ```
+
+|localidade|frequencia|populacao|proporcao|
+|:---------|---------:|--------:|--------:|
+|11        |72579     |1562409  |4645.33  |
+|12        |63172     |733559   |8611.71  |
+|13        |173034    |3483985  |4966.55  |
+|14        |20848     |450479   |4627.96  |
+|15        |472891    |7581051  |6237.80  |
+|...       |...       |...      |...      |
 
 ##### *Documentação da API original:*
 
@@ -178,15 +183,16 @@ Pesquisar por nomes masculino com maior frequência de nascimentos no estado de 
 
 ```pycon
 >>> ibge.nomes_ranking(decada=1990, sexo='M', localidade=35)
-		 frequencia      nome
-ranking                      
-1             97066      JOSE
-2             86175   RODRIGO
-3             83805    RAFAEL
-4             64731     FABIO
-5             64642   LEANDRO
-...             ...       ...
 ```
+
+|ranking|frequencia|nome   |
+|:------|---------:|------:|
+|1      |97066     |JOSE   |
+|2      |86175     |RODRIGO|
+|3      |83805     |RAFAEL |
+|4      |64731     |FABIO  |
+|5      |64642     |LEANDRO|
+|...    |...       |...    |
 
 ##### *Documentação da API original:*
 
@@ -387,42 +393,46 @@ Obter todos os agregados, com o código do agregado como index do DataFrame:
 ```pycon
 >>> agreg = ibge.Agregados(index=True)
 >>> agreg.dados
-                                                 agregado_nome  pesquisa_id                pesquisa_nome  
-agregado_id                                                                  
-1            Receita operacional líquida e subvenções das e...           PY   Pesquisa Anual de Serviços  
-2            População ocupada de 15 anos e mais por setor ...           PE   Pesquisa Mensal de Emprego  
-3            População ocupada de 15 anos e mais por posiçã...           PE   Pesquisa Mensal de Emprego  
-4            Taxa de desemprego aberto - semana por sexo (s...           PE   Pesquisa Mensal de Emprego  
-5            Taxa de desemprego aberto - semana por setor d...           PE   Pesquisa Mensal de Emprego
-...                                                        ...          ...                          ...
 ```
+
+|agregado_id|agregado_nome                                    |pesquisa_id|pesquisa_nome             |
+|:----------|------------------------------------------------:|----------:|-------------------------:|
+|1          |Receita operacional líquida e subvenções das e...|PY         |Pesquisa Anual de Serviços|
+|2          |População ocupada de 15 anos e mais por setor ...|PE         |Pesquisa Mensal de Emprego|
+|3          |População ocupada de 15 anos e mais por posiçã...|PE         |Pesquisa Mensal de Emprego|
+|4          |Taxa de desemprego aberto - semana por sexo (s...|PE         |Pesquisa Mensal de Emprego|
+|5          |Taxa de desemprego aberto - semana por setor d...|PE         |Pesquisa Mensal de Emprego|
+|...        |...                                              |...        |...                       |
 
 Obter lista de pesquisas realizadas:
 
 ```pycon
 >>> agreg = ibge.Agregados()
 >>> agreg.pesquisas
-   pesquisa_id 	                           pesquisa_nome
-0 	        CL 	            Cadastro Central de Empresas
-1 	        CA 	                      Censo Agropecuário
-2 	        ME 	Censo Comum do Mercosul, Bolívia e Chile
-3 	        CD 	                       Censo Demográfico
-4 	        CM 	                   Contagem da População
-...        ...                                       ...
 ```
+
+|   |pesquisa_id|pesquisa_nome                           |
+|:--|----------:|---------------------------------------:|
+|0  |CL 	    |Cadastro Central de Empresas            |
+|1  |CA 	    |Censo Agropecuário                      |
+|2  |ME 	    |Censo Comum do Mercosul, Bolívia e Chile|
+|3  |CD 	    |Censo Demográfico                       |
+|4  |CM 	    |Contagem da População                   |
+|...|...        |...                                     |
 
 Obter agregados da Pesquisa Mensal de Empregos (PE) contendo a palavra 'desemprego' no título:
 
 ```pycon
 >>> agreg = ibge.Agregados()
 >>> agreg.filtrar(pesquisa='PE', contendo='desemprego')
-	                                              agregado_nome  pesquisa_id               pesquisa_nome
-agregado_id 			
-4 	          Taxa de desemprego aberto - semana por sexo (s...           PE  Pesquisa Mensal de Emprego
-5 	          Taxa de desemprego aberto - semana por setor d...           PE  Pesquisa Mensal de Emprego
-13 	          Taxa de desemprego aberto - semana (série ence...           PE  Pesquisa Mensal de Emprego
-14 	          Taxa de desemprego aberto - 30 dias (série enc...           PE  Pesquisa Mensal de Emprego
 ```
+
+|agregado_id|agregado_nome                                    |pesquisa_id|pesquisa_nome             |
+|:----------|------------------------------------------------:|----------:|-------------------------:|
+|4 	        |Taxa de desemprego aberto - semana por sexo (s...|PE         |Pesquisa Mensal de Emprego|
+|5 	        |Taxa de desemprego aberto - semana por setor d...|PE         |Pesquisa Mensal de Emprego|
+|13 	    |Taxa de desemprego aberto - semana (série ence...|PE         |Pesquisa Mensal de Emprego|
+|14 	    |Taxa de desemprego aberto - 30 dias (série enc...|PE         |Pesquisa Mensal de Emprego|
 
 ##### *Documentação da API original:*
 
@@ -490,7 +500,7 @@ Utilize em conjunto com a função `ibge.referencias(cod='C')` para obter a refe
 
 Explorar os metadados do agregado número 2991:
 
-```
+```pycon
 >>> meta = ibge.Metadados(2991)
 
 >>> meta.nome
@@ -605,28 +615,31 @@ Pesquisar pela base de referências de periodicidades ('E'):
 
 ```pycon
 >>> ibge.referencias('E')
- 	id 	 literal
-0 	P1 	 Anual
-1 	P8 	 Semestral
-2 	P9 	 Trimestral
-3 	P5 	 Mensal
-4 	P13  Trimestral móvel
 ```
+
+|  |id |literal         |
+|:-|--:|---------------:|
+|0 |P1 |Anual           |
+|1 |P8 |Semestral       |
+|2 |P9 |Trimestral      |
+|3 |P5 |Mensal          |
+|4 |P13|Trimestral móvel|
 	
 Pesquisar pela base de referências de assuntos ('A'), utilizando o id do assunto como index do DataFrame:
 
 ```pycon
 >>> ibge.referencias('A', index=True)
- 	 literal
-id 	
-148  Abastecimento de água
-70   Abate de animais
-110  Acesso a esgotamento sanitário
-147  Acesso à internet
-107  Acesso a serviço de coleta de lixo doméstico
-146  Acesso a serviços de telefonia
-...  ...
 ```
+
+|id |literal                                     |
+|:--|-------------------------------------------:|
+|148|Abastecimento de água                       |
+|70 |Abate de animais                            |
+|110|Acesso a esgotamento sanitário              |
+|147|Acesso à internet                           |
+|107|Acesso a serviço de coleta de lixo doméstico|
+|146|Acesso a serviços de telefonia              |
+|...|...                                         |
 
 ---
 
@@ -722,20 +735,22 @@ Criar o número de óbitos fetais nos estados de São Paulo e Rio de Janeiro, no
 
 1. Pesquisar parâmetros:
 
-```
+```pycon
 # Importar módulo IBGE:
 >>> from DadosAbertosBrasil import ibge
 
 # Encontrar o agregado desejado:
 >>> agreg = ibge.Agregados()
 >>> agreg.filtrar(contendo='Óbitos fetais')
+```
 
-                                                 agregado_nome  pesquisa_id                   pesquisa_nome
-agregado_id 			
-2990         Óbitos fetais, ocorridos no ano, por mês do re...           RC  Estatísticas do Registro Civil
-2991         Óbitos fetais, ocorridos no ano, por mês do re...           RC  Estatísticas do Registro Civil
-2992         Óbitos fetais, ocorridos no ano, por mês do re...           RC  Estatísticas do Registro Civil
+|agregado_id |agregado_nome                                    |pesquisa_id|pesquisa_nome                 |
+|:-----------|------------------------------------------------:|----------:|-----------------------------:|
+2990         |Óbitos fetais, ocorridos no ano, por mês do re...|RC         |Estatísticas do Registro Civil|
+2991         |Óbitos fetais, ocorridos no ano, por mês do re...|RC         |Estatísticas do Registro Civil|
+2992         |Óbitos fetais, ocorridos no ano, por mês do re...|RC         |Estatísticas do Registro Civil|
 
+```pycon
 # Obter os metadados do agregado para encontrar os parâmetros necessários para o objeto Sidra
 >>> meta = ibge.Metadados(2991)
 >>> print('Períodos:')
@@ -762,7 +777,7 @@ Classificações:
 
 2. Criar objeto SIDRA, alimentar com parâmetros e rodar query:
 
-```
+```pycon
 # Método 1:
 >>> obitos = ibge.Sidra()
 >>> obitos.agregado = 2991
@@ -778,7 +793,7 @@ Classificações:
 
 3. Abrindo o dictionary até chegar em um valor específico:
 
-```
+```pycon
 # Variáveis escolhidas em obitos.variaveis:
 # 0 para 'Unidades' e 1 para 'Percentual'.
 >>> var_id = 0
@@ -820,3 +835,278 @@ Classificações:
 ##### *Documentação da API original:*
 
 https://servicodados.ibge.gov.br/api/docs/agregados?versao=3#api-bq
+
+---
+
+# DadosAbertosBrasil.**ipea**
+
+Módulo para captura dos dados abertos das APIs do Ipeadata.
+
+- ipea.[series](https://github.com/GusFurtado/DadosAbertosBrasil)
+- ipea.[temas](https://github.com/GusFurtado/DadosAbertosBrasil)
+- ipea.[paises](https://github.com/GusFurtado/DadosAbertosBrasil)
+- ipea.[territorios](https://github.com/GusFurtado/DadosAbertosBrasil)
+- ipea.[nivel_territoriais](https://github.com/GusFurtado/DadosAbertosBrasil)
+
+---
+
+### def DadosAbertosBrasil.ipea.**series**(*cod=None, valores=True*)
+
+Registros de metadados de todas as séries disponíveis para consulta.
+
+##### *Parâmetros:*
+
+- **cod:** (Opcional) str
+
+Código da série que se deseja pesquisar.
+
+Caso o valor seja omitido, um DataFrame com todas as séries é retornado.
+
+O código é o campo `SERNOME` do DataFrame de séries.
+
+- **valores:** (Opcional) True ou False
+
+`True` para obter os valores da série.
+
+`False` para obter as informações sobre a série.
+
+Este argumento é ignorado caso não seja fornecido um código de série.
+
+##### *Retorna:*
+
+- **pandas.DataFrame** contendo a lista completa de séries disponíveis, caso `cod == None`
+- **pandas.DataFrame** contendo os valores da série, caso `valores == True`
+- **pandas.DataFrame** contendo as informações da série, caso `valores == False`
+
+##### *Exemplos:*
+
+Pesquisar por todas as séries contendo o termo 'Gini':
+
+```pycon
+>>> s = ipea.series()
+>>> s[s.SERNOME.str.contains('Gini')]
+```
+
+|    |BASNOME       |FNTNOME                                       |FNTSIGLA|FNTURL         |MULNOME|PAICODIGO|PERNOME |SERATUALIZACAO               |SERCODIGO |SERCOMENTARIO                                    |SERNOME                                        |SERNUMERICA|SERSTATUS|TEMCODIGO|UNINOME|
+|:---|-------------:|---------------------------------------------:|-------:|--------------:|------:|--------:|-------:|----------------------------:|---------:|------------------------------------------------:|----------------------------------------------:|----------:|--------:|--------:|------:|
+|6967|Macroeconômico|Instituto de Pesquisa Econômica Aplicada(IPEA)|IPEA    |www.ipea.gov.br|None   |BRA      |Anual   |2016-01-06T19:33:38-02:00    |DISOC_RDCG|Mede o grau de desigualdade na distribuição da...|Renda - desigualdade - coeficiente de Gini     |True       |I        |15       |-      |
+|7543|Social        |Instituto de Pesquisa Econômica Aplicada(IPEA)|IPEA    |www.ipea.gov.br|None   |None     |Decenal |2009-04-20T15:58:01.41-03:00 |GINIC1    |Mede o grau de desigualdade existente na distr...|Renda - desigualdade - índice de Gini - brancos|True       |None     |30       |-      |
+|7544|Social        |Instituto de Pesquisa Econômica Aplicada(IPEA)|IPEA    |www.ipea.gov.br|None   |None     |Decenal |2009-04-20T15:58:01.443-03:00|GINIC2    |Mede o grau de desigualdade existente na distr...|Renda - desigualdade - índice de Gini - negros |True       |None     |30       |-      |
+|7589|Social        |Instituto de Pesquisa Econômica Aplicada(IPEA)|IPEA    |www.ipea.gov.br|None   |None     |Anual   |2016-01-07T16:09:04.52-02:00 |PGINI     |Mede o grau de desigualdade na distribuição da...|Renda - desigualdade - coeficiente de Gini     |True       |None     |30       |-      |
+
+Capturar dados anuais do coeficiente de Gini (código 'DISOC_RDCG'):
+
+```pycon
+>>> ipea.series('DISOC_RDCG')
+```
+
+| 	|NIVNOME|SERCODIGO |TERCODIGO|VALDATA                  |VALVALOR|
+|:--|------:|---------:|--------:|------------------------:|-------:|
+|0  |       |DISOC_RDCG|         |1976-01-01T00:00:00-02:00|0.622740|
+|1  |       |DISOC_RDCG|         |1977-01-01T00:00:00-02:00|0.624648|
+|2  |       |DISOC_RDCG|         |1978-01-01T00:00:00-02:00|0.603907|
+|3  |       |DISOC_RDCG|         |1979-01-01T00:00:00-02:00|0.593121|
+|...|...    |...       |...      |...                      |...     |
+
+##### *Documentação da API original:*
+
+http://www.ipeadata.gov.br/api/
+
+---
+
+### def DadosAbertosBrasil.ipea.**temas**(*cod=None*)
+
+Registros de todos os temas cadastrados.
+
+##### *Parâmetros:*
+
+- **cod:** (Opcional) int
+
+Código do tema.
+
+Caso o valor seja omitido, um DataFrame com todas os temas é retornado.
+
+O código é o campo `TEMCODIGO` do DataFrame de séries.
+
+##### *Retorna:*
+
+- **pandas.DataFrame** contendo a lista completa de temas disponíveis. Cada row é um tema e as columns são os códigos dos temas, dos temas-pai e os nomes dos temas.
+
+##### *Exemplos:*
+
+Pesquisar por todos os temas disponíveis:
+
+```pycon
+>>> ipea.temas()
+```
+
+|   |TEMCODIGO|TEMCODIGO_PAI|TEMNOME              |
+|:--|--------:|------------:|--------------------:|
+|0  |28       |NaN          |Agropecuária         |
+|1  |23       |NaN          |Assistência social   |
+|2  |10       |NaN          |Balanço de pagamentos|
+|3  |7        |NaN          |Câmbio               |
+|4  |5        |NaN          |Comércio exterior    |
+|...|...      |...          |...                  |
+
+##### *Documentação da API original:*
+
+http://www.ipeadata.gov.br/api/
+
+---
+
+### def DadosAbertosBrasil.ipea.**paises**(*cod=None*)
+
+Registros de todos os países cadastrados.
+
+##### *Parâmetros:*
+
+- **cod:** (Opcional) str
+
+Código de três letras maiúsculas do país.
+
+Caso o valor seja omitido, um DataFrame com todas os países é retornado.
+
+O código é o campo `PAICODIGO` do DataFrame de séries.
+
+##### *Retorna:*
+
+- **pandas.DataFrame** contendo a lista completa de países. Cada row é um país e as columns são os códigos e os nomes completos dos países.
+
+##### *Exemplos:*
+
+Pesquisar por todos os países disponíveis:
+
+```pycon
+>>> ipea.temas()
+```
+
+|   |PAICODIGO|PAINOME       |
+|:--|--------:|-------------:|
+|0  |ZAF      |África do Sul |
+|1  |DEU      |Alemanha      |
+|2  |LATI     |América Latina|
+|3  |AGO      |Angola        |
+|4  |SAU      |Arábia Saudita|
+|...|...      |...           |
+
+##### *Documentação da API original:*
+
+http://www.ipeadata.gov.br/api/
+
+---
+
+### def DadosAbertosBrasil.ipea.**territorios**(*cod=None, nivel=None*)
+
+Registros de todos os territórios brasileiros cadastrados, categorizados por nível territorial.
+
+##### *Parâmetros:*
+
+- **cod:** (Opcional) int ou str
+
+Código do território pesquisado.
+
+Deve ser usado em conjunto com o parâmetro `nivel`
+
+Caso pelo menos um dos dois seja omitido, um DataFrame com todos os territórios brasileiros é retornado.
+
+O código é o campo `TERCODIGO` do DataFrame de séries.
+
+Utilize a função do módulo IBGE `ibge.localidades()` para auxiliar na busca pelos códigos dos territórios.
+
+- **nivel:** (Opcional) str
+
+Nome do nível geográfico do território pesquisado.
+
+Deve ser usado em conjunto com o parâmetro `cod`
+
+Caso pelo menos um dos dois seja omitido, um DataFrame com todos os territórios brasileiros é retornado.
+
+O código é o campo `NIVNOME` do DataFrame de séries.
+
+##### *Retorna:*
+
+- **pandas.DataFrame** contendo a lista completa de territórios brasileiros. Cada row é um território e as columns são o código, o nome, o nível e a área do território.
+
+##### *Exemplos:*
+
+Pesquisar por todos os territórios chamados 'São Paulo':
+
+```pycon
+>>> t = ipea.territorios
+>>> t[t.TERNOME == 'São Paulo']
+```
+
+|     |NIVAMC|NIVNOME      |TERAREA |TERCAPITAL|TERCODIGO|TERNOME  |TERNOMEPADRAO| 	
+|:----|-----:|------------:|-------:|---------:|--------:|--------:|------------:|
+|0    |False |Estados      |248808.8|False     |35       |São Paulo|SAO PAULO    |
+|12247|False |Microrregiões|2355.7  |False     |35061    |São Paulo|SAO PAULO    |
+|14002|True  |AMC 91-00    |1528.5  |False     |355030   |São Paulo|SAO PAULO    |
+|14003|True  |AMC 70-00    |1528.5  |False     |355030   |São Paulo|SAO PAULO    |
+|14004|False |Municípios   |1528.5  |True      |3550308  |São Paulo|SAO PAULO    |
+
+Pesquisar pelo estado de São Paulo (código 35):
+
+```pycon
+>>> ipea.territorios(35, 'Estados')
+```
+
+|  |NIVAMC|NIVNOME|TERAREA |TERCAPITAL|TERCODIGO|TERNOME  |TERNOMEPADRAO| 	
+|:-|-----:|------:|-------:|---------:|--------:|--------:|------------:|
+|0 |False |Estados|248808.8|False     |35       |São Paulo|SAO PAULO    |
+
+Pesquisar pela cidade de São Paulo (código 3550308):
+
+```pycon
+>>> ipea.territorios(3550308, 'Municípios')
+```
+
+|  |NIVAMC|NIVNOME   |TERAREA|TERCAPITAL|TERCODIGO|TERNOME  |TERNOMEPADRAO| 	
+|:-|-----:|---------:|------:|---------:|--------:|--------:|------------:|
+|0 |False |Municípios|1528.8 |True      |3550308  |São Paulo|SAO PAULO    |
+
+##### *Documentação da API original:*
+
+http://www.ipeadata.gov.br/api/
+
+---
+
+### def DadosAbertosBrasil.ipea.**niveis_territoriais**()
+
+Lista dos possíveis níveis territoriais.
+
+##### *Parâmetros:*
+
+- **Nenhum**
+
+##### *Retorna:*
+
+- **list de str** contendo as descrições por extenso dos níveis territoriais.
+
+##### *Exemplos:*
+
+Capturar a lista de descrições de níveis territoriais:
+
+```pycon
+>>> ipea.niveis_territoriais()
+
+['',
+ 'Brasil',
+ 'Regiões',
+ 'Estados',
+ 'Municípios',
+ 'AMC 91-00',
+ 'Microrregiões',
+ 'Mesorregiões',
+ 'AMC 20-00',
+ 'AMC 40-00',
+ 'AMC 60-00',
+ 'AMC 70-00',
+ 'AMC 1872-00',
+ 'Área metropolitana',
+ 'Estado/RM']
+```
+
+##### *Documentação da API original:*
+
+http://www.ipeadata.gov.br/api/
