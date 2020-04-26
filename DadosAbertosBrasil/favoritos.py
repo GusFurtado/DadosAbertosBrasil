@@ -1,4 +1,4 @@
-# Pacote para fácil acesso a dados selecionados
+# Módulo para fácil acesso a dados selecionados
 # Autor: Gustavo Furtado da Silva
 
 

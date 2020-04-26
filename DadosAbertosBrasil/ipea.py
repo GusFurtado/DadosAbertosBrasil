@@ -48,14 +48,15 @@ def paises(cod=None):
     else:
         raise TypeError('Código do país deve ser um string de três letras maísculas.')
 
-# Registros de todos os territórios cadastrados.
+# Registros de todos os territórios brasileiros cadastrados.
 def territorios(cod=None, nivel=None):
     if (cod == None) and (nivel == None):
         return __query('Territorios')
     else:
-        return __query(f"Territorios(TERCODIGO='{cod}',NIVNOME='{nivel}')")
+        n = 'Municipios' if nivel == 'Municípios' else nivel        
+        return __query(f"Territorios(TERCODIGO='{cod}',NIVNOME='{n}')")
 
-# Os níveis territoriais possíveis
+# Lista dos possíveis níveis territoriais
 def niveis_territoriais():
     return ['',
             'Brasil',

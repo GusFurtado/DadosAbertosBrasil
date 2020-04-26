@@ -1,4 +1,4 @@
-# Pacote para captura dos dados abertos das APIs do IBGE
+# Módulo para captura dos dados abertos das APIs do IBGE
 # Autor: Gustavo Furtado da Silva
 #
 # PARTE 1: NOMES
@@ -16,6 +16,7 @@
 #
 # PARTE 3: OUTROS
 # - População Projetada
+# - Malha
 # - Lista de Localidades
 
 
@@ -79,25 +80,25 @@ def nomes_ranking(decada=None, sexo=None, localidade=None):
     
     if decada != None:
         if isinstance(decada, int):
-            s += f'?decada={decada}'
+            query += f'?decada={decada}'
             sep = '&'
         else:
             raise TypeError("O argumento 'decada' deve ser um número inteiro multiplo de 10.")
     
     if localidade != None:
         if isinstance(localidade, int):
-            s += f'{sep}localidade={localidade}'
+            query += f'{sep}localidade={localidade}'
             sep = '&'
         else:
             raise TypeError("O argumento 'localidade' deve ser um número inteiro.")
             
     if sexo != None:
         if sexo == 'M' or sexo == 'F':
-            s += f'{sep}sexo={sexo}'
+            query += f'{sep}sexo={sexo}'
         else:
             raise TypeError("O argumento 'sexo' deve ser um tipo 'string' igual a 'M' para masculino ou 'F' para feminino.")
     
-    return pd.DataFrame(pd.read_json(s).res[0]).set_index('ranking')
+    return pd.DataFrame(pd.read_json(query).res[0]).set_index('ranking')
 
 
 
