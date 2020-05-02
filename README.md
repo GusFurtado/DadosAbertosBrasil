@@ -894,6 +894,8 @@ Módulo para captura dos dados abertos das APIs do Ipeadata.
 - ipea.[territorios](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilipeaterritorioscodnone-nivelnone)
 - ipea.[nivel_territoriais](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilipeaniveis_territoriais)
 
+Importe o módulo com `from DadosAbertosBrasil import ipea`
+
 ---
 
 ### def DadosAbertosBrasil.ipea.**series**(*cod=None, valores=True*)
@@ -1156,3 +1158,204 @@ Capturar a lista de descrições de níveis territoriais:
 ##### *Documentação da API original:*
 
 http://www.ipeadata.gov.br/api/
+
+---
+
+# DadosAbertosBrasil.**favoritos**
+
+Algumas funções selecionadas que não fazer parte dos módulos principais.
+
+- favoritos.[moedas](https://github.com/GusFurtado/DadosAbertosBrasil)
+- favoritos.[cambio](https://github.com/GusFurtado/DadosAbertosBrasil)
+- favoritos.[ipca](https://github.com/GusFurtado/DadosAbertosBrasil)
+- favoritos.[catalogo](https://github.com/GusFurtado/DadosAbertosBrasil)
+
+Importe o módulo com `from DadosAbertosBrasil import favoritos`
+
+---
+
+### def DadosAbertosBrasil.favoritos.**moedas**()
+
+Nomes e símbolos das principais moedas internacionais.
+
+##### *Parâmetros:*
+
+- **Nenhum**
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, onde cada row é uma moeda e as três columns são o nome completo, a sigla de três letras e o tipo da moeda.
+
+  - Tipo A: Moeda cuja paridade é expressa em quantidade de moeda por uma unidade de dólar.
+  - Tipo B: Moeda cuja paridade é expressa em quantidade de dólar, por uma unidade de moeda.
+
+##### *Exemplos:*
+
+Obtém a lista das principais moedas:
+
+```pycon
+>>> favoritos.moedas()
+```
+
+|  |Nome                    |Símbolo|Tipo|
+|:-|-----------------------:|------:|---:|
+|0 |Dólar australiano       |AUD    |B   |
+|1 |Dólar canadense         |CAD    |A   |
+|2 |Franco suíço            |CHF    |A   |
+|3 |Coroa dinamarquesa      |DKK    |A   |
+|4 |Euro                    |EUR    |B   |
+|5 |Libra Esterlina         |GBP    |B   |
+|6 |Iene                    |JPY    |A   |
+|7 |Coroa norueguesa        |NOK    |A   |
+|8 |Coroa sueca             |SEK    |A   |
+|9 |Dólar dos Estados Unidos|USD    |A   |
+
+##### *Documentação da API original:*
+
+https://dadosabertos.bcb.gov.br/dataset/taxas-de-cambio-todos-os-boletins-diarios/resource/9d07b9dc-c2bc-47ca-af92-10b18bcd0d69?inner_span=True
+
+---
+
+### def DadosAbertosBrasil.favoritos.**cambio**(*moedas='USD', data_inicial='01-01-2000', data_final=None, index=False*)
+
+Obtém as taxas de câmbio das principais moedas internacionais por período.
+
+##### *Parâmetros:*
+
+- **moedas:** (Opcional) string ou lista de strings
+
+Moeda(s) que se deseja pesquisar.
+
+Assume `'USD'` (dólar americano) como valor padrão.
+
+As siglas das moedas são as mesmas da consulta `favoritos.moedas()`.
+
+- **data_inicial:** (Opcional) string no formato `MM-DD-AAAA`
+
+Data inicial da consulta.
+
+Assume `01-01-2000` como valor padrão.
+
+- **data_final:** (Opcional) string no formato `MM-DD-AAAA`
+
+Data final da consulta.
+
+Caso valor seja omitido (`None`), a data final da consulta será `datetime.datetime.today()` (a data do hoje, segundo o sistema).
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir a data da cotação como index do DataFrame. Caso omitido, assume o valor `False`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, onde cada row é um valor da cotação em um datetime específico e cada column é uma moeda consultada.
+
+##### *Exemplos:*
+
+Pesquisar pela cotação do euro a partir de 01/01/2020 até o dia de hoje:
+
+```pycon
+>>> favoritos.cambio('EUR', data_inicial='01-01-2020')
+```
+
+|   |Data                   |EUR   |
+|:--|----------------------:|-----:|
+|0  |2020-01-02 13:11:10.762|4.5051|
+|1  |2020-01-03 13:06:22.606|4.5247|
+|2  |2020-01-06 13:03:22.271|4.5384|
+|3  |2020-01-07 13:06:14.601|4.5513|
+|4  |2020-01-08 13:03:56.075|4.5235|
+|...|...                    |...   |
+
+Pesquisar as cotações do dólar americano e do dólar canadense do dia 15/01/2020 até o dia 20/01/2020, usando a data como index do DataFrame:
+
+```pycon
+>>> favoritos.cambio(['USD', 'CAD'], data_inicial='01-15-2020', data_final='01-20-2020', index=True)
+```
+
+|Data      |USD   |CAD   |
+|:---------|-----:|-----:|
+|2020-01-15|4.1622|3.1906|
+|2020-01-16|4.1726|3.1996|
+|2020-01-17|4.1837|3.2044|
+|2020-01-20|4.1829|3.2036|
+
+##### *Documentação da API original:*
+
+https://dadosabertos.bcb.gov.br/dataset/taxas-de-cambio-todos-os-boletins-diarios/resource/b31299d9-7fe6-45ca-ac88-a03273ff280f?inner_span=True
+
+---
+
+### def DadosAbertosBrasil.favoritos.**ipca**(*index=True*)
+
+Obtém o valor mensal do índice IPCA, a partir de Janeiro de 1992.
+
+Apesar do que o índice IPCA também pode ser obtido nos módulos `DadosAbertosBrasil.ibge` e `DadosAbertosBrasil.ipea`, esta função obtem o índice através da API do Banco Central do Brasil e permite uma consulta simples sem necessidade de especificar outros parâmetros.
+
+##### *Parâmetros:*
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir a data como index do DataFrame. Caso omitido, assume o valor `False`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, onde cada row é uma data de referência e a column principal é o valor do índice IPCA em relação àquele mês.
+
+##### *Exemplos:*
+
+Captura o índice IPCA mensal do Banco Central:
+
+```pycon
+>>> favoritos.ipca()
+```
+
+|   |Data      |IPCA Mensal|
+|:--|---------:|----------:|
+|0  |1992-01-01|26.18      |
+|1  |1992-01-02|22.40      |
+|2  |1992-01-03|21.25      |
+|3  |1992-01-04|18.96      |
+|4  |1992-01-05|25.52      |
+|...|...       |...        |
+
+##### *Documentação da API original:*
+
+https://dadosabertos.bcb.gov.br/dataset/4448-indice-de-precos-ao-consumidor-amplo-ipca---nao-comercializaveis
+
+---
+
+### def DadosAbertosBrasil.favoritos.**catalogo**()
+
+Obtém o catálogo de iniciativas oficiais de dados abertos no Brasil
+
+##### *Parâmetros:*
+
+- **Nenhum**
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, onde cada row é uma API de dados abertos no Brasil e as columns são o título, a URL, o município, a UF, a esfera (Estadual, Municipal ou Federal), o poder (Executivo ou Legislativo) e a solução (CKAN, Interna ou ArcGIS) da API.
+
+##### *Exemplos:*
+
+Obtém o catalogo de iniciativas de dados abertos no Brasil:
+
+```pycon
+>>> favoritos.catalogo()
+```
+
+|   |Título                        |URL                                               |Município|UF |Esfera   |Poder      |Solução|
+|:--|-----------------------------:|-------------------------------------------------:|--------:|--:|--------:|----------:|------:|
+|0  |Alagoas em dados e informações|http://dados.al.gov.br/                           |NaN      |AL |Estadual |Executivo  |CKAN   |
+|1  |Fortaleza Dados Abertos       |http://dados.fortaleza.ce.gov.br/                 |Fortaleza|CE |Municipal|Executivo  |CKAN   |
+|2  |Dados abertos – TCM-CE        |http://api.tcm.ce.gov.br/                         |NaN      |CE |Estadual |Legislativo|Interna|
+|3  |Dados abertos Distrito Federal|http://dados.df.gov.br/                           |NaN      |DF |Estadual |Executivo  |CKAN   |
+|4  |Dados abertos – Governo do ES |https://transparencia.es.gov.br/DadosAbertos/B... |NaN      |ES |Estadual |Executivo  |Interna|
+|...|...                           |...                                               |...      |...|...      |...        |...    |
+
+##### *Documentação da API original:*
+
+https://github.com/dadosgovbr/catalogos-dados-brasil
+
+---
