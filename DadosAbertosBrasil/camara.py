@@ -26,7 +26,7 @@ def __query(funcao, cod, serie, index, series):
         
         return df
     
-    elif isinstance(cod, int):
+    elif isinstance(cod, int) or funcao == 'votacoes':
         
         if serie in series:
             query = url + f'/{funcao}/{cod}' if serie == 'informacoes' else url + f'/{funcao}/{cod}/{serie}'
@@ -39,7 +39,7 @@ def __query(funcao, cod, serie, index, series):
     else:
         raise TypeError("O argumento 'cod' deve ser um número inteiro.")
 
-# Dados sobre os blocos partiidários
+# Dados sobre os blocos partidários
 def blocos(cod=None, index=False):
     series = ['informacoes']
     return __query('blocos', cod, 'informacoes', index, series)
@@ -93,6 +93,7 @@ def referencias(funcao, index=False):
                   'codTipoEvento': 'eventos/codTipoEvento',
                   'codSituacaoOrgao': 'orgaos/codSituacao',
                   'codTipoOrgao': 'orgaos/codTipoOrgao',
+                  'codTipoAutor': 'proposicoes/codTipoAutor',
                   'codSituacaoProposicao': 'proposicoes/codSituacao',
                   'codTema': 'proposicoes/codTema',
                   'codTipoTramitacao': 'proposicoes/codTipoTramitacao',
@@ -120,7 +121,7 @@ def referencias(funcao, index=False):
     return df
 
 # Lista de deputados, com filtros
-def filtrar_deputados(sexo=None, estado=None, partido=None, contendo=None, excluindo=None, index=False):
+def filtrar_deputados(sexo=None, uf=None, partido=None, contendo=None, excluindo=None, index=False):
     
     query = url + 'deputados'
     b = False
@@ -144,10 +145,10 @@ def filtrar_deputados(sexo=None, estado=None, partido=None, contendo=None, exclu
     else:
         raise TypeError("O campo 'partido' deve ser uma sigla em letras maiúsculas que representa um dos partidos políticos brasileiros.")
         
-    if estado == None:
+    if uf == None:
         pass
-    elif isinstance(estado, str):
-        query = query + f'&siglaUf={estado}' if b else query + f'?siglaUf={estado}'
+    elif isinstance(uf, str):
+        query = query + f'&siglaUf={uf}' if b else query + f'?siglaUf={uf}'
         b = True
     else:
         raise TypeError("O campo 'estado' deve ser uma sigla de duas letras maiúsculas que represente um dos estados brasileiros.")

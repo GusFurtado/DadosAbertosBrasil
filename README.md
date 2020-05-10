@@ -1161,6 +1161,895 @@ http://www.ipeadata.gov.br/api/
 
 ---
 
+# DadosAbertosBrasil.**camara**
+
+Pacote para captura dos dados abertos da Câmara dos Deputados do Brasil
+
+- camara.[blocos](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[deputados](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[eventos](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[frentes](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[legislaturas](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[orgaos](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[partidos](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[proposicoes](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[votacoes](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[referencias](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[filtrar_deputados](https://github.com/GusFurtado/DadosAbertosBrasil)
+
+Importe o módulo com `from DadosAbertosBrasil import camara`
+
+---
+
+### def DadosAbertosBrasil.camara.**blocos**(*cod=None, index=False*)
+
+Obtém dados sobre os blocos partiidários.
+
+Nas atividades parlamentares, partidos podem se juntar em blocos partidários. Quando associados, os partidos passam a trabalhar como se fossem um "partidão", com um só líder e um mesmo conjunto de vice-líderes.
+
+Os blocos só podem existir até o fim da legislatura em que foram criados: na legislatura seguinte, os mesmos partidos, se associados, formam um novo bloco.
+
+##### *Parâmetros:*
+
+- **cod**: (Opcional) int
+
+Insira o id do bloco partidário para obter mais informações sobre ele.
+
+Caso esse campo seja omitido, retorna uma lista com todos os blocos partidários.
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id do bloco partidário como index do DataFrame. Caso omitido, assume o valor `False`.
+
+Esse campo é ignorado caso um id seja fornecido no campo `cod`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo uma lista com todos os blocos partidários, caso `cod == None`.
+- **dict**, contendo detalhes do bloco partidário, caso `cod` seja o id do bloco.
+
+##### *Exemplos:*
+
+Obter detalhes do bloco 575:
+
+```pycon
+>>> camara.blocos(575)
+
+{'id': '575',
+ 'uri': 'https://dadosabertos.camara.leg.br/api/v2/blocos/575',
+ 'nome': 'PL, PP, PSD, MDB, DEM, SOLIDARIEDADE, PTB, PROS, AVANTE',
+ 'idLegislatura': '56'}
+```
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
+### def DadosAbertosBrasil.camara.**deputados**(*cod=None, serie='informacoes', index=False*)
+
+Obtém a lista ou informações dos deputados.
+
+##### *Parâmetros:*
+
+- **cod**: (Opcional) int
+
+Insira o id do(a) deputado(a) para obter mais informações sobre ele(a).
+
+Caso esse campo seja omitido, retorna uma lista com todos os deputados da atual legislatura.
+
+- **serie**: string
+
+Insira um dos campos abaixo para obter mais informações sobre o(a) deputado(a).
+
+  - `'informacoes'`: Informações detalhadas sobre um deputado específico;
+  - `'despesas'`: As despesas com exercício parlamentar do deputado;
+  - `'discursos'`: Os discursos feitos por um deputado em eventos diversos;
+  - `'eventos'`: Uma lista de eventos com a participação do parlamentar;
+  - `'frentes'`: As frentes parlamentares das quais um deputado é integrante;
+  - `'orgaos'`: Os órgãos dos quais um deputado é integrante.
+  
+Esse campo é ignorado caso `cod == None`
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id do(a) deputado(a) como index do DataFrame. Caso omitido, assume o valor `False`.
+
+Esse campo é ignorado caso um id seja fornecido no campo `cod`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo uma lista com todos os deputados, caso `cod == None`. Cada row é um deputado e as columns são o nome, partido, estado, e-mail, legislatura atual e a URL da foto no site da câmara.
+- **dict**, contendo detalhes da série escolhida sobre o(a) deputado(a), caso `cod` seja o id do(a) deputado(a).
+
+##### *Exemplos:*
+
+Obter a lista de deputados da atual legislatura:
+
+```pycon
+>>> camara.deputados(index=True)
+```
+
+|id    |email                           |idLegislatura|nome           |siglaPartido|siglaUf|urlFoto                                           |
+|:-----|-------------------------------:|------------:|--------------:|-----------:|------:|-------------------------------------------------:|
+|204554|dep.abiliosantana@camara.leg.br |56           |Abílio Santana |PL          |BA     |https://www.camara.leg.br/internet/deputado/ba... |
+|204521|dep.abouanni@camara.leg.br      |56           |Abou Anni      |PSL         |SP     |https://www.camara.leg.br/internet/deputado/ba... |
+|204379|dep.acaciofavacho@camara.leg.br |56           |Acácio Favacho |PROS        |AP     |https://www.camara.leg.br/internet/deputado/ba... |
+|204560|dep.adolfoviana@camara.leg.br   |56           |Adolfo Viana   |PSDB        |BA     |https://www.camara.leg.br/internet/deputado/ba... |
+|204528|dep.adrianaventura@camara.leg.br|56           |Adriana Ventura|NOVO        |SP     |https://www.camara.leg.br/internet/deputado/ba... |
+|...   |...                             |...          |...            |...         |...    |...                                               |
+
+
+Obter a lista de frentes que o deputado Rodrigo Maia (código 74693) participa:
+
+```pycon
+>>> camara.deputados(cod=74693, serie='frentes')
+
+[{'id': 54180,
+  'uri': 'https://dadosabertos.camara.leg.br/api/v2/frentes/54180',
+  'titulo': 'Frente Parlamentar Mista em Defesa do Cinema e do Audiovisual Brasileiros',
+  'idLegislatura': 56},
+ {'id': 54165,
+  'uri': 'https://dadosabertos.camara.leg.br/api/v2/frentes/54165',
+  'titulo': 'Frente Parlamentar de Defesa e Valorização da Produção Nacional de Uvas, Vinhos, Espumantes e seus Derivados',
+  'idLegislatura': 56},
+  ...]
+```
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
+### def DadosAbertosBrasil.camara.**eventos**(*cod=None, serie='informacoes', index=False*)
+
+Obtém a lista ou informações dos eventos ocorridos ou previstos nos diversos órgãos da Câmara.
+
+##### *Parâmetros:*
+
+- **cod**: (Opcional) int
+
+Insira o id do evento para obter mais informações sobre ele.
+
+Caso esse campo seja omitido, retorna uma lista com todos os eventos da Câmara.
+
+- **serie**: string
+
+Insira um dos campos abaixo para obter mais informações sobre o evento.
+
+  - `'informacoes'`: Informações detalhadas sobre um evento específico;
+  - `'deputados'`: Os deputados participantes de um evento específico;
+  - `'orgaos'`: Lista de órgãos organizadores do evento;
+  - `'pauta'`: Lista de proposições que foram ou deverão ser avaliadas em um evento de caráter deliberativo;
+  - `'votacoes'`: Informações detalhadas de votações sobre um evento específico.
+
+Esse campo é ignorado caso `cod == None`
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id do evento como index do DataFrame. Caso omitido, assume o valor `False`.
+
+Esse campo é ignorado caso um id seja fornecido no campo `cod`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo uma lista com todos os eventos da Câmara, caso `cod == None`. Cada row é um evento e as columns são os horários, descrições, orgãos, locais e a situação do evento.
+- **dict**, contendo detalhes da série escolhida sobre o evento, caso `cod` seja o id do evento.
+
+##### *Exemplos:*
+
+Obter a lista de todos os eventos ocorridos ou previstos na Câmara:
+
+```pycon
+>>> camara.eventos(index=True)
+```
+
+|id   |dataHoraFim     |dataHoraInicio  |descricao                                        |descricaoTipo      |localCamara                                      |...|
+|:----|---------------:|---------------:|------------------------------------------------:|------------------:|------------------------------------------------:|--:|
+|59588|2020-05-04T23:25|2020-05-04T13:55|Sessão Deliberativa Extraordinária (VIRTUAL)     |Sessão Deliberativa|{'nome': 'Plenário da Câmara dos Deputados', '...|...|
+|59591|2020-05-04T13:37|2020-05-04T11:30|Situação dos Hospitais no Rio de Janeiro...      |Outro Evento       |{'nome': None, 'predio': None, 'sala': None, '...|...|
+|59592|2020-05-05T14:22|2020-05-05T11:30|Instituições de Longa Permanência para Idosos\...|Reunião Técnica    |{'nome': 'Anexo II, Plenário 03', 'predio': No...|...|
+|59593|2020-05-05T18:06|2020-05-05T15:00|Requisição Administrativa de Leitos\r\n Reuniã...|Reunião Técnica    |{'nome': None, 'predio': None, 'sala': None, '...|...|
+|...  |...             |...             |...                                              |...                |...                                              |...|
+
+
+Obter a lista de deputados presentes no evento 59588:
+
+```pycon
+>>> camara.eventos(cod=59588, serie='deputados')
+
+[{'id': 66179,
+  'uri': 'https://dadosabertos.camara.leg.br/api/v2/deputados/66179',
+  'nome': 'Norma Ayub',
+  'siglaPartido': 'DEM',
+  'uriPartido': 'https://dadosabertos.camara.leg.br/api/v2/partidos/36769',
+  'siglaUf': 'ES',
+  'idLegislatura': 56,
+  'urlFoto': 'https://www.camara.leg.br/internet/deputado/bandep/66179.jpg',
+  'email': 'dep.normaayub@camara.leg.br'},
+ {'id': 66828,
+  'uri': 'https://dadosabertos.camara.leg.br/api/v2/deputados/66828',
+  'nome': 'Fausto Pinato',
+  'siglaPartido': 'PP',
+  'uriPartido': 'https://dadosabertos.camara.leg.br/api/v2/partidos/37903',
+  'siglaUf': 'SP',
+  'idLegislatura': 56,
+  'urlFoto': 'https://www.camara.leg.br/internet/deputado/bandep/66828.jpg',
+  'email': 'dep.faustopinato@camara.leg.br'},
+  ...]
+```
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
+### def DadosAbertosBrasil.camara.**frentes**(*cod=None, serie='informacoes', index=False*)
+
+Obtém a lista ou informações das frentes parlamentares, um agrupamento oficial de parlamentares em torno de um determinado tema ou proposta.
+
+As frentes existem até o fim da legislatura em que foram criadas, e podem ser recriadas a cada legislatura. Algumas delas são compostas por deputados e senadores
+
+##### *Parâmetros:*
+
+- **cod**: (Opcional) int
+
+Insira o id da frente parlamentar para obter mais informações sobre ela.
+
+Caso esse campo seja omitido, retorna uma lista com todos as frentes parlamentares.
+
+- **serie**: string
+
+Insira um dos campos abaixo para obter mais informações sobre a frente parlamentar.
+
+  - `'informacoes'`: Informações detalhadas sobre uma frente parlamentar;
+  - `'membros'`: Os deputados que participam de uma frente parlamentar.
+
+Esse campo é ignorado caso `cod == None`
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id da frente como index do DataFrame. Caso omitido, assume o valor `False`.
+
+Esse campo é ignorado caso um id seja fornecido no campo `cod`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo uma lista com todas as frentes parlamentares, caso `cod == None`. Cada row é uma frente parlamentar e as columns são o nome da frente e a legislatura que ela pertence.
+- **dict**, contendo detalhes da série escolhida sobre a frente parlamentar, caso `cod` seja o id do frente.
+
+##### *Exemplos:*
+
+Obter a lista de todas frentes parlamentares:
+
+```pycon
+>>> camara.frentes(index=True)
+```
+
+|id   |idLegislatura|titulo                                           |
+|:----|------------:|------------------------------------------------:|
+|54251|56           |Frente Parlamentar Mista para Implantação do P...|
+|54248|56           |Frente Parlamentar em Defesa da Democratização...|
+|54249|56           |Frente Parlamentar em Defesa dos Profissionais...|
+|54250|56           |Frente Parlamentar em Apoio ao Ecoturismo - EC...|
+|54231|56           |Frente Parlamentar Mista de Segurança Contra I...|
+|...  |...          |...                                              |
+
+Obter os deputados membros da Frente Parlamentar Brasil-Rússia (código 54246):
+
+```pycon
+>>> camara.frentes(cod=54246, serie='membros')
+
+[{'id': 204511,
+  'uri': 'https://dadosabertos.camara.leg.br/api/v2/deputados/204511',
+  'nome': 'David Soares',
+  'siglaPartido': 'DEM',
+  'uriPartido': 'https://dadosabertos.camara.leg.br/api/v2/partidos/36769',
+  'siglaUf': 'SP',
+  'idLegislatura': 56,
+  'urlFoto': 'https://www.camara.leg.br/internet/deputado/bandep/204511.jpg',
+  'email': None,
+  'titulo': 'Coordenador',
+  'codTitulo': 14,
+  'dataInicio': None,
+  'dataFim': None},
+ {'id': 68720,
+  'uri': 'https://dadosabertos.camara.leg.br/api/v2/deputados/68720',
+  'nome': 'Fábio Henrique',
+  'siglaPartido': 'PDT',
+  'uriPartido': 'https://dadosabertos.camara.leg.br/api/v2/partidos/36786',
+  'siglaUf': 'SE',
+  'idLegislatura': 56,
+  'urlFoto': 'https://www.camara.leg.br/internet/deputado/bandep/68720.jpg',
+  'email': None,
+  'titulo': 'Membro',
+  'codTitulo': 1004,
+  'dataInicio': None,
+  'dataFim': None},
+  ...]
+```
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
+### def DadosAbertosBrasil.camara.**legislaturas**(*cod=None, serie='informacoes', index=False*)
+
+Obtém a lista ou informações das legislaturas.
+
+Legislatura é o nome dado ao período de trabalhos parlamentares entre uma eleição e outra.
+
+##### *Parâmetros:*
+
+- **cod**: (Opcional) int
+
+Insira o id da legislatura para obter mais informações sobre ela.
+
+Caso esse campo seja omitido, retorna uma lista com a data de início e fim das legislaturas.
+
+- **serie**: string
+
+Insira um dos campos abaixo para obter mais informações sobre o evento.
+
+  - `'informacoes'`: Informações extras sobre uma determinada legislatura da Câmara;
+  - `'membros'`: Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
+
+Esse campo é ignorado caso `cod == None`
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id da legislatura como index do DataFrame. Caso omitido, assume o valor `False`.
+
+Esse campo é ignorado caso um id seja fornecido no campo `cod`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo uma lista com todas os períodos das legislaturas, caso `cod == None`. Cada row é uma legislatura e as columns são a data de início e a data de fim.
+- **dict**, contendo detalhes da série escolhida sobre a legislatura, caso `cod` seja o id da legislatura.
+
+##### *Exemplos:*
+
+Obter a lista dos períodos das legislaturas:
+
+```pycon
+>>> camara.legislaturas(index=True)
+```
+
+|id   |dataFim   |dataInicio|
+|:----|---------:|---------:|
+|56   |2023-01-31|2019-02-01|
+|55   |2019-01-31|2015-02-01|
+|54   |2015-01-31|2011-02-01|
+|53   |2011-01-31|2007-02-01|
+|52   |2007-01-31|2003-02-01|
+|...  |...       |...       |
+
+Obter os deputados membros da mesa diretora da legislatura 55:
+
+```pycon
+>>> camara.legislaturas(cod=55, serie='mesa')
+
+[{'id': 141430,
+  'uri': 'https://dadosabertos.camara.leg.br/api/v2/deputados/141430',
+  'nome': 'FELIPE BORNIER',
+  'siglaPartido': 'PSD',
+  'uriPartido': 'https://dadosabertos.camara.leg.br/api/v2/partidos/36763',
+  'siglaUf': 'RJ',
+  'idLegislatura': 55,
+  'urlFoto': 'https://www.camara.leg.br/internet/deputado/bandep/141430.jpg',
+  'email': None,
+  'dataInicio': '2015-02-01',
+  'dataFim': '2017-02-02',
+  'titulo': '2º Secretário',
+  'codTitulo': '6'},
+ {'id': 160633,
+  'uri': 'https://dadosabertos.camara.leg.br/api/v2/deputados/160633',
+  'nome': 'MANDETTA',
+  'siglaPartido': 'DEM',
+  'uriPartido': 'https://dadosabertos.camara.leg.br/api/v2/partidos/36769',
+  'siglaUf': 'MS',
+  'idLegislatura': 55,
+  'urlFoto': 'https://www.camara.leg.br/internet/deputado/bandep/160633.jpg',
+  'email': None,
+  'dataInicio': '2015-02-01',
+  'dataFim': '2017-02-02',
+  'titulo': '1º Suplente de Secretário',
+  'codTitulo': '9'},
+  ...]
+```
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
+### def DadosAbertosBrasil.camara.**orgaos**(*cod=None, serie='informacoes', index=False*)
+
+Obtém a lista ou informações das comissões e outros órgãos legislativos da Câmara.
+
+##### *Parâmetros:*
+
+- **cod**: (Opcional) int
+
+Insira o id do órgão legislativo para obter mais informações sobre ele.
+
+Caso esse campo seja omitido, retorna uma lista com todos os órgãos.
+
+- **serie**: string
+
+Insira um dos campos abaixo para obter mais informações sobre o órgão legislativo.
+
+  - `'informacoes'`: Informações detalhadas sobre um órgão da Câmara;
+  - `eventos`: Os eventos ocorridos ou previstos em um órgão legislativo;
+  - `membros`: Lista de cargos de um órgão e parlamentares que os ocupam;
+  - `votacoes`: Informações detalhadas sobre votações de um órgão da Câmara.
+
+Esse campo é ignorado caso `cod == None`
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id do órgão legislativo como index do DataFrame. Caso omitido, assume o valor `False`.
+
+Esse campo é ignorado caso um id seja fornecido no campo `cod`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo uma lista com todos os órgãos legislativos, caso `cod == None`. Cada row é um órgão e as columns são identificadores, tipos e descrições dos órgãos.
+- **dict**, contendo detalhes da série escolhida sobre o órgão legislativo, caso `cod` seja o id do órgão.
+
+##### *Exemplos:*
+
+Obter a lista dos órgãos legislativos:
+
+```pycon
+>>> camara.orgaos(index=True)
+```
+
+|id |apelido                    |codTipoOrgao|nome                                 |sigla     |tipoOrgao                        |
+|:--|--------------------------:|-----------:|------------------------------------:|---------:|--------------------------------:|
+|4  |Mesa Diretora              |1           |Mesa Diretora da Câmara dos Deputados|MESA      |Comissão Diretora                |
+|51 |Judiciário                 |50000       |Judiciário                           |Judiciário|Órgão do Poder Judiciário        |
+|57 |MINISTÉRIO PÚBLICO DA UNIÃO|81007       |MINISTÉRIO PÚBLICO DA UNIÃO          |MPU       |MPU - Ministério Público da União|
+|60 |PRESIDÊNCIA DA REPÚBLICA   |30000       |Presidência da República             |PR        |Órgão do Poder Executivo         |
+|78 |Senado Federal             |40000       |Senado Federal                       |SF        |Órgão do Poder Legislativo       |
+|...|...                        |...         |...                                  |...       |...                              |
+
+Obter informações do conselho de ministros (código 301):
+
+```pycon
+>>> camara.orgaos(cod=301, serie='informacoes')
+
+{'id': 301,
+ 'uri': 'https://dadosabertos.camara.leg.br/api/v2/orgaos/301',
+ 'sigla': 'CM',
+ 'nome': 'CONSELHO DE MINISTROS',
+ 'apelido': 'CONSELHO DE MINISTROS',
+ 'codTipoOrgao': 12000,
+ 'tipoOrgao': 'Órgão da Câmara dos Deputados',
+ 'dataInicio': None,
+ 'dataInstalacao': None,
+ 'dataFim': None,
+ 'dataFimOriginal': None,
+ 'casa': '',
+ 'sala': None,
+ 'urlWebsite': None}
+```
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
+### def DadosAbertosBrasil.camara.**partidos**(*cod=None, serie='informacoes', index=False*)
+
+Obtém a lista ou informações dos partidos políticos que têm parlamentares em exercício na Câmara.
+
+##### *Parâmetros:*
+
+- **cod**: (Opcional) int
+
+Insira o id do partido político para obter mais informações sobre ele.
+
+Caso esse campo seja omitido, retorna uma lista com todos os partidos.
+
+- **serie**: string
+
+Insira um dos campos abaixo para obter mais informações sobre o partido.
+
+  - `'informacoes'`: Informações detalhadas sobre um partido político;
+  - `membros`: Uma lista dos parlamentares de um partido durante um período.
+
+Esse campo é ignorado caso `cod == None`
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id do partido como index do DataFrame. Caso omitido, assume o valor `False`.
+
+Esse campo é ignorado caso um id seja fornecido no campo `cod`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo uma lista com todos os partidos políticos, caso `cod == None`. Cada row é um partido e as columns são o nome e a sigla deles.
+- **dict**, contendo detalhes da série escolhida sobre o partido político, caso `cod` seja o id do partido.
+
+##### *Exemplos:*
+
+Obter a lista dos partidos com parlamentares em exercício:
+
+```pycon
+>>> camara.partidos(index=True)
+```
+
+|id   |nome                            |sigla    |
+|:----|-------------------------------:|--------:|
+|36898|Avante                          |AVANTE   |
+|37905|Cidadania                       |CIDADANIA|
+|37902|Democracia Cristã               |DC       |
+|36769|Democratas                      |DEM      |
+|36899|Movimento Democrático Brasileiro|MDB      |
+|...  |...                             |...      |
+
+Obter a lista de parlamentares do partido NOVO (código 37901) em exercício na Câmara:
+
+```pycon
+>>> camara.orgaos(cod=301, serie='informacoes')
+
+[{'id': 204528,
+  'uri': 'https://dadosabertos.camara.leg.br/api/v2/deputados/204528',
+  'nome': 'Adriana Ventura',
+  'siglaPartido': 'NOVO',
+  'uriPartido': 'https://dadosabertos.camara.leg.br/api/v2/partidos/37901',
+  'siglaUf': 'SP',
+  'idLegislatura': 56,
+  'urlFoto': 'https://www.camara.leg.br/internet/deputado/bandep/204528.jpg',
+  'email': 'dep.adrianaventura@camara.leg.br'},
+ {'id': 204516,
+  'uri': 'https://dadosabertos.camara.leg.br/api/v2/deputados/204516',
+  'nome': 'Alexis Fonteyne',
+  'siglaPartido': 'NOVO',
+  'uriPartido': 'https://dadosabertos.camara.leg.br/api/v2/partidos/37901',
+  'siglaUf': 'SP',
+  'idLegislatura': 56,
+  'urlFoto': 'https://www.camara.leg.br/internet/deputado/bandep/204516.jpg',
+  'email': 'dep.alexisfonteyne@camara.leg.br'},
+  ...]
+```
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
+### def DadosAbertosBrasil.camara.**proposicoes**(*cod=None, serie='informacoes', index=False*)
+
+Obtém a lista ou informações sobre projetos de lei, resoluções, medidas provisórias, emendas, pareceres e todos os outros tipos de proposições na Câmara.
+
+##### *Parâmetros:*
+
+- **cod**: (Opcional) int
+
+Insira o id da proposição para obter mais informações sobre ela.
+
+Caso esse campo seja omitido, retorna uma lista com as proposições mais recentes.
+
+- **serie**: string
+
+Insira um dos campos abaixo para obter mais informações sobre a proposição.
+
+  - `'informacoes'`: Informações detalhadas sobre uma proposição específica;
+  - `autores`: Lista pessoas e/ou entidades autoras de uma proposição;
+  - `relacionadas`: Uma lista de proposições relacionadas a uma em especial;
+  - `temas`: Lista de áreas temáticas de uma proposição;
+  - `tramitacoes`: O histórico de passos na tramitação de uma proposta;
+  - `votacoes`: Informações detalhadas de votações sobre uma proposição específica.
+
+Esse campo é ignorado caso `cod == None`
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id da proposição como index do DataFrame. Caso omitido, assume o valor `False`.
+
+Esse campo é ignorado caso um id seja fornecido no campo `cod`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo uma lista com as proposições mais recentes, caso `cod == None`. Cada row é uma proposição e as columns são os identificadores e descrições da proposição.
+- **dict**, contendo detalhes da série escolhida sobre a proposição, caso `cod` seja o id da proposição.
+
+##### *Exemplos:*
+
+Obter a lista com as proposições mais recentes:
+
+```pycon
+>>> camara.proposicoes(index=True)
+```
+
+|id    |ano |codTipo|ementa                                           |numero|siglaTipo|
+|:-----|---:|------:|------------------------------------------------:|-----:|--------:|
+|17915 |2000|139    |Dispõe sobre a jornada de trabalho dos Enferme...|2295  |PL       |
+|45377 |2002|139    |Dispõe sobre a vigilância e o controle da qual...|6222  |PL       |
+|327888|2006|139    |Altera o art. 109 do Decreto-Lei nº 2.848, de ...|7220  |PL       |
+|345103|2007|139    |Dispõe sobre o Estatuto do Nascituro e dá outr...|478   |PL       |
+|351367|2007|146    |Solicita a instauração de procedimento de fisc...|7     |REP      |
+|...   |... |...    |...                                              |...   |...      |
+
+Obter a lista de autores da PL 478 (código 345103):
+
+```pycon
+>>> camara.proposicoes(cod=345103, serie='autores')
+
+[{'uri': 'https://dadosabertos.camara.leg.br/api/v2/deputados/74059',
+  'nome': 'Luiz Bassuma',
+  'codTipo': 10000,
+  'tipo': 'Deputado',
+  'ordemAssinatura': 1,
+  'proponente': 1},
+ {'uri': 'https://dadosabertos.camara.leg.br/api/v2/deputados/141469',
+  'nome': 'Miguel Martini',
+  'codTipo': 10000,
+  'tipo': 'Deputado',
+  'ordemAssinatura': 2,
+  'proponente': 1}]
+```
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
+### def DadosAbertosBrasil.camara.**votacoes**(*cod=None, serie='informacoes', index=False*)
+
+Obtém a lista ou informações sobre as votações ocorridas em eventos dos diversos órgãos da Câmara.
+
+##### *Parâmetros:*
+
+- **cod**: (Opcional) int
+
+Insira o id da votação para obter mais informações sobre ela.
+
+Caso esse campo seja omitido, retorna uma lista com as votações mais recentes.
+
+- **serie**: string
+
+Insira um dos campos abaixo para obter mais informações sobre a votação.
+
+  - `'informacoes'`: Informações detalhadas sobre uma votação da Câmara;
+  - `orientacoes`: O voto recomendado pelas lideranças aos seus deputados em uma votação;
+  - `votos`: Como cada parlamentar votou em uma votação nominal e aberta.
+
+Esse campo é ignorado caso `cod == None`
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id da votação como index do DataFrame. Caso omitido, assume o valor `False`.
+
+Esse campo é ignorado caso um id seja fornecido no campo `cod`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo uma lista com as votações mais recentes, caso `cod == None`. Cada row é uma votação e as columns são descrições e horários da votação.
+- **dict**, contendo detalhes da série escolhida sobre a votação, caso `cod` seja o id da votação.
+
+##### *Exemplos:*
+
+Obter a lista com as votações mais recentes:
+
+```pycon
+>>> camara.votacoes(index=True)
+```
+
+|id        |aprovacao|data      |dataHoraRegistro   |descricao                                        |proposicaoObjeto|siglaOrgao|
+|:---------|--------:|---------:|------------------:|------------------------------------------------:|---------------:|---------:|
+|2236213-78|1.0      |2020-05-08|2020-05-08T17:39:53|Aprovada a Redação Final assinada pelo Relator...|None            |PLEN      |
+|2236213-77|0.0      |2020-05-08|2020-05-08T17:37:43|Rejeitada a Emenda nº 14.                        |None            |PLEN      |
+|2236213-74|1.0      |2020-05-08|2020-05-08T16:44:41|Aprovada a Emenda n° 12.                         |None            |PLEN      |
+|2236213-70|NaN      |2020-05-08|2020-05-08T15:42:07|Mantido o texto.                                 |None            |PLEN      |
+|2236213-68|NaN      |2020-05-08|2020-05-08T15:41:32|Mantido o texto.                                 |None            |PLEN      |
+|...       |...      |...       |...                |...                                              |...             |...       |
+
+Obter as informações da votação de código '2236213-74':
+
+```pycon
+>>> camara.votacoes(cod='2236213-74', serie='informacoes')
+
+{'id': '2236213-74',
+ 'uri': 'https://dadosabertos.camara.leg.br/api/v2/votacoes/2236213-74',
+ 'data': '2020-05-08',
+ 'dataHoraRegistro': '2020-05-08T16:44:41',
+ 'siglaOrgao': 'PLEN',
+ 'uriOrgao': 'https://dadosabertos.camara.leg.br/api/v2/orgaos/180',
+ 'idOrgao': 180,
+ 'uriEvento': 'https://dadosabertos.camara.leg.br/api/v2/eventos/59601',
+ 'idEvento': 59601,
+ 'descricao': 'Aprovada a Emenda n° 12.',
+ 'aprovacao': 1,
+ 'descUltimaAberturaVotacao': 'Votação do DTQ 5: Bloco PP: destaque da emenda de Plenário nº 12 apresentada à MP 915/2019, com vistas a sua inclusão no texto. (161, II)',
+ 'dataHoraUltimaAberturaVotacao': '2020-05-08T15:47:05',
+ 'ultimaApresentacaoProposicao': {'dataHoraRegistro': '2020-04-30T13:14:53',
+  'descricao': 'Apresentação do Projeto de Lei de Conversão n. 9/2020, pelo Deputado Rodrigo de Castro (PSDB-MG), que: "[EMENTA!]".',
+  'uriProposicaoCitada': 'https://dadosabertos.camara.leg.br/api/v2/proposicoes/2250966'},
+ 'efeitosRegistrados': [],
+ 'objetosPossiveis': [{'id': 2250884,
+   'uri': 'https://dadosabertos.camara.leg.br/api/v2/proposicoes/2250884',
+   'siglaTipo': 'EMP',
+   'codTipo': 873,
+   'numero': 1,
+   'ano': 2020,
+   'ementa': ''},
+  {'id': 2251874,
+   'uri': 'https://dadosabertos.camara.leg.br/api/v2/proposicoes/2251874',
+   'siglaTipo': 'ERD',
+   'codTipo': 872,
+   'numero': 1,
+   'ano': 2020,
+   'ementa': 'Emenda de redação à MPV 915/2019.'},
+   ...
+```
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
+### def DadosAbertosBrasil.camara.**referencias**(*funcao, index=False*)
+
+Obtém a lista de dados ou parâmetros utilizados no módulo `camara`.
+
+##### *Parâmetros:*
+
+- **funcao**: string
+
+Lista de referências a ser buscada.
+
+Pode ser um dos seguintes valores:
+
+  - `codSituacaoDeputados`: As possíveis situações de exercício parlamentar de um deputado;
+  - `siglaUF`: As siglas e nomes dos estados e do Distrito Federal;
+  - `codSituacaoEvento`: As possíveis situações para eventos;
+  - `codTipoEvento`: Os tipos de eventos realizados na Câmara;
+  - `codSituacaoOrgao`: As situações em que órgãos podem se encontrar;
+  - `codTipoOrgao`: Os tipos de órgãos que existem na Câmara;
+  - `codSituacaoProposicao`: Os possíveis estados de tramitação de uma proposição;
+  - `codTema`: Os vários tipos de temas existentes;
+  - `codTipoAutor`: Entidades que podem ser autoras de proposições;
+  - `codTipoTramitacao`: Os vários tipos de tramitação existentes;
+  - `siglaTipo`: Os vários tipos de proposições existentes;
+  - `situacoesDeputado`: As possíveis situações de exercício parlamentar de um deputado;
+  - `situacoesEvento`: As possíveis situações para eventos;
+  - `situacoesOrgao`: As situações em que órgãos podem se encontrar;
+  - `situacoesProposicao`: Os possíveis estados de tramitação de uma proposição;
+  - `tiposAutor`: Entidades que podem ser autoras de proposições;
+  - `tiposEvento`: Os tipos de eventos realizados na Câmara;
+  - `tiposOrgao`: Os tipos de órgãos que existem na Câmara;
+  - `tiposProposicao`: Os vários tipos de proposições existentes;
+  - `tiposTramitacao`: Os vários tipos de tramitação existentes;
+  - `uf`: As siglas e nomes dos estados e do Distrito Federal.
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id da referência como index do DataFrame. Caso omitido, assume o valor `False`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo identificados e descrições da função buscada.
+
+##### *Exemplos:*
+
+Obter a lista de unidades da federação:
+
+```pycon
+>>> camara.referencias('uf')
+```
+
+|   |cod|descricao|nome     |sigla|
+|:--|--:|--------:|--------:|----:|
+|0  |6  |         |ACRE     |AC   |
+|1  |14 |         |ALAGOAS  |AL   |
+|2  |4  |         |AMAZONAS |AM   |
+|3  |2  |         |AMAPÁ    |AP   |
+|4  |16 |         |BAHIA    |BA   |
+|...|...|...      |...      |...  |
+
+Obter a lista de tipos de autores, colocando o código do tipo como índice do DataFrame:
+
+```pycon
+>>> camara.referencias('codTipoAutor', index=True)
+```
+
+|cod|descricao|nome                             |sigla|
+|:--|--------:|--------------------------------:|----:|
+|1  |         |COMISSÃO DIRETORA                |     |
+|2  |         |COMISSÃO PERMANENTE              |     |
+|3  |         |COMISSÃO ESPECIAL                |     |
+|4  |         |COMISSÃO PARLAMENTAR DE INQUÉRITO|     |
+|5  |         |COMISSÃO EXTERNA                 |     |
+|...|...      |...                              |...  |
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
+### def DadosAbertosBrasil.camara.**filtrar_deputados**(*sexo=None, uf=None, partido=None, contendo=None, excluindo=None, index=False*)
+
+Obtém a lista de deputados em atividade parlamentar, com filtros.
+
+Essa função será depreciada e integrada a função `camara.deputados`.
+
+##### *Parâmetros:*
+
+- **sexo**: (Opcional) `M` ou `F`
+
+Filtre deputados por sexo masculino (`M`) ou feminino (`F`).
+
+- **uf**: (Opcional) string
+
+Filtre deputados por unidade da federação. Esse campo deve ser a sigla de duas letras maiúsculas que representa a UF.
+
+- **partido**: (Opcional) string
+
+Filtre deputados por partido polítido. Esse campo deve ser a sigla do partido.
+
+- **contendo**: (Opcional)
+
+Selecione deputados cujo nome contenha essa string.
+
+- **excluindo**: (Opcional)
+
+Remova deputados cujo nome contenha essa string.
+
+- **index:** (Opcional) `True` ou `False`.
+
+`True` para definir o id do(a) deputado(a) como index do DataFrame. Caso omitido, assume o valor `False`.
+
+Esse campo é ignorado caso um id seja fornecido no campo `cod`.
+
+##### *Retorna:*
+
+- **pandas.DataFrame**, contendo uma lista filtrada de deputados. Cada row é um deputado e as columns são o nome, partido, estado, e-mail, legislatura atual e a URL da foto no site da câmara.
+
+##### *Exemplos:*
+
+Obter a lista de deputados do partido MDB, de Santa Catarina e sexo masculino:
+
+```pycon
+>>> camara.filtrar_deputados(sexo='M', partido='MDB', uf='SC')
+```
+
+|  |email                                   |id    |idLegislatura|nome                    |siglaPartido|siglaUf|urlFoto                                           |
+|:-|---------------------------------------:|-----:|------------:|-----------------------:|-----------:|------:|-------------------------------------------------:|
+|0 |dep.carloschiodini@camara.leg.br        |204361|56           |Carlos Chiodini         |MDB         |SC     |https://www.camara.leg.br/internet/deputado/ba... |
+|1 |dep.celsomaldaner@camara.leg.br         |141405|56           |Celso Maldaner          |MDB         |SC     |https://www.camara.leg.br/internet/deputado/ba... |
+|2 |dep.rogeriopeninhamendonca@camara.leg.br|160651|56           |Rogério Peninha Mendonça|MDB         |SC     |https://www.camara.leg.br/internet/deputado/ba... |
+
+Obter a lista de deputados contendo `Campos` no nome, porém não contendo `Jefferson`. Colocar o código do deputado como index do DataFrame:
+
+```pycon
+>>> camara.filtrar_deputados(contendo='Campos', excluindo='Jefferson', index=True)
+```
+
+|id    |email                        |idLegislatura|nome          |siglaPartido|siglaUf|urlFoto                                           |
+|:-----|----------------------------:|------------:|-------------:|-----------:|------:|-------------------------------------------------:|
+|74366 |dep.joaocampos@camara.leg.br |56           |João Campos   |REPUBLICANOS|GO     |https://www.camara.leg.br/internet/deputado/ba... |
+|204429|dep.joaohcampos@camara.leg.br|56           |João H. Campos|PSB         |PE     |https://www.camara.leg.br/internet/deputado/ba... |
+
+##### *Documentação da API original:*
+
+https://dadosabertos.camara.leg.br/swagger/api.html
+
+---
+
 # DadosAbertosBrasil.**favoritos**
 
 Algumas funções selecionadas que não fazer parte dos módulos principais.
@@ -1286,7 +2175,7 @@ https://dadosabertos.bcb.gov.br/dataset/taxas-de-cambio-todos-os-boletins-diario
 
 ---
 
-### def DadosAbertosBrasil.favoritos.**ipca**(*index=True*)
+### def DadosAbertosBrasil.favoritos.**ipca**(*index=False*)
 
 Obtém o valor mensal do índice IPCA, a partir de Janeiro de 1992.
 
@@ -1357,5 +2246,17 @@ Obtém o catalogo de iniciativas de dados abertos no Brasil:
 ##### *Documentação da API original:*
 
 https://github.com/dadosgovbr/catalogos-dados-brasil
+
+---
+
+# Em breve...
+
+Nossos próximos passos serão:
+- Módulo `senado`, similar ao módulo `camara`. Será necessário adicionar um package `xml`;
+- Adição de parâmetros de busca para dados históricos no módulo `camara`. Atualmente só são listados os dados mais recentes;
+- Expansão das funções de filtro e busca de séries, para facilitar encontrar a série desejada;
+- Integrar as funções `camara.deputados` e `camara.filtrar_deputados` em uma só através da adição de novos argumentos na primeira função;
+- Padronização dos nomes das colunas dos DataFrame para melhor interpretação do usuário e integração entre módulos;
+- Adição constante de novas funções no módulo `favoritos`.
 
 ---
