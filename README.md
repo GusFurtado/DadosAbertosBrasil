@@ -4,8 +4,6 @@
 
 ---
 
-### **(Documentação incompleta)**
-
 Dados Abertos Brasil é uma iniciativa para facilitar o acesso a dados abertos e APIs do governo brasileiro.
 
 É um pacote open-source para Python e Pandas e a forma mais simples de acessar dados de instituições como IGBE, IPEA , etc.
@@ -14,8 +12,8 @@ Atualmente o pacote Dados Abertos Brasil possui quatro módulos:
 
 - DadosAbertosBrasil.[ibge](https://github.com/GusFurtado/DadosAbertosBrasil#dadosabertosbrasilibge)
 - DadosAbertosBrasil.[ipea](https://github.com/GusFurtado/DadosAbertosBrasil#dadosabertosbrasilipea)
-- DadosAbertosBrasil.**camara**
-- DadosAbertosBrasil.**favoritos**
+- DadosAbertosBrasil.[camara](https://github.com/GusFurtado/DadosAbertosBrasil#dadosabertosbrasilcamara)
+- DadosAbertosBrasil.[favoritos](https://github.com/GusFurtado/DadosAbertosBrasil#dadosabertosbrasilfavoritos)
 
 ### Dependências
 - [pandas](https://pandas.pydata.org/)
@@ -371,10 +369,10 @@ O SIDRA (Sistema IBGE de Recuperação Automática) permite consultar todo catal
 
 Por ser um sistema completo e robusto, foram desenvolvidos os seguintes objetos para facilitar a consulta:
 
-- ibge.[Agregados]()
-- ibge.[Metadados]()
-- ibge.[referencias]()
-- ibge.[Sidra]()
+- ibge.[Agregados](https://github.com/GusFurtado/DadosAbertosBrasil#class-dadosabertosbrasilibgeagregadosindexfalse)
+- ibge.[Metadados](https://github.com/GusFurtado/DadosAbertosBrasil#class-dadosabertosbrasilibgemetadadosagregado)
+- ibge.[referencias](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilibgereferenciascod-indexfalse)
+- ibge.[Sidra](https://github.com/GusFurtado/DadosAbertosBrasil#class-dadosabertosbrasilibgesidraagregadonone-periodosnone-variaveisnone-localidadesn1-all-classificacoesnone)
 
 Utilize a seguinte metodologia para encontrar a tabela (agregado) que procura:
 
@@ -1165,17 +1163,17 @@ http://www.ipeadata.gov.br/api/
 
 Pacote para captura dos dados abertos da Câmara dos Deputados do Brasil
 
-- camara.[blocos](https://github.com/GusFurtado/DadosAbertosBrasil)
-- camara.[deputados](https://github.com/GusFurtado/DadosAbertosBrasil)
-- camara.[eventos](https://github.com/GusFurtado/DadosAbertosBrasil)
-- camara.[frentes](https://github.com/GusFurtado/DadosAbertosBrasil)
-- camara.[legislaturas](https://github.com/GusFurtado/DadosAbertosBrasil)
-- camara.[orgaos](https://github.com/GusFurtado/DadosAbertosBrasil)
-- camara.[partidos](https://github.com/GusFurtado/DadosAbertosBrasil)
-- camara.[proposicoes](https://github.com/GusFurtado/DadosAbertosBrasil)
-- camara.[votacoes](https://github.com/GusFurtado/DadosAbertosBrasil)
-- camara.[referencias](https://github.com/GusFurtado/DadosAbertosBrasil)
-- camara.[filtrar_deputados](https://github.com/GusFurtado/DadosAbertosBrasil)
+- camara.[blocos](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamarablocoscodnone-indexfalse)
+- camara.[deputados](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamaradeputadoscodnone-serieinformacoes-indexfalse)
+- camara.[eventos](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamaraeventoscodnone-serieinformacoes-indexfalse)
+- camara.[frentes](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamarafrentescodnone-serieinformacoes-indexfalse)
+- camara.[legislaturas](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamaralegislaturascodnone-serieinformacoes-indexfalse)
+- camara.[orgaos](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamaraorgaoscodnone-serieinformacoes-indexfalse)
+- camara.[partidos](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamarapartidoscodnone-serieinformacoes-indexfalse)
+- camara.[proposicoes](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamaraproposicoescodnone-serieinformacoes-indexfalse)
+- camara.[votacoes](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamaravotacoescodnone-serieinformacoes-indexfalse)
+- camara.[referencias](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamarareferenciasfuncao-indexfalse)
+- camara.[filtrar_deputados](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilcamarafiltrar_deputadossexonone-ufnone-partidonone-contendonone-excluindonone-indexfalse)
 
 Importe o módulo com `from DadosAbertosBrasil import camara`
 
@@ -1183,7 +1181,7 @@ Importe o módulo com `from DadosAbertosBrasil import camara`
 
 ### def DadosAbertosBrasil.camara.**blocos**(*cod=None, index=False*)
 
-Obtém dados sobre os blocos partiidários.
+Obtém dados sobre os blocos partidários.
 
 Nas atividades parlamentares, partidos podem se juntar em blocos partidários. Quando associados, os partidos passam a trabalhar como se fossem um "partidão", com um só líder e um mesmo conjunto de vice-líderes.
 
@@ -2054,10 +2052,10 @@ https://dadosabertos.camara.leg.br/swagger/api.html
 
 Algumas funções selecionadas que não fazer parte dos módulos principais.
 
-- favoritos.[moedas](https://github.com/GusFurtado/DadosAbertosBrasil)
-- favoritos.[cambio](https://github.com/GusFurtado/DadosAbertosBrasil)
-- favoritos.[ipca](https://github.com/GusFurtado/DadosAbertosBrasil)
-- favoritos.[catalogo](https://github.com/GusFurtado/DadosAbertosBrasil)
+- favoritos.[moedas](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilfavoritosmoedas)
+- favoritos.[cambio](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilfavoritoscambiomoedasusd-data_inicial01-01-2000-data_finalnone-indexfalse)
+- favoritos.[ipca](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilfavoritosipcaindexfalse)
+- favoritos.[catalogo](https://github.com/GusFurtado/DadosAbertosBrasil#def-dadosabertosbrasilfavoritoscatalogo)
 
 Importe o módulo com `from DadosAbertosBrasil import favoritos`
 
