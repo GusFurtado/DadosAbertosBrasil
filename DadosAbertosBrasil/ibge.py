@@ -201,7 +201,8 @@ class Sidra:
         query += f'periodos/{self.__converter_lista(self.periodos)}/'
         query += f'variaveis/{self.__converter_lista(self.variaveis)}?'
         query += f'localidades={self.__convertar_dicionario(self.localidades)}'
-        query += f'&classificacao={self.__convertar_dicionario(self.classificacoes)}'
+        if self.classificacoes != None:
+            query += f'&classificacao={self.__convertar_dicionario(self.classificacoes)}'
         return query
     
     # Roda query com os argumentos da classe
@@ -212,17 +213,17 @@ class Sidra:
 # Obtém uma base de códigos para utilizar como argumento na busca do SIDRA
 def referencias(cod, index=False):
 
-    if cod == 'A' or cod == 'assuntos':
+    if cod in ['A', 'a', 'assuntos']:
         s = 'A'
-    elif cod == 'C' or cod == 'classificacoes':
+    elif cod in ['C', 'c', 'classificacoes']:
         s = 'C'
-    elif cod == 'N' or cod == 'niveis_geograficos' or cod == 'T' or cod == 'territorios':
+    elif cod in ['N', 'n', 'niveis_geograficos', 'T', 't', 'territorios']:
         s = 'N'
-    elif cod == 'P' or cod == 'periodos':
+    elif cod in ['P', 'p', 'periodos']:
         s = 'P'
-    elif cod == 'E' or cod == 'periodicidades':
+    elif cod in ['E', 'e', 'periodicidades']:
         s = 'E'
-    elif cod == 'V' or cod == 'variaveis':
+    elif cod in ['V', 'v', 'variaveis']:
         s = 'V'
     else:
         raise TypeError("O campo 'cod' deve ser um tipo string.")
