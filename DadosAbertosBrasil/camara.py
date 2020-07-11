@@ -14,7 +14,9 @@ import requests
 
 
 url = 'https://dadosabertos.camara.leg.br/api/v2/'
-warnings.warn('As funções deste package serão substituidas por classes no futuro. No momento as funções coletam apenas dados recentes (padrão da API da Câmara dos Deputados), enquanto as novas classes conseguirão capturar toda a base histórica.', FutureWarning)
+future_warning = 'As funções deste package serão substituidas por classes no futuro. No momento as funções coletam apenas dados recentes (padrão da API da Câmara dos Deputados), enquanto as novas classes conseguirão capturar toda a base histórica.'
+
+warnings.warn(future_warning, FutureWarning)
 
 
 def __query(funcao, cod, serie, index, series):

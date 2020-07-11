@@ -10,7 +10,9 @@ import requests
 
 
 url = r'http://legis.senado.gov.br/dadosabertos/'
-warnings.warn('Este módulo está nas etapas iniciais de desenvolvimento e as funções disponibilizadas são apenas um preview do que está por vir.', FutureWarning)
+future_warning = 'Este módulo está nas etapas iniciais de desenvolvimento e as funções disponibilizadas são apenas um preview do que está por vir.'
+
+warnings.warn(future_warning, FutureWarning)
 
 
 class _XmlListConfig(list):

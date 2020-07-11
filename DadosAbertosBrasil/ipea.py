@@ -64,18 +64,19 @@ def territorios(cod=None, nivel=None):
     
 # Lista dos possíveis níveis territoriais
 def niveis_territoriais():
-    return ['',
-            'Brasil',
-            'Regiões',
-            'Estados',
-            'Municípios',
-            'AMC 91-00',
-            'Microrregiões',
-            'Mesorregiões',
-            'AMC 20-00',
-            'AMC 40-00',
-            'AMC 60-00',
-            'AMC 70-00',
-            'AMC 1872-00',
-            'Área metropolitana',
-            'Estado/RM']
+    return [
+        'Brasil',
+        'Regiões',
+        'Estados',
+        'Municípios',
+        'AMC 91-00',
+        'Microrregiões',
+        'Mesorregiões',
+        'AMC 20-00',
+        'AMC 40-00',
+        'AMC 60-00',
+        'AMC 70-00',
+        'AMC 1872-00',
+        'Área metropolitana',
+        'Estado/RM'
+    ]

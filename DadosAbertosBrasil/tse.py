@@ -1,10 +1,16 @@
 import requests
 from io import BytesIO
 from zipfile import ZipFile
+import warnings
 
 import pandas as pd
 
 from DadosAbertosBrasil import _utils
+
+
+future_warning = 'Este módulo está nas etapas iniciais de desenvolvimento e as funções disponibilizadas são apenas um preview do que está por vir.'
+
+warnings.warn(future_warning, FutureWarning)
 
 
 class VotacaoPartidoMunZona():
