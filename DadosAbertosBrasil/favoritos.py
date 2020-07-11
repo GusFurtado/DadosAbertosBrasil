@@ -1,15 +1,16 @@
-# Módulo para fácil acesso a dados selecionados
-# Autor: Gustavo Furtado da Silva
-
-
+from datetime import datetime
+import requests
 
 import pandas as pd
-from datetime import datetime
+
+from DadosAbertosBrasil import _utils
+
 
 # Nomes e símbolos das principais moedas internacionais
 def moedas():
     query = r"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/Moedas?$top=100&$format=json"
     return pd.DataFrame(pd.read_json(query)['value'].to_list()).rename(columns={'nomeFormatado':'Nome', 'simbolo':'Símbolo', 'tipoMoeda':'Tipo'})
+
 
 # Taxa de câmbio das principais moedas internacionais
 def cambio(moedas='USD', data_inicial='01-01-2000', data_final=None, index=False):
@@ -42,6 +43,7 @@ def cambio(moedas='USD', data_inicial='01-01-2000', data_final=None, index=False
     
     return cotacoes
 
+
 # Valor mensal do índice IPC-A
 def ipca(index=False):
 
@@ -55,6 +57,61 @@ def ipca(index=False):
     
     return ipca
 
+
 # Catálogo de iniciativas oficiais de dados abertos no Brasil
 def catalogo():
     return pd.read_csv('https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv')
+
+
+def geojson(uf):
+
+    uf = _utils.parse_uf(uf)
+    
+    mapping = {
+
+        'BR': 100,
+
+        # Região Norte
+        'AC': 12,
+        'AM': 13,
+        'AP': 16,
+        'PA': 15,
+        'RO': 11,
+        'RR': 14,
+        'TO': 17,
+
+        # Região Nordeste
+        'AL': 27,
+        'BA': 29,
+        'CE': 23,
+        'MA': 21,
+        'PB': 25,
+        'PE': 26,
+        'PI': 22,
+        'RN': 24,
+        'SE': 28,
+
+        # Região Centro-Oeste
+        'DF': 53,
+        'GO': 52,
+        'MT': 51,
+        'MS': 50,
+
+        # Região Sudeste
+        'ES': 32,
+        'MG': 31,
+        'RJ': 33,
+        'SP': 35,
+
+        # Região Sul
+        'PR': 41,
+        'RS': 43,
+        'SC': 42
+
+    }
+    
+    # URL do repositório no GitHub contendo os geojsons.
+    # Créditos: https://github.com/tbrugz
+    url = f'https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-{mapping[uf]}-mun.json'
+    
+    return requests.get(url).json()

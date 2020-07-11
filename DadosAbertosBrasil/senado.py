@@ -67,3 +67,19 @@ def senador(cod, serie=None):
 # Lista os partidos políticos
 def partidos():
     return _get_request(url + f'senador/partidos')
+
+
+# Dados dos Senadores
+class Senador():    
+    
+    def __init__(self, cod):
+        self.dados_completos = _get_request(url + f'senador/{cod}')
+        self.identificacao = self.dados_completos['Parlamentar']['IdentificacaoParlamentar']
+        self.dados_basicos = self.dados_completos['Parlamentar']['DadosBasicosParlamentar']
+        self.cursos = self.dados_completos['Parlamentar']['HistoricoAcademico']
+        self.profissoes = self.dados_completos['Parlamentar']['Profissoes']
+    
+        d = {}
+        for i in list(self.dados_completos['Parlamentar'].keys())[:-2]:
+            d.update(self.dados_completos['Parlamentar'][i])
+        self.dados = d
