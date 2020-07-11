@@ -7,20 +7,22 @@
 # >>> camara.{funcao}(cod={opcional}, serie={opcional}, index={True/False})
 
 
+import warnings
 
 import pandas as pd
-import urllib, json, warnings
+import requests
+
 
 url = 'https://dadosabertos.camara.leg.br/api/v2/'
 warnings.warn('As funções deste package serão substituidas por classes no futuro. No momento as funções coletam apenas dados recentes (padrão da API da Câmara dos Deputados), enquanto as novas classes conseguirão capturar toda a base histórica.', FutureWarning)
 
+
 def __query(funcao, cod, serie, index, series):
     
     if cod == None:
-        response = urllib.request.urlopen(url + funcao)
-        data = json.loads(response.read())
+        data = requests.get(url + funcao).json()
         df = pd.DataFrame(data['dados'])
-        df.drop(columns=df.columns[df.columns.str[:3] == 'uri'], inplace=True)
+        df.drop(columns=df.columns[df.columns.str.startswith('uri')], inplace=True)
         
         if index:
             df.set_index('id', inplace=True)
@@ -30,60 +32,70 @@ def __query(funcao, cod, serie, index, series):
     elif isinstance(cod, int) or funcao == 'votacoes':
         
         if serie in series:
-            query = url + f'/{funcao}/{cod}' if serie == 'informacoes' else url + f'/{funcao}/{cod}/{serie}'
-            response = urllib.request.urlopen(query)
-            data = json.loads(response.read())
+            query = url + f'/{funcao}/{cod}' if serie == 'informacoes' else url + f'/{funcao}/{cod}/{serie}'        
+            data = requests.get(query).json()
             return data['dados']
+        
         else:
             raise TypeError(f"O valor para o argumento 'serie' deve ser um dos seguintes valores tipo string: {series}")
             
     else:
         raise TypeError("O argumento 'cod' deve ser um número inteiro.")
 
+        
 # Dados sobre os blocos partidários
 def blocos(cod=None, index=False):
     series = ['informacoes']
     return __query('blocos', cod, 'informacoes', index, series)
+
 
 # Dados sobre os deputados
 def deputados(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'despesas', 'discursos', 'eventos', 'frentes', 'orgaos']
     return __query('deputados', cod, serie, index, series)
 
+
 # Dados sobre os eventos ocorridos ou previstos nos diversos órgãos da Câmara
 def eventos(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'deputados', 'orgaos', 'pauta', 'votacoes']
     return __query('eventos', cod, serie, index, series)
+
 
 # Dados de frentes parlamentares de uma ou mais legislatura
 def frentes(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'membros']
     return __query('frentes', cod, serie, index, series)
 
+
 # Dados dos períodos de mantados e atividades parlamentares na Câmara
 def legislaturas(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'mesa']
     return __query('legislaturas', cod, serie, index, series)
+
 
 # Dados de comissões e outros órgãos legislativos da Câmara
 def orgaos(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'eventos', 'membros', 'votacoes']
     return __query('orgaos', cod, serie, index, series)
 
+
 # Dados dos partidos políticos que tem ou já tiveram parlamentares em exercício na Câmara
 def partidos(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'membros']
     return __query('partidos', cod, serie, index, series)
+
 
 # Dados de proposições na Câmara
 def proposicoes(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'autores', 'relacionadas', 'temas', 'tramitacoes', 'votacoes']
     return __query('proposicoes', cod, serie, index, series)
 
+
 # Dados de votações na Câmara
 def votacoes(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'orientacoes', 'votos']
     return __query('votacoes', cod, serie, index, series)
+
 
 # Listas de valores válidos para as funções deste pacote
 def referencias(funcao, index=False):
@@ -110,8 +122,8 @@ def referencias(funcao, index=False):
                   'uf': 'uf'}
     
     if funcao in referencia.keys():
-        response = urllib.request.urlopen(url + 'referencias/' + referencia[funcao])
-        data = json.loads(response.read())
+        data = requests.get(url + 'referencias/' + referencia[funcao]).json()
+        
     else:
         raise TypeError(f"Referência inválida. Insira um dos seguintes valores no campo 'funcao': {list(referencia.keys())}")
     
@@ -120,7 +132,6 @@ def referencias(funcao, index=False):
         df.set_index('cod', inplace=True)
     
     return df
-
 
 
 # Nova versão da consulta de deputados
@@ -267,9 +278,9 @@ class Deputados():
     
     # Roda query com os argumentos da classe
     def rodar(self, index=False):
-        response = urllib.request.urlopen(self.query())
-        df = pd.DataFrame(json.loads(response.read())['dados'])        
-        df.drop(columns=df.columns[df.columns.str[:3] == 'uri'], inplace=True)
+        data = requests.get(self.query()).json()
+        df = pd.DataFrame(data['dados'])
+        df.drop(columns=df.columns[df.columns.str.startswith('uri')], inplace=True)
         
         if index:
             df.set_index('id', inplace=True)

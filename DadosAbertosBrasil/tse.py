@@ -7,12 +7,14 @@ import pandas as pd
 from DadosAbertosBrasil import _utils
 
 
-class DetalheVotacaoMunZona():
+class VotacaoPartidoMunZona():
     
     def __init__(self, ano):
-        url = f'http://agencia.tse.jus.br/estatistica/sead/odsele/detalhe_votacao_munzona/detalhe_votacao_munzona_{ano}.zip'
-        r = requests.get(url)
+        self.file = 'votacao_partido_munzona'
         self.ano = ano
+        
+        url = f'http://agencia.tse.jus.br/estatistica/sead/odsele/{self.file}/{self.file}_{ano}.zip'
+        r = requests.get(url)
         self.zipfile = ZipFile(BytesIO(r.content))
         
     def abrir(self, uf):
@@ -21,7 +23,164 @@ class DetalheVotacaoMunZona():
         if self.ano <= 2012:
             
             txt = []
-            for i in self.zipfile.open(f'detalhe_votacao_munzona_{self.ano}_{uf}.txt', mode='r'):
+            for i in self.zipfile.open(f'{self.file}_{self.ano}_{uf}.txt', mode='r'):
+                txt.append(i.decode('latin-1').replace('"', '').split(';'))
+    
+            columns = [
+                'DATA_GERACAO',
+                'HORA_GERACAO',
+                'ANO_ELEICAO',
+                'NUM_TURNO',
+                'DESCRICAO_ELEICAO',
+                'SIGLA_UF',
+                'SIGLA_UE',
+                'CODIGO_MUNICIPIO',
+                'NOME_MUNICIPIO',
+                'NUMERO_ZONA',
+                'CODIGO_CARGO',
+                'DESCRICAO_CARGO',
+                'TIPO_LEGENDA',
+                'NOME_COLIGACAO',
+                'COMPOSICAO_LEGENDA',
+                'SIGLA_PARTIDO',
+                'NUMERO_PARTIDO',
+                'NOME_PARTIDO',
+                'QTDE_VOTOS_NOMINAIS',
+                'QTDE_VOTOS_LEGENDA',
+                'SEQUENCIAL_COLIGACAO'
+            ]
+
+            return pd.DataFrame(txt, columns=columns)
+            
+        else:
+            file = f'{self.file}_{self.ano}_{uf}.csv'
+            return pd.read_csv(self.zipfile.open(file, mode='r'), encoding='latin-1', sep=';')
+
+        
+class VotacaoCandidatoMunZona():
+    
+    def __init__(self, ano):
+        self.file = 'votacao_candidato_munzona'
+        self.ano = ano
+        
+        url = f'http://agencia.tse.jus.br/estatistica/sead/odsele/{self.file}/{self.file}_{ano}.zip'
+        r = requests.get(url)
+        self.zipfile = ZipFile(BytesIO(r.content))
+        
+    def abrir(self, uf):
+        uf = _utils.parse_uf(uf)
+        
+        if self.ano <= 2012:
+            
+            txt = []
+            for i in self.zipfile.open(f'{self.file}_{self.ano}_{uf}.txt', mode='r'):
+                txt.append(i.decode('latin-1').replace('"', '').split(';'))
+    
+            columns = [
+                'DATA_GERACAO',
+                'HORA_GERACAO',
+                'ANO_ELEICAO',
+                'NUM_TURNO',
+                'DESCRICAO_ELEICAO',
+                'SIGLA_UF',
+                'SIGLA_UE',
+                'CODIGO_MUNICIPIO',
+                'NOME_MUNICIPIO',
+                'NUMERO_ZONA',
+                'CODIGO_CARGO',
+                'NUMERO_CAND',
+                'SQ_CANDIDATO',
+                'NOME_CANDIDATO',
+                'NOME_URNA_CANDIDATO',
+                'DESCRICAO_CARGO',
+                'COD_SIT_CAND_SUPERIOR',
+                'DESC_SIT_CAND_SUPERIOR',
+                'CODIGO_SIT_CANDIDATO',
+                'DESC_SIT_CANDIDATO',
+                'CODIGO_SIT_CAND_TOT',
+                'DESC_SIT_CAND_TOT',
+                'NUMERO_PARTIDO',
+                'SIGLA_PARTIDO',
+                'NOME_PARTIDO'
+            ]
+        
+            return pd.DataFrame(txt, columns=columns)
+            
+        else:
+            file = f'{self.file}_{self.ano}_{uf}.csv'
+            return pd.read_csv(self.zipfile.open(file, mode='r'), encoding='latin-1', sep=';')
+        
+        
+class DetalheVotacaoSecao():
+    
+    def __init__(self, ano):
+        self.file = 'detalhe_votacao_secao'
+        self.ano = ano
+        
+        url = f'http://agencia.tse.jus.br/estatistica/sead/odsele/{self.file}/{self.file}_{ano}.zip'
+        r = requests.get(url)
+        self.zipfile = ZipFile(BytesIO(r.content))
+        
+        
+    def abrir(self, uf):
+        uf = _utils.parse_uf(uf)
+        
+        if self.ano <= 2012:
+            
+            txt = []
+            for i in self.zipfile.open(f'{self.file}_{self.ano}_{uf}.txt', mode='r'):
+                txt.append(i.decode('latin-1').replace('"', '').split(';'))
+    
+            columns = [
+                'DATA_GERACAO',
+                'HORA_GERACAO',
+                'ANO_ELEICAO',
+                'NUM_TURNO',
+                'DESCRICAO_ELEICAO',
+                'SIGLA_UF',
+                'SIGLA_UE',
+                'CODIGO_MUNICIPIO',
+                'NOME_MUNICIPIO',
+                'NUMERO_ZONA',
+                'NUMERO_SECAO',
+                'CODIGO_CARGO',
+                'DESCRICAO_CARGO',
+                'QTD_APTOS',
+                'QTD_COMPARECIMENTO',
+                'QTD_ABSTENCOES',
+                'QT_VOTOS_NOMINAIS',
+                'QT_VOTOS_BRANCOS',
+                'QT_VOTOS_NULOS',
+                'QT_VOTOS_LEGENDA',
+                'QT_VOTOS_ANULADOS_APU_SEP'
+            ]
+        
+            return pd.DataFrame(txt, columns=columns)            
+            
+        else:
+            file = f'{self.file}_{self.ano}_{uf}.csv'
+            return pd.read_csv(self.zipfile.open(file, mode='r'), encoding='latin-1', sep=';')
+        
+        
+class DetalheVotacaoMunZona():
+    
+    
+    def __init__(self, ano):
+        self.file = 'detalhe_votacao_munzona'
+        self.ano = ano
+        
+        url = f'http://agencia.tse.jus.br/estatistica/sead/odsele/{self.file}/{self.file}_{ano}.zip'
+        r = requests.get(url)
+        self.zipfile = ZipFile(BytesIO(r.content))
+        
+        
+    def abrir(self, uf):
+        uf = _utils.parse_uf(uf)
+        
+        if self.ano <= 2012:
+            
+            txt = []
+            for i in self.zipfile.open(f'{self.file}_{self.ano}_{uf}.txt', mode='r'):
                 txt.append(i.decode('latin-1').replace('"', '').split(';'))
     
             columns = [
@@ -56,53 +215,5 @@ class DetalheVotacaoMunZona():
             return pd.DataFrame(txt, columns=columns)            
             
         else:
-            file = f'detalhe_votacao_munzona_{self.ano}_{uf}.csv'
-            return pd.read_csv(self.zipfile.open(file, mode='r'), encoding='latin-1', sep=';')
-        
-        
-class VotacaoPartidoMunZona():
-    
-    def __init__(self, ano):
-        url = f'http://agencia.tse.jus.br/estatistica/sead/odsele/votacao_partido_munzona/votacao_partido_munzona_{ano}.zip'
-        r = requests.get(url)
-        self.ano = ano
-        self.zipfile = ZipFile(BytesIO(r.content))
-        
-    def abrir(self, uf):
-        uf = _utils.parse_uf(uf)
-        
-        if self.ano <= 2012:
-            
-            txt = []
-            for i in self.zipfile.open(f'votacao_partido_munzona_{self.ano}_{uf}.txt', mode='r'):
-                txt.append(i.decode('latin-1').replace('"', '').split(';'))
-    
-            columns = [
-                'DATA_GERACAO',
-                'HORA_GERACAO',
-                'ANO_ELEICAO',
-                'NUM_TURNO',
-                'DESCRICAO_ELEICAO',
-                'SIGLA_UF',
-                'SIGLA_UE',
-                'CODIGO_MUNICIPIO',
-                'NOME_MUNICIPIO',
-                'NUMERO_ZONA',
-                'CODIGO_CARGO',
-                'DESCRICAO_CARGO',
-                'TIPO_LEGENDA',
-                'NOME_COLIGACAO',
-                'COMPOSICAO_LEGENDA',
-                'SIGLA_PARTIDO',
-                'NUMERO_PARTIDO',
-                'NOME_PARTIDO',
-                'QTDE_VOTOS_NOMINAIS',
-                'QTDE_VOTOS_LEGENDA',
-                'SEQUENCIAL_COLIGACAO'
-            ]
-
-            return pd.DataFrame(txt, columns=columns)
-            
-        else:
-            file = f'votacao_partido_munzona_{self.ano}_{uf}.csv'
+            file = f'{self.file}_{self.ano}_{uf}.csv'
             return pd.read_csv(self.zipfile.open(file, mode='r'), encoding='latin-1', sep=';')

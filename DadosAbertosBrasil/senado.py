@@ -1,13 +1,17 @@
 # Pacote para captura dos dados abertos do Senado brasileiro
 # Autor: Gustavo Furtado da Silva
 
-import pandas as pd
-import xml.etree.ElementTree as ET
-import requests
+
 import warnings
+import xml.etree.ElementTree as ET
+
+import pandas as pd
+import requests
+
 
 url = r'http://legis.senado.gov.br/dadosabertos/'
 warnings.warn('Este módulo está nas etapas iniciais de desenvolvimento e as funções disponibilizadas são apenas um preview do que está por vir.', FutureWarning)
+
 
 class _XmlListConfig(list):
     def __init__(self, aList):
@@ -22,6 +26,7 @@ class _XmlListConfig(list):
                 if text:
                     self.append(text)
 
+                    
 class _XmlDictConfig(dict):
     def __init__(self, parent_element):
         if parent_element.items():
@@ -40,10 +45,12 @@ class _XmlDictConfig(dict):
             else:
                 self.update({element.tag: element.text})
 
+                
 def _get_request(url):
     r = requests.get(url)
     tree = ET.fromstring(r.text)
     return _XmlDictConfig(tree)
+
 
 # Lista de senadores. O campo serie pode receber os valores 'atual' ou 'afastados'.
 def lista(serie='atual'):
@@ -51,6 +58,7 @@ def lista(serie='atual'):
     if serie not in series:
         raise TypeError("O campo série deve ser um dos seguintes valores: 'atual' ou 'afastados'")
     return _get_request(url + f'senador/lista/{serie}')
+
 
 # Obtém os detalhes do senador
 def senador(cod, serie=None):
@@ -63,6 +71,7 @@ def senador(cod, serie=None):
         else:
             s = '/' + serie
     return _get_request(url + f'senador/{cod}{s}')
+
 
 # Lista os partidos políticos
 def partidos():
