@@ -153,5 +153,5 @@ def codigos_municipios():
     # URL do repositório no GitHub contendo os códigos.
     # Créditos: https://github.com/betafcc
     url = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
-    
-    return pd.read_json(url)
+    df = pd.read_json(url)
+    return df[['codigo_tse', 'codigo_ibge', 'nome_municipio', 'uf', 'capital']]

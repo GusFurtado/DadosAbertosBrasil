@@ -253,6 +253,7 @@ def votacao_secao(ano, uf):
 
 # Tabela com perfil do eleitorado por município
 def perfil_eleitorado():
-    return pd.read_excel(
-        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.xlsx'
+    return pd.read_csv(
+        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.csv',
+        sep = ';'
     )
