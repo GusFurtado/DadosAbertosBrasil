@@ -1,16 +1,27 @@
+'''
+Módulo para extração dos dados abertos dos arquivos do TSE.
+'''
+
+
+
 import requests
 from io import BytesIO
 from zipfile import ZipFile
-import warnings
 
 import pandas as pd
 
 from DadosAbertosBrasil import _utils
 
 
-future_warning = 'Este módulo está nas etapas iniciais de desenvolvimento e as funções disponibilizadas são apenas um preview do que está por vir.'
 
-warnings.warn(future_warning, FutureWarning)
+def _read_csv(zipfile, file):
+    return pd.read_csv(
+        zipfile.open(file, mode = 'r'),
+        encoding = 'latin-1',
+        sep = ';',
+        chunksize = 10000    
+    )
+
 
 
 class VotacaoPartidoMunZona():
@@ -60,9 +71,10 @@ class VotacaoPartidoMunZona():
             
         else:
             file = f'{self.file}_{self.ano}_{uf}.csv'
-            return pd.read_csv(self.zipfile.open(file, mode='r'), encoding='latin-1', sep=';')
+            return _read_csv(self.zipfile, file)
 
         
+
 class VotacaoCandidatoMunZona():
     
     def __init__(self, ano):
@@ -114,8 +126,9 @@ class VotacaoCandidatoMunZona():
             
         else:
             file = f'{self.file}_{self.ano}_{uf}.csv'
-            return pd.read_csv(self.zipfile.open(file, mode='r'), encoding='latin-1', sep=';')
+            return _read_csv(self.zipfile, file)
         
+      
         
 class DetalheVotacaoSecao():
     
@@ -165,7 +178,8 @@ class DetalheVotacaoSecao():
             
         else:
             file = f'{self.file}_{self.ano}_{uf}.csv'
-            return pd.read_csv(self.zipfile.open(file, mode='r'), encoding='latin-1', sep=';')
+            return _read_csv(self.zipfile, file)
+        
         
         
 class DetalheVotacaoMunZona():
@@ -222,4 +236,23 @@ class DetalheVotacaoMunZona():
             
         else:
             file = f'{self.file}_{self.ano}_{uf}.csv'
-            return pd.read_csv(self.zipfile.open(file, mode='r'), encoding='latin-1', sep=';')
+            return _read_csv(self.zipfile, file)
+        
+        
+    
+def votacao_secao(ano, uf):
+    
+    file = 'votacao_secao'
+    uf = _utils.parse_uf(uf)
+    url = f'http://agencia.tse.jus.br/estatistica/sead/odsele/{file}/{file}_{ano}_{uf}.zip'
+    r = requests.get(url)
+    zipfile = ZipFile(BytesIO(r.content))
+    return _read_csv(zipfile, file)
+        
+
+
+# Tabela com perfil do eleitorado por município
+def perfil_eleitorado():
+    return pd.read_excel(
+        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.xlsx'
+    )

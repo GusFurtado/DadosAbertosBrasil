@@ -2,8 +2,10 @@
 setup.cfg
 setup.py
 DadosAbertosBrasil\__init__.py
+DadosAbertosBrasil\_utils.py
 DadosAbertosBrasil\camara.py
 DadosAbertosBrasil\favoritos.py
 DadosAbertosBrasil\ibge.py
 DadosAbertosBrasil\ipea.py
 DadosAbertosBrasil\senado.py
+DadosAbertosBrasil\tse.py

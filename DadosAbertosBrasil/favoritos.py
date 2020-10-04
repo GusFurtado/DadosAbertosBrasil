@@ -6,21 +6,36 @@ import pandas as pd
 from DadosAbertosBrasil import _utils
 
 
+
 # Nomes e símbolos das principais moedas internacionais
 def moedas():
     query = r"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/Moedas?$top=100&$format=json"
-    return pd.DataFrame(pd.read_json(query)['value'].to_list()).rename(columns={'nomeFormatado':'Nome', 'simbolo':'Símbolo', 'tipoMoeda':'Tipo'})
+    return pd.DataFrame(pd.read_json(query)['value'].to_list()) \
+        .rename(columns = {
+            'nomeFormatado': 'Nome',
+            'simbolo': 'Símbolo',
+            'tipoMoeda': 'Tipo'
+        })
 
 
 # Taxa de câmbio das principais moedas internacionais
-def cambio(moedas='USD', data_inicial='01-01-2000', data_final=None, index=False):
-    
+def cambio(
+        moedas = 'USD',
+        data_inicial = '01-01-2000',
+        data_final = None,
+        index = False
+):
+
     if data_final == None:
         data_final = datetime.today().strftime('%m-%d-%Y')
     
     if isinstance(moedas, str):
         query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moedas}'&@dataInicial='{data_inicial}'&@dataFinalCotacao='{data_final}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"
-        cotacoes = pd.DataFrame(pd.read_json(query)['value'].to_list()).rename(columns={'cotacaoVenda': moedas, 'dataHoraCotacao': 'Data'})
+        cotacoes = pd.DataFrame(pd.read_json(query)['value'].to_list()) \
+            .rename(columns = {
+                'cotacaoVenda': moedas,
+                'dataHoraCotacao': 'Data'
+            })
         cotacoes = cotacoes[['Data', moedas]]
     
     else:
@@ -29,8 +44,14 @@ def cambio(moedas='USD', data_inicial='01-01-2000', data_final=None, index=False
             for moeda in moedas:
                 query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moeda}'&@dataInicial='{data_inicial}'&@dataFinalCotacao='{data_final}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"
                 cotacao_moeda = pd.DataFrame(pd.read_json(query)['value'].to_list())
-                cotacao_moeda.dataHoraCotacao = cotacao_moeda.dataHoraCotacao.apply(lambda x: datetime.strptime(x[:10], '%Y-%m-%d'))
-                cotacao_moedas.append(cotacao_moeda.rename(columns={'cotacaoVenda': moeda, 'dataHoraCotacao': 'Data'}).groupby('Data').last())
+                cotacao_moeda.dataHoraCotacao = cotacao_moeda.dataHoraCotacao.apply(
+                    lambda x: datetime.strptime(x[:10], '%Y-%m-%d')
+                )
+                cotacao_moedas.append(
+                    cotacao_moeda.rename(columns = {
+                        'cotacaoVenda': moeda,
+                        'dataHoraCotacao': 'Data'
+                    }).groupby('Data').last())
 
             cotacoes = pd.concat(cotacao_moedas, axis=1).reset_index()
 
@@ -42,6 +63,7 @@ def cambio(moedas='USD', data_inicial='01-01-2000', data_final=None, index=False
         cotacoes.set_index('Data', inplace=True)
     
     return cotacoes
+
 
 
 # Valor mensal do índice IPC-A
@@ -58,9 +80,16 @@ def ipca(index=False):
     return ipca
 
 
+
 # Catálogo de iniciativas oficiais de dados abertos no Brasil
 def catalogo():
-    return pd.read_csv('https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv')
+
+    # URL do repositório no GitHub contendo o catálogo de dados abertos.
+    # Créditos: https://github.com/dadosgovbr
+    url = 'https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv'
+    
+    return pd.read_csv(url)
+
 
 
 def geojson(uf):
@@ -115,3 +144,14 @@ def geojson(uf):
     url = f'https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-{mapping[uf]}-mun.json'
     
     return requests.get(url).json()
+
+
+
+# Lista dos códigos dos municípios do IBGE e do TSE
+def codigos_municipios():
+
+    # URL do repositório no GitHub contendo os códigos.
+    # Créditos: https://github.com/betafcc
+    url = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
+    
+    return pd.read_json(url)
