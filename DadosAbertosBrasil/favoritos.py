@@ -1,7 +1,13 @@
+'''
+Módulo para acesso de APIs selecionadas.
+'''
+
+
+
 from datetime import datetime
-import requests
 
 import pandas as pd
+import requests
 
 from DadosAbertosBrasil import _utils
 
@@ -16,6 +22,7 @@ def moedas():
             'simbolo': 'Símbolo',
             'tipoMoeda': 'Tipo'
         })
+
 
 
 # Taxa de câmbio das principais moedas internacionais
@@ -92,6 +99,7 @@ def catalogo():
 
 
 
+# Coordenadas dos municípios brasileiros em formato GeoJSON para criação de mapas
 def geojson(uf):
 
     uf = _utils.parse_uf(uf)

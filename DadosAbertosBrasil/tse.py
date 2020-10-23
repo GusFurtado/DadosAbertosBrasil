@@ -1,14 +1,16 @@
 '''
 Módulo para extração dos dados abertos dos arquivos do TSE.
+
+Documentação da API original: https://www.tse.jus.br/eleicoes/estatisticas/repositorio-de-dados-eleitorais-1
 '''
 
 
 
-import requests
 from io import BytesIO
 from zipfile import ZipFile
 
 import pandas as pd
+import requests
 
 from DadosAbertosBrasil import _utils
 
@@ -18,8 +20,7 @@ def _read_csv(zipfile, file):
     return pd.read_csv(
         zipfile.open(file, mode = 'r'),
         encoding = 'latin-1',
-        sep = ';',
-        chunksize = 10000    
+        sep = ';'  
     )
 
 

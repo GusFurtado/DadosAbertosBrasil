@@ -1,3 +1,10 @@
+'''
+Módulo de funções de suporte aos pacotes principais.
+'''
+
+
+
+# Converte os nomes dos estados em siglas padrões
 def parse_uf(uf):
     
     UFS = {

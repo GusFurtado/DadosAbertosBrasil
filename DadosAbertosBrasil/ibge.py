@@ -1,22 +1,24 @@
 '''
-Módulo para captura dos dados abertos das APIs do IBGE, incluindo:
+Módulo para captura dos dados abertos das APIs do IBGE.
 
+Essa pacote inclui os seguintes serviços de dados do IBGE:
 - Nomes 2.0
 - Agregados 3.0 (SIDRA)
 - Malhas Geográficas 2.0
 - Projeções 1.0
 - Localidades 1.0
+
+Documentação da API original: https://servicodados.ibge.gov.br/api/docs 
 '''
 
 
 
+import pandas as pd
 import requests
 
-import pandas as pd
 
 
-
-normalize = pd.io.json.json_normalize if pd.__version__[0] == '0' else pd.json_normalize
+_normalize = pd.io.json.json_normalize if pd.__version__[0] == '0' else pd.json_normalize
 _url = 'https://servicodados.ibge.gov.br/api/v3/agregados'
 
 
@@ -118,7 +120,7 @@ class Agregados:
     def __init__(self, index=False):
         data = requests.get(_url).json()
 
-        df = normalize(
+        df = _normalize(
             data,
             'agregados',
             ['id', 'nome'],
@@ -292,7 +294,7 @@ def populacao(projecao=None, localidade=None):
 # Obtém o conjunto de distritos do Brasil
 def localidades():
 
-    loc = normalize(
+    loc = _normalize(
         requests.get(
             r'https://servicodados.ibge.gov.br/api/v1/localidades/distritos'
         ).json()

@@ -1,18 +1,20 @@
-# Pacote para captura dos dados abertos do Senado brasileiro
-# Autor: Gustavo Furtado da Silva
+'''
+Módulo para captura dos dados abertos da Senado Brasileiro
+
+Documentação da API original: http://legis.senado.gov.br/dadosabertos/docs/
+'''
 
 
-import warnings
+
 import xml.etree.ElementTree as ET
 
 import pandas as pd
 import requests
 
 
-url = r'http://legis.senado.gov.br/dadosabertos/'
-future_warning = 'Este módulo está nas etapas iniciais de desenvolvimento e as funções disponibilizadas são apenas um preview do que está por vir.'
 
-warnings.warn(future_warning, FutureWarning)
+_url = r'http://legis.senado.gov.br/dadosabertos/'
+
 
 
 class _XmlListConfig(list):
@@ -47,11 +49,13 @@ class _XmlDictConfig(dict):
             else:
                 self.update({element.tag: element.text})
 
-                
+
+          
 def _get_request(url):
     r = requests.get(url)
     tree = ET.fromstring(r.text)
     return _XmlDictConfig(tree)
+
 
 
 # Lista de senadores. O campo serie pode receber os valores 'atual' ou 'afastados'.
@@ -59,7 +63,8 @@ def lista(serie='atual'):
     series = ['atual', 'afastados']
     if serie not in series:
         raise TypeError("O campo série deve ser um dos seguintes valores: 'atual' ou 'afastados'")
-    return _get_request(url + f'senador/lista/{serie}')
+    return _get_request(_url + f'senador/lista/{serie}')
+
 
 
 # Obtém os detalhes do senador
@@ -72,23 +77,36 @@ def senador(cod, serie=None):
             raise TypeError(f"O campo série deve ser um dos seguintes valores: {series}")
         else:
             s = '/' + serie
-    return _get_request(url + f'senador/{cod}{s}')
+    return _get_request(_url + f'senador/{cod}{s}')
+
 
 
 # Lista os partidos políticos
 def partidos():
-    return _get_request(url + f'senador/partidos')
+    return _get_request(_url + f'senador/partidos')
+
 
 
 # Dados dos Senadores
 class Senador():    
     
     def __init__(self, cod):
-        self.dados_completos = _get_request(url + f'senador/{cod}')
-        self.identificacao = self.dados_completos['Parlamentar']['IdentificacaoParlamentar']
-        self.dados_basicos = self.dados_completos['Parlamentar']['DadosBasicosParlamentar']
-        self.cursos = self.dados_completos['Parlamentar']['HistoricoAcademico']
-        self.profissoes = self.dados_completos['Parlamentar']['Profissoes']
+        self.dados_completos = _get_request(_url + f'senador/{cod}')
+        d = self.dados_completos['Parlamentar']
+        self.identificacao = d['IdentificacaoParlamentar']
+        self.dados_basicos = d['DadosBasicosParlamentar']
+
+        if 'UltimoMandato' in d:
+            self.ultimo_mandato = d['UltimoMandato']
+        
+        if 'OutrasInformacoes' in d:
+            self.outras_informacoes = d['OutrasInformacoes']
+
+        if 'HistoricoAcademico' in d:
+            self.cursos = self.dados_completos['Parlamentar']['HistoricoAcademico']
+
+        if 'Profissoes' in d:
+            self.profissoes = self.dados_completos['Parlamentar']['Profissoes']
     
         d = {}
         for i in list(self.dados_completos['Parlamentar'].keys())[:-2]:

@@ -1,10 +1,13 @@
-# Pacote para captura dos dados abertos da Câmara dos Deputados do Brasil
-# Autor: Gustavo Furtado da Silva
-#
-# Use o seguinte template para buscar dados:
-#
-# >>> from DadosAbertosBrasil import camara
-# >>> camara.{funcao}(cod={opcional}, serie={opcional}, index={True/False})
+'''
+Módulo para captura dos dados abertos da Câmara dos Deputados do Brasil
+
+Use o seguinte template para buscar dados:
+>>> from DadosAbertosBrasil import camara
+>>> camara.{funcao}(cod={opcional}, serie={opcional}, index={True/False})
+
+Documentação da API original: https://dadosabertos.camara.leg.br/swagger/api.html
+'''
+
 
 
 import warnings
@@ -13,16 +16,15 @@ import pandas as pd
 import requests
 
 
-url = 'https://dadosabertos.camara.leg.br/api/v2/'
-future_warning = 'As funções deste package serão substituidas por classes no futuro. No momento as funções coletam apenas dados recentes (padrão da API da Câmara dos Deputados), enquanto as novas classes conseguirão capturar toda a base histórica.'
 
-warnings.warn(future_warning, FutureWarning)
+_url = 'https://dadosabertos.camara.leg.br/api/v2/'
 
 
-def __query(funcao, cod, serie, index, series):
+
+def _query(funcao, cod, serie, index, series):
     
     if cod == None:
-        data = requests.get(url + funcao).json()
+        data = requests.get(_url + funcao).json()
         df = pd.DataFrame(data['dados'])
         df.drop(columns=df.columns[df.columns.str.startswith('uri')], inplace=True)
         
@@ -34,7 +36,7 @@ def __query(funcao, cod, serie, index, series):
     elif isinstance(cod, int) or funcao == 'votacoes':
         
         if serie in series:
-            query = url + f'/{funcao}/{cod}' if serie == 'informacoes' else url + f'/{funcao}/{cod}/{serie}'        
+            query = _url + f'/{funcao}/{cod}' if serie == 'informacoes' else _url + f'/{funcao}/{cod}/{serie}'        
             data = requests.get(query).json()
             return data['dados']
         
@@ -44,87 +46,99 @@ def __query(funcao, cod, serie, index, series):
     else:
         raise TypeError("O argumento 'cod' deve ser um número inteiro.")
 
+
         
 # Dados sobre os blocos partidários
 def blocos(cod=None, index=False):
     series = ['informacoes']
-    return __query('blocos', cod, 'informacoes', index, series)
+    return _query('blocos', cod, 'informacoes', index, series)
+
 
 
 # Dados sobre os deputados
 def deputados(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'despesas', 'discursos', 'eventos', 'frentes', 'orgaos']
-    return __query('deputados', cod, serie, index, series)
+    return _query('deputados', cod, serie, index, series)
+
 
 
 # Dados sobre os eventos ocorridos ou previstos nos diversos órgãos da Câmara
 def eventos(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'deputados', 'orgaos', 'pauta', 'votacoes']
-    return __query('eventos', cod, serie, index, series)
+    return _query('eventos', cod, serie, index, series)
+
 
 
 # Dados de frentes parlamentares de uma ou mais legislatura
 def frentes(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'membros']
-    return __query('frentes', cod, serie, index, series)
+    return _query('frentes', cod, serie, index, series)
+
 
 
 # Dados dos períodos de mantados e atividades parlamentares na Câmara
 def legislaturas(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'mesa']
-    return __query('legislaturas', cod, serie, index, series)
+    return _query('legislaturas', cod, serie, index, series)
+
 
 
 # Dados de comissões e outros órgãos legislativos da Câmara
 def orgaos(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'eventos', 'membros', 'votacoes']
-    return __query('orgaos', cod, serie, index, series)
+    return _query('orgaos', cod, serie, index, series)
+
 
 
 # Dados dos partidos políticos que tem ou já tiveram parlamentares em exercício na Câmara
 def partidos(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'membros']
-    return __query('partidos', cod, serie, index, series)
+    return _query('partidos', cod, serie, index, series)
+
 
 
 # Dados de proposições na Câmara
 def proposicoes(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'autores', 'relacionadas', 'temas', 'tramitacoes', 'votacoes']
-    return __query('proposicoes', cod, serie, index, series)
+    return _query('proposicoes', cod, serie, index, series)
+
 
 
 # Dados de votações na Câmara
 def votacoes(cod=None, serie='informacoes', index=False):
     series = ['informacoes', 'orientacoes', 'votos']
-    return __query('votacoes', cod, serie, index, series)
+    return _query('votacoes', cod, serie, index, series)
+
 
 
 # Listas de valores válidos para as funções deste pacote
 def referencias(funcao, index=False):
     
-    referencia = {'codSituacaoDeputados': 'deputados/codSituacao',
-                  'siglaUF': 'deputados/siglaUF',
-                  'codSituacaoEvento': 'eventos/codSituacaoEvento',
-                  'codTipoEvento': 'eventos/codTipoEvento',
-                  'codSituacaoOrgao': 'orgaos/codSituacao',
-                  'codTipoOrgao': 'orgaos/codTipoOrgao',
-                  'codTipoAutor': 'proposicoes/codTipoAutor',
-                  'codSituacaoProposicao': 'proposicoes/codSituacao',
-                  'codTema': 'proposicoes/codTema',
-                  'codTipoTramitacao': 'proposicoes/codTipoTramitacao',
-                  'siglaTipo': 'proposicoes/siglaTipo',
-                  'situacoesDeputado': 'situacoesDeputado',
-                  'situacoesEvento': 'situacoesEvento',
-                  'situacoesOrgao': 'situacoesOrgao',
-                  'situacoesProposicao': 'situacoesProposicao',
-                  'tiposEvento': 'tiposEvento',
-                  'tiposOrgao': 'tiposOrgao',
-                  'tiposProposicao': 'tiposProposicao',
-                  'tiposTramitacao': 'tiposTramitacao',
-                  'uf': 'uf'}
+    referencia = {
+        'codSituacaoDeputados': 'deputados/codSituacao',
+        'siglaUF': 'deputados/siglaUF',
+        'codSituacaoEvento': 'eventos/codSituacaoEvento',
+        'codTipoEvento': 'eventos/codTipoEvento',
+        'codSituacaoOrgao': 'orgaos/codSituacao',
+        'codTipoOrgao': 'orgaos/codTipoOrgao',
+        'codTipoAutor': 'proposicoes/codTipoAutor',
+        'codSituacaoProposicao': 'proposicoes/codSituacao',
+        'codTema': 'proposicoes/codTema',
+        'codTipoTramitacao': 'proposicoes/codTipoTramitacao',
+        'siglaTipo': 'proposicoes/siglaTipo',
+        'situacoesDeputado': 'situacoesDeputado',
+        'situacoesEvento': 'situacoesEvento',
+        'situacoesOrgao': 'situacoesOrgao',
+        'situacoesProposicao': 'situacoesProposicao',
+        'tiposEvento': 'tiposEvento',
+        'tiposOrgao': 'tiposOrgao',
+        'tiposProposicao': 'tiposProposicao',
+        'tiposTramitacao': 'tiposTramitacao',
+        'uf': 'uf'
+    }
     
     if funcao in referencia.keys():
-        data = requests.get(url + 'referencias/' + referencia[funcao]).json()
+        data = requests.get(_url + 'referencias/' + referencia[funcao]).json()
         
     else:
         raise TypeError(f"Referência inválida. Insira um dos seguintes valores no campo 'funcao': {list(referencia.keys())}")
@@ -136,11 +150,25 @@ def referencias(funcao, index=False):
     return df
 
 
+
 # Nova versão da consulta de deputados
 class Deputados():
     
-    def __init__(self, id=None, nome=None, legislatura=None, uf=None, partido=None, sexo=None,
-                 pagina=None, itens=None, inicio=None, fim=None, asc=True, ordenar_por='nome'):
+    def __init__(
+            self,
+            id = None,
+            nome = None,
+            legislatura = None,
+            uf = None,
+            partido = None,
+            sexo = None,
+            pagina = None,
+            itens = None,
+            inicio = None,
+            fim = None,
+            asc = True,
+            ordenar_por = 'nome'
+        ):
         
         # Id(s) do(s) deputado(s)
         if (id == None) or isinstance(id, int) or isinstance(id, list):
