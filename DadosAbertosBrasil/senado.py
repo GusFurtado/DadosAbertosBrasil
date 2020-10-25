@@ -109,9 +109,27 @@ def senador(cod, serie=None):
 
 
 
-# Lista os partidos políticos
-def partidos():
-    return _get_request(_url + f'senador/partidos')
+def partidos(ativo='S', index=False) -> pd.DataFrame:
+    '''
+    Lista os partidos políticos.
+    Para listas os partidos inativos, defina o campo 'ativo' como 'N'.
+    '''
+
+    url = f'{_url}senador/partidos'
+    if ativo.upper() == 'N':
+        url += '?indAtivos=N'
+    
+    r = _get_request(url)
+    df = pd.DataFrame(r['Partidos']['Partido'])
+
+    if index:
+        df.set_index('Codigo', inplace=True)
+
+    df.DataCriacao = pd.to_datetime(df.DataCriacao)
+    if ativo.upper() == 'N':
+        df.DataExtincao = pd.to_datetime(df.DataExtincao)
+
+    return df
 
 
 
