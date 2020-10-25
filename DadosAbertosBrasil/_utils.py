@@ -4,8 +4,11 @@ Módulo de funções de suporte aos pacotes principais.
 
 
 
-# Converte os nomes dos estados em siglas padrões
-def parse_uf(uf):
+def parse_uf(uf: str) -> str:
+    '''
+    Converte os nomes dos estados em siglas padrões.
+    Suporta abreviaturas, acentuação e case sensibility.
+    '''
     
     UFS = {
         
@@ -57,4 +60,23 @@ def parse_uf(uf):
     
     s = uf.upper().replace(' ', '')
     
-    return mapping[s]
+    try:
+        return mapping[s]
+    except:
+        raise TypeError('UF não encontrada.')
+
+
+
+def convert_search_tags(tags: dict) -> str:
+    '''
+    Converte uma lista de parâmetros em search tags para a URL
+    '''
+
+    if tags is not None:
+        s = '?'
+        keys = list(tags.keys())
+        for key in keys[:-1]:
+            s += f'{key}={tags[key]}&'
+        s += f'{keys[-1]}={tags[keys[-1]]}'
+
+    return s

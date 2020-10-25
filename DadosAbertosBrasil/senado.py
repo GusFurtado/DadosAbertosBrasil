@@ -11,6 +11,8 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import requests
 
+from . import _utils
+
 
 
 _url = r'http://legis.senado.gov.br/dadosabertos/'
@@ -58,12 +60,38 @@ def _get_request(url):
 
 
 
-# Lista de senadores. O campo serie pode receber os valores 'atual' ou 'afastados'.
-def lista(serie='atual'):
-    series = ['atual', 'afastados']
-    if serie not in series:
-        raise TypeError("O campo série deve ser um dos seguintes valores: 'atual' ou 'afastados'")
-    return _get_request(_url + f'senador/lista/{serie}')
+def lista(
+        situacao = 'atual',
+        participacao = None,
+        uf = None
+    ) -> dict:
+    '''
+    Gera uma lista de senadores.
+    Liste senadores afastados definindo o campo 'situacao' como 'afastados'.
+    Liste suplentes em atividade definindo o campo 'participacao' como 'S'.
+    Filtre por UF pelo campo 'uf'.
+    '''
+
+
+    SITUACOES = ['atual', 'afastados']
+    if situacao not in SITUACOES:
+        raise TypeError("O campo 'situacao' deve ser um dos seguintes valores: 'atual' ou 'afastados'")
+
+    if situacao == 'atual':
+        tags = {}
+        if participacao is not None:
+            tags['participacao'] = participacao
+        if uf is not None:
+            tags['uf'] = _utils.parse_uf(uf)
+        if len(tags) > 0:
+            searchtags = _utils.convert_search_tags(tags)
+        else:
+            searchtags = ''
+
+    else:
+        searchtags = ''
+
+    return _get_request(_url + f'senador/lista/{situacao}{searchtags}')['Parlamentares']['Parlamentar']
 
 
 
