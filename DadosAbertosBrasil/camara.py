@@ -47,72 +47,101 @@ def _query(funcao, cod, serie, index, series):
         raise TypeError("O argumento 'cod' deve ser um número inteiro.")
 
 
-        
-# Dados sobre os blocos partidários
+
 def blocos(cod=None, index=False):
+    '''
+    Dados sobre os blocos partidários.
+    '''
+
     series = ['informacoes']
     return _query('blocos', cod, 'informacoes', index, series)
 
 
 
-# Dados sobre os deputados
 def deputados(cod=None, serie='informacoes', index=False):
+    '''
+    Dados sobre os deputados.
+    '''
+
     series = ['informacoes', 'despesas', 'discursos', 'eventos', 'frentes', 'orgaos']
     return _query('deputados', cod, serie, index, series)
 
 
 
-# Dados sobre os eventos ocorridos ou previstos nos diversos órgãos da Câmara
 def eventos(cod=None, serie='informacoes', index=False):
+    '''
+    Dados sobre os eventos ocorridos ou previstos nos diversos órgãos da Câmara.
+    '''
+
     series = ['informacoes', 'deputados', 'orgaos', 'pauta', 'votacoes']
     return _query('eventos', cod, serie, index, series)
 
 
 
-# Dados de frentes parlamentares de uma ou mais legislatura
 def frentes(cod=None, serie='informacoes', index=False):
+    '''
+    Dados de frentes parlamentares de uma ou mais legislatura.
+    '''
+
     series = ['informacoes', 'membros']
     return _query('frentes', cod, serie, index, series)
 
 
 
-# Dados dos períodos de mantados e atividades parlamentares na Câmara
 def legislaturas(cod=None, serie='informacoes', index=False):
+    '''
+    Dados dos períodos de mantados e atividades parlamentares na Câmara.
+    '''
+
     series = ['informacoes', 'mesa']
     return _query('legislaturas', cod, serie, index, series)
 
 
 
-# Dados de comissões e outros órgãos legislativos da Câmara
 def orgaos(cod=None, serie='informacoes', index=False):
+    '''
+    Dados de comissões e outros órgãos legislativos da Câmara.
+    '''
+
     series = ['informacoes', 'eventos', 'membros', 'votacoes']
     return _query('orgaos', cod, serie, index, series)
 
 
 
-# Dados dos partidos políticos que tem ou já tiveram parlamentares em exercício na Câmara
 def partidos(cod=None, serie='informacoes', index=False):
+    '''
+    Dados dos partidos políticos que tem ou já tiveram parlamentares em exercício na Câmara.
+    '''
+
     series = ['informacoes', 'membros']
     return _query('partidos', cod, serie, index, series)
 
 
 
-# Dados de proposições na Câmara
 def proposicoes(cod=None, serie='informacoes', index=False):
+    '''
+    Dados de proposições na Câmara.
+    '''
+
     series = ['informacoes', 'autores', 'relacionadas', 'temas', 'tramitacoes', 'votacoes']
     return _query('proposicoes', cod, serie, index, series)
 
 
 
-# Dados de votações na Câmara
 def votacoes(cod=None, serie='informacoes', index=False):
+    '''
+    Dados de votações na Câmara.
+    '''
+
     series = ['informacoes', 'orientacoes', 'votos']
     return _query('votacoes', cod, serie, index, series)
 
 
 
-# Listas de valores válidos para as funções deste pacote
-def referencias(funcao, index=False):
+def referencias(funcao, index=False) -> pd.DataFrame:
+    '''
+    Listas de valores válidos para as funções deste pacote.
+    '''
     
     referencia = {
         'codSituacaoDeputados': 'deputados/codSituacao',
@@ -151,8 +180,12 @@ def referencias(funcao, index=False):
 
 
 
-# Nova versão da consulta de deputados
 class Deputados():
+    '''
+    Consulta dados dos deputados federais.
+    Utilize os argumentos para pesquisar por id, nome, legislatura, uf, partido e sexo.
+    Ordene os resultados pelos parâmetros 'ordenar_por' e 'asc'.
+    '''
     
     def __init__(
             self,
@@ -253,7 +286,7 @@ class Deputados():
             raise TypeError("O campo 'ordenar_por' deve ser igual a 'id', 'idLegislatura', 'nome', 'siglaUF' ou 'siglaPartido'.")
             
         
-    def __converter_lista(self, key, values):
+    def _converter_lista(self, key, values):
 
         if values == None:
             s = None
@@ -266,25 +299,28 @@ class Deputados():
                 s = f'{key}={values}&'
         return s
     
-    # Contrói a query com os argumentos da classe
-    def query(self):
+
+    def query(self) -> str:
+        '''
+        Apresenta a URL da query com os argumentos definidor.
+        '''
         
         query = r'https://dadosabertos.camara.leg.br/api/v2/deputados?'
         
         if self.id is not None:
-            query += self.__converter_lista('id', self.id)
+            query += self._converter_lista('id', self.id)
             
         if self.nome is not None:
             query += f'nome={self.nome}&'
             
         if self.legislatura is not None:
-            query += self.__converter_lista('idLegislatura', self.legislatura)
+            query += self._converter_lista('idLegislatura', self.legislatura)
             
         if self.uf is not None:
-            query += self.__converter_lista('siglaUf', self.uf)
+            query += self._converter_lista('siglaUf', self.uf)
             
         if self.partido is not None:
-            query += self.__converter_lista('siglaPartido', self.partido)
+            query += self._converter_lista('siglaPartido', self.partido)
             
         if self.sexo is not None:
             query += f'siglaSexo={self.sexo}&'
@@ -306,8 +342,12 @@ class Deputados():
 
         return query
     
-    # Roda query com os argumentos da classe
-    def rodar(self, index=False):
+
+    def rodar(self, index=False) -> pd.DataFrame:
+        '''
+        Roda query com os argumentos definidos.
+        '''
+
         data = requests.get(self.query()).json()
         df = pd.DataFrame(data['dados'])
         df.drop(columns=df.columns[df.columns.str.startswith('uri')], inplace=True)

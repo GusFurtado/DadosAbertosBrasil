@@ -16,7 +16,11 @@ from DadosAbertosBrasil import _utils
 
 
 
-def _read_csv(zipfile, file):
+def _read_csv(zipfile: ZipFile, file: str) -> pd.DataFrame:
+    '''
+    Abre uma pasta ZIP e extrai um arquivo dela.
+    '''
+
     return pd.read_csv(
         zipfile.open(file, mode = 'r'),
         encoding = 'latin-1',
@@ -26,16 +30,29 @@ def _read_csv(zipfile, file):
 
 
 class VotacaoPartidoMunZona():
+    '''
+    Quantos votos cada partido recebeu por município e zona eleitoral.
+    Defina o ano para baixar a pasta zip e defina a UF para abrí-la.
+    '''
     
-    def __init__(self, ano):
+    def __init__(self, ano: int) -> ZipFile:
+        '''
+        Baixa a pasta zippada do ano definido.
+        '''
+
         self.file = 'votacao_partido_munzona'
         self.ano = ano
         
         url = f'http://agencia.tse.jus.br/estatistica/sead/odsele/{self.file}/{self.file}_{ano}.zip'
         r = requests.get(url)
         self.zipfile = ZipFile(BytesIO(r.content))
-        
-    def abrir(self, uf):
+
+
+    def abrir(self, uf: str) -> pd.DataFrame:
+        '''
+        Abre o arquivo da UF dentro da pasta zippada.
+        '''
+
         uf = _utils.parse_uf(uf)
         
         if self.ano <= 2012:
@@ -77,16 +94,29 @@ class VotacaoPartidoMunZona():
         
 
 class VotacaoCandidatoMunZona():
+    '''
+    Quantos votos cada candidato recebeu por município e zona eleitoral.
+    Defina o ano para baixar a pasta zip e defina a UF para abrí-la.
+    '''
     
-    def __init__(self, ano):
+    def __init__(self, ano: int) -> ZipFile:
+        '''
+        Baixa a pasta zippada do ano definido.
+        '''
+
         self.file = 'votacao_candidato_munzona'
         self.ano = ano
         
         url = f'http://agencia.tse.jus.br/estatistica/sead/odsele/{self.file}/{self.file}_{ano}.zip'
         r = requests.get(url)
         self.zipfile = ZipFile(BytesIO(r.content))
-        
-    def abrir(self, uf):
+
+
+    def abrir(self, uf: str) -> pd.DataFrame:
+        '''
+        Abre o arquivo da UF dentro da pasta zippada.
+        '''
+
         uf = _utils.parse_uf(uf)
         
         if self.ano <= 2012:
@@ -132,8 +162,16 @@ class VotacaoCandidatoMunZona():
       
         
 class DetalheVotacaoSecao():
+    '''
+    Detalhe da apuração por seção eleitoral.
+    Defina o ano para baixar a pasta zip e defina a UF para abrí-la.
+    '''
     
-    def __init__(self, ano):
+    def __init__(self, ano: int) -> ZipFile:
+        '''
+        Baixa a pasta zippada do ano definido.
+        '''
+
         self.file = 'detalhe_votacao_secao'
         self.ano = ano
         
@@ -142,7 +180,11 @@ class DetalheVotacaoSecao():
         self.zipfile = ZipFile(BytesIO(r.content))
         
         
-    def abrir(self, uf):
+    def abrir(self, uf: str) -> pd.DataFrame:
+        '''
+        Abre o arquivo da UF dentro da pasta zippada.
+        '''
+        
         uf = _utils.parse_uf(uf)
         
         if self.ano <= 2012:
@@ -184,9 +226,16 @@ class DetalheVotacaoSecao():
         
         
 class DetalheVotacaoMunZona():
+    '''
+    Detalhe da apuração por município e zona.
+    Defina o ano para baixar a pasta zip e defina a UF para abrí-la.
+    '''
     
-    
-    def __init__(self, ano):
+    def __init__(self, ano: int) -> ZipFile:
+        '''
+        Baixa a pasta zippada do ano definido.
+        '''
+   
         self.file = 'detalhe_votacao_munzona'
         self.ano = ano
         
@@ -195,7 +244,11 @@ class DetalheVotacaoMunZona():
         self.zipfile = ZipFile(BytesIO(r.content))
         
         
-    def abrir(self, uf):
+    def abrir(self, uf: str) -> pd.DataFrame:
+        '''
+        Abre o arquivo da UF dentro da pasta zippada.
+        '''
+
         uf = _utils.parse_uf(uf)
         
         if self.ano <= 2012:
@@ -241,7 +294,10 @@ class DetalheVotacaoMunZona():
         
         
     
-def votacao_secao(ano, uf):
+def votacao_secao(ano: int, uf: str) -> pd.DataFrame:
+    '''
+    Votação por seção eleitoral.
+    '''
     
     file = 'votacao_secao'
     uf = _utils.parse_uf(uf)
@@ -249,11 +305,14 @@ def votacao_secao(ano, uf):
     r = requests.get(url)
     zipfile = ZipFile(BytesIO(r.content))
     return _read_csv(zipfile, file)
-        
 
 
-# Tabela com perfil do eleitorado por município
-def perfil_eleitorado():
+
+def perfil_eleitorado() -> pd.DataFrame:
+    '''
+    Tabela com perfil do eleitorado por município.
+    '''
+
     return pd.read_csv(
         r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.csv',
         encoding = 'latin-1',

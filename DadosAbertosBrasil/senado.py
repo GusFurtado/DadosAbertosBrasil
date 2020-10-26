@@ -133,10 +133,22 @@ def partidos(ativo='S', index=False) -> pd.DataFrame:
 
 
 
-# Dados dos Senadores
-class Senador():    
-    
-    def __init__(self, cod):
+class Senador:
+    '''
+    Coleta os dados dos senadores.
+    Insira o código do senador no campo 'cod'. Encontre o código pela função senado.lista().
+    Para ver as informações do senador, chame um dos seguintes atributos:
+        - identificacao
+        - .dados_basicos
+        - .dados
+        - .dados_completos
+        - .ultimo_mandato
+        - .cursos
+        - .profissoes
+        - .outras_informacoes
+    '''
+
+    def __init__(self, cod: int):
         self.dados_completos = _get_request(_url + f'senador/{cod}')
         d = self.dados_completos['Parlamentar']
         self.identificacao = d['IdentificacaoParlamentar']

@@ -18,14 +18,16 @@ _url = 'http://www.ipeadata.gov.br/api/odata4/'
 
 
 
-def _query(funcao):
+def _query(funcao: str) -> pd.DataFrame:
     return pd.DataFrame(list(pd.read_json(_url + funcao).value))
 
 
 
-# Registros de metadados de todas as séries disponíveis para consulta
-def series(cod=None, valores=True):
-    
+def series(cod=None, valores=True) -> pd.DataFrame:
+    '''
+    Registros de metadados de todas as séries disponíveis para consulta.
+    '''
+
     if cod == None:
         return _query('Metadados')
     
@@ -39,9 +41,12 @@ def series(cod=None, valores=True):
         raise TypeError('O código da série deve ser tipo string.')
 
 
-        
-# Registros de todos os temas cadastrados.
-def temas(cod=None):
+
+def temas(cod=None) -> pd.DataFrame:
+    '''
+    Registros de todos os temas cadastrados.
+    '''
+    
     if cod == None:
         return _query('Temas')
     elif isinstance(cod, int):
@@ -51,8 +56,11 @@ def temas(cod=None):
 
 
 
-# Registros de todos os países cadastrados.
-def paises(cod=None):
+def paises(cod=None) -> pd.DataFrame:
+    '''
+    Registros de todos os países cadastrados.
+    '''
+
     if cod == None:
         return _query('Paises')
     elif isinstance(cod, str):
@@ -61,9 +69,12 @@ def paises(cod=None):
         raise TypeError('Código do país deve ser um string de três letras maísculas.')
 
 
-        
-# Registros de todos os territórios brasileiros cadastrados.
-def territorios(cod=None, nivel=None):
+
+def territorios(cod=None, nivel=None) -> pd.DataFrame:
+    '''
+    Registros de todos os territórios brasileiros cadastrados.
+    '''
+
     if (cod == None) and (nivel == None):
         return _query('Territorios')
     else:
@@ -72,8 +83,11 @@ def territorios(cod=None, nivel=None):
 
     
 
-# Lista dos possíveis níveis territoriais
-def niveis_territoriais():
+def niveis_territoriais() -> list:
+    '''
+    Lista dos possíveis níveis territoriais.
+    '''
+
     return [
         'Brasil',
         'Regiões',

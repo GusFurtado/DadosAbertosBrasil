@@ -13,8 +13,11 @@ from DadosAbertosBrasil import _utils
 
 
 
-# Nomes e símbolos das principais moedas internacionais
-def moedas():
+def moedas() -> pd.DataFrame:
+    '''
+    Nomes e símbolos das principais moedas internacionais.
+    '''
+
     query = r"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/Moedas?$top=100&$format=json"
     return pd.DataFrame(pd.read_json(query)['value'].to_list()) \
         .rename(columns = {
@@ -25,13 +28,17 @@ def moedas():
 
 
 
-# Taxa de câmbio das principais moedas internacionais
 def cambio(
         moedas = 'USD',
         data_inicial = '01-01-2000',
         data_final = None,
         index = False
-):
+    ) -> pd.DataFrame:
+    '''
+    Taxa de câmbio das principais moedas internacionais.
+    É possível escolher várias moedas inserindo uma lista no campo 'moeda'.
+    Defina o período da consulta pelos campos 'data_inicial' e 'data_final'.
+    '''
 
     if data_final == None:
         data_final = datetime.today().strftime('%m-%d-%Y')
@@ -73,8 +80,10 @@ def cambio(
 
 
 
-# Valor mensal do índice IPC-A
-def ipca(index=False):
+def ipca(index=False) -> pd.DataFrame:
+    '''
+    Valor mensal do índice IPC-A.
+    '''
 
     ipca_query = r'https://api.bcb.gov.br/dados/serie/bcdata.sgs.4448/dados?formato=json'
     ipca = pd.read_json(ipca_query)
@@ -88,8 +97,10 @@ def ipca(index=False):
 
 
 
-# Catálogo de iniciativas oficiais de dados abertos no Brasil
-def catalogo():
+def catalogo() -> pd.DataFrame:
+    '''
+    Catálogo de iniciativas oficiais de dados abertos no Brasil.
+    '''
 
     # URL do repositório no GitHub contendo o catálogo de dados abertos.
     # Créditos: https://github.com/dadosgovbr
@@ -99,8 +110,10 @@ def catalogo():
 
 
 
-# Coordenadas dos municípios brasileiros em formato GeoJSON para criação de mapas
-def geojson(uf):
+def geojson(uf: str) -> dict:
+    '''
+    Coordenadas dos municípios brasileiros em formato GeoJSON para criação de mapas.
+    '''
 
     uf = _utils.parse_uf(uf)
     
@@ -155,8 +168,10 @@ def geojson(uf):
 
 
 
-# Lista dos códigos dos municípios do IBGE e do TSE
-def codigos_municipios():
+def codigos_municipios() -> pd.DataFrame:
+    '''
+    Lista dos códigos dos municípios do IBGE e do TSE.
+    '''
 
     # URL do repositório no GitHub contendo os códigos.
     # Créditos: https://github.com/betafcc

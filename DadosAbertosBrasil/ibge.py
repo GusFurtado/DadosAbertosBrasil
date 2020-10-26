@@ -23,8 +23,12 @@ _url = 'https://servicodados.ibge.gov.br/api/v3/agregados'
 
 
 
-# Obtém a frequência de nascimentos por década para o(s) nome(s) consultado(s)
-def nomes(nomes, sexo=None, localidade=None):
+def nomes(nomes, sexo=None, localidade=None) -> pd.DataFrame:
+    '''
+    Obtém a frequência de nascimentos por década dos nomes consultados.
+    Defina o campo 'nomes' com um string ou uma lista de string.
+    Use os argumentos opcionais para definir sexo e localidade dos nomes.
+    '''
     
     if isinstance(nomes, str):
         s = nomes
@@ -59,8 +63,10 @@ def nomes(nomes, sexo=None, localidade=None):
 
 
 
-# Obtém a frequência de nascimentos por UF para o nome consultado
-def nomes_uf(nome):
+def nomes_uf(nome: str) -> pd.DataFrame:
+    '''
+    Obtém a frequência de nascimentos por UF para o nome consultado.
+    '''
     
     if isinstance(nome, str):
 
@@ -82,8 +88,11 @@ def nomes_uf(nome):
 
 
 
-# Obtém o ranking dos nomes segundo a frequência de nascimentos por década
-def nomes_ranking(decada=None, sexo=None, localidade=None):
+def nomes_ranking(decada=None, sexo=None, localidade=None) -> pd.DataFrame:
+    '''
+    Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
+    Utilize os argumentos opcionais para filtrar década, sexo e localidade.
+    '''
     
     query = 'https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking'
     sep = '?'
@@ -114,8 +123,10 @@ def nomes_ranking(decada=None, sexo=None, localidade=None):
 
 
 
-# Obtém o conjunto de agregados, agrupados pelas respectivas pesquisas
 class Agregados:
+    '''
+    Obtém o conjunto de agregados, agrupados pelas respectivas pesquisas.
+    '''
 
     def __init__(self, index=False):
         data = requests.get(_url).json()
@@ -136,11 +147,15 @@ class Agregados:
         self.pesquisas = df[['pesquisa_id', 'pesquisa_nome']] \
             .drop_duplicates().reset_index(drop=True)
     
-    # Filtra lista de agregados
-    def filtrar(self, pesquisa=None, contendo=None, excluindo=None):
+
+    def filtrar(self, pesquisa=None, contendo=None, excluindo=None) -> pd.DataFrame:
+        '''
+        Filtra lista de agregados.
+        Defina o tipo da pesquisa ou filtre agregados contendo ou não determinado substring.
+        '''
+
         df = self.dados
         
-        # Filtrar pesquisa
         if isinstance(pesquisa, str):
             df = df[df.pesquisa_id == pesquisa]
         elif pesquisa == None:
@@ -148,7 +163,6 @@ class Agregados:
         else:
             raise TypeError("O argumento 'pesquisa' deve ser tipo string com duas letrar maiúsculas.")
             
-        # Filtrar séries contendo texto
         if isinstance(contendo, str):
             df = df[df.agregado_nome.str.contains(contendo)]
         elif contendo == None:
@@ -156,7 +170,6 @@ class Agregados:
         else:
             raise TypeError('O texto procurado deve ser tipo string.')
             
-        # Filtrar séries não contendo texto
         if isinstance(excluindo, str):
             df = df[~df.agregado_nome.str.contains(excluindo)]
         elif excluindo == None:
@@ -168,10 +181,13 @@ class Agregados:
 
 
 
-# Metadados dos agregados
 class Metadados:
-    
-    def __init__(self, agregado):
+    '''
+    Metadados dos agregados.
+    Veja os dados, id, nome, assunto, período, localidades, variáveis e classificações do agregado escolhido.
+    '''
+
+    def __init__(self, agregado: int):
         data = requests.get(_url + f'/{agregado}/metadados').json()
         self.dados = data
         self.id = data['id']
@@ -184,10 +200,11 @@ class Metadados:
 
 
         
-# Classe para obter dados do SIDRA - Sistema IBGE de Recuperação Automática
 class Sidra:
+    '''
+    Classe para obter dados do SIDRA - Sistema IBGE de Recuperação Automática.
+    '''
 
-    # Argumentos iniciais
     def __init__(
             self,
             agregado = None,
@@ -195,7 +212,7 @@ class Sidra:
             variaveis = None,
             localidades = {'N1': 'all'},
             classificacoes = None
-    ):
+        ):
         
         self.agregado = agregado
         self.periodos = periodos
@@ -203,7 +220,8 @@ class Sidra:
         self.localidades = localidades
         self.classificacoes = classificacoes
 
-    def __converter_lista(self, lista, sep='|'):
+
+    def __converter_lista(self, lista, sep='|') -> str:
         if isinstance(lista, list):
             s = str(lista[0])
             for i in lista[1:]:
@@ -211,8 +229,9 @@ class Sidra:
         else:
             s = lista
         return s
-    
-    def __convertar_dicionario(self, dicionario):
+
+
+    def __convertar_dicionario(self, dicionario: dict) -> str:
         b = True
         for i in dicionario:
             if b:
@@ -222,8 +241,12 @@ class Sidra:
                 s += f"|{i}[{self.__converter_lista(dicionario[i], sep=',')}]"
         return s
             
-    # Contrói a query com os argumentos da classe
-    def query(self):
+
+    def query(self) -> str:
+        '''
+        Apresenta a query com os argumentos definidos.
+        '''
+
         query = f'{_url}/{self.agregado}/'
         query += f'periodos/{self.__converter_lista(self.periodos)}/'
         query += f'variaveis/{self.__converter_lista(self.variaveis)}?'
@@ -232,14 +255,20 @@ class Sidra:
             query += f'&classificacao={self.__convertar_dicionario(self.classificacoes)}'
         return query
     
-    # Roda query com os argumentos da classe
-    def rodar(self):
+
+    def rodar(self) -> dict:
+        '''
+        Roda a query com os argumentos definidos.
+        '''
+
         return requests.get(self.query()).json()
 
 
 
-# Obtém uma base de códigos para utilizar como argumento na busca do SIDRA
-def referencias(cod, index=False):
+def referencias(cod: str, index=False) -> pd.DataFrame:
+    '''
+    Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
+    '''
 
     if cod in ['A', 'a', 'assuntos']:
         s = 'A'
@@ -254,7 +283,7 @@ def referencias(cod, index=False):
     elif cod in ['V', 'v', 'variaveis']:
         s = 'V'
     else:
-        raise TypeError("O campo 'cod' deve ser um tipo string.")
+        raise TypeError("O campo 'cod' deve ser do tipo string.")
         
     data = requests.get(f'https://servicodados.ibge.gov.br/api/v3/agregados?acervo={s}').json()
     df = pd.DataFrame(data)
@@ -266,9 +295,16 @@ def referencias(cod, index=False):
 
 
    
-# Obtém a projecao da população referente ao Brasil
 def populacao(projecao=None, localidade=None):
-    
+    '''
+    Obtém a projecao da população referente ao Brasil.
+    Escolha um dos tipos de projeção:
+        - 'populacao'
+        - 'nascimento'
+        - 'obito'
+    Use o argumento opcional para definir a localidade da projeção.
+    '''
+
     query = f'https://servicodados.ibge.gov.br/api/v1/projecoes/populacao'
     if localidade != None:
         if isinstance(localidade, int):
@@ -291,8 +327,10 @@ def populacao(projecao=None, localidade=None):
 
 
 
-# Obtém o conjunto de distritos do Brasil
-def localidades():
+def localidades() -> pd.DataFrame:
+    '''
+    Obtém o conjunto de distritos do Brasil.
+    '''
 
     loc = _normalize(
         requests.get(
@@ -338,14 +376,20 @@ def localidades():
 
 
 
-# Obtém a URL para a malha referente ao identificador da localidade
-def malha(localidade=''):
-    return 'https://servicodados.ibge.gov.br/api/v2/malhas/' + str(localidade)
+def malha(localidade='') -> str:
+    '''
+    Obtém a URL para a malha referente ao identificador da localidade.
+    '''
+
+    return f'https://servicodados.ibge.gov.br/api/v2/malhas/{localidade}'
 
 
 
-# Obtém as coordenadas de todas as localidades brasileiras
-def coordenadas():
+def coordenadas() -> pd.DataFrame:
+    '''
+    Obtém as coordenadas de todas as localidades brasileiras.
+    '''
+
     return pd.read_excel(
         r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Coordenadas.xlsx'
     )
