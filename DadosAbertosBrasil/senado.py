@@ -60,38 +60,76 @@ def _get_request(url):
 
 
 
-def lista(
-        situacao = 'atual',
-        participacao = None,
-        uf = None
-    ) -> dict:
+class Lista:
     '''
     Gera uma lista de senadores.
-    Liste senadores afastados definindo o campo 'situacao' como 'afastados'.
     Liste suplentes em atividade definindo o campo 'participacao' como 'S'.
     Filtre por UF pelo campo 'uf'.
+    Utilize os métodos 'atual', 'afastado' ou 'legislatura' para escolher um
+    tipo de lista.
     '''
 
+    def __init__(self, participacao=None, uf=None):
 
-    SITUACOES = ['atual', 'afastados']
-    if situacao not in SITUACOES:
-        raise TypeError("O campo 'situacao' deve ser um dos seguintes valores: 'atual' ou 'afastados'")
-
-    if situacao == 'atual':
         tags = {}
+
         if participacao is not None:
             tags['participacao'] = participacao
         if uf is not None:
             tags['uf'] = _utils.parse_uf(uf)
+
         if len(tags) > 0:
-            searchtags = _utils.convert_search_tags(tags)
+            self.searchtags = _utils.convert_search_tags(tags)
         else:
-            searchtags = ''
+            self.searchtags = ''
 
-    else:
-        searchtags = ''
+        
+    def atual(self) -> dict:
+        '''
+        Obtém a lista de senadores em exercício.
+        '''
 
-    return _get_request(_url + f'senador/lista/{situacao}{searchtags}')['Parlamentares']['Parlamentar']
+        url = f'{_url}senador/lista/atual{self.searchtags}'
+        return _get_request(url)['Parlamentares']['Parlamentar']
+
+
+    def afastados(self) -> dict:
+        '''
+        Obtém a lista dos senadores atualmente afastados.
+        '''
+
+        url = f'{_url}senador/lista/afastados'
+        return _get_request(url)['Parlamentares']['Parlamentar']
+
+
+    def legislatura(self, inicio: int, fim=None, exercicio=None) -> dict:
+        '''
+        Obtém a lista de senadores de uma legislatura ou de um intervalo de
+        legislaturas.
+        Defina o código da legislatura que seja consultado no campo 'inicio'.
+        Para consultar um intervalo de legislaturas, preenche o campo 'fim'.
+        Caso 'fim == None', será consultado apenas a legislatura 'inicio'.
+        Defina o campo 'exercicio' como 'S' para consultar apenas os senadores
+        que entraram em exercício.
+        '''
+
+        url = f'{_url}senador/lista/legislatura/{inicio}'
+        
+        if fim is not None:
+            url += f'/{fim}'
+
+        if exercicio is not None:
+
+            if self.searchtags == '':
+                self.searchtags = '?'
+            else:
+                self.searchtags += '&'
+
+            self.searchtags += f'exercicio={exercicio}'
+        
+        url += self.searchtags
+
+        return _get_request(url)['Parlamentares']['Parlamentar']
 
 
 
@@ -133,10 +171,12 @@ def partidos(ativo='S', index=False) -> pd.DataFrame:
 
 
 
-class Senador:
+class Senadores:
     '''
     Coleta os dados dos senadores.
-    Insira o código do senador no campo 'cod'. Encontre o código pela função senado.lista().
+    Insira o código do senador no campo 'cod'. Encontre o código pela função
+    senado.lista().
+    
     Para ver as informações do senador, chame um dos seguintes atributos:
         - identificacao
         - .dados_basicos

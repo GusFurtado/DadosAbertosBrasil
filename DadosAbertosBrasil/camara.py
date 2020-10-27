@@ -203,83 +203,71 @@ class Deputados():
             ordenar_por = 'nome'
         ):
         
-        # Id(s) do(s) deputado(s)
         if (id == None) or isinstance(id, int) or isinstance(id, list):
             self.id = id
         else:
             warnings.warn("O campo 'id' deve ser do tipo int ou uma lista de int. Qualquer outro tipo de variável será substituido por None.")
             self.id = None
         
-        # Nome dos deputados
         if (nome == None) or isinstance(nome, str):
             self.nome = nome
         else:
             warnings.warn("O campo 'nome' deve ser do tipo string. Qualquer outro tipo de variável será substituido por None.")
             self.nome = None
 
-        # Legislatura(s) dos deputados
         if (legislatura == None) or isinstance(legislatura, int) or isinstance(legislatura, list):
             self.legislatura = legislatura
         else:
             warnings.warn("O campo 'legislatura' deve ser do tipo int ou uma lista de int. Qualquer outro tipo de variável será substituido por None.")
             self.legislatura = None
         
-        # UF(s) dos deputados
         if (uf == None) or isinstance(uf, str) or isinstance(uf, list):
             self.uf = uf
         else:
             warnings.warn("O campo 'uf' deve ser um string de duas letras que representa a UF ou uma lista de string. Qualquer outro tipo de variável será substituido por None.")
             self.uf = None       
 
-        # Partido(s) dos deputados
         if (partido == None) or isinstance(partido, str) or isinstance(partido, list):
             self.partido = partido
         else:
             warnings.warn("O campo 'partido' deve ser um string que representa a sigla de um partido ou uma lista de string. Qualquer outro tipo de variável será substituido por None.")
             self.partido = None
             
-        # Sexo dos deputados
         if (sexo == None) or isinstance(sexo, str):
             self.sexo = sexo
         else:
             warnings.warn("O campo 'sexo' deve ser uma string igual a 'M' ou 'F'. Qualquer outro tipo de variável será substituido por None.")
             self.sexo = None
 
-        # Página dos resultados
         if (pagina == None) or isinstance(pagina, int):
             self.pagina = pagina
         else:
             warnings.warn("O campo 'pagina' deve ser uma variável do tipo int. Qualquer outro tipo de variável será substituido por None.")
             self.pagina = None
             
-        # Quantidade de itens por página
         if (itens == None) or isinstance(itens, int):
             self.itens = itens
         else:
             warnings.warn("O campo 'itens' deve ser uma variável do tipo int. Qualquer outro tipo de variável será substituido por None.")
             self.itens = None
 
-        # Data de início da consulta
         if (inicio == None) or isinstance(inicio, str):
             self.inicio = inicio
         else:
             warnings.warn("O campo 'inicio' deve ser uma string no formato 'AAAA-MM-DD'. Qualquer outro tipo de variável será substituido por None.")
             self.inicio = None
             
-        # Data fim da consulta
         if (fim == None) or isinstance(fim, str):
             self.fim = fim
         else:
             warnings.warn("O campo 'fim' deve ser uma string no formato 'AAAA-MM-DD'. Qualquer outro tipo de variável será substituido por None.")
             self.fim = None
             
-        # Ordem ascendente (True) ou descendente (False)
         if isinstance(asc, bool):
             self.asc = asc
         else:
             raise TypeError("O campo 'asc' deve ser igual a True ou False.")         
         
-        # Ordenar por qual variável
         if ordenar_por in ['id', 'idLegislatura', 'nome', 'siglaUF', 'siglaPartido']:
             self.ordenar_por = ordenar_por
         else:
