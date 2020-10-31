@@ -6,8 +6,6 @@ Documentação da API original: http://legis.senado.gov.br/dadosabertos/docs/
 
 
 
-import xml.etree.ElementTree as ET
-
 import pandas as pd
 import requests
 
@@ -19,44 +17,16 @@ _url = r'http://legis.senado.gov.br/dadosabertos/'
 
 
 
-class _XmlListConfig(list):
-    def __init__(self, aList):
-        for element in aList:
-            if element:
-                if len(element) == 1 or element[0].tag != element[1].tag:
-                    self.append(_XmlDictConfig(element))
-                elif element[0].tag == element[1].tag:
-                    self.append(_XmlListConfig(element))
-            elif element.text:
-                text = element.text.strip()
-                if text:
-                    self.append(text)
+def _get_request(url: str, keys=None) -> dict:
+    data = requests.get(url, headers={'Accept':'application/json'}).json()
 
-                    
-class _XmlDictConfig(dict):
-    def __init__(self, parent_element):
-        if parent_element.items():
-            self.update(dict(parent_element.items()))
-        for element in parent_element:
-            if element:
-                if len(element) == 1 or element[0].tag != element[1].tag:
-                    aDict = _XmlDictConfig(element)
-                else:
-                    aDict = {element[0].tag: _XmlListConfig(element)}
-                if element.items():
-                    aDict.update(dict(element.items()))
-                self.update({element.tag: aDict})
-            elif element.items():
-                self.update({element.tag: dict(element.items())})
-            else:
-                self.update({element.tag: element.text})
+    if keys is not None:
+        for key in keys:
+            if data is not None:
+                if key in data:
+                    data = data[key]
 
-
-          
-def _get_request(url):
-    r = requests.get(url)
-    tree = ET.fromstring(r.text)
-    return _XmlDictConfig(tree)
+    return data
 
 
 
@@ -90,7 +60,8 @@ class Lista:
         '''
 
         url = f'{_url}senador/lista/atual{self.searchtags}'
-        return _get_request(url)['Parlamentares']['Parlamentar']
+        keys = ['ListaParlamentarEmExercicio', 'Parlamentares', 'Parlamentar']
+        return _get_request(url, keys)
 
 
     def afastados(self) -> dict:
@@ -99,7 +70,8 @@ class Lista:
         '''
 
         url = f'{_url}senador/lista/afastados'
-        return _get_request(url)['Parlamentares']['Parlamentar']
+        keys = ['AfastamentoAtual', 'Parlamentares', 'Parlamentar']
+        return _get_request(url, keys)
 
 
     def legislatura(self, inicio: int, fim=None, exercicio=None) -> dict:
@@ -129,7 +101,8 @@ class Lista:
         
         url += self.searchtags
 
-        return _get_request(url)['Parlamentares']['Parlamentar']
+        keys = ['ListaParlamentarLegislatura', 'Parlamentares', 'Parlamentar']
+        return _get_request(url, keys)
 
 
 
@@ -143,8 +116,9 @@ def partidos(ativos='S', index=False) -> pd.DataFrame:
     if ativos.upper() == 'N':
         url += '?indAtivos=N'
     
-    r = _get_request(url)
-    df = pd.DataFrame(r['Partidos']['Partido'])
+    keys = ['ListaPartidos','Partidos', 'Partido']
+    r = _get_request(url, keys)
+    df = pd.DataFrame(r)
 
     if index:
         df.set_index('Codigo', inplace=True)
@@ -178,27 +152,12 @@ class Senadores:
 
     def __init__(self, cod: int):
         self.cod = cod
-        self.dados_completos = _get_request2(_url + f'senador/{cod}')
-        d = self.dados_completos['Parlamentar']
-        self.identificacao = d['IdentificacaoParlamentar']
-        self.dados_basicos = d['DadosBasicosParlamentar']
-
-        if 'UltimoMandato' in d:
-            self.ultimo_mandato = d['UltimoMandato']
-        
-        if 'OutrasInformacoes' in d:
-            self.outras_informacoes = d['OutrasInformacoes']
-
-        if 'HistoricoAcademico' in d:
-            self.cursos = self.dados_completos['Parlamentar']['HistoricoAcademico']
-
-        if 'Profissoes' in d:
-            self.profissoes = self.dados_completos['Parlamentar']['Profissoes']
-    
-        d = {}
-        for i in list(self.dados_completos['Parlamentar'].keys())[:-2]:
-            d.update(self.dados_completos['Parlamentar'][i])
-        self.dados = d
+        keys = ['DetalheParlamentar', 'Parlamentar']
+        self.dados = _get_request(f'{_url}senador/{cod}', keys)
+        self.dados.pop('OutrasInformacoes', None)
+        self.dados.pop('UrlGlossario', None)
+        self.identificacao = self.dados['IdentificacaoParlamentar']
+        self.dados_basicos = self.dados['DadosBasicosParlamentar']
 
     
     def cargos(self, comissao=None, ativos=None):
@@ -222,7 +181,9 @@ class Senadores:
         else:
             searchtags = ''
 
-        return _get_request(_url + f'senador/{self.cod}/cargos{searchtags}')
+        url = f'{_url}senador/{self.cod}/cargos{searchtags}'
+        keys = ['CargoParlamentar', 'Parlamentar', 'Cargos', 'Cargo']
+        return _get_request(url, keys)
 
 
     def filiacoes(self):
@@ -230,7 +191,9 @@ class Senadores:
         Obtém as filiações partidárias que o senador já teve.
         '''
 
-        return _get_request(_url + f'senador/{self.cod}/filiacoes')
+        url = f'{_url}senador/{self.cod}/filiacoes'
+        keys = ['FiliacaoParlamentar', 'Parlamentar', 'Filiacoes', 'Filiacao']
+        return _get_request(url, keys)
 
     
     def mandatos(self):
@@ -238,7 +201,9 @@ class Senadores:
         Obtém os mandatos que o senador já teve.
         '''
 
-        return _get_request(_url + f'senador/{self.cod}/mandatos')
+        url = f'{_url}senador/{self.cod}/mandatos'
+        keys = ['MandatoParlamentar', 'Parlamentar', 'Mandatos', 'Mandato']
+        return _get_request(url, keys)
 
 
     def comissoes(self, comissao=None, ativos=None):
@@ -263,10 +228,12 @@ class Senadores:
         else:
             searchtags = ''
 
-        return _get_request(_url + f'senador/{self.cod}/comissoes{searchtags}')
+        url = f'{_url}senador/{self.cod}/comissoes{searchtags}'
+        keys = ['MembroComissaoParlamentar', 'Parlamentar', 'MembroComissoes', 'Comissao']
+        return _get_request(url, keys)
 
 
-    def votacoes(self, ano=None, numero=None, sigla=None, tramitando=None)
+    def votacoes(self, ano=None, numero=None, sigla=None, tramitando=None):
         '''
         Obtém as votações de um senador.
 
@@ -294,7 +261,9 @@ class Senadores:
         else:
             searchtags = ''
 
-        return _get_request(_url + f'senador/{self.cod}/votacoes{searchtags}')
+        url = f'{_url}senador/{self.cod}/votacoes{searchtags}'
+        keys = ['VotacaoParlamentar', 'Parlamentar', 'Votacoes', 'Votacao']
+        return _get_request(url, keys)
 
 
     def liderancas(self):
@@ -302,7 +271,9 @@ class Senadores:
         Obtém os cargos de liderança de um senador.
         '''
 
-        return _get_request(_url + f'senador/{self.cod}/liderancas')
+        url = f'{_url}senador/{self.cod}/liderancas'
+        keys = ['LiderancaParlamentar', 'Parlamentar', 'Liderancas', 'Lideranca']
+        return _get_request(url, keys)
 
 
     def licencas(self, data=None):
@@ -322,7 +293,9 @@ class Senadores:
         else:
             searchtags = ''
 
-        return _get_request(_url + f'senador/{self.cod}/licencas{searchtags}')
+        url = f'{_url}senador/{self.cod}/licencas{searchtags}'
+        keys = ['LicencaParlamentar', 'Parlamentar', 'Licencas', 'Licenca']
+        return _get_request(url, keys)
 
 
     def autorias(
@@ -368,7 +341,9 @@ class Senadores:
         else:
             searchtags = ''
 
-        return _get_request(_url + f'senador/{self.cod}/autorias{searchtags}')
+        url = f'{_url}senador/{self.cod}/autorias{searchtags}'
+        keys = ['MateriasAutoriaParlamentar', 'Parlamentar', 'Autorias', 'Autoria']
+        return _get_request(url, keys)
 
 
     def relatorias(
@@ -410,7 +385,9 @@ class Senadores:
         else:
             searchtags = ''
 
-        return _get_request(_url + f'senador/{self.cod}/relatorias{searchtags}')
+        url = f'{_url}senador/{self.cod}/relatorias{searchtags}'
+        keys = ['MateriasRelatoriaParlamentar', 'Parlamentar', 'Relatorias', 'Relatoria']
+        return _get_request(url, keys)
 
 
     def discursos(
@@ -462,7 +439,9 @@ class Senadores:
         else:
             searchtags = ''
 
-        return _get_request(_url + f'senador/{self.cod}/discursos{searchtags}')
+        url = f'{_url}senador/{self.cod}/discursos{searchtags}'
+        keys = ['DiscursosParlamentar', 'Parlamentar', 'Pronunciamentos', 'Pronunciamento']
+        return _get_request(url, keys)
 
 
     def apartes(
@@ -514,7 +493,9 @@ class Senadores:
         else:
             searchtags = ''
 
-        return _get_request(_url + f'senador/{self.cod}/apartes{searchtags}')
+        url = f'{_url}senador/{self.cod}/apartes{searchtags}'
+        keys = ['ApartesParlamentar', 'Parlamentar', 'Apartes', 'Aparte']
+        return _get_request(url, keys)
 
 
     def historico(self):
@@ -523,4 +504,9 @@ class Senadores:
         senador (mandato atual e anteriores, se houver).
         '''
 
-        return _get_request(_url + f'senador/{self.cod}/historico')
+        url = f'{_url}senador/{self.cod}/historico'
+        keys = ['DetalheParlamentar', 'Parlamentar']
+        d = _get_request(url, keys)
+        d.pop('OutrasInformacoes', None)
+        d.pop('UrlGlossario', None)
+        return d
