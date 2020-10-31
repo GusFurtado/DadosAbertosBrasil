@@ -34,7 +34,7 @@ pip install DadosAbertosBrasil
 - **[MIT](LICENSE)**
 
 ### Próximos Passos
-- Módulo `senado`, similar ao módulo `camara`. Será necessário adicionar um package `xml`;
+- Conclusão do módulo `senado`;
 - Módulo `tse`, que utilizará o package `zipfile` para extrair os arquivos `.csv` do repositório do TSE;
 - Substituição das funções do módulo `camara` por classes. Atualmente as funções capturam apenas dados dos últimos seis meses e da última legislatura;
 - Expansão das funções de filtro e busca de séries, para facilitar encontrar a série desejada;
