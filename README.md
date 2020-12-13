@@ -8,7 +8,7 @@
 
 É um pacote open-source para **Python** e **Pandas** e a forma mais simples de acessar dados de instituições como **IGBE**, **IPEA**, etc.
 
-Atualmente o pacote Dados Abertos Brasil possui seis módulos em desenvolvimento:
+Atualmente o pacote Dados Abertos Brasil possui cinco módulos em desenvolvimento:
 
 - DadosAbertosBrasil.**[ibge](https://www.gustavofurtado.com/doc.html#SessaoIBGE)**
 - DadosAbertosBrasil.**[ipea](https://www.gustavofurtado.com/doc.html#SessaoIPEA)**
@@ -38,3 +38,9 @@ pip install DadosAbertosBrasil
 - Expansão das funções de filtro e busca de séries, para facilitar encontrar a série desejada;
 - Padronização dos nomes das colunas dos DataFrame para melhor interpretação do usuário e integração entre módulos;
 - Adição constante de novas funções no módulo `favoritos`.
+
+---
+
+<div style="text-align: right">
+  Desenvolvido por: Gustavo Furtado da Silva
+</div>
