@@ -178,3 +178,16 @@ def codigos_municipios() -> pd.DataFrame:
     url = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
     df = pd.read_json(url)
     return df[['codigo_tse', 'codigo_ibge', 'nome_municipio', 'uf', 'capital']]
+
+
+
+def perfil_eleitorado() -> pd.DataFrame:
+    '''
+    Tabela com perfil do eleitorado por município.
+    '''
+
+    return pd.read_csv(
+        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.csv',
+        encoding = 'latin-1',
+        sep = ';'
+    )

@@ -1,6 +1,9 @@
 '''
 Módulo para extração dos dados abertos dos arquivos do TSE.
 
+O desenvolvimento deste módulo foi descontinuado.
+É sugerido utilizar o pacote 'electionsBR' da Cepesp para coleta de dados dos repositório do TSE.
+
 Documentação da API original: https://www.tse.jus.br/eleicoes/estatisticas/repositorio-de-dados-eleitorais-1
 '''
 
@@ -18,7 +21,7 @@ from DadosAbertosBrasil import _utils
 
 
 warnings.warn(
-    '''Este pacote foi descontinuado.
+    '''Este módulo foi descontinuado.
     É sugerido utilizar o pacote 'electionsBR' da Cepesp para coleta de dados dos repositório do TSE.''',
     DeprecationWarning
 )
@@ -312,16 +315,3 @@ def votacao_secao(ano: int, uf: str) -> pd.DataFrame:
     r = requests.get(url)
     zipfile = ZipFile(BytesIO(r.content))
     return _read_csv(zipfile, file)
-
-
-
-def perfil_eleitorado() -> pd.DataFrame:
-    '''
-    Tabela com perfil do eleitorado por município.
-    '''
-
-    return pd.read_csv(
-        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.csv',
-        encoding = 'latin-1',
-        sep = ';'
-    )
