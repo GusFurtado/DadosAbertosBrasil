@@ -8,6 +8,17 @@ def parse_uf(uf: str) -> str:
     '''
     Converte os nomes dos estados em siglas padrões.
     Suporta abreviaturas, acentuação e case sensibility.
+
+    Parametros
+    ----------
+    uf: str
+        Nome ou sigla da UF.
+
+    Retorna
+    -------
+    str
+        String de dois caracteres maiúsculos que representam a sigla da
+        Unidade Federativa desejada.
     '''
     
     UFS = {
@@ -80,3 +91,51 @@ def convert_search_tags(tags: dict) -> str:
         s += f'{keys[-1]}={tags[keys[-1]]}'
 
     return s
+
+
+
+def parse_localidade(
+        localidade: str,
+        brasil = 1,
+        on_error = 'raise'
+    ) -> str:
+    '''
+    Verifica se o código da localidade é válido.
+
+    Parametros
+    ----------
+    localidade: str ou int
+        Código da localidade que se deseja verificar.
+        Caso localidade == None, retorna o valor padrão do Brasil.
+    brasil: default = 1
+        Valor padrão para o Brasil.
+    on_error: str (default = 'raise')
+        - 'raise': Gera um erro quando o valor não for válido;
+        - 'brasil': Retorna o valor Brasil quando o valor não for válido.
+
+    Retorna
+    -------
+    str ou int
+        Valor da localidade validado.
+    '''
+
+    if localidade is None:
+        return brasil
+
+    elif isinstance(localidade, int):
+        return localidade
+
+    elif isinstance(localidade, str):
+        if localidade.isnumeric():
+            return localidade
+
+    if on_error == 'raise':
+        raise AttributeError('O código da localidade não está em um formato numérico.')
+    elif on_error == 'brasil':
+        return brasil
+    else:
+        raise ValueError(
+            "Valor incorreto para o argumento 'on_error':\n"
+            "  - 'raise': Gera um erro quando o valor não for válido;\n"
+            "  - 'brasil': Retorna o valor Brasil quando o valor não for válido."
+        )

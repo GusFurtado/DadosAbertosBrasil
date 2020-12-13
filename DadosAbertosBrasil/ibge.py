@@ -16,6 +16,8 @@ Documentação da API original: https://servicodados.ibge.gov.br/api/docs
 import pandas as pd
 import requests
 
+from . import _utils
+
 
 
 _normalize = pd.io.json.json_normalize if pd.__version__[0] == '0' else pd.json_normalize
@@ -23,41 +25,52 @@ _url = 'https://servicodados.ibge.gov.br/api/v3/agregados'
 
 
 
-def nomes(nomes, sexo=None, localidade=None) -> pd.DataFrame:
+def nomes(nomes: list, sexo=None, localidade=None) -> pd.DataFrame:
     '''
     Obtém a frequência de nascimentos por década dos nomes consultados.
     Defina o campo 'nomes' com um string ou uma lista de string.
     Use os argumentos opcionais para definir sexo e localidade dos nomes.
+
+    Parametros
+    ----------
+    nomes: list ou str
+        Nome ou lista de nomes a ser consultado.
+    sexo: str (opcional)
+        'M' para consultar apenas o nome de pessoas do sexo masculino;
+        'F' para consultar apenas o nome de pessoas do sexo feminino;
+        None para consultar ambos.
+    localidade: int ou str (opcional)
+        Caso deseje obter a frequência referente a uma dada localidade,
+        informe o parâmetro localidade. Por padrão, assume o valor BR,
+        mas pode ser o identificador de um município ou de uma UF.
+        Utilize a função ibge.localidade() para encontrar a localidade
+        desejada.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo a frequência de nascimentos por década para
+        o(s) nome(s) consultado(s).
     '''
     
     if isinstance(nomes, str):
         s = nomes
     if isinstance(nomes, list):
-        s = ''
-        for nome in nomes:
-            s += nome + '|'
+        s = '|'.join(nomes)
+
     if sexo != None:
         s += f'?sexo={sexo}'
-    if localidade != None:
-        s += f'?localidade={localidade}'
+
+    if localidade is not None:
+        s += f'?localidade={_utils.parse_localidade(localidade)}'
 
     json = pd.read_json(
         f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{s}"
     )
 
-    nomes = ['PERIODO'] + json.nome.to_list()
-    df = pd.DataFrame(json.res[0])
-    df = df[['periodo', 'frequencia']]
-
-    for i in json.res[1:]:
-        df = pd.merge(
-            df,
-            pd.DataFrame(i),
-            left_on='periodo',
-            right_on='periodo'
-        )
-
-    df.columns = nomes    
+    dfs = [pd.DataFrame(json.res[i]).set_index('periodo') for i in json.index]
+    df = pd.concat(dfs, axis=1)
+    df.columns = json.nome
 
     return df
 
@@ -66,6 +79,17 @@ def nomes(nomes, sexo=None, localidade=None) -> pd.DataFrame:
 def nomes_uf(nome: str) -> pd.DataFrame:
     '''
     Obtém a frequência de nascimentos por UF para o nome consultado.
+
+    Parâmetros
+    ----------
+    nome: str
+        Nome que se deseja pesquisar.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo a frequência de nascimentos do nome pesquisado,
+        agrupado por Unidade da Federação.
     '''
     
     if isinstance(nome, str):
@@ -91,31 +115,54 @@ def nomes_uf(nome: str) -> pd.DataFrame:
 def nomes_ranking(decada=None, sexo=None, localidade=None) -> pd.DataFrame:
     '''
     Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
-    Utilize os argumentos opcionais para filtrar década, sexo e localidade.
+
+    Parâmetros
+    ----------
+    decada: int (opcional)
+        Deve ser um número múltiplo de 10 no formato AAAA.
+    sexo: str (opcional)
+        'M' para consultar apenas o nome de pessoas do sexo masculino;
+        'F' para consultar apenas o nome de pessoas do sexo feminino;
+        None para consultar ambos.
+    localidade: int ou str (opcional)
+        Caso deseje obter o ranking de nomes referente a uma dada localidade,
+        informe o parâmetro localidade. Por padrão, assume o valor BR,
+        mas pode ser o identificador de um município ou de uma UF.
+        Utilize a função ibge.localidade() para encontrar a localidade
+        desejada.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo os nomes mais populadores dentro do universo de
+        parâmetros pesquisados.
     '''
     
     query = 'https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking'
-    sep = '?'
+    params = []
     
-    if decada != None:
+    if decada is not None:
+        decada_error = "O argumento 'decada' deve ser um número inteiro multiplo de 10."
         if isinstance(decada, int):
-            query += f'?decada={decada}'
-            sep = '&'
+            if decada%10 == 0:
+                params.append(f'decada={decada}')
+            else:
+                raise ValueError(decada_error)
         else:
-            raise TypeError("O argumento 'decada' deve ser um número inteiro multiplo de 10.")
+            raise TypeError(decada_error)
     
-    if localidade != None:
-        if isinstance(localidade, int):
-            query += f'{sep}localidade={localidade}'
-            sep = '&'
-        else:
-            raise TypeError("O argumento 'localidade' deve ser um número inteiro.")
+    if localidade is not None:
+        params.append(f'localidade={_utils.parse_localidade(localidade)}')
             
-    if sexo != None:
-        if sexo == 'M' or sexo == 'F':
-            query += f'{sep}sexo={sexo}'
+    if sexo is not None:
+        if sexo in ['M', 'm', 'F', 'f']:
+            params.append(f'sexo={sexo.upper()}')
         else:
-            raise TypeError("O argumento 'sexo' deve ser um tipo 'string' igual a 'M' para masculino ou 'F' para feminino.")
+            raise ValueError("O argumento 'sexo' deve ser um tipo 'string' igual a 'M' para masculino ou 'F' para feminino.")
+    
+    params = '&'.join(params)
+    if params != '':
+        query += f'?{params}'
     
     return pd.DataFrame(
         pd.read_json(query).res[0]
@@ -268,6 +315,23 @@ class Sidra:
 def referencias(cod: str, index=False) -> pd.DataFrame:
     '''
     Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
+
+    Parâmetros
+    ----------
+    cod: str
+        - 'A': Assuntos;
+        - 'C': Classificações;
+        - 'N': Níveis geográficos;
+        - 'P': Períodos;
+        - 'E': Periodicidades;
+        - 'V': Variáveis.
+    index: bool (opcional)
+        Defina True caso o campo 'id' deva ser o index do DataFrame.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo todas as referências do código pesquisado.
     '''
 
     if cod in ['A', 'a', 'assuntos']:
@@ -283,7 +347,7 @@ def referencias(cod: str, index=False) -> pd.DataFrame:
     elif cod in ['V', 'v', 'variaveis']:
         s = 'V'
     else:
-        raise TypeError("O campo 'cod' deve ser do tipo string.")
+        raise ValueError("O campo 'cod' deve ser do tipo string.")
         
     data = requests.get(f'https://servicodados.ibge.gov.br/api/v3/agregados?acervo={s}').json()
     df = pd.DataFrame(data)
@@ -298,19 +362,28 @@ def referencias(cod: str, index=False) -> pd.DataFrame:
 def populacao(projecao=None, localidade=None):
     '''
     Obtém a projecao da população referente ao Brasil.
-    Escolha um dos tipos de projeção:
-        - 'populacao'
-        - 'nascimento'
-        - 'obito'
-    Use o argumento opcional para definir a localidade da projeção.
+
+    Parametros
+    ----------
+    projecao: str (default = None)
+        - 'populacao' obtém o valor projetado da população total da localidade;
+        - 'nascimento' obtém o valor projetado de nascimentos da localidade
+        - 'obito' obtém o valor projetado de óbitos da localidade;
+        - None obtém um dicionário com todos os valores anteriores.
+    localidade: int ou str (default = None)
+        Código da localidade desejada.
+        Por padrão, obtém os valores do Brasil.
+        Utilize a função ibge.localidades() para identificar
+        a localidade desejada.
+
+    Retorna
+    -------
+    dict ou int:
+        Valor(es) projetado(s) para o indicador escolhido.
     '''
 
-    query = f'https://servicodados.ibge.gov.br/api/v1/projecoes/populacao'
-    if localidade != None:
-        if isinstance(localidade, int):
-            query += f'/{localidade}'
-        else:
-            raise TypeError("O argumento 'localidade' deve ser um número inteiro.")
+    localidade = _utils.parse_localidade(localidade, '')
+    query = f'https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/{localidade}'
             
     r = requests.get(query).json()
     
@@ -327,67 +400,70 @@ def populacao(projecao=None, localidade=None):
 
 
 
+def _loc_columns(x: str) -> str:
+    '''
+    Função de suporte à função ibge.localidades().
+    Usada para renomear as colunas do DataFrame de distritos.
+    '''
+
+    y = x.replace('-', '_').split('.')
+    return f'{y[-2]}_{y[-1]}' if len(y)>1 else y[0]
+
+
+
 def localidades() -> pd.DataFrame:
     '''
     Obtém o conjunto de distritos do Brasil.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo todas as divisões de distritos do Brasil.
     '''
 
-    loc = _normalize(
+    df = _normalize(
         requests.get(
             r'https://servicodados.ibge.gov.br/api/v1/localidades/distritos'
         ).json()
     )
-    
-    loc.columns = [
-        'distrito_id',
-        'municipio_id',
-        'microrregiao_id',
-        'uf_id',
-        'uf',
-        'regiao_id',
-        'regiao',
-        'regiao_sigla',
-        'uf_sigla',
-        'mesorregiao_id',
-        'mesorregiao',
-        'microrregiao',
-        'municipio',
-        'distrito'
-    ]
-    
-    loc = loc[[
-        'distrito_id',
-        'distrito',
-        'municipio_id',
-        'municipio',
-        'microrregiao_id',
-        'microrregiao',
-        'mesorregiao_id',
-        'mesorregiao',
-        'uf_id',
-        'uf',
-        'uf_sigla',
-        'regiao_id',
-        'regiao',
-        'regiao_sigla'
-    ]]
 
-    return loc
+    df.columns = df.columns.map(_loc_columns)
+    return df.loc[:,~df.columns.duplicated()]
 
 
 
-def malha(localidade='') -> str:
+def malha(localidade=None) -> str:
     '''
     Obtém a URL para a malha referente ao identificador da localidade.
+
+    Parametros
+    ----------
+    localidade: int ou str (default = '')
+        Código da localidade desejada.
+        Por padrão, obtém a malha do Brasil.
+        Utilize a função ibge.localidades() para identificar
+        a localidade desejada.
+
+    Retorna
+    -------
+    str
+        URL da malha da localidade desejada.
     '''
 
+    localidade = _utils.parse_localidade(localidade, '')
     return f'https://servicodados.ibge.gov.br/api/v2/malhas/{localidade}'
 
 
 
 def coordenadas() -> pd.DataFrame:
     '''
-    Obtém as coordenadas de todas as localidades brasileiras.
+    Obtém as coordenadas de todas as localidades brasileiras,
+    incluindo latitude, longitude e altitude.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame das coordenadas de todas as localidade brasileiras.
     '''
 
     return pd.read_excel(

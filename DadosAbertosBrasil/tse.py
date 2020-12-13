@@ -8,6 +8,7 @@ Documentação da API original: https://www.tse.jus.br/eleicoes/estatisticas/rep
 
 from io import BytesIO
 from zipfile import ZipFile
+import warnings
 
 import pandas as pd
 import requests
@@ -15,6 +16,12 @@ import requests
 from DadosAbertosBrasil import _utils
 
 
+
+warnings.warn(
+    '''Este pacote foi descontinuado.
+    É sugerido utilizar o pacote 'electionsBR' da Cepesp para coleta de dados dos repositório do TSE.''',
+    DeprecationWarning
+)
 
 def _read_csv(zipfile: ZipFile, file: str) -> pd.DataFrame:
     '''
