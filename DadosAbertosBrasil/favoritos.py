@@ -1,5 +1,6 @@
 '''
-Módulo para acesso de APIs selecionadas.
+Módulo para consultas à informações variadas.
+Inclue dados de APIs do Banco Central do Brasil e outras informações úteis.
 '''
 
 
@@ -15,7 +16,13 @@ from DadosAbertosBrasil import _utils
 
 def moedas() -> pd.DataFrame:
     '''
-    Nomes e símbolos das principais moedas internacionais.
+    Obtém os nomes e símbolos das principais moedas internacionais.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo os nomes e símbolos das principais
+        moedas internacionais.
     '''
 
     query = r"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/Moedas?$top=100&$format=json"
@@ -38,6 +45,28 @@ def cambio(
     Taxa de câmbio das principais moedas internacionais.
     É possível escolher várias moedas inserindo uma lista no campo 'moeda'.
     Defina o período da consulta pelos campos 'data_inicial' e 'data_final'.
+
+    Parâmetros
+    ----------
+    moedas: list ou str (default = 'USD')
+        Sigla da moeda ou lista de siglas de moedas que será(ão) pesquisada(s).
+        Utilize a função favoritos.moedas() para obter uma lista de moedas
+        válidas.
+    data_inicial: str (default = '01-01-2000')
+        String no formato de data 'DD-MM-AAAA' que representa o primeiro dia
+        da pesquisa.
+    data_final: str (opcional)
+        String no formato de data 'DD-MM-AAAA' que representa o último dia
+        da pesquisa.
+        Caso este campo seja None, será considerada a data de hoje.
+    index: bool (default = False)
+        Define se a coluna 'Data' será o index do DataFrame.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo o valor cambial da(s) moeda(s) selecionada(s)
+        por dia.
     '''
 
     if data_final == None:
@@ -83,6 +112,16 @@ def cambio(
 def ipca(index=False) -> pd.DataFrame:
     '''
     Valor mensal do índice IPC-A.
+
+    Parâmetros
+    ----------
+    index: bool (default = False)
+        Define se a coluna 'Data' será o index do DataFrame.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo o valor do índice IPC-A por mês.
     '''
 
     ipca_query = r'https://api.bcb.gov.br/dados/serie/bcdata.sgs.4448/dados?formato=json'
@@ -100,6 +139,11 @@ def ipca(index=False) -> pd.DataFrame:
 def catalogo() -> pd.DataFrame:
     '''
     Catálogo de iniciativas oficiais de dados abertos no Brasil.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo um catálogo de iniciativas de dados abertos.
     '''
 
     # URL do repositório no GitHub contendo o catálogo de dados abertos.
@@ -113,6 +157,16 @@ def catalogo() -> pd.DataFrame:
 def geojson(uf: str) -> dict:
     '''
     Coordenadas dos municípios brasileiros em formato GeoJSON para criação de mapas.
+
+    Parâmetros
+    ----------
+    uf: str
+        Nome ou sigla da Unidade Federativa.
+
+    Retorna
+    -------
+    dict
+        Coordenadas em formato .GeoJSON da UF pesquisada.
     '''
 
     uf = _utils.parse_uf(uf)
@@ -171,6 +225,13 @@ def geojson(uf: str) -> dict:
 def codigos_municipios() -> pd.DataFrame:
     '''
     Lista dos códigos dos municípios do IBGE e do TSE.
+    Utilizado para correlacionar dados das duas APIs diferentes.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo os códigos do IBGE e do TSE para todos os
+        municípios do Brasil.
     '''
 
     # URL do repositório no GitHub contendo os códigos.
@@ -184,6 +245,11 @@ def codigos_municipios() -> pd.DataFrame:
 def perfil_eleitorado() -> pd.DataFrame:
     '''
     Tabela com perfil do eleitorado por município.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo o perfil do eleitorado em todos os municípios.
     '''
 
     return pd.read_csv(

@@ -1,34 +1,119 @@
 '''
 Módulo para captura dos dados abertos da API do IpeaData.
 
-Use o seguinte template para buscar dados:
+Utilize a classe ipea.Serie(cod) para obtér os valores históricos da série.
+
+Use o seguinte template para obter os parâmetros de referência:
 >>> from DadosAbertosBrasil import ipea
->>> ipea.{função}(cod={opcional})
+>>> ipea.<parâmetro>(cod <opcional>)
+
+Os parâmetros disponíveis são:
+- ipea.metadados;
+- ipea.temas;
+- ipea.paises;
+- ipea.territorios.
 
 Documentação da API original: http://www.ipeadata.gov.br/api/
 '''
 
 
 
+import warnings
+
 import pandas as pd
 
 
 
-_url = 'http://www.ipeadata.gov.br/api/odata4/'
-
-
-
 def _query(funcao: str) -> pd.DataFrame:
-    return pd.DataFrame(list(pd.read_json(_url + funcao).value))
+    _URL = 'http://www.ipeadata.gov.br/api/odata4/'
+    return pd.DataFrame(list(pd.read_json(_URL + funcao).value))
+
+
+
+class Serie:
+    '''
+    Dados de uma série IPEA.
+
+    Parâmetros
+    ----------
+    cod: str
+        Código da série que se deseja obter os dados.
+        Utilize a função ipea.series() para identificar a série desejada.
+        Utilize a coluna 'SERCODIGO'.
+
+    Atributos
+    ---------
+    cod: str
+        Código da série escolhida.
+    valores: pd.DataFrame
+        Valores históricos da série escolhida.
+    metadados: pd.DataFrame
+        Metadados da série escolhida.
+    '''
+
+    def __init__(self, cod: str):
+        self.cod = cod
+        self.valores = _query(f"Metadados(SERCODIGO='{cod}')/Valores")
+        self.metadados = _query(f"Metadados('{cod}')")
+
+
+
+def metadados(cod=None) -> pd.DataFrame:
+    '''
+    Registros de metadados e valores de todas as séries do IPEA.
+
+    Parâmetros
+    ----------
+    cod: str (default = None)
+        Código da série que se deseja obter os dados.
+        Caso cod = None, obtém os metadados de todas as séries disponíveis.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo os metadados de todas séries disponíveis (default),
+        ou apenas de uma série escolhida.
+        Utilize a coluna 'SERCODIGO' para alimentar o campo 'cod'
+        da classe ipea.Serie(cod).
+    '''
+
+    if cod is None:
+        return _query('Metadados')
+    elif isinstance(cod, str):
+        return _query(f"Metadados('{cod}')")
+    else:
+        raise TypeError('O código da série deve ser tipo string.')
 
 
 
 def series(cod=None, valores=True) -> pd.DataFrame:
     '''
-    Registros de metadados de todas as séries disponíveis para consulta.
+    Registros de metadados e valores de todas as séries do IPEA.
+
+    Parâmetros
+    ----------
+    cod: int (default = None)
+        Código da série que se deseja obter os dados.
+        Caso cod = None, obtém os metadados de todas as séries disponíveis.
+    valores: bool (default = True)
+        - True: Obtém os valores da série desejada;
+        - False: Obtém os metadados da série desejada.
+        Esse argumento é ignorado caso cod = None.
+
+    Retorna
+    -------
+    pd.DataFrame
+        - Se cod = None: Metadados das séries disponíveis;
+        - Se cod = int: Valores da série desejada;
+        - Se valores = False: Metadados da série desejada.
     '''
 
-    if cod == None:
+    warnings.warn(
+        'Função depreciada.\nSerá removida nas próximas atualizações.',
+        DeprecationWarning
+    )
+
+    if cod is None:
         return _query('Metadados')
     
     elif isinstance(cod, str):
@@ -45,9 +130,19 @@ def series(cod=None, valores=True) -> pd.DataFrame:
 def temas(cod=None) -> pd.DataFrame:
     '''
     Registros de todos os temas cadastrados.
+
+    Parâmetros
+    ----------
+    cod: int (opcional)
+        Código do tema, caso queira ver os dados deste tema exclusivamente.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo um registro de todos os temas das séries do IPEA.
     '''
     
-    if cod == None:
+    if cod is None:
         return _query('Temas')
     elif isinstance(cod, int):
         return _query(f'Temas({cod})')
@@ -59,12 +154,23 @@ def temas(cod=None) -> pd.DataFrame:
 def paises(cod=None) -> pd.DataFrame:
     '''
     Registros de todos os países cadastrados.
+
+    Parâmetros
+    ----------
+    cod: str (opcional)
+        Sigla de três letras do país, caso queira ver os dados deste
+        país exclusivamente.
+
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo um registro de todos os países das séries do IPEA.
     '''
 
-    if cod == None:
+    if cod is None:
         return _query('Paises')
     elif isinstance(cod, str):
-        return _query(f"Paises('{cod}')")
+        return _query(f"Paises('{cod.upper()}')")
     else:
         raise TypeError('Código do país deve ser um string de três letras maísculas.')
 
@@ -73,9 +179,25 @@ def paises(cod=None) -> pd.DataFrame:
 def territorios(cod=None, nivel=None) -> pd.DataFrame:
     '''
     Registros de todos os territórios brasileiros cadastrados.
+
+    Parâmetros
+    ----------
+    cod: int (opcional)
+        Código do território, caso queira ver os dados deste
+        território exclusivamente.
+    nivel: str (opcional)
+        Nome do nível territorial.
+        Utilize a função ipea.niveis_territoriais() para verificar
+        as opções disponíveis.
+    
+    Retorna
+    -------
+    pd.DataFrame
+        DataFrame contendo o registro de todos os territórios
+        das séries do IPEA.
     '''
 
-    if (cod == None) and (nivel == None):
+    if (cod is None) and (nivel is None):
         return _query('Territorios')
     else:
         n = 'Municipios' if nivel == 'Municípios' else nivel        
@@ -86,21 +208,28 @@ def territorios(cod=None, nivel=None) -> pd.DataFrame:
 def niveis_territoriais() -> list:
     '''
     Lista dos possíveis níveis territoriais.
+
+    Retorna
+    -------
+    list
+        Lista de todos os níveis territoriais das séries do IPEA.
     '''
 
     return [
         'Brasil',
         'Regiões',
         'Estados',
-        'Municípios',
-        'AMC 91-00',
         'Microrregiões',
         'Mesorregiões',
+        'Municípios',
+        'Municípios por bacia',
+        'Área metropolitana',
+        'Estado/RM',
         'AMC 20-00',
         'AMC 40-00',
         'AMC 60-00',
-        'AMC 70-00',
         'AMC 1872-00',
-        'Área metropolitana',
-        'Estado/RM'
+        'AMC 91-00',
+        'AMC 70-00',
+        'Outros Países'
     ]
