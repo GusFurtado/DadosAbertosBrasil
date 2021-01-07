@@ -29,91 +29,146 @@ def _get_request(url: str, keys=None) -> dict:
     return data
 
 
-
-class Lista:
+        
+def lista_atual(participacao=None, uf=None) -> dict:
     '''
-    Gera uma lista de senadores.
-    Liste suplentes em atividade definindo o campo 'participacao' como 'S'.
-    Filtre por UF pelo campo 'uf'.
-    Utilize os métodos 'atual', 'afastado' ou 'legislatura' para escolher um
-    tipo de lista.
+    Lista senadores em exercício.
+
+    Parâmetros
+    ----------
+    participacao: str (default=None)
+        Tipo de participação.
+        - None: Busca qualquer tipo de participação.
+        - 'T': Busca apenas titulares.
+        - 'S': Busca apenas suplentes.
+    uf: str (default=None)
+        Filtra uma unidade federativa.
+        Se uf=None, lista senadores de todas as UFs.
+
+    Retorna
+    -------
+    dict
+        Dicionário contendo informações dos senadores em exercício.
     '''
 
-    def __init__(self, participacao=None, uf=None):
+    tags = {}
 
-        tags = {}
+    if participacao is not None:
+        tags['participacao'] = participacao.upper()
+    if uf is not None:
+        tags['uf'] = _utils.parse_uf(uf)
 
-        if participacao is not None:
-            tags['participacao'] = participacao
-        if uf is not None:
-            tags['uf'] = _utils.parse_uf(uf)
+    if len(tags) > 0:
+        searchtags = _utils.convert_search_tags(tags)
+    else:
+        searchtags = ''
 
-        if len(tags) > 0:
-            self.searchtags = _utils.convert_search_tags(tags)
-        else:
-            self.searchtags = ''
-
-        
-    def atual(self) -> dict:
-        '''
-        Obtém a lista de senadores em exercício.
-        '''
-
-        url = f'{_url}senador/lista/atual{self.searchtags}'
-        keys = ['ListaParlamentarEmExercicio', 'Parlamentares', 'Parlamentar']
-        return _get_request(url, keys)
-
-
-    def afastados(self) -> dict:
-        '''
-        Obtém a lista dos senadores atualmente afastados.
-        '''
-
-        url = f'{_url}senador/lista/afastados'
-        keys = ['AfastamentoAtual', 'Parlamentares', 'Parlamentar']
-        return _get_request(url, keys)
-
-
-    def legislatura(self, inicio: int, fim=None, exercicio=None) -> dict:
-        '''
-        Obtém a lista de senadores de uma legislatura ou de um intervalo de
-        legislaturas.
-        Defina o código da legislatura que seja consultado no campo 'inicio'.
-        Para consultar um intervalo de legislaturas, preenche o campo 'fim'.
-        Caso 'fim == None', será consultado apenas a legislatura 'inicio'.
-        Defina o campo 'exercicio' como 'S' para consultar apenas os senadores
-        que entraram em exercício.
-        '''
-
-        url = f'{_url}senador/lista/legislatura/{inicio}'
-        
-        if fim is not None:
-            url += f'/{fim}'
-
-        if exercicio is not None:
-
-            if self.searchtags == '':
-                self.searchtags = '?'
-            else:
-                self.searchtags += '&'
-
-            self.searchtags += f'exercicio={exercicio}'
-        
-        url += self.searchtags
-
-        keys = ['ListaParlamentarLegislatura', 'Parlamentares', 'Parlamentar']
-        return _get_request(url, keys)
+    url = f'{_url}senador/lista/atual{searchtags}'
+    keys = ['ListaParlamentarEmExercicio', 'Parlamentares', 'Parlamentar']
+    return _get_request(url, keys)
 
 
 
-def partidos(ativos='S', index=False) -> pd.DataFrame:
+def lista_afastados() -> dict:
+    '''
+    Lista senadores atualmente afastados.
+
+    Retorna
+    -------
+    dict
+        Dicionário contendo informações dos senadores afastados.
+    '''
+
+    url = f'{_url}senador/lista/afastados'
+    keys = ['AfastamentoAtual', 'Parlamentares', 'Parlamentar']
+    return _get_request(url, keys)
+
+
+
+def lista_legislatura(
+        inicio: int,
+        fim = None,
+        exercicio = None,
+        participacao = None,
+        uf = None
+    ) -> dict:
+    '''
+    Lista senadores de uma legislatura ou de um intervalo de legislaturas.
+
+    Parâmetros
+    ----------
+    inicio: int
+        Código da primeira legislatura da consulta.
+    fim: int (default=None)
+        Código da última legislatura da consulta.
+        Se fim=None, pesquisa apenas pela legislatura do campo `inicio`.
+        Caso contrário, pesquisa todas os valores de todas as legislaturas
+        entre `inicio` e `fim`. 
+    exercicio: str (default=None)
+        - 'S': Consulta apenas os senadores que entraram em exercício.
+        - 'N': Consulta apenas os senadores que não entratam em exercício.
+    participacao: str (default=None)
+        Tipo de participação.
+        - None: Busca qualquer tipo de participação.
+        - 'T': Busca apenas titulares.
+        - 'S': Busca apenas suplentes.
+    uf: str (default=None)
+        Filtra uma unidade federativa.
+        Se uf=None, lista senadores de todas as UFs.
+
+    Retorna
+    -------
+    dict
+        Dicionário contendo informações dos senadores das legislaturas
+        consultadas.
+    '''
+
+    url = f'{_url}senador/lista/legislatura/{inicio}'
+    
+    if fim is not None:
+        url += f'/{fim}'
+
+    tags = {}
+
+    if exercicio is not None:
+        tags['exercicio'] = exercicio.upper()
+    if participacao is not None:
+        tags['participacao'] = participacao.upper()
+    if uf is not None:
+        tags['uf'] = _utils.parse_uf(uf)
+
+    if len(tags) > 0:
+        searchtags = _utils.convert_search_tags(tags)
+    else:
+        searchtags = ''
+    
+    url += searchtags
+
+    keys = ['ListaParlamentarLegislatura', 'Parlamentares', 'Parlamentar']
+    return _get_request(url, keys)
+
+
+
+def partidos(ativos=True, index=False) -> pd.DataFrame:
     '''
     Lista os partidos políticos.
-    Para listas os partidos inativos, defina o campo 'ativo' como 'N'.
+
+    Parâmetros
+    ----------
+    ativos: bool (default=True)
+        - True para listar apenas os partidos ativos.
+        - False para incluir partidos inativos na lista.
+    index: bool (default=False)
+        Se True, define a coluna `Codigo` como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.DataFrame
+        DataFrame contendo a lista de partidos políticos consultados.
     '''
 
     url = f'{_url}senador/partidos'
-    if ativos.upper() == 'N':
+    if not ativos:
         url += '?indAtivos=N'
     
     keys = ['ListaPartidos','Partidos', 'Partido']
@@ -124,7 +179,7 @@ def partidos(ativos='S', index=False) -> pd.DataFrame:
         df.set_index('Codigo', inplace=True)
 
     df.DataCriacao = pd.to_datetime(df.DataCriacao)
-    if ativos.upper() == 'N':
+    if not ativos:
         df.DataExtincao = pd.to_datetime(df.DataExtincao)
 
     return df
