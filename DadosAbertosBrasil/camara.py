@@ -13,48 +13,93 @@ Documentação da API original: https://dadosabertos.camara.leg.br/swagger/api.h
 import warnings
 
 import pandas as pd
-import requests
+
+from . import API
 
 
 
-_url = 'https://dadosabertos.camara.leg.br/api/v2/'
+api = API('camara')
 
 
 
-def _query(funcao, cod, serie, index, series):
+def _query(
+        funcao: str,
+        series: list,
+        cod = None,
+        serie = 'informacoes',
+        index = False,
+    ) -> pd.DataFrame:
+    '''
+    Função que constrói queries de busca.
+
+    Parâmetros
+    ----------
+    funcao: str
+        Função que se deseja buscar.
+    series: list
+        Lista de séries disponíveis dentro da função.
+    cod: int ou str (default=None)
+        ID do item que se deseja obter informações.
+    serie: str (default='informacoes')
+        Série escolhida dentro da lista `series`.
+        Este argumento é ignorado quando `cod=None`.
+    index: bool (default=False)
+        Se True, define a coluna código como index do DataFrame.
+        Este argumento só é valido quando `cod=None`.
+
+    Retorna
+    -------
+    pandas.DataFrame ou dict
+        - DataFrame quando uma lista de códigos for retornada.
+        - dict quando as infomações de apenas um código foram consultadas. 
+
+    --------------------------------------------------------------------------
+    '''
     
-    if cod == None:
-        data = requests.get(_url + funcao).json()
-        df = pd.DataFrame(data['dados'])
-        df.drop(columns=df.columns[df.columns.str.startswith('uri')], inplace=True)
-        
+    keys = [funcao]
+    if cod is not None:
+        keys.append(str(cod))
+        if serie in series:
+            if serie != 'informacoes':
+                keys.append(serie)
+        else:
+            raise TypeError(f"O valor de `serie` deve ser um dos seguintes valores: {series}")
+            
+    data = api.get(keys)['dados']
+
+    if cod is None:
+        df = pd.DataFrame(data)
+        df = df[~df.columns.str.startswith('uri')]
         if index:
             df.set_index('id', inplace=True)
         
         return df
-    
-    elif isinstance(cod, int) or funcao == 'votacoes':
-        
-        if serie in series:
-            query = _url + f'/{funcao}/{cod}' if serie == 'informacoes' else _url + f'/{funcao}/{cod}/{serie}'        
-            data = requests.get(query).json()
-            return data['dados']
-        
-        else:
-            raise TypeError(f"O valor para o argumento 'serie' deve ser um dos seguintes valores tipo string: {series}")
-            
-    else:
-        raise TypeError("O argumento 'cod' deve ser um número inteiro.")
+    return data
 
 
 
 def blocos(cod=None, index=False):
     '''
     Dados sobre os blocos partidários.
+
+    Parâmetros
+    ----------
+    cod: int ou str (default=None)
+        ID do item que se deseja obter informações.
+    index: bool (default=False)
+        Se True, define a coluna código como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame ou dict
+        - Se `cod=None`, retorna DataFrame com lista de blocos partidários.
+        - Caso contrário, retorna dict de informações do bloco partidário.
+
+    --------------------------------------------------------------------------
     '''
 
     series = ['informacoes']
-    return _query('blocos', cod, 'informacoes', index, series)
+    return _query('blocos', series, cod, 'informacoes', index)
 
 
 
@@ -64,83 +109,268 @@ def deputados(cod=None, serie='informacoes', index=False):
     '''
 
     series = ['informacoes', 'despesas', 'discursos', 'eventos', 'frentes', 'orgaos']
-    return _query('deputados', cod, serie, index, series)
+    return _query('deputados', series, cod, serie, index)
 
 
 
 def eventos(cod=None, serie='informacoes', index=False):
     '''
     Dados sobre os eventos ocorridos ou previstos nos diversos órgãos da Câmara.
+
+    Parâmetros
+    ----------
+    cod: int ou str (default=None)
+        ID do item que se deseja obter informações.
+    serie: str (default='informacoes')
+        Dados que se deseja consultar:
+        - 'informacoes';
+        - 'deputados';
+        - 'orgaos';
+        - 'pauta';
+        - 'votacoes'.
+    index: bool (default=False)
+        Se True, define a coluna código como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame ou dict
+        - Se `cod=None`, retorna DataFrame com lista de eventos.
+        - Caso contrário, retorna dict de informações do evento.
+
+    --------------------------------------------------------------------------
     '''
 
     series = ['informacoes', 'deputados', 'orgaos', 'pauta', 'votacoes']
-    return _query('eventos', cod, serie, index, series)
+    return _query('eventos', series, cod, serie, index)
 
 
 
 def frentes(cod=None, serie='informacoes', index=False):
     '''
     Dados de frentes parlamentares de uma ou mais legislatura.
+
+    Parâmetros
+    ----------
+    cod: int ou str (default=None)
+        ID do item que se deseja obter informações.
+    serie: str (default='informacoes')
+        Dados que se deseja consultar:
+        - 'informacoes';
+        - 'membros'.
+    index: bool (default=False)
+        Se True, define a coluna código como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame ou dict
+        - Se `cod=None`, retorna DataFrame com lista de frentes parlamentares.
+        - Caso contrário, retorna dict de informações da frente parlamentar.
+
+    --------------------------------------------------------------------------
     '''
 
     series = ['informacoes', 'membros']
-    return _query('frentes', cod, serie, index, series)
+    return _query('frentes', series, cod, serie, index)
 
 
 
 def legislaturas(cod=None, serie='informacoes', index=False):
     '''
     Dados dos períodos de mantados e atividades parlamentares na Câmara.
+
+    Parâmetros
+    ----------
+    cod: int ou str (default=None)
+        ID do item que se deseja obter informações.
+    serie: str (default='informacoes')
+        Dados que se deseja consultar:
+        - 'informacoes';
+        - 'mesa'.
+    index: bool (default=False)
+        Se True, define a coluna código como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame ou dict
+        - Se `cod=None`, retorna DataFrame com lista de legislaturas.
+        - Caso contrário, retorna dict de informações da legislatura.
+
+    --------------------------------------------------------------------------
     '''
 
     series = ['informacoes', 'mesa']
-    return _query('legislaturas', cod, serie, index, series)
+    return _query('legislaturas', series, cod, serie, index)
 
 
 
 def orgaos(cod=None, serie='informacoes', index=False):
     '''
     Dados de comissões e outros órgãos legislativos da Câmara.
+
+    Parâmetros
+    ----------
+    cod: int ou str (default=None)
+        ID do item que se deseja obter informações.
+    serie: str (default='informacoes')
+        Dados que se deseja consultar:
+        - 'informacoes';
+        - 'eventos';
+        - 'membros';
+        - 'votacoes'.
+    index: bool (default=False)
+        Se True, define a coluna código como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame ou dict
+        - Se `cod=None`, retorna DataFrame com lista de órgãos legislativos.
+        - Caso contrário, retorna dict de informações do órgão legislativo.
+
+    --------------------------------------------------------------------------
     '''
 
     series = ['informacoes', 'eventos', 'membros', 'votacoes']
-    return _query('orgaos', cod, serie, index, series)
+    return _query('orgaos', series, cod, serie, index)
 
 
 
 def partidos(cod=None, serie='informacoes', index=False):
     '''
-    Dados dos partidos políticos que tem ou já tiveram parlamentares em exercício na Câmara.
+    Dados dos partidos políticos que tem ou já tiveram parlamentares
+    em exercício na Câmara.
+
+    Parâmetros
+    ----------
+    cod: int ou str (default=None)
+        ID do item que se deseja obter informações.
+    serie: str (default='informacoes')
+        Dados que se deseja consultar:
+        - 'informacoes';
+        - 'membros'.
+    index: bool (default=False)
+        Se True, define a coluna código como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame ou dict
+        - Se `cod=None`, retorna DataFrame com lista de partidos políticos.
+        - Caso contrário, retorna dict de informações do partido político.
+
+    --------------------------------------------------------------------------
     '''
 
     series = ['informacoes', 'membros']
-    return _query('partidos', cod, serie, index, series)
+    return _query('partidos', series, cod, serie, index)
 
 
 
 def proposicoes(cod=None, serie='informacoes', index=False):
     '''
     Dados de proposições na Câmara.
+
+    Parâmetros
+    ----------
+    cod: int ou str (default=None)
+        ID do item que se deseja obter informações.
+    serie: str (default='informacoes')
+        Dados que se deseja consultar:
+        - 'informacoes';
+        - 'autores';
+        - 'relacionadas';
+        - 'temas';
+        - 'tramitacoes';
+        - 'votacoes'.
+    index: bool (default=False)
+        Se True, define a coluna código como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame ou dict
+        - Se `cod=None`, retorna DataFrame com lista de proposições.
+        - Caso contrário, retorna dict de informações da proposição.
+
+    --------------------------------------------------------------------------
     '''
 
-    series = ['informacoes', 'autores', 'relacionadas', 'temas', 'tramitacoes', 'votacoes']
-    return _query('proposicoes', cod, serie, index, series)
+    series = [
+        'informacoes',
+        'autores',
+        'relacionadas',
+        'temas',
+        'tramitacoes',
+        'votacoes'
+    ]
+
+    return _query('proposicoes', series, cod, serie, index)
 
 
 
 def votacoes(cod=None, serie='informacoes', index=False):
     '''
     Dados de votações na Câmara.
+
+    Parâmetros
+    ----------
+    cod: int ou str (default=None)
+        ID do item que se deseja obter informações.
+    serie: str (default='informacoes')
+        Dados que se deseja consultar:
+        - 'informacoes';
+        - 'orientacoes';
+        - 'votos'.
+    index: bool (default=False)
+        Se True, define a coluna código como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame ou dict
+        - Se `cod=None`, retorna DataFrame com lista de votações.
+        - Caso contrário, retorna dict de informações da votação.
+
+    --------------------------------------------------------------------------
     '''
 
     series = ['informacoes', 'orientacoes', 'votos']
-    return _query('votacoes', cod, serie, index, series)
+    return _query('votacoes', series, cod, serie, index)
 
 
 
 def referencias(funcao, index=False) -> pd.DataFrame:
     '''
     Listas de valores válidos para as funções deste pacote.
+
+    Parâmetros
+    ----------
+    funcao: str
+        - 'codSituacaoDeputados',
+        - 'siglaUF',
+        - 'codSituacaoEvento',
+        - 'codTipoEvento',
+        - 'codSituacaoOrgao',
+        - 'codTipoOrgao',
+        - 'codTipoAutor',
+        - 'codSituacaoProposicao',
+        - 'codTema',
+        - 'codTipoTramitacao',
+        - 'siglaTipo',
+        - 'situacoesDeputado'
+        - 'situacoesEvento'
+        - 'situacoesOrgao'
+        - 'situacoesProposicao'
+        - 'tiposEvento'
+        - 'tiposOrgao'
+        - 'tiposProposicao'
+        - 'tiposTramitacao'
+        - 'uf'
+
+    index: bool (default=False)
+        Se True, define a coluna código como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        Lista das referências válidas.
+
     '''
     
     referencia = {
@@ -167,10 +397,9 @@ def referencias(funcao, index=False) -> pd.DataFrame:
     }
     
     if funcao in referencia.keys():
-        data = requests.get(_url + 'referencias/' + referencia[funcao]).json()
-        
+        data = api.get(f'referencias/{referencia[funcao]}')
     else:
-        raise TypeError(f"Referência inválida. Insira um dos seguintes valores no campo 'funcao': {list(referencia.keys())}")
+        raise TypeError(f"Referência inválida. Insira um dos seguintes valores para `funcao`: {list(referencia.keys())}")
     
     df = pd.DataFrame(data['dados'])
     if index:
@@ -336,6 +565,7 @@ class Deputados():
         Roda query com os argumentos definidos.
         '''
 
+        import requests
         data = requests.get(self.query()).json()
         df = pd.DataFrame(data['dados'])
         df.drop(columns=df.columns[df.columns.str.startswith('uri')], inplace=True)
