@@ -7,6 +7,7 @@ dados de instituições como IGBE, IPEA, etc.
 
 Módulos em Desenvolvimento
 --------------------------
+    - DadosAbertosBrasil.API
     - DadosAbertosBrasil.ibge
     - DadosAbertosBrasil.ipea
     - DadosAbertosBrasil.camara
@@ -48,3 +49,83 @@ Próximos Passos
 
 __version__ = '0.1.3'
 __author__ = 'Gustavo Furtado da Silva'
+
+
+
+import requests
+
+
+
+ENDPOINTS = {
+    'camara': 'https://dadosabertos.camara.leg.br/api/v2/',
+    'ipea': 'http://www.ipeadata.gov.br/api/odata4/',
+    'senado': 'http://legis.senado.gov.br/dadosabertos/',
+}
+
+
+
+class API:
+    '''
+    Classe para coleta direta dos dados brutos das API REST.
+
+    Parâmetros
+    ----------
+    endpoint: str
+        Qual API deseja se conectar:
+        - 'camara': Acessar API da Câmara dos Deputados;
+        - 'senado': Acessar API do Senado Federal.
+
+    Exemplos
+    --------
+    >>> from DadosAbertosBrasil import API
+    >>> api = API(endpoint='camara')
+    >>> api.get(keys=['referencias', 'proposicoes', 'codTipoAutor'])
+
+    >>> api = API(endpoint='senado')
+    >>> api.get(keys='/autor/lista/atual')
+
+    Documentação original
+    ---------------------
+    'camara'
+        https://dadosabertos.camara.leg.br/swagger/api.html
+    'senado'
+        http://legis.senado.gov.br/dadosabertos/docs/ui/index.html#/
+
+    --------------------------------------------------------------------------
+    '''
+
+    def __init__(self, endpoint:str):
+        self.URL = ENDPOINTS[endpoint]
+
+    def get(self, keys) -> dict:
+        '''
+        Coleta os dados requisitados.
+
+        Parâmetros
+        ----------
+        keys: list ou str
+            Caminho de parâmetros para acessar a função desejada.
+            Pode ser uma string de parâmetros unidos por barras '/'.
+            Ou pode ser uma lista de strings na ordem correta.
+            Os dois métodos produzem o mesmo resultado.
+
+        Exemplos
+        --------
+        Acessando usando uma string
+        >>> api.get(keys='/autor/lista/atual')
+
+        Acessando usando uma lista de string
+        >>> api.get(keys=['autor', 'lista', 'atual'])
+
+        ----------------------------------------------------------------------      
+        '''
+        
+        if isinstance(keys, str):
+            path = keys
+        if isinstance(keys, list):
+            path = '/'.join(keys)
+
+        return requests.get(
+            url = self.URL + path,
+            headers = {'Accept':'application/json'}
+        ).json()
