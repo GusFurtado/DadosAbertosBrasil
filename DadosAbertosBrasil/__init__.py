@@ -97,7 +97,7 @@ class API:
     def __init__(self, endpoint:str):
         self.URL = ENDPOINTS[endpoint]
 
-    def get(self, keys) -> dict:
+    def get(self, keys, params=None) -> dict:
         '''
         Coleta os dados requisitados.
 
@@ -108,6 +108,9 @@ class API:
             Pode ser uma string de parâmetros unidos por barras '/'.
             Ou pode ser uma lista de strings na ordem correta.
             Os dois métodos produzem o mesmo resultado.
+        params: dict (default=None)
+            Dicionário de parâmetros de busca que serão enviados
+            para o request.
 
         Exemplos
         --------
@@ -127,5 +130,6 @@ class API:
 
         return requests.get(
             url = self.URL + path,
-            headers = {'Accept':'application/json'}
+            headers = {'Accept':'application/json'},
+            params = params
         ).json()
