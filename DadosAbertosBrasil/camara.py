@@ -22,6 +22,31 @@ _api = API('camara')
 
 
 
+def _df(dados:dict, index_col=None) -> _pd.DataFrame:
+    '''
+    Converte dados brutos da API em um DataFrame.
+
+    Parâmetros
+    ----------
+    dados: dict
+        Dados brutos da API.
+    index_col: str (default=None)
+        Nome da coluna que será usada como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frames.DataFrame
+        Dados convertidos em DataFrame.
+    '''
+
+    df = _pd.DataFrame(dados['dados'])
+    if index_col is not None:
+        df.set_index(index_col, inplace=True)
+
+    return df
+
+
+
 def _query(
         funcao: str,
         series: list,
@@ -56,16 +81,16 @@ def _query(
     --------------------------------------------------------------------------
     '''
     
-    keys = [funcao]
+    path = [funcao]
     if cod is not None:
-        keys.append(str(cod))
+        path.append(str(cod))
         if serie in series:
             if serie != 'informacoes':
-                keys.append(serie)
+                path.append(serie)
         else:
             raise TypeError(f"O valor de `serie` deve ser um dos seguintes valores: {series}")
             
-    data = _api.get(keys)['dados']
+    data = _api.get(path)['dados']
 
     if cod is None:
         df = _pd.DataFrame(data)
@@ -476,8 +501,8 @@ class Deputado:
     '''
 
     def __init__(self, cod:int):
-        self.cod = str(cod)
-        self.dados = _api.get(['deputados', self.cod])['dados']
+        self.cod = cod
+        self.dados = _api.get(['deputados', str(cod)])['dados']
         self.condicao_eleitoral = self.dados['ultimoStatus']['condicaoEleitoral']
         self.cpf = self.dados['cpf']
         self.descricao_status = self.dados['ultimoStatus']['descricaoStatus']
@@ -575,9 +600,9 @@ class Deputado:
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
-        keys = ['deputados', self.cod, 'despesas']
-        dados = _api.get(keys=keys, params=params)
-        return _pd.DataFrame(dados['dados'])
+        path = ['deputados', self.cod, 'despesas']
+        dados = _api.get(path=path, params=params)
+        return _df(dados)
 
 
     def discursos(
@@ -647,9 +672,9 @@ class Deputado:
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
-        keys = ['deputados', self.cod, 'discursos']
-        dados = _api.get(keys=keys, params=params)
-        return _pd.DataFrame(dados['dados'])
+        path = ['deputados', self.cod, 'discursos']
+        dados = _api.get(path=path, params=params)
+        return _df(dados)
 
 
     def eventos(
@@ -721,12 +746,10 @@ class Deputado:
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
-        keys = ['deputados', self.cod, 'eventos']
-        dados = _api.get(keys=keys, params=params)
-        df = _pd.DataFrame(dados['dados'])
-        if index:
-            df.set_index('id', inplace=True)
-        return df
+        path = ['deputados', self.cod, 'eventos']
+        dados = _api.get(path=path, params=params)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
 
 
     def frentes(self, index=False):
@@ -751,12 +774,10 @@ class Deputado:
         ----------------------------------------------------------------------
         '''
 
-        keys = ['deputados', self.cod, 'frentes']
-        dados = _api.get(keys=keys, params=None)
-        df = _pd.DataFrame(dados['dados'])
-        if index:
-            df.set_index('id', inplace=True)
-        return df
+        path = ['deputados', self.cod, 'frentes']
+        dados = _api.get(path=path, params=None)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
 
 
     def orgaos(
@@ -828,9 +849,208 @@ class Deputado:
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
-        keys = ['deputados', self.cod, 'orgaos']
-        dados = _api.get(keys=keys, params=params)
-        df = _pd.DataFrame(dados['dados'])
-        if index:
-            df.set_index('idOrgao', inplace=True)
-        return df
+        path = ['deputados', self.cod, 'orgaos']
+        dados = _api.get(path=path, params=params)
+        index_col = 'idOrgao' if index else None
+        return _df(dados, index_col)
+
+
+
+class Evento:
+    '''
+    Retorna um conjunto detalhado de informações sobre o evento da Câmara.
+
+    Parâmetros
+    ----------
+    cod: int
+        Código numérico do evento do qual se deseja informações.
+
+    Atributos
+    ---------
+    dados: dict
+        Conjunto completo de dados.
+    cod: int
+        Código numérico do evento do qual se deseja informações.
+    andar: str
+        Andar do prédio onde ocorreu o evento.
+    descricao: str
+        Descrição do evento.
+    descricao_tipo: str
+        Tipo do evento.
+    fases: str
+        Fases do evento.
+    fim: str
+        Data e horário que o evento foi finalizado no formato 'AAAA-MM-DD'.
+    inicio: str
+        Data e horário que o evento foi iniciado no formato 'AAAA-MM-DD'.
+    local: str
+        Local onde ocorreu o evento.
+    local_externo: str
+        Local externo do evento.
+    lista_orgaos: list of dict
+        Lista de orgãos e informações sobre os mesmos.
+    predio: str
+        Prédio que ocorreu o evento.
+    requerimentos: list of dict
+        Requerimentos do evento.
+    sala: str
+        Sala do prédio onde ocorreu o evento.
+    situacao: str
+        Situação do evento.
+    uri: str
+        Endereço para coleta de dados direta pela API do evento.
+    uri_convidados: str
+        Endereço para coleta de dados direta pela API dos convidados.
+    uri_deputados: str
+        Endereço para coleta de dados direta pela API dos deputados.
+    url_documento_pauta: str
+        Endereço URL para visualizar a pauta do evento.
+    url_registro: str
+        Endereço URL onde o evento foi registrado.
+
+    Exemplos
+    --------
+    Obter a URL para assistir ao evento #59265.
+    >>> ev = camara.Evento(cod=59265)
+    >>> ev.url_registro
+    ... 'https://www.youtube.com/watch?v=8D2gjMrTnMA'
+
+    --------------------------------------------------------------------------
+    '''
+
+    def __init__(self, cod:int):
+        self.cod = cod
+        self.dados = _api.get(['eventos', str(cod)])['dados']
+        self.andar = self.dados['localCamra']['andar']
+        self.descricao = self.dados['descricao']
+        self.descricao_tipo = self.dados['descricaoTipo']
+        self.fases = self.dados['fases']
+        self.fim = self.dados['dataHoraFim']
+        self.inicio = self.dados['dataHoraInicio']
+        self.local = self.dados['localCamara']['nome']
+        self.local_externo = self.dados['localExterno']
+        self.lista_orgaos = self.dados['orgaos']
+        self.predio = self.dados['localCamara']['predio']
+        self.requerimentos = self.dados['requerimentos']
+        self.sala = self.dados['localCamara']['sala']
+        self.situacao = self.dados['situacao']
+        self.uri = self.dados['uri']
+        self.uri_convidados = self.dados['uriConvidados']
+        self.uri_deputados = self.dados['uriDeputados']
+        self.url_documento_pauta = self.dados['urlDocumentoPauta']
+        self.url_registro = self.dados['urlRegistro']
+
+
+    def deputados(self, index=False) -> _pd.DataFrame:
+        '''
+        Os deputados participantes de um evento específico.
+
+        Retorna uma lista de dados resumidos sobre deputados participantes do
+        evento. Se o evento já ocorreu, a lista identifica os deputados que
+        efetivamente registraram presença no evento. Se o evento ainda não
+        ocorreu, a lista mostra os deputados que devem participar do evento,
+        por serem convidados ou por serem membros do(s) órgão(s) responsável
+        pelo evento.
+
+        Parâmetros
+        ----------
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista dos deputados participantes de um evento específico.
+
+        ----------------------------------------------------------------------
+        '''
+
+        path = ['eventos', self.cod, 'deputados']
+        dados = _api.get(path=path, params=None)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
+
+
+    def orgaos(self, index=False) -> _pd.DataFrame:
+        '''
+        Lista de órgãos organizadores do evento.
+
+        Retorna uma lista em que cada item é um conjunto mínimo de dados sobre
+        o(s) órgão(s) responsável(is) pelo evento.
+
+        Parâmetros
+        ----------
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de órgãos organizadores do evento.
+
+        ----------------------------------------------------------------------
+        '''
+
+        path = ['eventos', self.cod, 'orgaos']
+        dados = _api.get(path=path, params=None)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
+
+
+    def pauta(self, index=False) -> _pd.DataFrame:
+        '''
+        Lista de proposições que foram ou deverão ser avaliadas em um evento
+        de caráter deliberativo.
+
+        Se o evento for de caráter deliberativo (uma reunião ordinária,
+        por exemplo) este serviço retorna a lista de proposições previstas
+        para avaliação pelos parlamentares. Cada item identifica, se as
+        informações estiverem disponíveis, a proposição avaliada, o regime
+        de preferência para avaliação, o relator e seu parecer, o resultado
+        da apreciação e a votação realizada.
+
+        Parâmetros
+        ----------
+        index: bool (default=False)
+            Se True, define a coluna `ordem` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de proposições do evento.
+
+        ----------------------------------------------------------------------
+        '''
+
+        path = ['eventos', self.cod, 'pauta']
+        dados = _api.get(path=path, params=None)
+        index_col = 'ordem' if index else None
+        return _df(dados, index_col)
+
+
+    def votacoes(self, index=False) -> _pd.DataFrame:
+        '''
+        Informações detalhadas de votações sobre o evento.
+
+        Retorna uma lista de dados básicos sobre votações que tenham sido
+        realizadas no evento. Votações só ocorrem em eventos de caráter
+        deliberativo. Dados complementares sobre cada votação listada podem
+        ser obtidos no recurso.
+
+        Parâmetros
+        ----------
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de de votações sobre o evento.
+
+        ----------------------------------------------------------------------
+        '''
+
+        path = ['eventos', self.cod, 'votacoes']
+        dados = _api.get(path=path, params=None)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)

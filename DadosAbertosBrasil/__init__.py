@@ -79,10 +79,10 @@ class API:
     --------
     >>> from DadosAbertosBrasil import API
     >>> api = API(endpoint='camara')
-    >>> api.get(keys=['referencias', 'proposicoes', 'codTipoAutor'])
+    >>> api.get(path=['referencias', 'proposicoes', 'codTipoAutor'])
 
     >>> api = API(endpoint='senado')
-    >>> api.get(keys='/autor/lista/atual')
+    >>> api.get(path='/autor/lista/atual')
 
     Documentação original
     ---------------------
@@ -97,13 +97,13 @@ class API:
     def __init__(self, endpoint:str):
         self.URL = ENDPOINTS[endpoint]
 
-    def get(self, keys, params=None) -> dict:
+    def get(self, path, params=None) -> dict:
         '''
         Coleta os dados requisitados.
 
         Parâmetros
         ----------
-        keys: list ou str
+        path: list ou str
             Caminho de parâmetros para acessar a função desejada.
             Pode ser uma string de parâmetros unidos por barras '/'.
             Ou pode ser uma lista de strings na ordem correta.
@@ -112,21 +112,24 @@ class API:
             Dicionário de parâmetros de busca que serão enviados
             para o request.
 
+        Retorna
+        -------
+        dict
+            Dados brutos coletados da API.
+
         Exemplos
         --------
         Acessando usando uma string
-        >>> api.get(keys='/autor/lista/atual')
+        >>> api.get(path='/autor/lista/atual')
 
         Acessando usando uma lista de string
-        >>> api.get(keys=['autor', 'lista', 'atual'])
+        >>> api.get(path=['autor', 'lista', 'atual'])
 
         ----------------------------------------------------------------------      
         '''
         
-        if isinstance(keys, str):
-            path = keys
-        if isinstance(keys, list):
-            path = '/'.join(keys)
+        if isinstance(path, list):
+            path = '/'.join(path)
 
         return requests.get(
             url = self.URL + path,
