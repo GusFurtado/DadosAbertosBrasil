@@ -600,7 +600,7 @@ class Deputado:
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
-        path = ['deputados', self.cod, 'despesas']
+        path = ['deputados', str(self.cod), 'despesas']
         dados = _api.get(path=path, params=params)
         return _df(dados)
 
@@ -672,7 +672,7 @@ class Deputado:
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
-        path = ['deputados', self.cod, 'discursos']
+        path = ['deputados', str(self.cod), 'discursos']
         dados = _api.get(path=path, params=params)
         return _df(dados)
 
@@ -746,7 +746,7 @@ class Deputado:
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
-        path = ['deputados', self.cod, 'eventos']
+        path = ['deputados', str(self.cod), 'eventos']
         dados = _api.get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
@@ -774,7 +774,7 @@ class Deputado:
         ----------------------------------------------------------------------
         '''
 
-        path = ['deputados', self.cod, 'frentes']
+        path = ['deputados', str(self.cod), 'frentes']
         dados = _api.get(path=path, params=None)
         index_col = 'id' if index else None
         return _df(dados, index_col)
@@ -849,7 +849,7 @@ class Deputado:
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
-        path = ['deputados', self.cod, 'orgaos']
+        path = ['deputados', str(self.cod), 'orgaos']
         dados = _api.get(path=path, params=params)
         index_col = 'idOrgao' if index else None
         return _df(dados, index_col)
@@ -965,7 +965,7 @@ class Evento:
         ----------------------------------------------------------------------
         '''
 
-        path = ['eventos', self.cod, 'deputados']
+        path = ['eventos', str(self.cod), 'deputados']
         dados = _api.get(path=path, params=None)
         index_col = 'id' if index else None
         return _df(dados, index_col)
@@ -991,7 +991,7 @@ class Evento:
         ----------------------------------------------------------------------
         '''
 
-        path = ['eventos', self.cod, 'orgaos']
+        path = ['eventos', str(self.cod), 'orgaos']
         dados = _api.get(path=path, params=None)
         index_col = 'id' if index else None
         return _df(dados, index_col)
@@ -1022,7 +1022,7 @@ class Evento:
         ----------------------------------------------------------------------
         '''
 
-        path = ['eventos', self.cod, 'pauta']
+        path = ['eventos', str(self.cod), 'pauta']
         dados = _api.get(path=path, params=None)
         index_col = 'ordem' if index else None
         return _df(dados, index_col)
@@ -1050,7 +1050,101 @@ class Evento:
         ----------------------------------------------------------------------
         '''
 
-        path = ['eventos', self.cod, 'votacoes']
+        path = ['eventos', str(self.cod), 'votacoes']
+        dados = _api.get(path=path, params=None)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
+
+
+
+class Frente:
+    '''
+    Informações detalhadas sobre uma frente parlamentar.
+
+    Parâmetros
+    ----------
+    cod: int
+        Código numérico da frente parlamentar do qual se deseja informações.
+
+    Atributos
+    ---------
+    dados: dict
+        Conjunto completo de dados.
+    cod: int
+        Código numérico do evento do qual se deseja informações.
+    coordenador: dict
+        Informações do(a) coordenador(a) da frente parlamentar.
+    documento: str
+        URL do documento da frente parlamentar.
+    email: str
+        E-mail de contato.
+    id_sitacao: int
+        ID da situação da frente parlamentar.
+    keywords: str
+        Palavras-chaves da frente parlamentar.
+    legislatura: int
+        ID da legislatura da frente parlamentar.
+    situacao: str
+        Situação da frente parlamentar.
+    telefone: str
+        Telefone de contato.
+    titulo: str
+        Título da frente parlamentar.
+    uri: str
+        Endereço para coleta de dados direta pela API da frente parlamentar.
+    website: str
+        URL do website da frente parlamentar.
+
+    Exemplos
+    --------
+    Obter título da frente parlamentar #54258.
+    >>> fr = camara.Frente(cod=54258)
+    >>> fr.url_registro
+    ... 'Frente Parlamentar Mista da Telessaúde'
+
+    --------------------------------------------------------------------------
+    '''
+
+    def __init__(self, cod:int):
+        self.cod = cod
+        self.dados = _api.get(['frentes', str(cod)])['dados']
+        self.coordenador = self.dados['coordenador']
+        self.documento = self.dados['urlDocumento']
+        self.email = self.dados['email']
+        self.id_sitacao = self.dados['idSituacao']
+        self.keywords = self.dados['keywords']
+        self.legislatura = self.dados['idLegislatura']
+        self.situacao = self.dados['situacao']
+        self.telefone = self.dados['telefone']
+        self.titulo = self.dados['titulo']
+        self.uri = self.dados['uri']
+        self.website = self.dados['urlWebsite']
+        
+
+    def membros(self, index=False) -> _pd.DataFrame:
+        '''
+        Os deputados que participam da frente parlamentar.
+
+        Uma lista dos deputados participantes da frente parlamentar e os
+        papéis que exerceram nessa frente (signatário, coordenador ou
+        presidente). Observe que, mesmo no caso de frentes parlamentares
+        mistas (compostas por deputados e senadores), são retornados apenas
+        dados sobre os deputados.
+
+        Parâmetros
+        ----------
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista dos deputados que participam da frente parlamentar.
+
+        ----------------------------------------------------------------------
+        '''
+
+        path = ['frentes', str(self.cod), 'membros']
         dados = _api.get(path=path, params=None)
         index_col = 'id' if index else None
         return _df(dados, index_col)
