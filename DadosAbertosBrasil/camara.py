@@ -870,7 +870,7 @@ class Evento:
     dados: dict
         Conjunto completo de dados.
     cod: int
-        Código numérico do evento do qual se deseja informações.
+        Código numérico do evento.
     andar: str
         Andar do prédio onde ocorreu o evento.
     descricao: str
@@ -1064,14 +1064,14 @@ class Frente:
     Parâmetros
     ----------
     cod: int
-        Código numérico da frente parlamentar do qual se deseja informações.
+        Código numérico da frente parlamentar da qual se deseja informações.
 
     Atributos
     ---------
     dados: dict
         Conjunto completo de dados.
     cod: int
-        Código numérico do evento do qual se deseja informações.
+        Código numérico da frente parlamentar.
     coordenador: dict
         Informações do(a) coordenador(a) da frente parlamentar.
     documento: str
@@ -1146,5 +1146,238 @@ class Frente:
 
         path = ['frentes', str(self.cod), 'membros']
         dados = _api.get(path=path, params=None)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
+
+
+
+class Legislatura:
+    '''
+    Informações extras sobre uma determinada legislatura da Câmara.
+
+    Parâmetros
+    ----------
+    cod: int
+        Código numérico da legislatura da qual se deseja informações.
+
+    Atributos
+    ---------
+    dados: dict
+        Conjunto completo de dados.
+    cod: int
+        Código numérico da legislatura.
+    inicio: str
+        Primeiro dia da legislatura.
+    fim: str
+        Último dia da legislatura.
+    uri: str
+        Endereço para coleta de dados direta pela API da legislatura.
+
+    Exemplos
+    --------
+    Obter o primeiro e último dia da legislatura #56.
+    >>> leg = camara.Legislatura(cod=54)
+    >>> leg.inicio
+    ... '2011-02-01'
+    >>> leg.fim
+    ... '2015-01-31'
+
+    --------------------------------------------------------------------------
+    '''
+
+    def __init__(self, cod:int):
+        self.cod = cod
+        self.dados = _api.get(['legislaturas', str(cod)])['dados']
+        self.fim = self.dados['dataFim']
+        self.inicio = self.dados['dataInicio']
+        self.uri = self.dados['uri']
+
+
+    def mesa(self, inicio=None, fim=None, index=False) -> _pd.DataFrame:
+        '''
+        Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
+
+        Retorna uma lista com dados básicos sobre todos os deputados que
+        ocuparam algum posto na Mesa Diretora da Câmara em algum período de
+        tempo dentro da legislatura. Normalmente, cada legislatura tem duas
+        Mesas Diretoras, com presidente, dois vice-presidentes, quatro
+        secretários parlamentares e os suplentes dos secretários.
+
+        Parâmetros
+        ----------
+        inicio: str (default=None)
+            Dia de início do intervalo de tempo do qual se deseja saber a
+            composição da Mesa, no formato 'AAAA-MM-DD'.
+        fim: str (default=None)
+            Data de término do intervalo de tempo do qual se deseja saber a
+            composição da Mesa, no formato 'AAAA-MM-DD'.
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista dos deputados que participam da frente parlamentar.
+
+        ----------------------------------------------------------------------
+        '''
+
+        params = {}
+        if inicio is not None:
+            params['dataInicio'] = inicio
+        if fim is not None:
+            params['dataFim'] = fim
+
+        path = ['legislaturas', str(self.cod), 'mesa']
+        dados = _api.get(path=path, params=params)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
+
+
+
+class Partido:
+    '''
+    Informações detalhadas sobre um partido.
+
+    Parâmetros
+    ----------
+    cod: int
+        Código numérico do partido do qual se deseja informações.
+
+    Atributos
+    ---------
+    dados: dict
+        Conjunto completo de dados.
+    cod: int
+        Código numérico do partido.
+    facebook: str
+        URL da página no Facebook do partido.
+    legislatura: str
+        Código numérico da última legislatura.
+    lider: dict
+        Informações sobre o líder do partido.
+    logo: str
+        URL da logo do partido.
+    nome: str
+        Nome completo do partido.
+    numero: int
+        Número eleitoral do partido.
+    sigla: str
+        Sigla do partido.
+    situacao: str
+        Situação do partido.
+    total_membros: str
+        Total de membros do partido.
+    total_posse: str
+        Total de posse do partido.
+    ultima_atualizacao: str
+        Última atualização das informações sobre o partido.
+    uri: str
+        Endereço para coleta de dados direta pela API do partido.
+    uri_membros: str
+        Endereço para coleta de dados direta pela API dos membros do partido.
+    website: str
+        URL do website do partido.
+
+
+    Exemplos
+    --------
+    Obter o nome completo do partido #36899.
+    >>> p = camara.Partido(cod=36899)
+    >>> p.nome
+    ... 'Movimento Democrático Brasileiro'
+
+    --------------------------------------------------------------------------
+    '''
+
+    def __init__(self, cod:int):
+        self.cod = cod
+        self.dados = _api.get(['partidos', str(cod)])['dados']
+        self.facebook = self.dados['urlFacebook']
+        self.legislatura = self.dados['status']['idLegislatura']
+        self.lider = self.dados['status']['lider']
+        self.logo = self.dados['urlLogo']
+        self.nome = self.dados['nome']
+        self.numero = self.dados['numeroEleitoral']
+        self.sigla = self.dados['sigla']
+        self.situacao = self.dados['status']['situacao']
+        self.total_membros = self.dados['status']['totalMembros']
+        self.total_posse = self.dados['status']['totalPosse']
+        self.ultima_atualizacao = self.dados['status']['data']
+        self.uri = self.dados['uri']
+        self.uri_membros = self.dados['status']['uriMembros']
+        self.website = self.dados['urlWebSite']
+
+
+    def membros(
+            self,
+            inicio = None,
+            fim = None,
+            legislatura = None,
+            pagina = None,
+            itens = None,
+            ordenar_por = None,
+            ordem = None,
+            index = False
+        ) -> _pd.DataFrame:
+        '''
+        Uma lista dos parlamentares de um partido durante um período.
+
+        Retorna uma lista de deputados que estão ou estiveram em exercício
+        pelo partido. Opcionalmente, pode-se usar os parâmetros `inicio`,
+        `fim` ou `legislatura` para se obter uma lista de deputados filiados
+        ao partido num certo intervalo de tempo. Isso é equivalente à função
+        `lista_deputados` com filtro por partido, mas é melhor para obter
+        informações sobre membros de partidos já extintos.
+
+        Parâmetros
+        ----------
+        inicio: str (default=None)
+            Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        fim: str (default=None)
+            Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        legislatura: int (default=None)
+            Número da legislatura, à qual os dados buscados devem corresponder.
+        ordenar_por: str (default=None)
+            Qual dos elementos da representação deverá ser usado para aplicar
+            ordenação à lista.
+        ordem: str (default=None)
+            O sentido da ordenação:
+            - 'asc': De A a Z ou 0 a 9;
+            - 'desc': De Z a A ou 9 a 0.
+        itens: int (default=None)
+            Número máximo de itens na “página” que se deseja obter com esta
+            requisição.
+        pagina: int (default=None)
+            Número da “página” de resultados, a partir de 1, que se deseja
+            obter com a requisição, contendo o número de itens definido pelo
+            parâmetro itens. Se omitido, assume o valor 1.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista dos parlamentares de um partido durante um período.
+
+        ----------------------------------------------------------------------
+        '''
+
+        params = {}
+        if inicio is not None:
+            params['dataInicio'] = inicio
+        if fim is not None:
+            params['dataFim'] = fim
+        if legislatura is not None:
+            params['idLegislatura'] = legislatura
+        if pagina is not None:
+            params['pagina'] = pagina
+        if itens is not None:
+            params['itens'] = itens
+        if ordem is not None:
+            params['ordem'] = ordem
+        if ordenar_por is not None:
+            params['ordenarPor'] = ordenar_por
+
+        path = ['partidos', str(self.cod), 'membros']
+        dados = _api.get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
