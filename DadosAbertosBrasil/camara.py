@@ -1352,6 +1352,8 @@ class Partido:
             Número da “página” de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido pelo
             parâmetro itens. Se omitido, assume o valor 1.
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
         -------
@@ -1378,6 +1380,340 @@ class Partido:
             params['ordenarPor'] = ordenar_por
 
         path = ['partidos', str(self.cod), 'membros']
+        dados = _api.get(path=path, params=params)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
+
+
+
+class Bloco:
+    '''
+    Informações sobre um bloco partidário específico.
+
+    Parâmetros
+    ----------
+    cod: int
+        Código numérico do bloco partidário do qual se deseja informações.
+
+    Atributos
+    ---------
+    dados: dict
+        Conjunto completo de dados.
+    cod: int
+        Código numérico do bloco partidário.
+    legislatura: str
+        Legislatura do bloco partidário.
+    nome: str
+        Nome do bloco partidário.
+    uri: str
+        Endereço para coleta de dados direta pela API do bloco partidário.
+
+    Exemplos
+    --------
+    Obter o nome do bloco #576.
+    >>> bl = camara.Bloco(cod=576)
+    >>> bl.nome
+    ... 'PSL, PTB'
+
+    --------------------------------------------------------------------------
+    '''
+
+    def __init__(self, cod:int):
+        self.cod = cod
+        self.dados = _api.get(['blocos', str(cod)])['dados']
+        self.legislatura = self.dados['idLegislatura']
+        self.nome = self.dados['nome']
+        self.uri = self.dados['uri']
+
+
+
+class Proposicao:
+    '''
+    Informações detalhadas sobre uma proposição específica.
+
+    Parâmetros
+    ----------
+    cod: int
+        Código numérico da proposição da qual se deseja informações.
+
+    Atributos
+    ---------
+    dados: dict
+        Conjunto completo de dados.
+    cod: int
+        Código numérico da proposição.
+    uri: str
+        Endereço para coleta de dados direta pela API da proposição.
+    tipo_sigla: str
+        Sigla do tipo de proposição.
+    tipo_codigo: int
+        Código numérico do tipo de proposição.
+    numero: int
+        Número da proposição.
+    ano: int
+        Ano da proposição.
+    ementa: str
+        Ementa da proposição.
+    apresentacao: str
+        Horário da apresentação da proposição no formato 'AAAA-MM-DD HH:MM'.
+    uri_orgao_numerador: str
+        Endereço para coleta de dados direta pela API do órgão numerador.
+    ultima_atualizacao: str
+        Data da última atualização do status da proposição.
+    sequencia: int
+        Sequência da proposição.
+    sigla_orgao: str
+        Sigla do órgão.
+    uri_orgao: str
+        Endereço para coleta de dados direta pela API do órgão.
+    uri_ultimo_relator: str
+        Endereço para coleta de dados direta pela API do último relaltor.
+    regime: str
+        Regime da proposição.
+    descricao_tramitacao: str
+        Descrição da tramitação.
+    cod_tipo_tramitacao: str
+        Código do tipo da tramitação.
+    descricao_situacao: str
+        Descrição da situação da proposição.
+    cod_situacao: int
+        Código númerico da situação da proposição.
+    despacho: str
+        Despacho.
+    url: str
+        URL da proposição.
+    ambito: str
+        Âmbito da proposição.
+    uri_autores: str
+        Endereço para coleta de dados direta pela API dos autores.
+    descricao_tipo: str
+        Descrição do tipo da proposição.
+    ementa_detalhada: str
+        Ementa detalhada da proposição.
+    keywords: str
+        Palavras-chaves da proposição.
+    uri_proposicao_principal: str
+        Endereço para coleta de dados direta pela API da proposição principal.
+    uri_proposicao_anterior: str
+        Endereço para coleta de dados direta pela API da proposição anterior.
+    uri_proposicao_posterior: str
+        Endereço para coleta de dados direta pela API da proposição posterior.
+    url_inteiro_teor: str
+        URL do inteiro teor.
+    urn_final: str
+        URN final.
+    texto: str
+        Texto da proposição.
+    justificativa: str
+        Justificativa da proposição.
+
+    Exemplos
+    --------
+    Obter a ementa da proposição #15990.
+    >>> prop = camara.Proposicao(cod=15990)
+    >>> prop.ementa
+    ... ''Cria salvaguardas para a tecnologia no campo nuclear...'
+
+    --------------------------------------------------------------------------
+    '''
+
+    def __init__(self, cod:int):
+        self.cod = cod
+        self.dados = _api.get(['proposicoes', str(cod)])['dados']
+        self.uri = self.dados['uri']
+        self.tipo_sigla = self.dados['siglaTipo']
+        self.tipo_codigo = self.dados['codTipo']
+        self.numero = self.dados['numero']
+        self.ano = self.dados['ano']
+        self.ementa = self.dados['ementa']
+        self.apresentacao = self.dados['dataApresentacao']
+        self.uri_orgao_numerador = self.dados['uriOrgaoNumerador']
+        self.ultima_atualizacao = self.dados['statusProposicao']['dataHora']
+        self.sequencia = self.dados['statusProposicao']['sequencia']
+        self.sigla_orgao = self.dados['statusProposicao']['siglaOrgao']
+        self.uri_orgao = self.dados['statusProposicao']['uriOrgao']
+        self.uri_ultimo_relator = self.dados['statusProposicao']['uriUltimoRelator']
+        self.regime = self.dados['statusProposicao']['regime']
+        self.descricao_tramitacao = self.dados['statusProposicao']['descricaoTramitacao']
+        self.cod_tipo_tramitacao = self.dados['statusProposicao']['codTipoTramitacao']
+        self.descricao_situacao = self.dados['statusProposicao']['descricaoSituacao']
+        self.cod_situacao = self.dados['statusProposicao']['codSituacao']
+        self.despacho = self.dados['statusProposicao']['despacho']
+        self.url = self.dados['statusProposicao']['url']
+        self.ambito = self.dados['statusProposicao']['ambito']
+        self.uri_autores = self.dados['uriAutores']
+        self.descricao_tipo = self.dados['descricaoTipo']
+        self.ementa_detalhada = self.dados['ementaDetalhada']
+        self.keywords = self.dados['keywords']
+        self.uri_proposicao_principal = self.dados['uriPropPrincipal']
+        self.uri_proposicao_anterior = self.dados['uriPropAnterior']
+        self.uri_proposicao_posterior = self.dados['uriPropPosterior']
+        self.url_inteiro_teor = self.dados['urlInteiroTeor']
+        self.urn_final = self.dados['urnFinal']
+        self.texto = self.dados['texto']
+        self.justificativa = self.dados['justificativa']
+
+
+    def autores(self) -> _pd.DataFrame:
+        '''
+        Lista pessoas e/ou entidades autoras da proposição.
+
+        Retorna uma lista em que cada item identifica uma pessoa ou entidade
+        que é autora da proposição. Além de deputados, também podem ser
+        autores de proposições os senadores, a sociedade civil, assembleias
+        legislativas e os poderes Executivo e Judiciário.
+        Pelo Regimento da Câmara, todos os que assinam uma proposição são
+        considerados autores (art. 102), tanto os proponentes quanto os
+        apoiadores.
+        Para obter mais informações sobre cada autor, é recomendável acessar,
+        se disponível, a URL que é valor do campo uri.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista pessoas e/ou entidades autoras da proposição.
+
+        ----------------------------------------------------------------------
+        '''
+
+        path = ['proposicoes', str(self.cod), 'autores']
+        dados = _api.get(path=path, params=None)
+        return _df(dados, None)
+
+
+    def relacionadas(self, index=False) -> _pd.DataFrame:
+        '''
+        Uma lista de proposições relacionadas a uma em especial.
+
+        Lista de informações básicas sobre proposições que de alguma forma se
+        relacionam com a proposição, como pareceres, requerimentos,
+        substitutivos, etc.
+
+        Parâmetros
+        ----------
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de proposições relacionadas a uma em especial.
+
+        ----------------------------------------------------------------------
+        '''
+
+        path = ['proposicoes', str(self.cod), 'relacionadas']
+        dados = _api.get(path=path, params=None)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
+
+
+    def temas(self, index=False) -> _pd.DataFrame:
+        '''
+        Lista de áreas temáticas de uma proposição.
+
+        Lista em que cada item traz informações sobre uma área temática à qual
+        a proposição se relaciona, segundo classificação oficial do Centro de
+        Documentação e Informação da Câmara.
+
+        Parâmetros
+        ----------
+        index: bool (default=False)
+            Se True, define a coluna `codTema` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de áreas temáticas de uma proposição.
+
+        ----------------------------------------------------------------------
+        '''
+
+        path = ['proposicoes', str(self.cod), 'temas']
+        dados = _api.get(path=path, params=None)
+        index_col = 'codTema' if index else None
+        return _df(dados, index_col)
+
+
+    def tramitacoes(self, inicio=None, fim=None, index=False) -> _pd.DataFrame:
+        '''
+        O histórico de passos na tramitação de uma proposta.
+
+        Lista que traz, como cada item, um “retrato” de informações que podem
+        ser alteradas a cada etapa de tramitação na vida da proposição (como
+        regime de tramitação e situação) e informações sobre o que causou esse
+        novo estado. Esta representação das tramitações ainda é provisória.
+
+        Parâmetros
+        ----------
+        inicio: str (default=None)
+            Data de início da tramitação, no formato 'AAAA-MM-DD'.
+        fim: str (default=None)
+            Data de término da tramitação, no formato 'AAAA-MM-DD'.
+        index: bool (default=False)
+            Se True, define a coluna `sequencia` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de passos na tramitação de uma proposta.
+
+        ----------------------------------------------------------------------
+        '''
+
+        params = {}
+        if inicio is not None:
+            params['dataInicio'] = inicio
+        if fim is not None:
+            params['dataFim'] = fim
+
+        path = ['proposicoes', str(self.cod), 'tramitacoes']
+        dados = _api.get(path=path, params=params)
+        index_col = 'sequencia' if index else None
+        return _df(dados, index_col)
+
+
+    def votacoes(
+            self,
+            ordem = None,
+            ordenar_por = None,
+            index = False
+        ) -> _pd.DataFrame:
+        '''
+        Informações detalhadas de votações sobre a proposição.
+
+        Retorna uma lista de identificadores básicos sobre as votações na
+        Câmara que tiveram a proposição como objeto ou como afetada pelos seus
+        resultados. Dados complementares sobre cada votação listada podem ser
+        obtidos pelo objeto `camara.Votacao`.
+
+        Parâmetros
+        ----------
+        ordem: str (default=None)
+            O sentido da ordenação:
+            - 'asc': De A a Z ou 0 a 9;
+            - 'desc': De Z a A ou 9 a 0.
+        ordenar_por: str (default=None)
+            Qual dos elementos da representação deverá ser usado para aplicar
+            ordenação à lista.
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de votações sobre a proposição.
+
+        ----------------------------------------------------------------------
+        '''
+
+        params = {}
+        if ordem is not None:
+            params['ordem'] = ordem
+        if ordenar_por is not None:
+            params['ordenarPor'] = ordenar_por
+
+        path = ['proposicoes', str(self.cod), 'votacoes']
         dados = _api.get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
