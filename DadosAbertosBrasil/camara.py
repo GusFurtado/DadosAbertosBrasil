@@ -1,16 +1,29 @@
 '''
-Módulo para captura dos dados abertos da Câmara dos Deputados do Brasil
+Módulo para captura dos dados abertos da Câmara dos Deputados do Brasil.
 
-Use o seguinte template para buscar dados:
+Mini-Tutorial
+-------------
+1. Importe o módulo `camara`.
 >>> from DadosAbertosBrasil import camara
->>> camara.{funcao}(cod={opcional}, serie={opcional}, index={True/False})
+
+2. Busque o código do objeto de estudo utilizando as funções `lista`.
+>>> camara.lista_deputados()
+
+3. Instancie o objeto de estudo utilizando o código encontrado.
+>>> dep = camara.Deputado(cod)
+
+4. Utilize os atributos da classe para obter informações básicas do objeto.
+>>> dep.dados
+
+5. Utilize os métodos da classe para obter informações detalhadas do objeto.
+>>> dep.despesas()
+
+------------------------------------------------------------------------------
 
 Documentação da API original: https://dadosabertos.camara.leg.br/swagger/api.html
 '''
 
 
-
-import warnings
 
 import pandas as _pd
 
@@ -40,7 +53,7 @@ def _df(dados:dict, index_col=None) -> _pd.DataFrame:
     '''
 
     df = _pd.DataFrame(dados['dados'])
-    if index_col is not None:
+    if (index_col is not None) and (not df.empty):
         df.set_index(index_col, inplace=True)
 
     return df
@@ -421,6 +434,47 @@ def referencias(funcao, index=False) -> _pd.DataFrame:
         df.set_index('cod', inplace=True)
     
     return df
+
+
+
+class Bloco:
+    '''
+    Informações sobre um bloco partidário específico.
+
+    Parâmetros
+    ----------
+    cod: int
+        Código numérico do bloco partidário do qual se deseja informações.
+
+    Atributos
+    ---------
+    dados: dict
+        Conjunto completo de dados.
+    cod: int
+        Código numérico do bloco partidário.
+    legislatura: str
+        Legislatura do bloco partidário.
+    nome: str
+        Nome do bloco partidário.
+    uri: str
+        Endereço para coleta de dados direta pela API do bloco partidário.
+
+    Exemplos
+    --------
+    Obter o nome do bloco #576.
+    >>> bl = camara.Bloco(cod=576)
+    >>> bl.nome
+    ... 'PSL, PTB'
+
+    --------------------------------------------------------------------------
+    '''
+
+    def __init__(self, cod:int):
+        self.cod = cod
+        self.dados = _api.get(['blocos', str(cod)])['dados']
+        self.legislatura = self.dados['idLegislatura']
+        self.nome = self.dados['nome']
+        self.uri = self.dados['uri']
 
 
 
@@ -1235,6 +1289,296 @@ class Legislatura:
 
 
 
+class Orgao:
+    '''
+    Informações detalhadas sobre um órgão da Câmara.
+
+    Parâmetros
+    ----------
+    cod: int
+        Código numérico do órgão do qual se deseja informações.
+
+    Atributos
+    ---------
+    dados: dict
+        Conjunto completo de dados.
+    cod: int
+        Código numérico do órgão.
+    apelido: str
+        Apelido do órgão.
+    casa: str
+        Casa do órgão.
+    cod_tipo: int
+        Código do tipo do órgão.
+    fim: str
+        Data final do órgão.
+    inicio: str
+        Data inicial do órgão.
+    instalacao: str
+        Data de instalação do órgão.
+    nome: str
+        Nome do órgão.
+    nome_publicacao: str
+        Nome de publicação.
+    sala: str
+        Sala do órgão.
+    sigla: str
+        Sigla do órgão.
+    tipo: str
+        Tipo do órgão.
+    uri: str
+        Endereço para coleta de dados direta pela API do órgão.
+    urlWebsite: str
+        URL para acessar o website do órgão.
+
+    Exemplos
+    --------
+    Obter o apelido do órgão #4.
+    >>> org = camara.Orgao(cod=4)
+    >>> org.apelido
+    ... 'Mesa Diretora'
+    
+    --------------------------------------------------------------------------
+    '''
+
+    def __init__(self, cod:int):
+        self.cod = cod
+        self.dados = _api.get(['orgaos', str(cod)])['dados']
+        self.apelido = self.dados['apelido']
+        self.casa = self.dados['casa']
+        self.cod_tipo = self.dados['codTipoOrgao']
+        self.fim = self.dados['dataFim']
+        self.inicio = self.dados['dataInicio']
+        self.instalacao = self.dados['dataInstalacao']
+        self.nome = self.dados['nome']
+        self.nome_publicacao = self.dados['nomePublicacao']
+        self.sala = self.dados['sala']
+        self.sigla = self.dados['sigla']
+        self.tipo = self.dados['tipoOrgao']
+        self.uri = self.dados['uri']
+        self.urlWebsite = self.dados['urlWebsite']
+
+
+
+    def eventos(
+            self,
+            tipo_evento = None,
+            inicio = None,
+            fim = None,
+            pagina = None,
+            itens = None,
+            ordem = None,
+            ordenar_por = None,
+            index = False
+        ) -> _pd.DataFrame:
+        '''
+        Os eventos ocorridos ou previstos em um órgão legislativo.
+
+        Retorna uma lista de informações resumidas dos eventos realizados
+        (ou a realizar) pelo órgão legislativo. Por padrão, são retornados
+        eventos em andamento ou previstos para o mesmo dia, dois dias antes
+        e dois dias depois da requisição. Parâmetros podem ser passados para
+        alterar esse período, bem como os tipos de eventos.
+
+        Parâmetros
+        ----------
+        tipo_evento: str
+            Identificador numérico do tipo de evento que se deseja obter.
+        inicio: str
+            Data de início de um intervalo de tempo, no formato AAAA-MM-DD.
+        fim: str
+            Data de término de um intervalo de tempo, no formato AAAA-MM-DD.
+        ordenar_por: str
+            Qual dos elementos da representação deverá ser usado para aplicar
+            ordenação à lista.
+        ordem: str
+            O sentido da ordenação:
+            - 'asc': De A a Z ou 0 a 9,
+            - 'desc': De Z a A ou 9 a 0.
+        itens: int
+            Número máximo de itens na página que se deseja obter com esta
+            requisição.
+        pagina: int
+            Número da página de resultados, a partir de 1, que se deseja
+            obter com a requisição, contendo o número de itens definido pelo
+            parâmetro itens. Se omitido, assume o valor 1.
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de discursos feitos por um deputado em eventos diversos.
+
+        ----------------------------------------------------------------------
+        '''
+
+        params = {}
+        if tipo_evento is not None:
+            params['idTipoEvento'] = tipo_evento
+        if inicio is not None:
+            params['dataInicio'] = inicio
+        if fim is not None:
+            params['dataFim'] = fim
+        if pagina is not None:
+            params['pagina'] = pagina
+        if itens is not None:
+            params['itens'] = itens
+        if ordem is not None:
+            params['ordem'] = ordem
+        if ordenar_por is not None:
+            params['ordenarPor'] = ordenar_por
+
+        path = ['orgaos', str(self.cod), 'eventos']
+        dados = _api.get(path=path, params=params)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
+
+
+    def membros(
+            self,
+            inicio = None,
+            fim = None,
+            pagina = None,
+            itens = None,
+            index = False
+        ) -> _pd.DataFrame:
+        '''
+        Lista de cargos de um órgão e parlamentares que os ocupam.
+
+        Retorna uma lista de dados resumidos que identificam cada parlamentar
+        e o cargo ou posição que ocupa ou ocupou no órgão parlamentar durante
+        um certo período de tempo. Se não forem passados parâmetros que
+        delimitem esse período, o serviço retorna os membros do órgão no
+        momento da requisição. Se o órgão não existir mais ou não estiver
+        instalado, é retornada uma lista vazia.
+
+        Parâmetros
+        ----------
+        inicio: str (default=None)
+            Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        fim: str (default=None)
+            Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        itens: int (default=None)
+            Número máximo de itens na “página” que se deseja obter com esta
+            requisição.
+        pagina: int (default=None)
+            Número da “página” de resultados, a partir de 1, que se deseja
+            obter com a requisição, contendo o número de itens definido pelo
+            parâmetro itens. Se omitido, assume o valor 1.
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de cargos de um órgão e parlamentares que os ocupam.
+
+        ----------------------------------------------------------------------
+        '''
+
+        params = {}
+        if inicio is not None:
+            params['dataInicio'] = inicio
+        if fim is not None:
+            params['dataFim'] = fim
+        if pagina is not None:
+            params['pagina'] = pagina
+        if itens is not None:
+            params['itens'] = itens
+
+        path = ['orgaos', str(self.cod), 'membros']
+        dados = _api.get(path=path, params=params)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
+
+
+    def votacoes(
+            self,
+            proposicao = None,
+            inicio = None,
+            fim = None,
+            pagina = None,
+            itens = None,
+            ordem = None,
+            ordenar_por = None,
+            index = False
+        ) -> _pd.DataFrame:
+        '''
+        Uma lista de eventos com a participação do parlamentar.
+
+        Retorna uma lista de dados básicos de votações que tenham sido
+        realizadas em eventos realizados no órgão. Se este for um órgão
+        permanente da Câmara, são retornados, por padrão, dados sobre as
+        votações realizadas pelo órgão nos últimos 30 dias. Esse período pode
+        ser alterado com o uso dos parâmetros `inicio` e/ou `fim`, que por
+        enquanto são limitados a selecionar somente votações ocorridas em um
+        mesmo ano.
+        Caso este seja um órgão temporário, como uma comissão especial, são
+        listadas por padrão todas as votações ocorridas no órgão, em qualquer
+        período de tempo.
+        Dados complementares sobre cada votação listada podem ser obtidos com
+        o objeto `camara.Votacao`.
+
+        Parâmetros
+        ----------
+        proposicao: int (default=None)
+            Código numérico da proposição, que podem ser obtidos por meio da
+            função `camara.lista_proposicoes`. Se presente, listará as
+            votações que tiveram a proposição como objeto de votação ou que
+            afetaram as proposições listadas.
+        inicio: str (default=None)
+            Data de início de um intervalo de tempo, no formato AAAA-MM-DD.
+        fim: str (default=None)
+            Data de término de um intervalo de tempo, no formato AAAA-MM-DD.
+        ordenar_por: str (default=None)
+            Qual dos elementos da representação deverá ser usado para aplicar
+            ordenação à lista.
+        ordem: str (default=None)
+            O sentido da ordenação:
+            - 'asc': De A a Z ou 0 a 9,
+            - 'desc': De Z a A ou 9 a 0.
+        itens: int (default=None)
+            Número máximo de itens na página que se deseja obter com esta
+            requisição.
+        pagina: int (default=None)
+            Número da página de resultados, a partir de 1, que se deseja
+            obter com a requisição, contendo o número de itens definido pelo
+            parâmetro itens. Se omitido, assume o valor 1.
+        index: bool (default=False)
+            Se True, define a coluna `id` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de discursos feitos por um deputado em eventos diversos.
+
+        ----------------------------------------------------------------------
+        '''
+
+        params = {}
+        if proposicao is not None:
+            params['idProposicao'] = proposicao
+        if inicio is not None:
+            params['dataInicio'] = inicio
+        if fim is not None:
+            params['dataFim'] = fim
+        if pagina is not None:
+            params['pagina'] = pagina
+        if itens is not None:
+            params['itens'] = itens
+        if ordem is not None:
+            params['ordem'] = ordem
+        if ordenar_por is not None:
+            params['ordenarPor'] = ordenar_por
+
+        path = ['orgaos', str(self.cod), 'votacoes']
+        dados = _api.get(path=path, params=params)
+        index_col = 'id' if index else None
+        return _df(dados, index_col)
+
+
+
 class Partido:
     '''
     Informações detalhadas sobre um partido.
@@ -1383,47 +1727,6 @@ class Partido:
         dados = _api.get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
-
-
-
-class Bloco:
-    '''
-    Informações sobre um bloco partidário específico.
-
-    Parâmetros
-    ----------
-    cod: int
-        Código numérico do bloco partidário do qual se deseja informações.
-
-    Atributos
-    ---------
-    dados: dict
-        Conjunto completo de dados.
-    cod: int
-        Código numérico do bloco partidário.
-    legislatura: str
-        Legislatura do bloco partidário.
-    nome: str
-        Nome do bloco partidário.
-    uri: str
-        Endereço para coleta de dados direta pela API do bloco partidário.
-
-    Exemplos
-    --------
-    Obter o nome do bloco #576.
-    >>> bl = camara.Bloco(cod=576)
-    >>> bl.nome
-    ... 'PSL, PTB'
-
-    --------------------------------------------------------------------------
-    '''
-
-    def __init__(self, cod:int):
-        self.cod = cod
-        self.dados = _api.get(['blocos', str(cod)])['dados']
-        self.legislatura = self.dados['idLegislatura']
-        self.nome = self.dados['nome']
-        self.uri = self.dados['uri']
 
 
 
@@ -1717,3 +2020,148 @@ class Proposicao:
         dados = _api.get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
+
+
+
+class Votacao:
+    '''
+    Informações detalhadas sobre uma votação da Câmara.
+
+    Retorna um conjunto detalhado de dados sobre a votação, tais como as
+    proposições que podem ter sido o objeto da votação e os efeitos de
+    tramitação de outras proposições que eventualmente tenham sido cadastrados
+    em consequência desta votação.
+
+    Parâmetros
+    ----------
+    cod: str
+        Código alfa-numérico da votação da qual se deseja informações.
+
+    Atributos
+    ---------
+    dados: dict
+        Conjunto completo de dados.
+    cod: str
+        Código alfa-numérico da votação.
+    aprovacao: int
+        Aprovação da votação.
+    data: str
+        Data da votação.
+    data_regitro: str
+        Data e horário de registro da votação.
+    data_ultima_abertura: str
+        Data e horário da última abertura da votação.
+    descricao: str
+        Descrição da votação.
+    efeitos_registrados: list
+        Lista de efeitos registrados.
+    evento: int
+        Código numérico do evento da votação.
+    orgao: int
+        Código numérico do órgão da votação.
+    objetos_possiveis: list of dict
+        Lista de objetos possíveis.
+    proposicoes_afetadas: str
+        Proposições afetadas.
+    sigla_orgao: str
+        Sigla do órgão.
+    ultima_apresentacao_proposicao: dict
+        Última apresentação da proposição.
+    uri: str
+        Endereço para coleta de dados direta pela API da votação.
+    uri_evento: str
+        Endereço para coleta de dados direta pela API do evento.
+    uri_orgao: str
+        Endereço para coleta de dados direta pela API do órgão.
+
+    Exemplos
+    --------
+    Obter a data da votação #2265603-43.
+    >>> vot = camara.Votacao(cod='2265603-43')
+    >>> vot.data
+    ... '2020-12-22'
+    
+    --------------------------------------------------------------------------
+    '''
+
+    def __init__(self, cod:int):
+        self.cod = cod
+        self.dados = _api.get(['votacoes', str(cod)])['dados']
+        self.aprovacao = self.dados['aprovacao']
+        self.data = self.dados['data']
+        self.data_regitro = self.dados['dataHoraRegistro']
+        self.data_ultima_abertura = self.dados['dataHoraUltimaAberturaVotacao']
+        self.descricao = self.dados['descricao']
+        self.efeitos_registrados = self.dados['efeitosRegistrados']
+        self.evento = self.dados['idEvento']
+        self.orgao = self.dados['idOrgao']
+        self.objetos_possiveis = self.dados['objetosPossiveis']
+        self.proposicoes_afetadas = self.dados['proposicoesAfetadas']
+        self.sigla_orgao = self.dados['siglaOrgao']
+        self.ultima_apresentacao_proposicao = self.dados['ultimaApresentacaoProposicao']
+        self.uri = self.dados['uri']
+        self.uri_evento = self.dados['uriEvento']
+        self.uri_orgao = self.dados['uriOrgao']
+
+
+    def orientacoes(self, index=False) -> _pd.DataFrame:
+        '''
+        O voto recomendado pelas lideranças aos seus deputados na votação.
+
+        Em muitas votações, os líderes de partidos e blocos – as bancadas –
+        fazem recomendações de voto para seus parlamentares. Essas orientações
+        de uma votação também são feitas pelas lideranças de Governo, Minoria
+        e as mais recentes Maioria e Oposição. Uma liderança também pode
+        liberar a bancada para que cada deputado vote como quiser, ou entrar
+        em obstrução, para que seus parlamentares não sejam contados para o
+        quórum da votação.
+        Se a votação teve orientações, este recurso retorna uma lista em que
+        cada item contém os identificadores de um partido, bloco ou liderança,
+        e o posicionamento ou voto que foi recomendado aos seus parlamentares.
+        Até o momento, só estão disponíveis dados sobre orientações dadas em
+        votações no Plenário.
+
+        Parâmetros
+        ----------
+        index: bool (default=False)
+            Se True, define a coluna `codPartidoBloco` como index do DataFrame.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de recomendações pelas lideranças aos seus deputados.
+
+        ----------------------------------------------------------------------
+        '''
+
+        path = ['votacoes', str(self.cod), 'orientacoes']
+        dados = _api.get(path=path, params=None)
+        index_col = 'codPartidoBloco' if index else None
+        return _df(dados, index_col)
+
+
+    def votos(self) -> _pd.DataFrame:
+        '''
+        Como cada parlamentar votou em uma votação nominal e aberta.
+
+        Se a votação da Câmara é nominal e não foi secreta, retorna uma lista
+        em que cada item contém os identificadores básicos de um deputado e o
+        voto ou posicionamento que ele registrou.
+        O resultado é uma lista vazia se a votação foi uma votação simbólica,
+        em que os votos individuais não são contabilizados. Mas há algumas
+        votações simbólicas que também têm registros de "votos": nesses casos,
+        normalmente se trata de parlamentares que pediram expressamente que
+        seus posicionamentos fossem registrados.
+        Não são listados parlamentares ausentes à votação.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Lista de parlamentares.
+
+        ----------------------------------------------------------------------
+        '''
+
+        path = ['votacoes', str(self.cod), 'votos']
+        dados = _api.get(path=path, params=None)
+        return _df(dados, None)
