@@ -36,7 +36,10 @@ _api = API('camara')
 
 
 
-def _df(dados:dict, index_col=None) -> _pd.DataFrame:
+def _df(
+        dados: dict,
+        index_col: str = None
+    ) -> _pd.DataFrame:
     '''
     Converte dados brutos da API em um DataFrame.
 
@@ -49,7 +52,7 @@ def _df(dados:dict, index_col=None) -> _pd.DataFrame:
 
     Retorna
     -------
-    pandas.core.frames.DataFrame
+    pandas.core.frame.DataFrame
         Dados convertidos em DataFrame.
     '''
 
@@ -208,14 +211,14 @@ class Deputado:
 
     def despesas(
             self,
-            legislatura = None,
-            ano = None,
-            mes = None,
-            fornecedor = None,
-            pagina = None,
-            itens = None,
-            ordem = None,
-            ordenar_por = None
+            legislatura: int = None,
+            ano: int = None,
+            mes: int = None,
+            fornecedor: int = None,
+            pagina: int = None,
+            itens: int = None,
+            ordem: str = None,
+            ordenar_por: str = None
         ) -> _pd.DataFrame:
         '''
         As despesas com exercício parlamentar do deputado.
@@ -228,27 +231,27 @@ class Deputado:
 
         Parâmetros
         ----------
-        legislatura: int
+        legislatura: int (default=None)
             ID da legislatura em que tenham ocorrido as despesas.
-        ano: int
+        ano: int (default=None)
             Ano de ocorrência das despesas.
-        mes: int
+        mes: int (default=None)
             Número do mês de ocorrência das despesas.
-        fornecedor: int
+        fornecedor: int (default=None)
             CNPJ de uma pessoa jurídica, ou CPF de uma pessoa física,
             fornecedora do produto ou serviço (apenas números).
-        pagina: int
+        pagina: int (default=None)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro itens. Se omitido, assume o valor 1.
-        itens: int
+        itens: int (default=None)
             Número máximo de itens na página que se deseja obter com
             esta requisição.
-        ordem: str
+        ordem: str (default=None)
             O sentido da ordenação:
             - 'asc': De A a Z ou 0 a 9;
             - 'desc': De Z a A ou 9 a 0.
-        ordenar_por: str
+        ordenar_por: str (default=None)
             Nome do campo pelo qual a lista deverá ser ordenada:
             qualquer um dos campos do retorno, e também idLegislatura.
 
@@ -285,13 +288,13 @@ class Deputado:
 
     def discursos(
             self,
-            legislatura = None,
-            inicio = None,
-            fim = None,
-            pagina = None,
-            itens = None,
-            ordem = None,
-            ordenar_por = None
+            legislatura: int = None,
+            inicio: str = None,
+            fim: str = None,
+            pagina: int = None,
+            itens: int = None,
+            ordem: str = None,
+            ordenar_por: str = None
         ) -> _pd.DataFrame:
         '''
         Os discursos feitos por um deputado em eventos diversos.
@@ -305,23 +308,23 @@ class Deputado:
 
         Parâmetros
         ----------
-        legislatura: int
+        legislatura: int (default=None)
             Número da legislatura a qual os dados buscados devem corresponder.
-        inicio: str
+        inicio: str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str
+        fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        ordenar_por: str
+        ordenar_por: str (default=None)
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        ordem: str
+        ordem: str (default=None)
             O sentido da ordenação:
             - 'asc': De A a Z ou 0 a 9,
             - 'desc': De Z a A ou 9 a 0.
-        itens: int
+        itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        pagina: int
+        pagina: int (default=None)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido pelo
             parâmetro itens. Se omitido, assume o valor 1.
@@ -357,14 +360,14 @@ class Deputado:
 
     def eventos(
             self,
-            legislatura = None,
-            inicio = None,
-            fim = None,
-            pagina = None,
-            itens = None,
-            ordem = None,
-            ordenar_por = None,
-            index = False
+            legislatura: int = None,
+            inicio: str = None,
+            fim: str = None,
+            pagina: int = None,
+            itens: int = None,
+            ordem: str = None,
+            ordenar_por: str = None,
+            index: bool = False
         ) -> _pd.DataFrame:
         '''
         Uma lista de eventos com a participação do parlamentar.
@@ -377,23 +380,23 @@ class Deputado:
 
         Parâmetros
         ----------
-        legislatura: int
+        legislatura: int (default=None)
             Número da legislatura a qual os dados buscados devem corresponder.
-        inicio: str
+        inicio: str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str
+        fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        ordenar_por: str
+        ordenar_por: str (default=None)
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        ordem: str
+        ordem: str (default=None)
             O sentido da ordenação:
             - 'asc': De A a Z ou 0 a 9,
             - 'desc': De Z a A ou 9 a 0.
-        itens: int
+        itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        pagina: int
+        pagina: int (default=None)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido pelo
             parâmetro itens. Se omitido, assume o valor 1.
@@ -430,7 +433,10 @@ class Deputado:
         return _df(dados, index_col)
 
 
-    def frentes(self, index=False):
+    def frentes(
+            self,
+            index: bool = False
+        ) -> _pd.DataFrame:
         '''
         As frentes parlamentares das quais um deputado é integrante.
 
@@ -460,14 +466,14 @@ class Deputado:
 
     def orgaos(
             self,
-            legislatura = None,
-            inicio = None,
-            fim = None,
-            pagina = None,
-            itens = None,
-            ordem = None,
-            ordenar_por = None,
-            index = False
+            legislatura: int = None,
+            inicio: str = None,
+            fim: str = None,
+            pagina: int = None,
+            itens: int = None,
+            ordem: str = None,
+            ordenar_por: str = None,
+            index: bool = False
         ) -> _pd.DataFrame:
         '''
         Os órgãos dos quais um deputado é integrante.
@@ -484,21 +490,21 @@ class Deputado:
 
         Parâmetros
         ----------
-        inicio: str
+        inicio: str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str
+        fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        ordenar_por: str
+        ordenar_por: str (default=None)
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        ordem: str
+        ordem: str (default=None)
             O sentido da ordenação:
             - 'asc': De A a Z ou 0 a 9,
             - 'desc': De Z a A ou 9 a 0.
-        itens: int
+        itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        pagina: int
+        pagina: int (default=None)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido pelo
             parâmetro itens. Se omitido, assume o valor 1.
@@ -619,7 +625,10 @@ class Evento:
         self.url_registro = self.dados['urlRegistro']
 
 
-    def deputados(self, index=False) -> _pd.DataFrame:
+    def deputados(
+            self,
+            index: bool = False
+        ) -> _pd.DataFrame:
         '''
         Os deputados participantes de um evento específico.
 
@@ -649,7 +658,10 @@ class Evento:
         return _df(dados, index_col)
 
 
-    def orgaos(self, index=False) -> _pd.DataFrame:
+    def orgaos(
+            self,
+            index: bool = False
+        ) -> _pd.DataFrame:
         '''
         Lista de órgãos organizadores do evento.
 
@@ -675,7 +687,10 @@ class Evento:
         return _df(dados, index_col)
 
 
-    def pauta(self, index=False) -> _pd.DataFrame:
+    def pauta(
+            self,
+            index: bool = False
+        ) -> _pd.DataFrame:
         '''
         Lista de proposições que foram ou deverão ser avaliadas em um evento
         de caráter deliberativo.
@@ -706,7 +721,10 @@ class Evento:
         return _df(dados, index_col)
 
 
-    def votacoes(self, index=False) -> _pd.DataFrame:
+    def votacoes(
+            self,
+            index: bool = False
+        ) -> _pd.DataFrame:
         '''
         Informações detalhadas de votações sobre o evento.
 
@@ -799,7 +817,10 @@ class Frente:
         self.website = self.dados['urlWebsite']
         
 
-    def membros(self, index=False) -> _pd.DataFrame:
+    def membros(
+            self,
+            index: bool = False
+        ) -> _pd.DataFrame:
         '''
         Os deputados que participam da frente parlamentar.
 
@@ -871,7 +892,12 @@ class Legislatura:
         self.uri = self.dados['uri']
 
 
-    def mesa(self, inicio=None, fim=None, index=False) -> _pd.DataFrame:
+    def mesa(
+            self,
+            inicio: str = None,
+            fim: str = None,
+            index: bool = False
+        ) -> _pd.DataFrame:
         '''
         Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
 
@@ -986,14 +1012,14 @@ class Orgao:
 
     def eventos(
             self,
-            tipo_evento = None,
-            inicio = None,
-            fim = None,
-            pagina = None,
-            itens = None,
-            ordem = None,
-            ordenar_por = None,
-            index = False
+            tipo_evento: str = None,
+            inicio: str = None,
+            fim: str = None,
+            pagina: int = None,
+            itens: int = None,
+            ordem: str = None,
+            ordenar_por: str = None,
+            index: bool = False
         ) -> _pd.DataFrame:
         '''
         Os eventos ocorridos ou previstos em um órgão legislativo.
@@ -1006,23 +1032,23 @@ class Orgao:
 
         Parâmetros
         ----------
-        tipo_evento: str
+        tipo_evento: str (default=None)
             Identificador numérico do tipo de evento que se deseja obter.
-        inicio: str
+        inicio: str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str
+        fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        ordenar_por: str
+        ordenar_por: str (default=None)
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        ordem: str
+        ordem: str (default=None)
             O sentido da ordenação:
             - 'asc': De A a Z ou 0 a 9,
             - 'desc': De Z a A ou 9 a 0.
-        itens: int
+        itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        pagina: int
+        pagina: int (default=None)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido pelo
             parâmetro itens. Se omitido, assume o valor 1.
@@ -1061,11 +1087,11 @@ class Orgao:
 
     def membros(
             self,
-            inicio = None,
-            fim = None,
-            pagina = None,
-            itens = None,
-            index = False
+            inicio: str = None,
+            fim: str = None,
+            pagina: int = None,
+            itens: int = None,
+            index: bool = False
         ) -> _pd.DataFrame:
         '''
         Lista de cargos de um órgão e parlamentares que os ocupam.
@@ -1119,14 +1145,14 @@ class Orgao:
 
     def votacoes(
             self,
-            proposicao = None,
-            inicio = None,
-            fim = None,
-            pagina = None,
-            itens = None,
-            ordem = None,
-            ordenar_por = None,
-            index = False
+            proposicao: int = None,
+            inicio: str = None,
+            fim: str = None,
+            pagina: int = None,
+            itens: int = None,
+            ordem: str = None,
+            ordenar_por: str = None,
+            index: bool = False
         ) -> _pd.DataFrame:
         '''
         Uma lista de eventos com a participação do parlamentar.
@@ -1279,14 +1305,14 @@ class Partido:
 
     def membros(
             self,
-            inicio = None,
-            fim = None,
-            legislatura = None,
-            pagina = None,
-            itens = None,
-            ordenar_por = None,
-            ordem = None,
-            index = False
+            inicio: str = None,
+            fim: str = None,
+            legislatura: int = None,
+            pagina: int = None,
+            itens: int = None,
+            ordenar_por: str = None,
+            ordem: str = None,
+            index: bool = False
         ) -> _pd.DataFrame:
         '''
         Uma lista dos parlamentares de um partido durante um período.
@@ -1508,7 +1534,10 @@ class Proposicao:
         return _df(dados, None)
 
 
-    def relacionadas(self, index=False) -> _pd.DataFrame:
+    def relacionadas(
+            self,
+            index: bool = False
+        ) -> _pd.DataFrame:
         '''
         Uma lista de proposições relacionadas a uma em especial.
 
@@ -1535,7 +1564,10 @@ class Proposicao:
         return _df(dados, index_col)
 
 
-    def temas(self, index=False) -> _pd.DataFrame:
+    def temas(
+            self,
+            index: bool = False
+        ) -> _pd.DataFrame:
         '''
         Lista de áreas temáticas de uma proposição.
 
@@ -1562,7 +1594,12 @@ class Proposicao:
         return _df(dados, index_col)
 
 
-    def tramitacoes(self, inicio=None, fim=None, index=False) -> _pd.DataFrame:
+    def tramitacoes(
+            self,
+            inicio: str = None,
+            fim: str = None,
+            index: bool = False
+        ) -> _pd.DataFrame:
         '''
         O histórico de passos na tramitação de uma proposta.
 
@@ -1602,9 +1639,9 @@ class Proposicao:
 
     def votacoes(
             self,
-            ordem = None,
-            ordenar_por = None,
-            index = False
+            ordem: str = None,
+            ordenar_por: str = None,
+            index: bool = False
         ) -> _pd.DataFrame:
         '''
         Informações detalhadas de votações sobre a proposição.
@@ -1793,12 +1830,12 @@ class Votacao:
 
 
 def lista_blocos(
-        legislatura = None,
-        pagina = None,
-        itens = None,
-        ordem = None,
-        ordenar_por = None,
-        index = False
+        legislatura: int = None,
+        pagina: int = None,
+        itens: int = None,
+        ordem: str = None,
+        ordenar_por: str = None,
+        index: bool = False
     ) -> _pd.DataFrame:
     '''
     Lista de dados sobre os blocos partidários.
@@ -1861,18 +1898,18 @@ def lista_blocos(
 
 
 def lista_deputados(
-        nome = None,
-        legislatura = None,
-        uf = None,
-        partido = None,
-        sexo = None,
-        inicio = None,
-        fim = None,
-        pagina = None,
-        itens = None,
-        ordem = None,
-        ordenar_por = None,
-        index = False
+        nome: str = None,
+        legislatura: int = None,
+        uf: str = None,
+        partido: str = None,
+        sexo: str = None,
+        inicio: str = None,
+        fim: str = None,
+        pagina: int = None,
+        itens: int = None,
+        ordem: str = None,
+        ordenar_por: str = None,
+        index: bool = False
     ) -> _pd.DataFrame:
     '''
     Listagem e busca de deputados, segundo critérios.
@@ -1960,19 +1997,19 @@ def lista_deputados(
 
 
 def lista_eventos(
-        tipo_evento = None,
-        situacao = None,
-        tipo_orgao = None,
-        orgao = None,
-        data_inicio = None,
-        data_fim = None,
-        hora_inicio = None,
-        hora_fim = None,
-        pagina = None,
-        itens = None,
-        ordem = None,
-        ordenar_por = None,
-        index = False
+        tipo_evento: int = None,
+        situacao: int = None,
+        tipo_orgao: int = None,
+        orgao: int = None,
+        data_inicio: str = None,
+        data_fim: str = None,
+        hora_inicio: str = None,
+        hora_fim: str = None,
+        pagina: int = None,
+        itens: int = None,
+        ordem: str = None,
+        ordenar_por: str = None,
+        index: bool = False
     ) -> _pd.DataFrame:
     '''
     Lista de eventos ocorridos ou previstos nos diversos órgãos da Câmara.
@@ -2071,9 +2108,9 @@ def lista_eventos(
 
 
 def lista_frentes(
-        legislatura = None,
-        pagina = None,
-        index = False
+        legislatura: int = None,
+        pagina: int = None,
+        index: bool = False
     ) -> _pd.DataFrame:
     '''
     Lista de frentes parlamentares de uma ou mais legislaturas.
@@ -2119,12 +2156,12 @@ def lista_frentes(
 
 
 def lista_legislaturas(
-        data = None,
-        pagina = None,
-        itens = None,
-        ordem = None,
-        ordenar_por = None,
-        index = False
+        data: str = None,
+        pagina: int = None,
+        itens: int = None,
+        ordem: str = None,
+        ordenar_por: str = None,
+        index: bool = False
     ) -> _pd.DataFrame:
     '''
     Os períodos de mandatos e atividades parlamentares da Câmara.
@@ -2185,15 +2222,15 @@ def lista_legislaturas(
 
 
 def lista_orgaos(
-        sigla = None,
-        tipo = None,
-        inicio = None,
-        fim = None,
-        pagina = None,
-        itens = None,
-        ordem = None,
-        ordenar_por = None,
-        index = False
+        sigla: str = None,
+        tipo: int = None,
+        inicio: str = None,
+        fim: str = None,
+        pagina: int = None,
+        itens: int = None,
+        ordem: str = None,
+        ordenar_por: str = None,
+        index: bool = False
     ) -> _pd.DataFrame:
     '''
     Lista das comissões e outros órgãos legislativos da Câmara.
@@ -2267,14 +2304,14 @@ def lista_orgaos(
 
 
 def lista_partidos(
-        legislatura = None,
-        inicio = None,
-        fim = None,
-        pagina = None,
-        itens = None,
-        ordem = None,
-        ordenar_por = None,
-        index = False
+        legislatura: int = None,
+        inicio: str = None,
+        fim: str = None,
+        pagina: int = None,
+        itens: int = None,
+        ordem: str = None,
+        ordenar_por: str = None,
+        index: bool = False
     ) -> _pd.DataFrame:
     '''
     Os partidos políticos que têm ou já tiveram parlamentares em exercício na
@@ -2344,27 +2381,27 @@ def lista_partidos(
 
 
 def lista_proposicoes(
-        tipo = None,
-        numero = None,
-        ano = None,
-        autor_cod = None,
-        autor_nome = None,
-        partido_sigla = None,
-        partido_cod = None,
-        autor_uf = None,
-        keyword = None,
+        tipo: str = None,
+        numero: int = None,
+        ano: int = None,
+        autor_cod: int = None,
+        autor_nome: str = None,
+        partido_sigla: str = None,
+        partido_cod: int = None,
+        autor_uf: str = None,
+        keyword: str = None,
         tramitacao_senado = None,
-        apresentacao_inicio = None,
-        apresentacao_fim = None,
-        situacao = None,
-        tema = None,
-        inicio = None,
-        fim = None,
-        pagina = None,
-        itens = None,
-        ordem = None,
-        ordenar_por = None,
-        index = False
+        apresentacao_inicio: str = None,
+        apresentacao_fim: str = None,
+        situacao: int = None,
+        tema: int = None,
+        inicio: str = None,
+        fim: str = None,
+        pagina: int = None,
+        itens: int = None,
+        ordem: str = None,
+        ordenar_por: str = None,
+        index: bool = False
     ) -> _pd.DataFrame:
     '''
     Lista de proposições na Câmara.
@@ -2515,16 +2552,16 @@ def lista_proposicoes(
 
 
 def lista_votacoes(
-        proposicao = None,
-        evento = None,
-        orgao = None,
-        inicio = None,
-        fim = None,
-        pagina = None,
-        itens = None,
-        ordem = None,
-        ordenar_por = None,
-        index = False
+        proposicao: int = None,
+        evento: int = None,
+        orgao: int = None,
+        inicio: str = None,
+        fim: str = None,
+        pagina: int = None,
+        itens: int = None,
+        ordem: str = None,
+        ordenar_por: str = None,
+        index: bool = False
     ) -> _pd.DataFrame:
     '''
     Lista de votações na Câmara.
@@ -2621,7 +2658,10 @@ def lista_votacoes(
 
 
 
-def referencias(lista:str, index=False) -> _pd.DataFrame:
+def referencias(
+        lista: str,
+        index: bool = False
+    ) -> _pd.DataFrame:
     '''
     Listas de valores válidos para as funções deste módulo.
 

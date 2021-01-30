@@ -7,26 +7,28 @@ Inclue dados de APIs do Banco Central do Brasil e outras informações úteis.
 
 from datetime import datetime
 
-import pandas as pd
+import pandas as _pd
 import requests
 
 from DadosAbertosBrasil import _utils
 
 
 
-def moedas() -> pd.DataFrame:
+def moedas() -> _pd.DataFrame:
     '''
     Obtém os nomes e símbolos das principais moedas internacionais.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo os nomes e símbolos das principais
         moedas internacionais.
+
+    --------------------------------------------------------------------------
     '''
 
     query = r"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/Moedas?$top=100&$format=json"
-    return pd.DataFrame(pd.read_json(query)['value'].to_list()) \
+    return _pd.DataFrame(_pd.read_json(query)['value'].to_list()) \
         .rename(columns = {
             'nomeFormatado': 'Nome',
             'simbolo': 'Símbolo',
@@ -37,10 +39,10 @@ def moedas() -> pd.DataFrame:
 
 def cambio(
         moedas = 'USD',
-        data_inicial = '01-01-2000',
-        data_final = None,
-        index = False
-    ) -> pd.DataFrame:
+        data_inicial: str = '01-01-2000',
+        data_final: str = None,
+        index: bool = False
+    ) -> _pd.DataFrame:
     '''
     Taxa de câmbio das principais moedas internacionais.
     É possível escolher várias moedas inserindo uma lista no campo 'moeda'.
@@ -48,25 +50,27 @@ def cambio(
 
     Parâmetros
     ----------
-    moedas: list ou str (default = 'USD')
+    moedas: list ou str (default='USD')
         Sigla da moeda ou lista de siglas de moedas que será(ão) pesquisada(s).
         Utilize a função favoritos.moedas() para obter uma lista de moedas
         válidas.
-    data_inicial: str (default = '01-01-2000')
+    data_inicial: str (default='01-01-2000')
         String no formato de data 'DD-MM-AAAA' que representa o primeiro dia
         da pesquisa.
-    data_final: str (opcional)
+    data_final: str (default=None)
         String no formato de data 'DD-MM-AAAA' que representa o último dia
         da pesquisa.
         Caso este campo seja None, será considerada a data de hoje.
-    index: bool (default = False)
+    index: bool (default=False)
         Define se a coluna 'Data' será o index do DataFrame.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo o valor cambial da(s) moeda(s) selecionada(s)
         por dia.
+
+    --------------------------------------------------------------------------
     '''
 
     if data_final == None:
@@ -74,7 +78,7 @@ def cambio(
     
     if isinstance(moedas, str):
         query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moedas}'&@dataInicial='{data_inicial}'&@dataFinalCotacao='{data_final}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"
-        cotacoes = pd.DataFrame(pd.read_json(query)['value'].to_list()) \
+        cotacoes = _pd.DataFrame(_pd.read_json(query)['value'].to_list()) \
             .rename(columns = {
                 'cotacaoVenda': moedas,
                 'dataHoraCotacao': 'Data'
@@ -86,7 +90,7 @@ def cambio(
             cotacao_moedas = []
             for moeda in moedas:
                 query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moeda}'&@dataInicial='{data_inicial}'&@dataFinalCotacao='{data_final}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"
-                cotacao_moeda = pd.DataFrame(pd.read_json(query)['value'].to_list())
+                cotacao_moeda = _pd.DataFrame(_pd.read_json(query)['value'].to_list())
                 cotacao_moeda.dataHoraCotacao = cotacao_moeda.dataHoraCotacao.apply(
                     lambda x: datetime.strptime(x[:10], '%Y-%m-%d')
                 )
@@ -96,12 +100,12 @@ def cambio(
                         'dataHoraCotacao': 'Data'
                     }).groupby('Data').last())
 
-            cotacoes = pd.concat(cotacao_moedas, axis=1).reset_index()
+            cotacoes = _pd.concat(cotacao_moedas, axis=1).reset_index()
 
         except:
             raise TypeError("O campo 'moedas' deve ser o código de três letras maiúsculas da moeda ou um objeto iterável de códigos.")
     
-    cotacoes.Data = pd.to_datetime(cotacoes.Data, format='%Y-%m-%d %H:%M:%S')
+    cotacoes.Data = _pd.to_datetime(cotacoes.Data, format='%Y-%m-%d %H:%M:%S')
     if index:
         cotacoes.set_index('Data', inplace=True)
     
@@ -109,24 +113,26 @@ def cambio(
 
 
 
-def ipca(index=False) -> pd.DataFrame:
+def ipca(index:bool=False) -> _pd.DataFrame:
     '''
     Valor mensal do índice IPC-A.
 
     Parâmetros
     ----------
-    index: bool (default = False)
+    index: bool (default=False)
         Define se a coluna 'Data' será o index do DataFrame.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo o valor do índice IPC-A por mês.
+
+    --------------------------------------------------------------------------
     '''
 
     ipca_query = r'https://api.bcb.gov.br/dados/serie/bcdata.sgs.4448/dados?formato=json'
-    ipca = pd.read_json(ipca_query)
-    ipca.data = pd.to_datetime(ipca.data)
+    ipca = _pd.read_json(ipca_query)
+    ipca.data = _pd.to_datetime(ipca.data)
     ipca = ipca.rename(columns={'data': 'Data', 'valor':'IPCA Mensal'})
     
     if index:
@@ -136,27 +142,30 @@ def ipca(index=False) -> pd.DataFrame:
 
 
 
-def catalogo() -> pd.DataFrame:
+def catalogo() -> _pd.DataFrame:
     '''
     Catálogo de iniciativas oficiais de dados abertos no Brasil.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo um catálogo de iniciativas de dados abertos.
+
+    --------------------------------------------------------------------------
     '''
 
     # URL do repositório no GitHub contendo o catálogo de dados abertos.
     # Créditos: https://github.com/dadosgovbr
     url = 'https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv'
     
-    return pd.read_csv(url)
+    return _pd.read_csv(url)
 
 
 
-def geojson(uf: str) -> dict:
+def geojson(uf:str) -> dict:
     '''
-    Coordenadas dos municípios brasileiros em formato GeoJSON para criação de mapas.
+    Coordenadas dos municípios brasileiros em formato GeoJSON para criação
+    de mapas.
 
     Parâmetros
     ----------
@@ -167,6 +176,8 @@ def geojson(uf: str) -> dict:
     -------
     dict
         Coordenadas em formato .GeoJSON da UF pesquisada.
+
+    --------------------------------------------------------------------------
     '''
 
     uf = _utils.parse_uf(uf)
@@ -222,37 +233,41 @@ def geojson(uf: str) -> dict:
 
 
 
-def codigos_municipios() -> pd.DataFrame:
+def codigos_municipios() -> _pd.DataFrame:
     '''
     Lista dos códigos dos municípios do IBGE e do TSE.
     Utilizado para correlacionar dados das duas APIs diferentes.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo os códigos do IBGE e do TSE para todos os
         municípios do Brasil.
+
+    --------------------------------------------------------------------------
     '''
 
     # URL do repositório no GitHub contendo os códigos.
     # Créditos: https://github.com/betafcc
     url = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
-    df = pd.read_json(url)
+    df = _pd.read_json(url)
     return df[['codigo_tse', 'codigo_ibge', 'nome_municipio', 'uf', 'capital']]
 
 
 
-def perfil_eleitorado() -> pd.DataFrame:
+def perfil_eleitorado() -> _pd.DataFrame:
     '''
     Tabela com perfil do eleitorado por município.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo o perfil do eleitorado em todos os municípios.
+
+    --------------------------------------------------------------------------
     '''
 
-    return pd.read_csv(
+    return _pd.read_csv(
         r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.csv',
         encoding = 'latin-1',
         sep = ';'

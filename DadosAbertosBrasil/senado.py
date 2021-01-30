@@ -23,7 +23,7 @@ Documentação da API original: http://legis.senado.gov.br/dadosabertos/docs/
 
 
 
-import pandas as pd
+import pandas as _pd
 import requests
 
 from . import _utils
@@ -47,7 +47,10 @@ def _get_request(url:str, keys=None) -> dict:
 
 
 
-def lista_atual(participacao=None, uf=None) -> dict:
+def lista_atual(
+        participacao: str = None,
+        uf: str = None
+    ) -> dict:
     '''
     Lista senadores em exercício.
 
@@ -108,10 +111,10 @@ def lista_afastados() -> dict:
 
 def lista_legislatura(
         inicio: int,
-        fim = None,
-        exercicio = None,
-        participacao = None,
-        uf = None
+        fim: int = None,
+        exercicio: str = None,
+        participacao: str = None,
+        uf: str = None
     ) -> dict:
     '''
     Lista senadores de uma legislatura ou de um intervalo de legislaturas.
@@ -172,7 +175,10 @@ def lista_legislatura(
 
 
 
-def partidos(ativos=True, index=False) -> pd.DataFrame:
+def partidos(
+        ativos: bool = True,
+        index: bool = False
+    ) -> _pd.DataFrame:
     '''
     Lista os partidos políticos.
 
@@ -198,14 +204,14 @@ def partidos(ativos=True, index=False) -> pd.DataFrame:
     
     keys = ['ListaPartidos','Partidos', 'Partido']
     r = _get_request(url, keys)
-    df = pd.DataFrame(r)
+    df = _pd.DataFrame(r)
 
     if index:
         df.set_index('Codigo', inplace=True)
 
-    df.DataCriacao = pd.to_datetime(df.DataCriacao)
+    df.DataCriacao = _pd.to_datetime(df.DataCriacao)
     if not ativos:
-        df.DataExtincao = pd.to_datetime(df.DataExtincao)
+        df.DataExtincao = _pd.to_datetime(df.DataExtincao)
 
     return df
 
@@ -271,12 +277,12 @@ class Senador:
 
     def apartes(
             self,
-            casa = None,
-            data_inicio = None,
-            data_fim = None,
-            numero_sessao = None,
-            tipo_pronunciamento = None,
-            tipo_sessao = None
+            casa: str = None,
+            data_inicio: int = None,
+            data_fim: int = None,
+            numero_sessao: int = None,
+            tipo_pronunciamento: str = None,
+            tipo_sessao: str = None
         ) -> list:
         '''
         Obtém a relação de apartes do senador.
@@ -332,11 +338,11 @@ class Senador:
         
     def autorias(
             self,
-            ano = None,
-            numero = None,
-            primeiro_autor = None,
-            sigla = None,
-            tramitando = None
+            ano: int = None,
+            numero: int = None,
+            primeiro_autor: bool = None,
+            sigla: str = None,
+            tramitando: bool = None
         ) -> list:
         '''
         Obtém as matérias de autoria de um senador.
@@ -386,7 +392,11 @@ class Senador:
         return _get_request(url, keys)
 
     
-    def cargos(self, comissao=None, ativos=None) -> list:
+    def cargos(
+            self,
+            comissao: bool = None,
+            ativos: bool = None
+        ) -> list:
         '''
         Obtém a relação de cargos que o senador ja ocupou.
 
@@ -419,7 +429,11 @@ class Senador:
         return _get_request(url, keys)
 
 
-    def comissoes(self, comissao=None, ativos=None) -> list:
+    def comissoes(
+            self,
+            comissao: str = None,
+            ativos: bool = None
+        ) -> list:
         '''
         Obtém as comissões de que um senador é membro.
 
@@ -454,12 +468,12 @@ class Senador:
 
     def discursos(
             self,
-            casa = None,
-            data_inicio = None,
-            data_fim = None,
-            numero_sessao = None,
-            tipo_pronunciamento = None,
-            tipo_sessao = None
+            casa: str = None,
+            data_inicio: int = None,
+            data_fim: int = None,
+            numero_sessao: int = None,
+            tipo_pronunciamento: str = None,
+            tipo_sessao: str = None
         ) -> list:
         '''
         Obtém a relação de discursos do senador.
@@ -585,7 +599,10 @@ class Senador:
         return _get_request(url, keys)
 
 
-    def licencas(self, data=None):
+    def licencas(
+            self,
+            data: str = None
+        ) -> list:
         '''
         Obtém as licenças de um senador.
 
@@ -614,12 +631,12 @@ class Senador:
 
     def relatorias(
             self,
-            ano = None,
-            comissao = None,
-            numero = None,
-            sigla = None,
-            tramitando = None
-        ):
+            ano: int = None,
+            comissao: str = None,
+            numero: int = None,
+            sigla: str = None,
+            tramitando: bool = None
+        ) -> list:
         '''
         Obtém as matérias de relatoria de um senador.
 
@@ -637,6 +654,13 @@ class Senador:
             - True: Retorna apenas as matérias que estão tramitando;
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
+
+        Retorna
+        -------
+        list of dict
+            Lista de matérias de relatoria de um senador.
+
+        ----------------------------------------------------------------------
         '''
 
         tags = {}
@@ -660,10 +684,10 @@ class Senador:
 
     def votacoes(
             self,
-            ano = None,
-            numero = None,
-            sigla = None,
-            tramitando = None
+            ano: int = None,
+            numero: int = None,
+            sigla: str = None,
+            tramitando: bool = None
         ) -> list:
         '''
         Obtém as votações de um senador.

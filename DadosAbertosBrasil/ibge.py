@@ -13,19 +13,25 @@ Documentação da API original: https://servicodados.ibge.gov.br/api/docs
 
 
 
-import pandas as pd
+import pandas as _pd
 import requests
 
 from . import _utils
 
 
 
-_normalize = pd.io.json.json_normalize if pd.__version__[0] == '0' else pd.json_normalize
-_url = 'https://servicodados.ibge.gov.br/api/v3/agregados'
+_normalize = _pd.io.json.json_normalize \
+    if _pd.__version__[0] == '0' else _pd.json_normalize
+
+_URL = 'https://servicodados.ibge.gov.br/api/v3/agregados'
 
 
 
-def nomes(nomes: list, sexo=None, localidade=None) -> pd.DataFrame:
+def nomes(
+        nomes: list,
+        sexo: str = None,
+        localidade: int = None
+    ) -> _pd.DataFrame:
     '''
     Obtém a frequência de nascimentos por década dos nomes consultados.
     Defina o campo 'nomes' com um string ou uma lista de string.
@@ -35,22 +41,24 @@ def nomes(nomes: list, sexo=None, localidade=None) -> pd.DataFrame:
     ----------
     nomes: list ou str
         Nome ou lista de nomes a ser consultado.
-    sexo: str (opcional)
-        'M' para consultar apenas o nome de pessoas do sexo masculino;
-        'F' para consultar apenas o nome de pessoas do sexo feminino;
-        None para consultar ambos.
+    sexo: str (default=None)
+        - 'M' para consultar apenas o nome de pessoas do sexo masculino;
+        - 'F' para consultar apenas o nome de pessoas do sexo feminino;
+        - None para consultar ambos.
     localidade: int ou str (opcional)
         Caso deseje obter a frequência referente a uma dada localidade,
         informe o parâmetro localidade. Por padrão, assume o valor BR,
         mas pode ser o identificador de um município ou de uma UF.
-        Utilize a função ibge.localidade() para encontrar a localidade
+        Utilize a função `ibge.localidade` para encontrar a localidade
         desejada.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo a frequência de nascimentos por década para
         o(s) nome(s) consultado(s).
+
+    --------------------------------------------------------------------------
     '''
     
     if isinstance(nomes, str):
@@ -64,19 +72,19 @@ def nomes(nomes: list, sexo=None, localidade=None) -> pd.DataFrame:
     if localidade is not None:
         s += f'?localidade={_utils.parse_localidade(localidade)}'
 
-    json = pd.read_json(
+    json = _pd.read_json(
         f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{s}"
     )
 
-    dfs = [pd.DataFrame(json.res[i]).set_index('periodo') for i in json.index]
-    df = pd.concat(dfs, axis=1)
+    dfs = [_pd.DataFrame(json.res[i]).set_index('periodo') for i in json.index]
+    df = _pd.concat(dfs, axis=1)
     df.columns = json.nome
 
     return df
 
 
 
-def nomes_uf(nome: str) -> pd.DataFrame:
+def nomes_uf(nome: str) -> _pd.DataFrame:
     '''
     Obtém a frequência de nascimentos por UF para o nome consultado.
 
@@ -87,18 +95,20 @@ def nomes_uf(nome: str) -> pd.DataFrame:
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo a frequência de nascimentos do nome pesquisado,
         agrupado por Unidade da Federação.
+
+    --------------------------------------------------------------------------
     '''
     
     if isinstance(nome, str):
 
-        json = pd.read_json(
+        json = _pd.read_json(
             f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nome}?groupBy=UF"
         )
 
-        df = pd.DataFrame(
+        df = _pd.DataFrame(
             [json[json.localidade == i].res.values[0][0] for i in json.localidade]
         )
 
@@ -112,30 +122,36 @@ def nomes_uf(nome: str) -> pd.DataFrame:
 
 
 
-def nomes_ranking(decada=None, sexo=None, localidade=None) -> pd.DataFrame:
+def nomes_ranking(
+        decada: int = None,
+        sexo: str = None,
+        localidade: int = None
+    ) -> _pd.DataFrame:
     '''
     Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
 
     Parâmetros
     ----------
-    decada: int (opcional)
+    decada: int (default=None)
         Deve ser um número múltiplo de 10 no formato AAAA.
-    sexo: str (opcional)
-        'M' para consultar apenas o nome de pessoas do sexo masculino;
-        'F' para consultar apenas o nome de pessoas do sexo feminino;
-        None para consultar ambos.
-    localidade: int ou str (opcional)
+    sexo: str (default=None)
+        - 'M' para consultar apenas o nome de pessoas do sexo masculino;
+        - 'F' para consultar apenas o nome de pessoas do sexo feminino;
+        - None para consultar ambos.
+    localidade: int ou str (default=None)
         Caso deseje obter o ranking de nomes referente a uma dada localidade,
         informe o parâmetro localidade. Por padrão, assume o valor BR,
         mas pode ser o identificador de um município ou de uma UF.
-        Utilize a função ibge.localidade() para encontrar a localidade
+        Utilize a função `ibge.localidade` para encontrar a localidade
         desejada.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo os nomes mais populadores dentro do universo de
         parâmetros pesquisados.
+
+    --------------------------------------------------------------------------
     '''
     
     query = 'https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking'
@@ -164,8 +180,8 @@ def nomes_ranking(decada=None, sexo=None, localidade=None) -> pd.DataFrame:
     if params != '':
         query += f'?{params}'
     
-    return pd.DataFrame(
-        pd.read_json(query).res[0]
+    return _pd.DataFrame(
+        _pd.read_json(query).res[0]
     ).set_index('ranking')
 
 
@@ -176,7 +192,7 @@ class Agregados:
     '''
 
     def __init__(self, index=False):
-        data = requests.get(_url).json()
+        data = requests.get(_URL).json()
 
         df = _normalize(
             data,
@@ -186,7 +202,7 @@ class Agregados:
             meta_prefix = 'pesquisa_'
         )
         
-        df.agregado_id = pd.to_numeric(df.agregado_id)
+        df.agregado_id = _pd.to_numeric(df.agregado_id)
 
         self.dados = df.set_index('agregado_id', drop = True) \
             .sort_index() if index else df
@@ -195,7 +211,7 @@ class Agregados:
             .drop_duplicates().reset_index(drop=True)
     
 
-    def filtrar(self, pesquisa=None, contendo=None, excluindo=None) -> pd.DataFrame:
+    def filtrar(self, pesquisa=None, contendo=None, excluindo=None) -> _pd.DataFrame:
         '''
         Filtra lista de agregados.
         Defina o tipo da pesquisa ou filtre agregados contendo ou não determinado substring.
@@ -235,7 +251,7 @@ class Metadados:
     '''
 
     def __init__(self, agregado: int):
-        data = requests.get(_url + f'/{agregado}/metadados').json()
+        data = requests.get(_URL + f'/{agregado}/metadados').json()
         self.dados = data
         self.id = data['id']
         self.nome = data['nome']
@@ -294,7 +310,7 @@ class Sidra:
         Apresenta a query com os argumentos definidos.
         '''
 
-        query = f'{_url}/{self.agregado}/'
+        query = f'{_URL}/{self.agregado}/'
         query += f'periodos/{self.__converter_lista(self.periodos)}/'
         query += f'variaveis/{self.__converter_lista(self.variaveis)}?'
         query += f'localidades={self.__convertar_dicionario(self.localidades)}'
@@ -312,7 +328,10 @@ class Sidra:
 
 
 
-def referencias(cod: str, index=False) -> pd.DataFrame:
+def referencias(
+        cod: str,
+        index: bool = False
+    ) -> _pd.DataFrame:
     '''
     Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
 
@@ -325,13 +344,15 @@ def referencias(cod: str, index=False) -> pd.DataFrame:
         - 'P': Períodos;
         - 'E': Periodicidades;
         - 'V': Variáveis.
-    index: bool (opcional)
+    index: bool (default=False)
         Defina True caso o campo 'id' deva ser o index do DataFrame.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo todas as referências do código pesquisado.
+
+    --------------------------------------------------------------------------
     '''
 
     if cod in ['A', 'a', 'assuntos']:
@@ -350,7 +371,7 @@ def referencias(cod: str, index=False) -> pd.DataFrame:
         raise ValueError("O campo 'cod' deve ser do tipo string.")
         
     data = requests.get(f'https://servicodados.ibge.gov.br/api/v3/agregados?acervo={s}').json()
-    df = pd.DataFrame(data)
+    df = _pd.DataFrame(data)
 
     if index:
         df.set_index('id', inplace=True)
@@ -359,18 +380,21 @@ def referencias(cod: str, index=False) -> pd.DataFrame:
 
 
    
-def populacao(projecao=None, localidade=None):
+def populacao(
+        projecao: str = None,
+        localidade: int = None
+    ):
     '''
     Obtém a projecao da população referente ao Brasil.
 
     Parametros
     ----------
-    projecao: str (default = None)
+    projecao: str (default=None)
         - 'populacao' obtém o valor projetado da população total da localidade;
         - 'nascimento' obtém o valor projetado de nascimentos da localidade
         - 'obito' obtém o valor projetado de óbitos da localidade;
         - None obtém um dicionário com todos os valores anteriores.
-    localidade: int ou str (default = None)
+    localidade: int ou str (default=None)
         Código da localidade desejada.
         Por padrão, obtém os valores do Brasil.
         Utilize a função ibge.localidades() para identificar
@@ -380,6 +404,8 @@ def populacao(projecao=None, localidade=None):
     -------
     dict ou int:
         Valor(es) projetado(s) para o indicador escolhido.
+
+    --------------------------------------------------------------------------
     '''
 
     localidade = _utils.parse_localidade(localidade, '')
@@ -411,14 +437,16 @@ def _loc_columns(x: str) -> str:
 
 
 
-def localidades() -> pd.DataFrame:
+def localidades() -> _pd.DataFrame:
     '''
     Obtém o conjunto de distritos do Brasil.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo todas as divisões de distritos do Brasil.
+
+    --------------------------------------------------------------------------
     '''
 
     df = _normalize(
@@ -432,7 +460,7 @@ def localidades() -> pd.DataFrame:
 
 
 
-def malha(localidade=None) -> str:
+def malha(localidade:int=None) -> str:
     '''
     Obtém a URL para a malha referente ao identificador da localidade.
 
@@ -441,13 +469,15 @@ def malha(localidade=None) -> str:
     localidade: int ou str (default = '')
         Código da localidade desejada.
         Por padrão, obtém a malha do Brasil.
-        Utilize a função ibge.localidades() para identificar
+        Utilize a função `ibge.localidades` para identificar
         a localidade desejada.
 
     Retorna
     -------
     str
         URL da malha da localidade desejada.
+
+    --------------------------------------------------------------------------
     '''
 
     localidade = _utils.parse_localidade(localidade, '')
@@ -455,17 +485,19 @@ def malha(localidade=None) -> str:
 
 
 
-def coordenadas() -> pd.DataFrame:
+def coordenadas() -> _pd.DataFrame:
     '''
-    Obtém as coordenadas de todas as localidades brasileiras,
-    incluindo latitude, longitude e altitude.
+    Obtém as coordenadas de todas as localidades brasileiras, incluindo
+    latitude, longitude e altitude.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame das coordenadas de todas as localidade brasileiras.
+
+    --------------------------------------------------------------------------
     '''
 
-    return pd.read_excel(
+    return _pd.read_excel(
         r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Coordenadas.xlsx'
     )
