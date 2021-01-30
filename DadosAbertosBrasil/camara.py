@@ -215,10 +215,10 @@ class Deputado:
             ano: int = None,
             mes: int = None,
             fornecedor: int = None,
-            pagina: int = None,
+            pagina: int = 1,
             itens: int = None,
             asc: bool = True,
-            ordenar_por: str = None
+            ordenar_por: str = 'ano'
         ) -> _pd.DataFrame:
         '''
         As despesas com exercício parlamentar do deputado.
@@ -240,10 +240,10 @@ class Deputado:
         fornecedor: int (default=None)
             CNPJ de uma pessoa jurídica, ou CPF de uma pessoa física,
             fornecedora do produto ou serviço (apenas números).
-        pagina: int (default=None)
+        pagina: int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
-            pelo parâmetro itens. Se omitido, assume o valor 1.
+            pelo parâmetro `itens`. Se omitido, assume o valor 1.
         itens: int (default=None)
             Número máximo de itens na página que se deseja obter com
             esta requisição.
@@ -251,7 +251,7 @@ class Deputado:
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default=None)
+        ordenar_por: str (default='ano')
             Nome do campo pelo qual a lista deverá ser ordenada:
             qualquer um dos campos do retorno, e também idLegislatura.
 
@@ -272,13 +272,11 @@ class Deputado:
             params['mes'] = mes
         if fornecedor is not None:
             params['cnpjCpfFornecedor'] = fornecedor
-        if pagina is not None:
-            params['pagina'] = pagina
+        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
         params['ordem'] = 'asc' if asc else 'desc'
-        if ordenar_por is not None:
-            params['ordenarPor'] = ordenar_por
+        params['ordenarPor'] = ordenar_por
 
         path = ['deputados', str(self.cod), 'despesas']
         dados = _api.get(path=path, params=params)
@@ -290,10 +288,10 @@ class Deputado:
             legislatura: int = None,
             inicio: str = None,
             fim: str = None,
-            pagina: int = None,
+            pagina: int = 1,
             itens: int = None,
             asc: bool = True,
-            ordenar_por: str = None
+            ordenar_por: str = 'dataHoraInicio'
         ) -> _pd.DataFrame:
         '''
         Os discursos feitos por um deputado em eventos diversos.
@@ -316,15 +314,15 @@ class Deputado:
         itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        pagina: int (default=None)
+        pagina: int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
-            obter com a requisição, contendo o número de itens definido pelo
-            parâmetro itens. Se omitido, assume o valor 1.
+            obter com a requisição, contendo o número de itens definido
+            pelo parâmetro `itens`. Se omitido, assume o valor 1.
         asc: bool (default=True)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default=None)
+        ordenar_por: str (default='dataHoraInicio')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
 
@@ -343,13 +341,11 @@ class Deputado:
             params['dataInicio'] = inicio
         if fim is not None:
             params['dataFim'] = fim
-        if pagina is not None:
-            params['pagina'] = pagina
+        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
         params['ordem'] = 'asc' if asc else 'desc'
-        if ordenar_por is not None:
-            params['ordenarPor'] = ordenar_por
+        params['ordenarPor'] = ordenar_por
 
         path = ['deputados', str(self.cod), 'discursos']
         dados = _api.get(path=path, params=params)
@@ -361,10 +357,10 @@ class Deputado:
             legislatura: int = None,
             inicio: str = None,
             fim: str = None,
-            pagina: int = None,
+            pagina: int = 1,
             itens: int = None,
             asc: bool = True,
-            ordenar_por: str = None,
+            ordenar_por: str = 'dataHoraInicio',
             index: bool = False
         ) -> _pd.DataFrame:
         '''
@@ -384,10 +380,10 @@ class Deputado:
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina: int (default=None)
+        pagina: int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
-            obter com a requisição, contendo o número de itens definido pelo
-            parâmetro itens. Se omitido, assume o valor 1.
+            obter com a requisição, contendo o número de itens definido
+            pelo parâmetro `itens`. Se omitido, assume o valor 1.
         itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
@@ -395,7 +391,7 @@ class Deputado:
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default=None)
+        ordenar_por: str (default='dataHoraInicio')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
         index: bool (default=False)
@@ -416,13 +412,11 @@ class Deputado:
             params['dataInicio'] = inicio
         if fim is not None:
             params['dataFim'] = fim
-        if pagina is not None:
-            params['pagina'] = pagina
+        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
         params['ordem'] = 'asc' if asc else 'desc'
-        if ordenar_por is not None:
-            params['ordenarPor'] = ordenar_por
+        params['ordenarPor'] = ordenar_por
 
         path = ['deputados', str(self.cod), 'eventos']
         dados = _api.get(path=path, params=params)
@@ -466,10 +460,10 @@ class Deputado:
             legislatura: int = None,
             inicio: str = None,
             fim: str = None,
-            pagina: int = None,
+            pagina: int = 1,
             itens: int = None,
             asc: bool = True,
-            ordenar_por: str = None,
+            ordenar_por: str = 'dataInicio',
             index: bool = False
         ) -> _pd.DataFrame:
         '''
@@ -491,10 +485,10 @@ class Deputado:
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina: int (default=None)
+        pagina: int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
-            obter com a requisição, contendo o número de itens definido pelo
-            parâmetro itens. Se omitido, assume o valor 1.
+            obter com a requisição, contendo o número de itens definido
+            pelo parâmetro `itens`. Se omitido, assume o valor 1.
         itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
@@ -502,7 +496,7 @@ class Deputado:
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default=None)
+        ordenar_por: str (default='dataInicio')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
         index: bool (default=False)
@@ -521,13 +515,11 @@ class Deputado:
             params['dataInicio'] = inicio
         if fim is not None:
             params['dataFim'] = fim
-        if pagina is not None:
-            params['pagina'] = pagina
+        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
         params['ordem'] = 'asc' if asc else 'desc'
-        if ordenar_por is not None:
-            params['ordenarPor'] = ordenar_por
+        params['ordenarPor'] = ordenar_por
 
         path = ['deputados', str(self.cod), 'orgaos']
         dados = _api.get(path=path, params=params)
@@ -1011,10 +1003,10 @@ class Orgao:
             tipo_evento: str = None,
             inicio: str = None,
             fim: str = None,
-            pagina: int = None,
+            pagina: int = 1,
             itens: int = None,
             asc: bool = True,
-            ordenar_por: str = None,
+            ordenar_por: str = 'dataHoraInicio',
             index: bool = False
         ) -> _pd.DataFrame:
         '''
@@ -1034,10 +1026,10 @@ class Orgao:
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina: int (default=None)
+        pagina: int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
-            obter com a requisição, contendo o número de itens definido pelo
-            parâmetro itens. Se omitido, assume o valor 1.
+            obter com a requisição, contendo o número de itens definido
+            pelo parâmetro `itens`. Se omitido, assume o valor 1.
         itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
@@ -1045,7 +1037,7 @@ class Orgao:
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default=None)
+        ordenar_por: str (default='dataHoraInicio')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
         index: bool (default=False)
@@ -1066,13 +1058,11 @@ class Orgao:
             params['dataInicio'] = inicio
         if fim is not None:
             params['dataFim'] = fim
-        if pagina is not None:
-            params['pagina'] = pagina
+        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
         params['ordem'] = 'asc' if asc else 'desc'
-        if ordenar_por is not None:
-            params['ordenarPor'] = ordenar_por
+        params['ordenarPor'] = ordenar_por
 
         path = ['orgaos', str(self.cod), 'eventos']
         dados = _api.get(path=path, params=params)
@@ -1084,7 +1074,7 @@ class Orgao:
             self,
             inicio: str = None,
             fim: str = None,
-            pagina: int = None,
+            pagina: int = 1,
             itens: int = None,
             index: bool = False
         ) -> _pd.DataFrame:
@@ -1104,13 +1094,13 @@ class Orgao:
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        pagina: int (default=1)
+            Número da página de resultados, a partir de 1, que se deseja
+            obter com a requisição, contendo o número de itens definido
+            pelo parâmetro `itens`. Se omitido, assume o valor 1.
         itens: int (default=None)
             Número máximo de itens na “página” que se deseja obter com esta
             requisição.
-        pagina: int (default=None)
-            Número da “página” de resultados, a partir de 1, que se deseja
-            obter com a requisição, contendo o número de itens definido pelo
-            parâmetro itens. Se omitido, assume o valor 1.
         index: bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
@@ -1127,8 +1117,7 @@ class Orgao:
             params['dataInicio'] = inicio
         if fim is not None:
             params['dataFim'] = fim
-        if pagina is not None:
-            params['pagina'] = pagina
+        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
 
@@ -1143,10 +1132,10 @@ class Orgao:
             proposicao: int = None,
             inicio: str = None,
             fim: str = None,
-            pagina: int = None,
+            pagina: int = 1,
             itens: int = None,
-            asc: bool = True,
-            ordenar_por: str = None,
+            asc: bool = False,
+            ordenar_por: str = 'dataHoraRegistro',
             index: bool = False
         ) -> _pd.DataFrame:
         '''
@@ -1176,18 +1165,18 @@ class Orgao:
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina: int (default=None)
+        pagina: int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
-            obter com a requisição, contendo o número de itens definido pelo
-            parâmetro itens. Se omitido, assume o valor 1.
+            obter com a requisição, contendo o número de itens definido
+            pelo parâmetro `itens`. Se omitido, assume o valor 1.
         itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc: bool (default=True)
+        asc: bool (default=False)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default=None)
+        ordenar_por: str (default='dataHoraRegistro')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
         index: bool (default=False)
@@ -1208,13 +1197,11 @@ class Orgao:
             params['dataInicio'] = inicio
         if fim is not None:
             params['dataFim'] = fim
-        if pagina is not None:
-            params['pagina'] = pagina
+        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
         params['ordem'] = 'asc' if asc else 'desc'
-        if ordenar_por is not None:
-            params['ordenarPor'] = ordenar_por
+        params['ordenarPor'] = ordenar_por
 
         path = ['orgaos', str(self.cod), 'votacoes']
         dados = _api.get(path=path, params=params)
@@ -1302,7 +1289,7 @@ class Partido:
             inicio: str = None,
             fim: str = None,
             legislatura: int = None,
-            pagina: int = None,
+            pagina: int = 1,
             itens: int = None,
             ordenar_por: str = None,
             asc: bool = True,
@@ -1326,10 +1313,10 @@ class Partido:
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         legislatura: int (default=None)
             Número da legislatura, à qual os dados buscados devem corresponder.
-        pagina: int (default=None)
+        pagina: int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
-            obter com a requisição, contendo o número de itens definido pelo
-            parâmetro itens. Se omitido, assume o valor 1.
+            obter com a requisição, contendo o número de itens definido
+            pelo parâmetro `itens`. Se omitido, assume o valor 1.
         itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
@@ -1358,8 +1345,7 @@ class Partido:
             params['dataFim'] = fim
         if legislatura is not None:
             params['idLegislatura'] = legislatura
-        if pagina is not None:
-            params['pagina'] = pagina
+        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
         params['ordem'] = 'asc' if asc else 'desc'
@@ -1632,8 +1618,8 @@ class Proposicao:
 
     def votacoes(
             self,
-            asc: bool = True,
-            ordenar_por: str = None,
+            asc: bool = False,
+            ordenar_por: str = 'dataHoraRegistro',
             index: bool = False
         ) -> _pd.DataFrame:
         '''
@@ -1646,11 +1632,11 @@ class Proposicao:
 
         Parâmetros
         ----------
-        asc: bool (default=True)
+        asc: bool (default=False)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default=None)
+        ordenar_por: str (default='dataHoraRegistro')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
         index: bool (default=False)
@@ -1666,8 +1652,7 @@ class Proposicao:
 
         params = {}
         params['ordem'] = 'asc' if asc else 'desc'
-        if ordenar_por is not None:
-            params['ordenarPor'] = ordenar_por
+        params['ordenarPor'] = ordenar_por
 
         path = ['proposicoes', str(self.cod), 'votacoes']
         dados = _api.get(path=path, params=params)
@@ -1823,10 +1808,10 @@ class Votacao:
 
 def lista_blocos(
         legislatura: int = None,
-        pagina: int = None,
+        pagina: int = 1,
         itens: int = None,
         asc: bool = True,
-        ordenar_por: str = None,
+        ordenar_por: str = 'nome',
         index: bool = False
     ) -> _pd.DataFrame:
     '''
@@ -1846,10 +1831,10 @@ def lista_blocos(
     ----------
     legislatura: int (default=None)
         Número da legislatura a qual os dados buscados devem corresponder.
-    pagina: int (default=None)
+    pagina: int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
-        obter com a requisição, contendo o número de itens definido pelo
-        parâmetro itens. Se omitido, assume o valor 1.
+        obter com a requisição, contendo o número de itens definido
+        pelo parâmetro `itens`. Se omitido, assume o valor 1.
     itens: int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
@@ -1857,7 +1842,7 @@ def lista_blocos(
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default=None)
+    ordenar_por: str (default='nome')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index: bool (default=False)
@@ -1874,13 +1859,11 @@ def lista_blocos(
     params = {}
     if legislatura is not None:
         params['idLegislatura'] = legislatura
-    if pagina is not None:
-        params['pagina'] = pagina
+    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
     params['ordem'] = 'asc' if asc else 'desc'
-    if ordenar_por is not None:
-        params['ordenarPor'] = ordenar_por
+    params['ordenarPor'] = ordenar_por
 
     dados = _api.get(path='blocos', params=params)
     index_col = 'id' if index else None
@@ -1896,10 +1879,10 @@ def lista_deputados(
         sexo: str = None,
         inicio: str = None,
         fim: str = None,
-        pagina: int = None,
+        pagina: int = 1,
         itens: int = None,
         asc: bool = True,
-        ordenar_por: str = None,
+        ordenar_por: str = 'nome',
         index: bool = False
     ) -> _pd.DataFrame:
     '''
@@ -1932,10 +1915,10 @@ def lista_deputados(
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
     fim: str (default=None)
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    pagina: int (default=None)
+    pagina: int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
-        obter com a requisição, contendo o número de itens definido pelo
-        parâmetro itens. Se omitido, assume o valor 1.
+        obter com a requisição, contendo o número de itens definido
+        pelo parâmetro `itens`. Se omitido, assume o valor 1.
     itens: int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
@@ -1943,7 +1926,7 @@ def lista_deputados(
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default=None)
+    ordenar_por: str (default='nome')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index: bool (default=False)
@@ -1972,13 +1955,11 @@ def lista_deputados(
         params['dataInicio'] = inicio
     if fim is not None:
         params['dataFim'] = fim
-    if pagina is not None:
-        params['pagina'] = pagina
+    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
     params['ordem'] = 'asc' if asc else 'desc'
-    if ordenar_por is not None:
-        params['ordenarPor'] = ordenar_por
+    params['ordenarPor'] = ordenar_por
 
     dados = _api.get(path='deputados', params=params)
     index_col = 'id' if index else None
@@ -1995,10 +1976,10 @@ def lista_eventos(
         data_fim: str = None,
         hora_inicio: str = None,
         hora_fim: str = None,
-        pagina: int = None,
+        pagina: int = 1,
         itens: int = None,
         asc: bool = True,
-        ordenar_por: str = None,
+        ordenar_por: str = 'dataHoraInicio',
         index: bool = False
     ) -> _pd.DataFrame:
     '''
@@ -2038,10 +2019,10 @@ def lista_eventos(
     hora_fim: str (default=None)
         Hora final de um intervalo de tempo, no formato 'HH:MM', em horário
         de Brasília.
-    pagina: int (default=None)
+    pagina: int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
-        obter com a requisição, contendo o número de itens definido pelo
-        parâmetro itens. Se omitido, assume o valor 1.
+        obter com a requisição, contendo o número de itens definido
+        pelo parâmetro `itens`. Se omitido, assume o valor 1.
     itens: int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
@@ -2049,7 +2030,7 @@ def lista_eventos(
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default=None)
+    ordenar_por: str (default='dataHoraInicio')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index: bool (default=False)
@@ -2082,13 +2063,11 @@ def lista_eventos(
         params['horaInicio'] = hora_inicio
     if hora_fim is not None:
         params['horaFim'] = hora_fim
-    if pagina is not None:
-        params['pagina'] = pagina
+    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
     params['ordem'] = 'asc' if asc else 'desc'
-    if ordenar_por is not None:
-        params['ordenarPor'] = ordenar_por
+    params['ordenarPor'] = ordenar_por
 
     dados = _api.get(path='eventos', params=params)
     index_col = 'id' if index else None
@@ -2098,7 +2077,7 @@ def lista_eventos(
 
 def lista_frentes(
         legislatura: int = None,
-        pagina: int = None,
+        pagina: int = 1,
         index: bool = False
     ) -> _pd.DataFrame:
     '''
@@ -2116,10 +2095,10 @@ def lista_frentes(
     ----------
     legislatura: int (default=None)
         Número da legislatura a qual os dados buscados devem corresponder.
-    pagina: int (default=None)
+    pagina: int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
-        obter com a requisição, contendo o número de itens definido pelo
-        parâmetro itens. Se omitido, assume o valor 1.
+        obter com a requisição, contendo o número de itens definido
+        pelo parâmetro `itens`. Se omitido, assume o valor 1.
     index: bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
@@ -2135,8 +2114,7 @@ def lista_frentes(
 
     if legislatura is not None:
         params['idLegislatura'] = legislatura
-    if pagina is not None:
-        params['pagina'] = pagina
+    params['pagina'] = pagina
 
     dados = _api.get(path='frentes', params=params)
     index_col = 'id' if index else None
@@ -2146,10 +2124,10 @@ def lista_frentes(
 
 def lista_legislaturas(
         data: str = None,
-        pagina: int = None,
+        pagina: int = 1,
         itens: int = None,
-        asc: bool = True,
-        ordenar_por: str = None,
+        asc: bool = False,
+        ordenar_por: str = 'id',
         index: bool = False
     ) -> _pd.DataFrame:
     '''
@@ -2166,18 +2144,18 @@ def lista_legislaturas(
         Data no formato 'AAAA-MM-DD'. Se este parâmetro estiver presente, a
         função retornará as informações básicas sobre a legislatura que estava
         em curso na data informada.
-    pagina: int (default=None)
+    pagina: int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
-        obter com a requisição, contendo o número de itens definido pelo
-        parâmetro itens. Se omitido, assume o valor 1.
+        obter com a requisição, contendo o número de itens definido
+        pelo parâmetro `itens`. Se omitido, assume o valor 1.
     itens: int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc: bool (default=True)
+    asc: bool (default=False)
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default=None)
+    ordenar_por: str (default='id')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index: bool (default=False)
@@ -2195,13 +2173,11 @@ def lista_legislaturas(
 
     if data is not None:
         params['data'] = data
-    if pagina is not None:
-        params['pagina'] = pagina
+    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
     params['ordem'] = 'asc' if asc else 'desc'
-    if ordenar_por is not None:
-        params['ordenarPor'] = ordenar_por
+    params['ordenarPor'] = ordenar_por
 
     dados = _api.get(path='legislaturas', params=params)
     index_col = 'id' if index else None
@@ -2214,10 +2190,10 @@ def lista_orgaos(
         tipo: int = None,
         inicio: str = None,
         fim: str = None,
-        pagina: int = None,
+        pagina: int = 1,
         itens: int = None,
         asc: bool = True,
-        ordenar_por: str = None,
+        ordenar_por: str = 'id',
         index: bool = False
     ) -> _pd.DataFrame:
     '''
@@ -2241,10 +2217,10 @@ def lista_orgaos(
     fim: str (default=None)
         Data de término, no formato 'AAAA-MM-DD', de um intervalo de tempo no
         qual os órgãos buscados devem ter estado em atividade.
-    pagina: int (default=None)
+    pagina: int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
-        obter com a requisição, contendo o número de itens definido pelo
-        parâmetro itens. Se omitido, assume o valor 1.
+        obter com a requisição, contendo o número de itens definido
+        pelo parâmetro `itens`. Se omitido, assume o valor 1.
     itens: int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
@@ -2252,7 +2228,7 @@ def lista_orgaos(
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default=None)
+    ordenar_por: str (default='id')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index: bool (default=False)
@@ -2276,13 +2252,11 @@ def lista_orgaos(
         params['dataInicio'] = inicio
     if fim is not None:
         params['dataFim'] = fim
-    if pagina is not None:
-        params['pagina'] = pagina
+    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
     params['ordem'] = 'asc' if asc else 'desc'
-    if ordenar_por is not None:
-        params['ordenarPor'] = ordenar_por
+    params['ordenarPor'] = ordenar_por
 
     dados = _api.get(path='orgaos', params=params)
     index_col = 'id' if index else None
@@ -2294,10 +2268,10 @@ def lista_partidos(
         legislatura: int = None,
         inicio: str = None,
         fim: str = None,
-        pagina: int = None,
+        pagina: int = 1,
         itens: int = None,
         asc: bool = True,
-        ordenar_por: str = None,
+        ordenar_por: str = 'sigla',
         index: bool = False
     ) -> _pd.DataFrame:
     '''
@@ -2318,10 +2292,10 @@ def lista_partidos(
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
     fim: str (default=None)
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    pagina: int (default=None)
+    pagina: int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
-        obter com a requisição, contendo o número de itens definido pelo
-        parâmetro itens. Se omitido, assume o valor 1.
+        obter com a requisição, contendo o número de itens definido
+        pelo parâmetro `itens`. Se omitido, assume o valor 1.
     itens: int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
@@ -2329,7 +2303,7 @@ def lista_partidos(
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default=None)
+    ordenar_por: str (default='sigla')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index: bool (default=False)
@@ -2352,13 +2326,11 @@ def lista_partidos(
         params['dataInicio'] = inicio
     if fim is not None:
         params['dataFim'] = fim
-    if pagina is not None:
-        params['pagina'] = pagina
+    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
     params['ordem'] = 'asc' if asc else 'desc'
-    if ordenar_por is not None:
-        params['ordenarPor'] = ordenar_por
+    params['ordenarPor'] = ordenar_por
 
     dados = _api.get(path='partidos', params=params)
     index_col = 'id' if index else None
@@ -2376,17 +2348,17 @@ def lista_proposicoes(
         partido_cod: int = None,
         autor_uf: str = None,
         keyword: str = None,
-        tramitacao_senado = None,
+        tramitacao_senado: bool = None,
         apresentacao_inicio: str = None,
         apresentacao_fim: str = None,
         situacao: int = None,
         tema: int = None,
         inicio: str = None,
         fim: str = None,
-        pagina: int = None,
+        pagina: int = 1,
         itens: int = None,
         asc: bool = True,
-        ordenar_por: str = None,
+        ordenar_por: str = 'id',
         index: bool = False
     ) -> _pd.DataFrame:
     '''
@@ -2437,9 +2409,8 @@ def lista_proposicoes(
         o(s) autor(es) das proposições selecionadas tenha(m) sido eleito(s).
     keyword: str (default=None)
         Palavra-chave sobre o tema a que a proposição se relaciona.
-    tramitacao_senado
-        Indicador booleano, com valor TRUE ou FALSE para trazer apenas
-        proposições que já tenha tramitado no Senado.
+    tramitacao_senado: bool (default=None)
+        Buscar proposições que já tenha tramitado no Senado.
     inicio: str (default=None)
         Data do início do intervalo de tempo em que tenha havido tramitação
         das proposições a serem listadas, no formato 'AAAA-MM-DD'. Se omitido,
@@ -2463,10 +2434,10 @@ def lista_proposicoes(
         Código numérico das áreas temáticas das proposições que serão
         listadas. Os temas possíveis podem ser obtidos pela função
         `camara.referencias`.
-    pagina: int (default=None)
+    pagina: int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
-        obter com a requisição, contendo o número de itens definido pelo
-        parâmetro itens. Se omitido, assume o valor 1.
+        obter com a requisição, contendo o número de itens definido
+        pelo parâmetro `itens`. Se omitido, assume o valor 1.
     itens: int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
@@ -2474,7 +2445,7 @@ def lista_proposicoes(
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default=None)
+    ordenar_por: str (default='id')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index: bool (default=False)
@@ -2509,7 +2480,7 @@ def lista_proposicoes(
     if keyword is not None:
         params['keywords'] = keyword
     if tramitacao_senado is not None:
-        params['tramitacaoSenado'] = tramitacao_senado
+        params['tramitacaoSenado'] = 'true' if tramitacao_senado else 'false'
     if apresentacao_inicio is not None:
         params['dataApresentacaoInicio'] = apresentacao_inicio
     if apresentacao_fim is not None:
@@ -2522,13 +2493,11 @@ def lista_proposicoes(
         params['dataInicio'] = inicio
     if fim is not None:
         params['dataFim'] = fim
-    if pagina is not None:
-        params['pagina'] = pagina
+    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
     params['ordem'] = 'asc' if asc else 'desc'
-    if ordenar_por is not None:
-        params['ordenarPor'] = ordenar_por
+    params['ordenarPor'] = ordenar_por
 
     dados = _api.get(path='proposicoes', params=params)
     index_col = 'id' if index else None
@@ -2542,10 +2511,10 @@ def lista_votacoes(
         orgao: int = None,
         inicio: str = None,
         fim: str = None,
-        pagina: int = None,
+        pagina: int = 1,
         itens: int = None,
-        asc: bool = True,
-        ordenar_por: str = None,
+        asc: bool = False,
+        ordenar_por: str = 'dataHoraRegistro',
         index: bool = False
     ) -> _pd.DataFrame:
     '''
@@ -2591,18 +2560,18 @@ def lista_votacoes(
         sozinho, esse parâmetro faz com que sejam retornadas todas as votações
         ocorridas desde 1º de janeiro do mesmo ano até esta data. Se usado com
         `inicio`, é preciso que as duas datas sejam de um mesmo ano.
-    pagina: int (default=None)
+    pagina: int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
-        obter com a requisição, contendo o número de itens definido pelo
-        parâmetro itens. Se omitido, assume o valor 1.
+        obter com a requisição, contendo o número de itens definido
+        pelo parâmetro `itens`. Se omitido, assume o valor 1.
     itens: int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc: bool (default=True)
+    asc: bool (default=False)
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default=None)
+    ordenar_por: str (default='dataHoraRegistro')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index: bool (default=False)
@@ -2628,13 +2597,11 @@ def lista_votacoes(
         params['dataInicio'] = inicio
     if fim is not None:
         params['dataFim'] = fim
-    if pagina is not None:
-        params['pagina'] = pagina
+    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
     params['ordem'] = 'asc' if asc else 'desc'
-    if ordenar_por is not None:
-        params['ordenarPor'] = ordenar_por
+    params['ordenarPor'] = ordenar_por
 
     dados = _api.get(path='votacoes', params=params)
     index_col = 'id' if index else None
