@@ -61,79 +61,6 @@ def _df(dados:dict, index_col=None) -> _pd.DataFrame:
 
 
 
-def referencias(funcao, index=False) -> _pd.DataFrame:
-    '''
-    Listas de valores válidos para as funções deste pacote.
-
-    Parâmetros
-    ----------
-    funcao: str
-        - 'codSituacaoDeputados',
-        - 'siglaUF',
-        - 'codSituacaoEvento',
-        - 'codTipoEvento',
-        - 'codSituacaoOrgao',
-        - 'codTipoOrgao',
-        - 'codTipoAutor',
-        - 'codSituacaoProposicao',
-        - 'codTema',
-        - 'codTipoTramitacao',
-        - 'siglaTipo',
-        - 'situacoesDeputado'
-        - 'situacoesEvento'
-        - 'situacoesOrgao'
-        - 'situacoesProposicao'
-        - 'tiposEvento'
-        - 'tiposOrgao'
-        - 'tiposProposicao'
-        - 'tiposTramitacao'
-        - 'uf'
-
-    index: bool (default=False)
-        Se True, define a coluna código como index do DataFrame.
-
-    Retorna
-    -------
-    pandas.core.frame.DataFrame
-        Lista das referências válidas.
-    '''
-    
-    referencia = {
-        'codSituacaoDeputados': 'deputados/codSituacao',
-        'siglaUF': 'deputados/siglaUF',
-        'codSituacaoEvento': 'eventos/codSituacaoEvento',
-        'codTipoEvento': 'eventos/codTipoEvento',
-        'codSituacaoOrgao': 'orgaos/codSituacao',
-        'codTipoOrgao': 'orgaos/codTipoOrgao',
-        'codTipoAutor': 'proposicoes/codTipoAutor',
-        'codSituacaoProposicao': 'proposicoes/codSituacao',
-        'codTema': 'proposicoes/codTema',
-        'codTipoTramitacao': 'proposicoes/codTipoTramitacao',
-        'siglaTipo': 'proposicoes/siglaTipo',
-        'situacoesDeputado': 'situacoesDeputado',
-        'situacoesEvento': 'situacoesEvento',
-        'situacoesOrgao': 'situacoesOrgao',
-        'situacoesProposicao': 'situacoesProposicao',
-        'tiposEvento': 'tiposEvento',
-        'tiposOrgao': 'tiposOrgao',
-        'tiposProposicao': 'tiposProposicao',
-        'tiposTramitacao': 'tiposTramitacao',
-        'uf': 'uf'
-    }
-    
-    if funcao in referencia.keys():
-        data = _api.get(f'referencias/{referencia[funcao]}')
-    else:
-        raise TypeError(f"Referência inválida. Insira um dos seguintes valores para `funcao`: {list(referencia.keys())}")
-    
-    df = _pd.DataFrame(data['dados'])
-    if index:
-        df.set_index('cod', inplace=True)
-    
-    return df
-
-
-
 class Bloco:
     '''
     Informações sobre um bloco partidário específico.
@@ -2257,6 +2184,88 @@ def lista_legislaturas(
 
 
 
+def lista_orgaos(
+        sigla = None,
+        tipo = None,
+        inicio = None,
+        fim = None,
+        pagina = None,
+        itens = None,
+        ordem = None,
+        ordenar_por = None,
+        index = False
+    ) -> _pd.DataFrame:
+    '''
+    Lista das comissões e outros órgãos legislativos da Câmara.
+
+    Retorna uma lista de informações básicas sobre os órgãos legislativos e
+    seus identificadores, tipos e descrições. É possível filtrar a lista por
+    identificadores, tipos de órgãos, sigla, situação do órgão ou período de
+    tempo em que os órgãos estiveram ativos, se aplicável.
+    
+    Parâmetros
+    ----------
+    sigla: str (default=None)
+        Sigla oficialmente usadas para designar o órgão da câmara.
+    tipo: int (default=None)
+        Código numérico do tipo de órgãos que se deseja buscar dados. Pode ser
+        obtido pela função `camara.referencias`.
+    inicio: str (default=None)
+        Data de início, no formato 'AAAA-MM-DD', de um intervalo de tempo no
+        qual os órgãos buscados devem ter estado em atividade.
+    fim: str (default=None)
+        Data de término, no formato 'AAAA-MM-DD', de um intervalo de tempo no
+        qual os órgãos buscados devem ter estado em atividade.
+    ordenar_por: str (default=None)
+        Qual dos elementos da representação deverá ser usado para aplicar
+        ordenação à lista.
+    ordem: str (default=None)
+        O sentido da ordenação:
+        - 'asc': De A a Z ou 0 a 9,
+        - 'desc': De Z a A ou 9 a 0.
+    itens: int (default=None)
+        Número máximo de itens na página que se deseja obter com esta
+        requisição.
+    pagina: int (default=None)
+        Número da página de resultados, a partir de 1, que se deseja
+        obter com a requisição, contendo o número de itens definido pelo
+        parâmetro itens. Se omitido, assume o valor 1.
+    index: bool (default=False)
+        Se True, define a coluna `id` como index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        Lista das comissões e outros órgãos legislativos da Câmara.
+
+    --------------------------------------------------------------------------
+    '''
+
+    params = {}
+
+    if sigla is not None:
+        params['sigla'] = sigla
+    if tipo is not None:
+        params['codTipoOrgao'] = tipo
+    if inicio is not None:
+        params['dataInicio'] = inicio
+    if fim is not None:
+        params['dataFim'] = fim
+    if pagina is not None:
+        params['pagina'] = pagina
+    if itens is not None:
+        params['itens'] = itens
+    if ordem is not None:
+        params['ordem'] = ordem
+    if ordenar_por is not None:
+        params['ordenarPor'] = ordenar_por
+
+    dados = _api.get(path='orgaos', params=params)
+    index_col = 'id' if index else None
+    return _df(dados, index_col)
+
+
+
 def lista_partidos(
         legislatura = None,
         inicio = None,
@@ -2612,82 +2621,56 @@ def lista_votacoes(
 
 
 
-def lista_orgaos(
-        sigla = None,
-        tipo = None,
-        inicio = None,
-        fim = None,
-        pagina = None,
-        itens = None,
-        ordem = None,
-        ordenar_por = None,
-        index = False
-    ) -> _pd.DataFrame:
+def referencias(lista:str, index=False) -> _pd.DataFrame:
     '''
-    Lista das comissões e outros órgãos legislativos da Câmara.
+    Listas de valores válidos para as funções deste módulo.
 
-    Retorna uma lista de informações básicas sobre os órgãos legislativos e
-    seus identificadores, tipos e descrições. É possível filtrar a lista por
-    identificadores, tipos de órgãos, sigla, situação do órgão ou período de
-    tempo em que os órgãos estiveram ativos, se aplicável.
-    
     Parâmetros
     ----------
-    sigla: str (default=None)
-        Sigla oficialmente usadas para designar o órgão da câmara.
-    tipo: int (default=None)
-        Código numérico do tipo de órgãos que se deseja buscar dados. Pode ser
-        obtido pela função `camara.referencias`.
-    inicio: str (default=None)
-        Data de início, no formato 'AAAA-MM-DD', de um intervalo de tempo no
-        qual os órgãos buscados devem ter estado em atividade.
-    fim: str (default=None)
-        Data de término, no formato 'AAAA-MM-DD', de um intervalo de tempo no
-        qual os órgãos buscados devem ter estado em atividade.
-    ordenar_por: str (default=None)
-        Qual dos elementos da representação deverá ser usado para aplicar
-        ordenação à lista.
-    ordem: str (default=None)
-        O sentido da ordenação:
-        - 'asc': De A a Z ou 0 a 9,
-        - 'desc': De Z a A ou 9 a 0.
-    itens: int (default=None)
-        Número máximo de itens na página que se deseja obter com esta
-        requisição.
-    pagina: int (default=None)
-        Número da página de resultados, a partir de 1, que se deseja
-        obter com a requisição, contendo o número de itens definido pelo
-        parâmetro itens. Se omitido, assume o valor 1.
+    lista: str
+        Referências que serão listadas. Deve ser uma destas opções:
+            - 'autores'
+            - 'temas'
+            - 'eventos'
+            - 'orgaos'
+            - 'proposicoes'
+            - 'tramitacoes'
+            - 'ufs'
+            - 'situacoes_deputados'
+            - 'situacoes_eventos'
+            - 'situacoes_orgaos'
+            - 'situacoes_proposicoes'
     index: bool (default=False)
-        Se True, define a coluna `id` como index do DataFrame.
+        Se True, define a coluna `cod` como index do DataFrame.
 
     Retorna
     -------
     pandas.core.frame.DataFrame
-        Lista das comissões e outros órgãos legislativos da Câmara.
-
-    --------------------------------------------------------------------------
+        Lista das referências válidas.
     '''
-
-    params = {}
-
-    if sigla is not None:
-        params['sigla'] = sigla
-    if tipo is not None:
-        params['codTipoOrgao'] = tipo
-    if inicio is not None:
-        params['dataInicio'] = inicio
-    if fim is not None:
-        params['dataFim'] = fim
-    if pagina is not None:
-        params['pagina'] = pagina
-    if itens is not None:
-        params['itens'] = itens
-    if ordem is not None:
-        params['ordem'] = ordem
-    if ordenar_por is not None:
-        params['ordenarPor'] = ordenar_por
-
-    dados = _api.get(path='orgaos', params=params)
-    index_col = 'id' if index else None
-    return _df(dados, index_col)
+    
+    referencia = {
+        'autores': 'proposicoes/codTipoAutor',
+        'temas': 'proposicoes/codTema',
+        'eventos': 'tiposEvento',
+        'orgaos': 'tiposOrgao',
+        'proposicoes': 'tiposProposicao',
+        'tramitacoes': 'tiposTramitacao',
+        'ufs': 'uf',
+        'situacoes_deputados': 'situacoesDeputado',
+        'situacoes_eventos': 'situacoesEvento',
+        'situacoes_orgaos': 'situacoesOrgao',
+        'situacoes_proposicoes': 'situacoesProposicao'
+    }
+    
+    if lista in referencia.keys():
+        data = _api.get(f'referencias/{referencia[lista]}')
+    else:
+        raise TypeError('Referência inválida. Insira um dos seguintes valores para `lista`: ' \
+            + ', '.join(list(referencia.keys())))
+    
+    df = _pd.DataFrame(data['dados'])
+    if index:
+        df.set_index('cod', inplace=True)
+    
+    return df
