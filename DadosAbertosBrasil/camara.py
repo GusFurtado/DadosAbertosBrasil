@@ -217,7 +217,7 @@ class Deputado:
             fornecedor: int = None,
             pagina: int = None,
             itens: int = None,
-            ordem: str = None,
+            asc: bool = True,
             ordenar_por: str = None
         ) -> _pd.DataFrame:
         '''
@@ -247,10 +247,10 @@ class Deputado:
         itens: int (default=None)
             Número máximo de itens na página que se deseja obter com
             esta requisição.
-        ordem: str (default=None)
-            O sentido da ordenação:
-            - 'asc': De A a Z ou 0 a 9;
-            - 'desc': De Z a A ou 9 a 0.
+        asc: bool (default=True)
+            Se os registros são ordenados no sentido ascendente:
+            - True: De A a Z ou 0 a 9 (ascendente);
+            - False: De Z a A ou 9 a 0 (descendente).
         ordenar_por: str (default=None)
             Nome do campo pelo qual a lista deverá ser ordenada:
             qualquer um dos campos do retorno, e também idLegislatura.
@@ -276,8 +276,7 @@ class Deputado:
             params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        if ordem is not None:
-            params['ordem'] = ordem
+        params['ordem'] = 'asc' if asc else 'desc'
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
@@ -293,7 +292,7 @@ class Deputado:
             fim: str = None,
             pagina: int = None,
             itens: int = None,
-            ordem: str = None,
+            asc: bool = True,
             ordenar_por: str = None
         ) -> _pd.DataFrame:
         '''
@@ -314,13 +313,6 @@ class Deputado:
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        ordenar_por: str (default=None)
-            Qual dos elementos da representação deverá ser usado para aplicar
-            ordenação à lista.
-        ordem: str (default=None)
-            O sentido da ordenação:
-            - 'asc': De A a Z ou 0 a 9,
-            - 'desc': De Z a A ou 9 a 0.
         itens: int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
@@ -328,6 +320,13 @@ class Deputado:
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido pelo
             parâmetro itens. Se omitido, assume o valor 1.
+        asc: bool (default=True)
+            Se os registros são ordenados no sentido ascendente:
+            - True: De A a Z ou 0 a 9 (ascendente);
+            - False: De Z a A ou 9 a 0 (descendente).
+        ordenar_por: str (default=None)
+            Qual dos elementos da representação deverá ser usado para aplicar
+            ordenação à lista.
 
         Retorna
         -------
@@ -348,8 +347,7 @@ class Deputado:
             params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        if ordem is not None:
-            params['ordem'] = ordem
+        params['ordem'] = 'asc' if asc else 'desc'
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
@@ -365,7 +363,7 @@ class Deputado:
             fim: str = None,
             pagina: int = None,
             itens: int = None,
-            ordem: str = None,
+            asc: bool = True,
             ordenar_por: str = None,
             index: bool = False
         ) -> _pd.DataFrame:
@@ -386,20 +384,20 @@ class Deputado:
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        ordenar_por: str (default=None)
-            Qual dos elementos da representação deverá ser usado para aplicar
-            ordenação à lista.
-        ordem: str (default=None)
-            O sentido da ordenação:
-            - 'asc': De A a Z ou 0 a 9,
-            - 'desc': De Z a A ou 9 a 0.
-        itens: int (default=None)
-            Número máximo de itens na página que se deseja obter com esta
-            requisição.
         pagina: int (default=None)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido pelo
             parâmetro itens. Se omitido, assume o valor 1.
+        itens: int (default=None)
+            Número máximo de itens na página que se deseja obter com esta
+            requisição.
+        asc: bool (default=True)
+            Se os registros são ordenados no sentido ascendente:
+            - True: De A a Z ou 0 a 9 (ascendente);
+            - False: De Z a A ou 9 a 0 (descendente).
+        ordenar_por: str (default=None)
+            Qual dos elementos da representação deverá ser usado para aplicar
+            ordenação à lista.
         index: bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
@@ -422,8 +420,7 @@ class Deputado:
             params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        if ordem is not None:
-            params['ordem'] = ordem
+        params['ordem'] = 'asc' if asc else 'desc'
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
@@ -471,7 +468,7 @@ class Deputado:
             fim: str = None,
             pagina: int = None,
             itens: int = None,
-            ordem: str = None,
+            asc: bool = True,
             ordenar_por: str = None,
             index: bool = False
         ) -> _pd.DataFrame:
@@ -494,20 +491,20 @@ class Deputado:
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        ordenar_por: str (default=None)
-            Qual dos elementos da representação deverá ser usado para aplicar
-            ordenação à lista.
-        ordem: str (default=None)
-            O sentido da ordenação:
-            - 'asc': De A a Z ou 0 a 9,
-            - 'desc': De Z a A ou 9 a 0.
-        itens: int (default=None)
-            Número máximo de itens na página que se deseja obter com esta
-            requisição.
         pagina: int (default=None)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido pelo
             parâmetro itens. Se omitido, assume o valor 1.
+        itens: int (default=None)
+            Número máximo de itens na página que se deseja obter com esta
+            requisição.
+        asc: bool (default=True)
+            Se os registros são ordenados no sentido ascendente:
+            - True: De A a Z ou 0 a 9 (ascendente);
+            - False: De Z a A ou 9 a 0 (descendente).
+        ordenar_por: str (default=None)
+            Qual dos elementos da representação deverá ser usado para aplicar
+            ordenação à lista.
         index: bool (default=False)
             Se True, define a coluna `idOrgao` como index do DataFrame.
 
@@ -528,8 +525,7 @@ class Deputado:
             params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        if ordem is not None:
-            params['ordem'] = ordem
+        params['ordem'] = 'asc' if asc else 'desc'
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
@@ -1017,7 +1013,7 @@ class Orgao:
             fim: str = None,
             pagina: int = None,
             itens: int = None,
-            ordem: str = None,
+            asc: bool = True,
             ordenar_por: str = None,
             index: bool = False
         ) -> _pd.DataFrame:
@@ -1038,20 +1034,20 @@ class Orgao:
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        ordenar_por: str (default=None)
-            Qual dos elementos da representação deverá ser usado para aplicar
-            ordenação à lista.
-        ordem: str (default=None)
-            O sentido da ordenação:
-            - 'asc': De A a Z ou 0 a 9,
-            - 'desc': De Z a A ou 9 a 0.
-        itens: int (default=None)
-            Número máximo de itens na página que se deseja obter com esta
-            requisição.
         pagina: int (default=None)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido pelo
             parâmetro itens. Se omitido, assume o valor 1.
+        itens: int (default=None)
+            Número máximo de itens na página que se deseja obter com esta
+            requisição.
+        asc: bool (default=True)
+            Se os registros são ordenados no sentido ascendente:
+            - True: De A a Z ou 0 a 9 (ascendente);
+            - False: De Z a A ou 9 a 0 (descendente).
+        ordenar_por: str (default=None)
+            Qual dos elementos da representação deverá ser usado para aplicar
+            ordenação à lista.
         index: bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
@@ -1074,8 +1070,7 @@ class Orgao:
             params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        if ordem is not None:
-            params['ordem'] = ordem
+        params['ordem'] = 'asc' if asc else 'desc'
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
@@ -1150,7 +1145,7 @@ class Orgao:
             fim: str = None,
             pagina: int = None,
             itens: int = None,
-            ordem: str = None,
+            asc: bool = True,
             ordenar_por: str = None,
             index: bool = False
         ) -> _pd.DataFrame:
@@ -1181,20 +1176,20 @@ class Orgao:
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         fim: str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        ordenar_por: str (default=None)
-            Qual dos elementos da representação deverá ser usado para aplicar
-            ordenação à lista.
-        ordem: str (default=None)
-            O sentido da ordenação:
-            - 'asc': De A a Z ou 0 a 9,
-            - 'desc': De Z a A ou 9 a 0.
-        itens: int (default=None)
-            Número máximo de itens na página que se deseja obter com esta
-            requisição.
         pagina: int (default=None)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido pelo
             parâmetro itens. Se omitido, assume o valor 1.
+        itens: int (default=None)
+            Número máximo de itens na página que se deseja obter com esta
+            requisição.
+        asc: bool (default=True)
+            Se os registros são ordenados no sentido ascendente:
+            - True: De A a Z ou 0 a 9 (ascendente);
+            - False: De Z a A ou 9 a 0 (descendente).
+        ordenar_por: str (default=None)
+            Qual dos elementos da representação deverá ser usado para aplicar
+            ordenação à lista.
         index: bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
@@ -1217,8 +1212,7 @@ class Orgao:
             params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        if ordem is not None:
-            params['ordem'] = ordem
+        params['ordem'] = 'asc' if asc else 'desc'
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
@@ -1311,7 +1305,7 @@ class Partido:
             pagina: int = None,
             itens: int = None,
             ordenar_por: str = None,
-            ordem: str = None,
+            asc: bool = True,
             index: bool = False
         ) -> _pd.DataFrame:
         '''
@@ -1332,20 +1326,20 @@ class Partido:
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
         legislatura: int (default=None)
             Número da legislatura, à qual os dados buscados devem corresponder.
+        pagina: int (default=None)
+            Número da página de resultados, a partir de 1, que se deseja
+            obter com a requisição, contendo o número de itens definido pelo
+            parâmetro itens. Se omitido, assume o valor 1.
+        itens: int (default=None)
+            Número máximo de itens na página que se deseja obter com esta
+            requisição.
+        asc: bool (default=True)
+            Se os registros são ordenados no sentido ascendente:
+            - True: De A a Z ou 0 a 9 (ascendente);
+            - False: De Z a A ou 9 a 0 (descendente).
         ordenar_por: str (default=None)
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        ordem: str (default=None)
-            O sentido da ordenação:
-            - 'asc': De A a Z ou 0 a 9;
-            - 'desc': De Z a A ou 9 a 0.
-        itens: int (default=None)
-            Número máximo de itens na “página” que se deseja obter com esta
-            requisição.
-        pagina: int (default=None)
-            Número da “página” de resultados, a partir de 1, que se deseja
-            obter com a requisição, contendo o número de itens definido pelo
-            parâmetro itens. Se omitido, assume o valor 1.
         index: bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
@@ -1368,8 +1362,7 @@ class Partido:
             params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        if ordem is not None:
-            params['ordem'] = ordem
+        params['ordem'] = 'asc' if asc else 'desc'
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
@@ -1639,7 +1632,7 @@ class Proposicao:
 
     def votacoes(
             self,
-            ordem: str = None,
+            asc: bool = True,
             ordenar_por: str = None,
             index: bool = False
         ) -> _pd.DataFrame:
@@ -1653,10 +1646,10 @@ class Proposicao:
 
         Parâmetros
         ----------
-        ordem: str (default=None)
-            O sentido da ordenação:
-            - 'asc': De A a Z ou 0 a 9;
-            - 'desc': De Z a A ou 9 a 0.
+        asc: bool (default=True)
+            Se os registros são ordenados no sentido ascendente:
+            - True: De A a Z ou 0 a 9 (ascendente);
+            - False: De Z a A ou 9 a 0 (descendente).
         ordenar_por: str (default=None)
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
@@ -1672,8 +1665,7 @@ class Proposicao:
         '''
 
         params = {}
-        if ordem is not None:
-            params['ordem'] = ordem
+        params['ordem'] = 'asc' if asc else 'desc'
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
@@ -1833,7 +1825,7 @@ def lista_blocos(
         legislatura: int = None,
         pagina: int = None,
         itens: int = None,
-        ordem: str = None,
+        asc: bool = True,
         ordenar_por: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
@@ -1854,20 +1846,20 @@ def lista_blocos(
     ----------
     legislatura: int (default=None)
         Número da legislatura a qual os dados buscados devem corresponder.
-    ordenar_por: str (default=None)
-        Qual dos elementos da representação deverá ser usado para aplicar
-        ordenação à lista.
-    ordem: str (default=None)
-        O sentido da ordenação:
-        - 'asc': De A a Z ou 0 a 9,
-        - 'desc': De Z a A ou 9 a 0.
-    itens: int (default=None)
-        Número máximo de itens na página que se deseja obter com esta
-        requisição.
     pagina: int (default=None)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido pelo
         parâmetro itens. Se omitido, assume o valor 1.
+    itens: int (default=None)
+        Número máximo de itens na página que se deseja obter com esta
+        requisição.
+    asc: bool (default=True)
+        Se os registros são ordenados no sentido ascendente:
+        - True: De A a Z ou 0 a 9 (ascendente);
+        - False: De Z a A ou 9 a 0 (descendente).
+    ordenar_por: str (default=None)
+        Qual dos elementos da representação deverá ser usado para aplicar
+        ordenação à lista.
     index: bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
@@ -1886,8 +1878,7 @@ def lista_blocos(
         params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    if ordem is not None:
-        params['ordem'] = ordem
+    params['ordem'] = 'asc' if asc else 'desc'
     if ordenar_por is not None:
         params['ordenarPor'] = ordenar_por
 
@@ -1907,7 +1898,7 @@ def lista_deputados(
         fim: str = None,
         pagina: int = None,
         itens: int = None,
-        ordem: str = None,
+        asc: bool = True,
         ordenar_por: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
@@ -1941,20 +1932,20 @@ def lista_deputados(
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
     fim: str (default=None)
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    ordenar_por: str (default=None)
-        Qual dos elementos da representação deverá ser usado para aplicar
-        ordenação à lista.
-    ordem: str (default=None)
-        O sentido da ordenação:
-        - 'asc': De A a Z ou 0 a 9,
-        - 'desc': De Z a A ou 9 a 0.
-    itens: int (default=None)
-        Número máximo de itens na página que se deseja obter com esta
-        requisição.
     pagina: int (default=None)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido pelo
         parâmetro itens. Se omitido, assume o valor 1.
+    itens: int (default=None)
+        Número máximo de itens na página que se deseja obter com esta
+        requisição.
+    asc: bool (default=True)
+        Se os registros são ordenados no sentido ascendente:
+        - True: De A a Z ou 0 a 9 (ascendente);
+        - False: De Z a A ou 9 a 0 (descendente).
+    ordenar_por: str (default=None)
+        Qual dos elementos da representação deverá ser usado para aplicar
+        ordenação à lista.
     index: bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
@@ -1985,8 +1976,7 @@ def lista_deputados(
         params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    if ordem is not None:
-        params['ordem'] = ordem
+    params['ordem'] = 'asc' if asc else 'desc'
     if ordenar_por is not None:
         params['ordenarPor'] = ordenar_por
 
@@ -2007,7 +1997,7 @@ def lista_eventos(
         hora_fim: str = None,
         pagina: int = None,
         itens: int = None,
-        ordem: str = None,
+        asc: bool = True,
         ordenar_por: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
@@ -2048,20 +2038,20 @@ def lista_eventos(
     hora_fim: str (default=None)
         Hora final de um intervalo de tempo, no formato 'HH:MM', em horário
         de Brasília.
-    ordenar_por: str (default=None)
-        Qual dos elementos da representação deverá ser usado para aplicar
-        ordenação à lista.
-    ordem: str (default=None)
-        O sentido da ordenação:
-        - 'asc': De A a Z ou 0 a 9,
-        - 'desc': De Z a A ou 9 a 0.
-    itens: int (default=None)
-        Número máximo de itens na página que se deseja obter com esta
-        requisição.
     pagina: int (default=None)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido pelo
         parâmetro itens. Se omitido, assume o valor 1.
+    itens: int (default=None)
+        Número máximo de itens na página que se deseja obter com esta
+        requisição.
+    asc: bool (default=True)
+        Se os registros são ordenados no sentido ascendente:
+        - True: De A a Z ou 0 a 9 (ascendente);
+        - False: De Z a A ou 9 a 0 (descendente).
+    ordenar_por: str (default=None)
+        Qual dos elementos da representação deverá ser usado para aplicar
+        ordenação à lista.
     index: bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
@@ -2096,8 +2086,7 @@ def lista_eventos(
         params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    if ordem is not None:
-        params['ordem'] = ordem
+    params['ordem'] = 'asc' if asc else 'desc'
     if ordenar_por is not None:
         params['ordenarPor'] = ordenar_por
 
@@ -2159,7 +2148,7 @@ def lista_legislaturas(
         data: str = None,
         pagina: int = None,
         itens: int = None,
-        ordem: str = None,
+        asc: bool = True,
         ordenar_por: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
@@ -2177,20 +2166,20 @@ def lista_legislaturas(
         Data no formato 'AAAA-MM-DD'. Se este parâmetro estiver presente, a
         função retornará as informações básicas sobre a legislatura que estava
         em curso na data informada.
-    ordenar_por: str (default=None)
-        Qual dos elementos da representação deverá ser usado para aplicar
-        ordenação à lista.
-    ordem: str (default=None)
-        O sentido da ordenação:
-        - 'asc': De A a Z ou 0 a 9,
-        - 'desc': De Z a A ou 9 a 0.
-    itens: int (default=None)
-        Número máximo de itens na página que se deseja obter com esta
-        requisição.
     pagina: int (default=None)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido pelo
         parâmetro itens. Se omitido, assume o valor 1.
+    itens: int (default=None)
+        Número máximo de itens na página que se deseja obter com esta
+        requisição.
+    asc: bool (default=True)
+        Se os registros são ordenados no sentido ascendente:
+        - True: De A a Z ou 0 a 9 (ascendente);
+        - False: De Z a A ou 9 a 0 (descendente).
+    ordenar_por: str (default=None)
+        Qual dos elementos da representação deverá ser usado para aplicar
+        ordenação à lista.
     index: bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
@@ -2210,8 +2199,7 @@ def lista_legislaturas(
         params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    if ordem is not None:
-        params['ordem'] = ordem
+    params['ordem'] = 'asc' if asc else 'desc'
     if ordenar_por is not None:
         params['ordenarPor'] = ordenar_por
 
@@ -2228,7 +2216,7 @@ def lista_orgaos(
         fim: str = None,
         pagina: int = None,
         itens: int = None,
-        ordem: str = None,
+        asc: bool = True,
         ordenar_por: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
@@ -2253,20 +2241,20 @@ def lista_orgaos(
     fim: str (default=None)
         Data de término, no formato 'AAAA-MM-DD', de um intervalo de tempo no
         qual os órgãos buscados devem ter estado em atividade.
-    ordenar_por: str (default=None)
-        Qual dos elementos da representação deverá ser usado para aplicar
-        ordenação à lista.
-    ordem: str (default=None)
-        O sentido da ordenação:
-        - 'asc': De A a Z ou 0 a 9,
-        - 'desc': De Z a A ou 9 a 0.
-    itens: int (default=None)
-        Número máximo de itens na página que se deseja obter com esta
-        requisição.
     pagina: int (default=None)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido pelo
         parâmetro itens. Se omitido, assume o valor 1.
+    itens: int (default=None)
+        Número máximo de itens na página que se deseja obter com esta
+        requisição.
+    asc: bool (default=True)
+        Se os registros são ordenados no sentido ascendente:
+        - True: De A a Z ou 0 a 9 (ascendente);
+        - False: De Z a A ou 9 a 0 (descendente).
+    ordenar_por: str (default=None)
+        Qual dos elementos da representação deverá ser usado para aplicar
+        ordenação à lista.
     index: bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
@@ -2292,8 +2280,7 @@ def lista_orgaos(
         params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    if ordem is not None:
-        params['ordem'] = ordem
+    params['ordem'] = 'asc' if asc else 'desc'
     if ordenar_por is not None:
         params['ordenarPor'] = ordenar_por
 
@@ -2309,7 +2296,7 @@ def lista_partidos(
         fim: str = None,
         pagina: int = None,
         itens: int = None,
-        ordem: str = None,
+        asc: bool = True,
         ordenar_por: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
@@ -2331,20 +2318,20 @@ def lista_partidos(
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
     fim: str (default=None)
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    ordenar_por: str (default=None)
-        Qual dos elementos da representação deverá ser usado para aplicar
-        ordenação à lista.
-    ordem: str (default=None)
-        O sentido da ordenação:
-        - 'asc': De A a Z ou 0 a 9,
-        - 'desc': De Z a A ou 9 a 0.
-    itens: int (default=None)
-        Número máximo de itens na página que se deseja obter com esta
-        requisição.
     pagina: int (default=None)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido pelo
         parâmetro itens. Se omitido, assume o valor 1.
+    itens: int (default=None)
+        Número máximo de itens na página que se deseja obter com esta
+        requisição.
+    asc: bool (default=True)
+        Se os registros são ordenados no sentido ascendente:
+        - True: De A a Z ou 0 a 9 (ascendente);
+        - False: De Z a A ou 9 a 0 (descendente).
+    ordenar_por: str (default=None)
+        Qual dos elementos da representação deverá ser usado para aplicar
+        ordenação à lista.
     index: bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
@@ -2369,8 +2356,7 @@ def lista_partidos(
         params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    if ordem is not None:
-        params['ordem'] = ordem
+    params['ordem'] = 'asc' if asc else 'desc'
     if ordenar_por is not None:
         params['ordenarPor'] = ordenar_por
 
@@ -2399,7 +2385,7 @@ def lista_proposicoes(
         fim: str = None,
         pagina: int = None,
         itens: int = None,
-        ordem: str = None,
+        asc: bool = True,
         ordenar_por: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
@@ -2477,20 +2463,20 @@ def lista_proposicoes(
         Código numérico das áreas temáticas das proposições que serão
         listadas. Os temas possíveis podem ser obtidos pela função
         `camara.referencias`.
-    ordenar_por: str (default=None)
-        Qual dos elementos da representação deverá ser usado para aplicar
-        ordenação à lista.
-    ordem: str (default=None)
-        O sentido da ordenação:
-        - 'asc': De A a Z ou 0 a 9,
-        - 'desc': De Z a A ou 9 a 0.
-    itens: int (default=None)
-        Número máximo de itens na página que se deseja obter com esta
-        requisição.
     pagina: int (default=None)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido pelo
         parâmetro itens. Se omitido, assume o valor 1.
+    itens: int (default=None)
+        Número máximo de itens na página que se deseja obter com esta
+        requisição.
+    asc: bool (default=True)
+        Se os registros são ordenados no sentido ascendente:
+        - True: De A a Z ou 0 a 9 (ascendente);
+        - False: De Z a A ou 9 a 0 (descendente).
+    ordenar_por: str (default=None)
+        Qual dos elementos da representação deverá ser usado para aplicar
+        ordenação à lista.
     index: bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
@@ -2540,8 +2526,7 @@ def lista_proposicoes(
         params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    if ordem is not None:
-        params['ordem'] = ordem
+    params['ordem'] = 'asc' if asc else 'desc'
     if ordenar_por is not None:
         params['ordenarPor'] = ordenar_por
 
@@ -2559,7 +2544,7 @@ def lista_votacoes(
         fim: str = None,
         pagina: int = None,
         itens: int = None,
-        ordem: str = None,
+        asc: bool = True,
         ordenar_por: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
@@ -2606,20 +2591,20 @@ def lista_votacoes(
         sozinho, esse parâmetro faz com que sejam retornadas todas as votações
         ocorridas desde 1º de janeiro do mesmo ano até esta data. Se usado com
         `inicio`, é preciso que as duas datas sejam de um mesmo ano.
-    ordenar_por: str (default=None)
-        Qual dos elementos da representação deverá ser usado para aplicar
-        ordenação à lista.
-    ordem: str (default=None)
-        O sentido da ordenação:
-        - 'asc': De A a Z ou 0 a 9,
-        - 'desc': De Z a A ou 9 a 0.
-    itens: int (default=None)
-        Número máximo de itens na página que se deseja obter com esta
-        requisição.
     pagina: int (default=None)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido pelo
         parâmetro itens. Se omitido, assume o valor 1.
+    itens: int (default=None)
+        Número máximo de itens na página que se deseja obter com esta
+        requisição.
+    asc: bool (default=True)
+        Se os registros são ordenados no sentido ascendente:
+        - True: De A a Z ou 0 a 9 (ascendente);
+        - False: De Z a A ou 9 a 0 (descendente).
+    ordenar_por: str (default=None)
+        Qual dos elementos da representação deverá ser usado para aplicar
+        ordenação à lista.
     index: bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
@@ -2647,8 +2632,7 @@ def lista_votacoes(
         params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    if ordem is not None:
-        params['ordem'] = ordem
+    params['ordem'] = 'asc' if asc else 'desc'
     if ordenar_por is not None:
         params['ordenarPor'] = ordenar_por
 
