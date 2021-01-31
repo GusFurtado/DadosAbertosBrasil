@@ -1,32 +1,63 @@
 '''
 Módulo para captura dos dados abertos da API do IpeaData.
 
-Utilize a classe ipea.Serie(cod) para obtér os valores históricos da série.
-
-Use o seguinte template para obter os parâmetros de referência:
+Mini-Tutorial
+-------------
+1. Importe o módulo `ipea`.
 >>> from DadosAbertosBrasil import ipea
->>> ipea.<parâmetro>(cod <opcional>)
 
-Os parâmetros disponíveis são:
-- ipea.metadados;
-- ipea.temas;
-- ipea.paises;
-- ipea.territorios.
+2. Busque o código o código alfanumérico da série desejada com a função
+`ipea.lista_series`.
+>>> ipea.lista_series( ... )
 
-Documentação da API original: http://www.ipeadata.gov.br/api/
+3. Para facilitar a busca, filtre temas, países ou níveis territoriais com
+as outras funções `lista`.
+>>> temas = ipea.lista_temas( ... )
+>>> paises = ipea.lista_paises( ... )
+>>> territorios = ipea.lista_territorios( ... )
+>>> niveis = ipea.lista_niveis( ... )
+
+4. Instancie o objeto `Serie` utilizando o código encontrado.
+>>> serie = ipea.Serie(cod)
+
+5. Utilize os atributos para visualizar valores e metadados do série.
+>>> serie.metadados
+>>> serie.valores
+
+Documentação da API original
+----------------------------
+http://www.ipeadata.gov.br/api/
+
+------------------------------------------------------------------------------
 '''
 
 
 
 import warnings
 
-import pandas as pd
+import pandas as _pd
+
+from . import API
 
 
 
-def _query(funcao: str) -> pd.DataFrame:
-    _URL = 'http://www.ipeadata.gov.br/api/odata4/'
-    return pd.DataFrame(list(pd.read_json(_URL + funcao).value))
+_api = API('ipea')
+
+
+
+def _get(
+        query: str,
+        index: bool = False
+    ) -> _pd.DataFrame:
+    '''
+    Captura e formata dados deste módulo.
+    '''
+
+    values = _api.get(query)['value']
+    df = _pd.DataFrame(values)
+    if index:
+        df.set_index(df.columns[0], inplace=True)
+    return df
 
 
 
@@ -38,174 +69,202 @@ class Serie:
     ----------
     cod: str
         Código da série que se deseja obter os dados.
-        Utilize a função ipea.series() para identificar a série desejada.
-        Utilize a coluna 'SERCODIGO'.
+        Utilize a função `ipea.lista_series` para identificar a série desejada.
+        O código desejado estará na coluna 'SERCODIGO'.
+    index: bool (default=False)
+        Se True, define a coluna 'SERCODIGO' como index do atributo 'valores'.
 
     Atributos
     ---------
     cod: str
         Código da série escolhida.
-    valores: pd.DataFrame
+    valores: pandas.core.frame.DataFrame
         Valores históricos da série escolhida.
-    metadados: pd.DataFrame
+    metadados: pandas.core.frame.DataFrame
         Metadados da série escolhida.
+    base: str
+        Nome da base de dados da série.
+    fonte_nome: str
+        Nome completo da fonte da série, em português.
+    fonte_sigla: str
+        Sigla ou nome abreviado da fonte da série, em português.
+    fonte_url: str
+        URL para o site da fonte da série.
+    mutiplicador: str
+        Nome do fator multiplicador dos valores da série.
+    periodicidade: str
+        Nome da periodicidade, em português.
+    atualizacao: str
+        Data da última carga de dados na série.
+    comentario: str
+        Comentários relativos a série, em português.
+    nome: str
+        Nome da série, em português.
+    unidade: str
+        Nome da unidade dos valores da série.
+    status: str
+        Indica se uma série macroeconômica ainda é atualizada.
+        - 'A' (Ativa) para séries atualizadas;
+        - 'I' (Inativa) para séries que não são atualizadas.
+        As séries regionais ou sociais não possuem este metadado.
+    tema: int
+        Código de identificação do tema ao qual a série está associada.
+    pais: str
+        Código de identificação país ou região (como América Latina, Zona do
+        Euro, etc.) ao qual a série está associada.
+    numerica: bool
+        - True: Série possui valores numéricos (tratados como números);
+        - False: Série possui valores são alfanuméricos (string).
+
+    --------------------------------------------------------------------------
     '''
 
-    def __init__(self, cod: str):
+    def __init__(
+            self,
+            cod: str,
+            index: bool = False
+        ):
+
         self.cod = cod
-        self.valores = _query(f"Metadados(SERCODIGO='{cod}')/Valores")
-        self.metadados = _query(f"Metadados('{cod}')")
+        self.valores = _get(f"Metadados(SERCODIGO='{cod}')/Valores", index)
+        self.metadados = _get(f"Metadados('{cod}')")
+        self.base = self.metadados.loc[0, 'BASNOME']
+        self.fonte_nome = self.metadados.loc[0, 'FNTNOME']
+        self.fonte_sigla = self.metadados.loc[0, 'FNTSIGLA']
+        self.fonte_url = self.metadados.loc[0, 'FNTURL']
+        self.multiplicador = self.metadados.loc[0, 'MULNOME']
+        self.periodicidade = self.metadados.loc[0, 'PERNOME']
+        self.atualizacao = self.metadados.loc[0, 'SERATUALIZACAO']
+        self.comentario = self.metadados.loc[0, 'SERCOMENTARIO']
+        self.nome = self.metadados.loc[0, 'SERNOME']
+        self.unidade = self.metadados.loc[0, 'UNINOME']
+        self.status = self.metadados.loc[0, 'SERSTATUS']
+        self.tema = self.metadados.loc[0, 'TEMCODIGO']
+        self.pais = self.metadados.loc[0, 'PAICODIGO']
+        self.numerica = self.metadados.loc[0, 'SERNUMERICA']
 
 
 
-def metadados(cod=None) -> pd.DataFrame:
+def lista_series(index=False) -> _pd.DataFrame:
     '''
-    Registros de metadados e valores de todas as séries do IPEA.
+    Registros de metadados de todas as séries do IPEA.
 
     Parâmetros
     ----------
-    cod: str (default = None)
-        Código da série que se deseja obter os dados.
-        Caso cod = None, obtém os metadados de todas as séries disponíveis.
+    index: bool (default=False)
+        Se True, define a coluna 'SERCODIGO' como index do DataFrame.
 
     Retorna
     -------
-    pd.DataFrame
-        DataFrame contendo os metadados de todas séries disponíveis (default),
-        ou apenas de uma série escolhida.
-        Utilize a coluna 'SERCODIGO' para alimentar o campo 'cod'
-        da classe ipea.Serie(cod).
+    pandas.core.frame.DataFrame
+        DataFrame onde cada coluna é um metadado e cada registro é uma série
+        do IPEA.
+
+    --------------------------------------------------------------------------
     '''
 
-    if cod is None:
-        return _query('Metadados')
-    elif isinstance(cod, str):
-        return _query(f"Metadados('{cod}')")
-    else:
-        raise TypeError('O código da série deve ser tipo string.')
+    return _get('Metadados', index)
 
 
 
-def series(cod=None, valores=True) -> pd.DataFrame:
-    '''
-    Registros de metadados e valores de todas as séries do IPEA.
-
-    Parâmetros
-    ----------
-    cod: int (default = None)
-        Código da série que se deseja obter os dados.
-        Caso cod = None, obtém os metadados de todas as séries disponíveis.
-    valores: bool (default = True)
-        - True: Obtém os valores da série desejada;
-        - False: Obtém os metadados da série desejada.
-        Esse argumento é ignorado caso cod = None.
-
-    Retorna
-    -------
-    pd.DataFrame
-        - Se cod = None: Metadados das séries disponíveis;
-        - Se cod = int: Valores da série desejada;
-        - Se valores = False: Metadados da série desejada.
-    '''
-
-    warnings.warn(
-        'Função depreciada.\nSerá removida nas próximas atualizações.',
-        DeprecationWarning
-    )
-
-    if cod is None:
-        return _query('Metadados')
-    
-    elif isinstance(cod, str):
-        if valores:
-            return _query(f"Metadados(SERCODIGO='{cod}')/Valores")
-        else:
-            return _query(f"Metadados('{cod}')")
-        
-    else:
-        raise TypeError('O código da série deve ser tipo string.')
-
-
-
-def temas(cod=None) -> pd.DataFrame:
+def lista_temas(
+        cod: int = None,
+        index: bool = False
+    ) -> _pd.DataFrame:
     '''
     Registros de todos os temas cadastrados.
 
     Parâmetros
     ----------
-    cod: int (opcional)
+    cod: int (default=None)
         Código do tema, caso queira ver os dados deste tema exclusivamente.
+    index: bool (default=False)
+        Se True, define a coluna 'TEMCODIGO' como index do DataFrame.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo um registro de todos os temas das séries do IPEA.
+
+    --------------------------------------------------------------------------
     '''
     
     if cod is None:
-        return _query('Temas')
+        return _get('Temas', index)
     elif isinstance(cod, int):
-        return _query(f'Temas({cod})')
+        return _get(f'Temas({cod})', index)
     else:
         raise TypeError('Código do tema deve ser um número inteiro.')
 
 
 
-def paises(cod=None) -> pd.DataFrame:
+def lista_paises(
+        cod: str = None,
+        index: bool = False
+    ) -> _pd.DataFrame:
     '''
     Registros de todos os países cadastrados.
 
     Parâmetros
     ----------
-    cod: str (opcional)
+    cod: str (default=None)
         Sigla de três letras do país, caso queira ver os dados deste
         país exclusivamente.
+    index: bool (default=False)
+        Se True, define a coluna 'PAICODIGO' como index do DataFrame.
 
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo um registro de todos os países das séries do IPEA.
+
+    --------------------------------------------------------------------------
     '''
 
     if cod is None:
-        return _query('Paises')
+        return _get('Paises', index)
     elif isinstance(cod, str):
-        return _query(f"Paises('{cod.upper()}')")
+        return _get(f"Paises('{cod.upper()}')", index)
     else:
         raise TypeError('Código do país deve ser um string de três letras maísculas.')
 
 
 
-def territorios(cod=None, nivel=None) -> pd.DataFrame:
+def lista_territorios(
+        cod: int = None,
+        nivel: str = None
+    ) -> _pd.DataFrame:
     '''
     Registros de todos os territórios brasileiros cadastrados.
 
     Parâmetros
     ----------
-    cod: int (opcional)
+    cod: int (default=None)
         Código do território, caso queira ver os dados deste
         território exclusivamente.
-    nivel: str (opcional)
+    nivel: str (default=None)
         Nome do nível territorial.
         Utilize a função ipea.niveis_territoriais() para verificar
         as opções disponíveis.
     
     Retorna
     -------
-    pd.DataFrame
+    pandas.core.frame.DataFrame
         DataFrame contendo o registro de todos os territórios
         das séries do IPEA.
+
+    --------------------------------------------------------------------------
     '''
 
-    if (cod is None) and (nivel is None):
-        return _query('Territorios')
+    if (cod is None) or (nivel is None):
+        return _get('Territorios')
     else:
         n = 'Municipios' if nivel == 'Municípios' else nivel        
-        return _query(f"Territorios(TERCODIGO='{cod}',NIVNOME='{n}')")
+        return _get(f"Territorios(TERCODIGO='{cod}',NIVNOME='{n}')")
 
     
 
-def niveis_territoriais() -> list:
+def lista_niveis() -> list:
     '''
     Lista dos possíveis níveis territoriais.
 
@@ -213,6 +272,8 @@ def niveis_territoriais() -> list:
     -------
     list
         Lista de todos os níveis territoriais das séries do IPEA.
+
+    --------------------------------------------------------------------------
     '''
 
     return [
