@@ -338,9 +338,9 @@ class Deputado:
         if legislatura is not None:
             params['idLegislatura'] = legislatura
         if inicio is not None:
-            params['dataInicio'] = inicio
+            params['dataInicio'] = _utils.ParseDate(inicio).camara
         if fim is not None:
-            params['dataFim'] = fim
+            params['dataFim'] = _utils.ParseDate(fim).camara
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -409,9 +409,9 @@ class Deputado:
         if legislatura is not None:
             params['idLegislatura'] = legislatura
         if inicio is not None:
-            params['dataInicio'] = inicio
+            params['dataInicio'] = _utils.ParseDate(inicio).camara
         if fim is not None:
-            params['dataFim'] = fim
+            params['dataFim'] = _utils.ParseDate(fim).camara
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -512,9 +512,9 @@ class Deputado:
 
         params = {}
         if inicio is not None:
-            params['dataInicio'] = inicio
+            params['dataInicio'] = _utils.ParseDate(inicio).camara
         if fim is not None:
-            params['dataFim'] = fim
+            params['dataFim'] = _utils.ParseDate(fim).camara
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -916,9 +916,9 @@ class Legislatura:
 
         params = {}
         if inicio is not None:
-            params['dataInicio'] = inicio
+            params['dataInicio'] = _utils.ParseDate(inicio).camara
         if fim is not None:
-            params['dataFim'] = fim
+            params['dataFim'] = _utils.ParseDate(fim).camara
 
         path = ['legislaturas', str(self.cod), 'mesa']
         dados = _api.get(path=path, params=params)
@@ -1055,9 +1055,9 @@ class Orgao:
         if tipo_evento is not None:
             params['idTipoEvento'] = tipo_evento
         if inicio is not None:
-            params['dataInicio'] = inicio
+            params['dataInicio'] = _utils.ParseDate(inicio).camara
         if fim is not None:
-            params['dataFim'] = fim
+            params['dataFim'] = _utils.ParseDate(fim).camara
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -1114,9 +1114,9 @@ class Orgao:
 
         params = {}
         if inicio is not None:
-            params['dataInicio'] = inicio
+            params['dataInicio'] = _utils.ParseDate(inicio).camara
         if fim is not None:
-            params['dataFim'] = fim
+            params['dataFim'] = _utils.ParseDate(fim).camara
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -1194,9 +1194,9 @@ class Orgao:
         if proposicao is not None:
             params['idProposicao'] = proposicao
         if inicio is not None:
-            params['dataInicio'] = inicio
+            params['dataInicio'] = _utils.ParseDate(inicio).camara
         if fim is not None:
-            params['dataFim'] = fim
+            params['dataFim'] = _utils.ParseDate(fim).camara
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -1340,9 +1340,9 @@ class Partido:
 
         params = {}
         if inicio is not None:
-            params['dataInicio'] = inicio
+            params['dataInicio'] = _utils.ParseDate(inicio).camara
         if fim is not None:
-            params['dataFim'] = fim
+            params['dataFim'] = _utils.ParseDate(fim).camara
         if legislatura is not None:
             params['idLegislatura'] = legislatura
         params['pagina'] = pagina
@@ -1606,9 +1606,9 @@ class Proposicao:
 
         params = {}
         if inicio is not None:
-            params['dataInicio'] = inicio
+            params['dataInicio'] = _utils.ParseDate(inicio).camara
         if fim is not None:
-            params['dataFim'] = fim
+            params['dataFim'] = _utils.ParseDate(fim).camara
 
         path = ['proposicoes', str(self.cod), 'tramitacoes']
         dados = _api.get(path=path, params=params)
@@ -1952,9 +1952,9 @@ def lista_deputados(
     if sexo is not None:
         params['siglaSexo'] = sexo
     if inicio is not None:
-        params['dataInicio'] = inicio
+        params['dataInicio'] = _utils.ParseDate(inicio).camara
     if fim is not None:
-        params['dataFim'] = fim
+        params['dataFim'] = _utils.ParseDate(fim).camara
     params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
@@ -1972,8 +1972,8 @@ def lista_eventos(
         situacao: int = None,
         tipo_orgao: int = None,
         orgao: int = None,
-        data_inicio: str = None,
-        data_fim: str = None,
+        inicio: str = None,
+        fim: str = None,
         hora_inicio: str = None,
         hora_fim: str = None,
         pagina: int = 1,
@@ -2009,9 +2009,9 @@ def lista_eventos(
     orgao: int (default=None)
         Identificador numérico do órgão. Os identificadores podem ser obtidos
         pela função `camara.lista_orgaos`.
-    data_inicio: str (default=None)
+    inicio: str (default=None)
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    data_fim: str (default=None)
+    fim: str (default=None)
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
     hora_inicio: str (default=None)
         Hora inicial de um intervalo de tempo, no formato 'HH:MM', em horário
@@ -2055,10 +2055,10 @@ def lista_eventos(
         params['codTipoOrgao'] = tipo_orgao
     if orgao is not None:
         params['idOrgao'] = orgao
-    if data_inicio is not None:
-        params['dataInicio'] = data_inicio
-    if data_fim is not None:
-        params['dataFim'] = data_fim
+    if inicio is not None:
+        params['dataInicio'] = _utils.ParseDate(inicio).camara
+    if fim is not None:
+        params['dataFim'] = _utils.ParseDate(fim).camara
     if hora_inicio is not None:
         params['horaInicio'] = hora_inicio
     if hora_fim is not None:
@@ -2249,9 +2249,9 @@ def lista_orgaos(
     if tipo is not None:
         params['codTipoOrgao'] = tipo
     if inicio is not None:
-        params['dataInicio'] = inicio
+        params['dataInicio'] = _utils.ParseDate(inicio).camara
     if fim is not None:
-        params['dataFim'] = fim
+        params['dataFim'] = _utils.ParseDate(fim).camara
     params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
@@ -2323,9 +2323,9 @@ def lista_partidos(
     if legislatura is not None:
         params['idLegislatura'] = legislatura
     if inicio is not None:
-        params['dataInicio'] = inicio
+        params['dataInicio'] = _utils.ParseDate(inicio).camara
     if fim is not None:
-        params['dataFim'] = fim
+        params['dataFim'] = _utils.ParseDate(fim).camara
     params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
@@ -2490,9 +2490,9 @@ def lista_proposicoes(
     if tema is not None:
         params['codTema'] = tema
     if inicio is not None:
-        params['dataInicio'] = inicio
+        params['dataInicio'] = _utils.ParseDate(inicio).camara
     if fim is not None:
-        params['dataFim'] = fim
+        params['dataFim'] = _utils.ParseDate(fim).camara
     params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
@@ -2594,9 +2594,9 @@ def lista_votacoes(
     if orgao is not None:
         params['idOrgao'] = orgao
     if inicio is not None:
-        params['dataInicio'] = inicio
+        params['dataInicio'] = _utils.ParseDate(inicio).camara
     if fim is not None:
-        params['dataFim'] = fim
+        params['dataFim'] = _utils.ParseDate(fim).camara
     params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens

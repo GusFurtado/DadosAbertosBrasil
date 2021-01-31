@@ -4,7 +4,35 @@ Módulo de funções de suporte aos pacotes principais.
 
 
 
-def parse_uf(uf: str) -> str:
+from datetime import date
+
+
+
+class ParseDate:
+    '''
+    Padroniza o input de datas entre módulos.
+
+    Parâmetros
+    ----------
+    data: datetime.date ou str
+        Input a ser padronizado.
+
+    Atributos
+    ---------
+    camara: str
+        Data no formato 'AAAA-MM-DD' para ser usado no módulo `camara`.
+    senado: str
+        Data no formato 'AAAAMMDD' para ser usado no módulo `senado`.
+    '''
+
+    def __init__(self, data):
+        data = str(data)
+        self.camara = data
+        self.senado = data.replace('-', '')
+
+
+
+def parse_uf(uf:str) -> str:
     '''
     Converte os nomes dos estados em siglas padrões.
     Suporta abreviaturas, acentuação e case sensibility.

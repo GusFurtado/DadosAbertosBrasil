@@ -278,8 +278,8 @@ class Senador:
     def apartes(
             self,
             casa: str = None,
-            data_inicio: int = None,
-            data_fim: int = None,
+            inicio: int = None,
+            fim: int = None,
             numero_sessao: int = None,
             tipo_pronunciamento: str = None,
             tipo_sessao: str = None
@@ -297,9 +297,9 @@ class Senador:
             - 'PR' para Presidência;
             - 'CR' para Comissão Representativa do Congresso;
             - 'AC' para Assembléia Constituinte.
-        data_inicio: int (default=None)
+        inicio: int (default=None)
             Data inicial do período da pesquisa no formato AAAAMMDD
-        data_fim: int (default=None)
+        fim: int (default=None)
             Data final do período da pesquisa no formato AAAAMMDD
         numero_sessao: int (default=None)
             Número da sessão plenária.
@@ -319,10 +319,10 @@ class Senador:
         tags = {}
         if casa is not None:
             tags['casa'] = casa
-        if data_inicio is not None:
-            tags['dataInicio'] = data_inicio
-        if data_fim is not None:
-            tags['dataFim'] = data_fim
+        if inicio is not None:
+            tags['dataInicio'] = _utils.ParseDate(inicio).senado
+        if fim is not None:
+            tags['dataFim'] = _utils.ParseDate(fim).senado
         if numero_sessao is not None:
             tags['numeroSessao'] = numero_sessao
         if tipo_pronunciamento is not None:
@@ -469,8 +469,8 @@ class Senador:
     def discursos(
             self,
             casa: str = None,
-            data_inicio: int = None,
-            data_fim: int = None,
+            inicio: int = None,
+            fim: int = None,
             numero_sessao: int = None,
             tipo_pronunciamento: str = None,
             tipo_sessao: str = None
@@ -488,9 +488,9 @@ class Senador:
             - 'PR' para Presidência;
             - 'CR' para Comissão Representativa do Congresso;
             - 'AC' para Assembléia Constituinte.
-        data_inicio: int (default=None)
+        inicio: int (default=None)
             Data inicial do período da pesquisa no formato AAAAMMDD
-        data_fim: int (default=None)
+        fim: int (default=None)
             Data final do período da pesquisa no formato AAAAMMDD
         numero_sessao: int (default=None)
             Número da sessão plenária.
@@ -510,10 +510,10 @@ class Senador:
         tags = {}
         if casa is not None:
             tags['casa'] = casa
-        if data_inicio is not None:
-            tags['dataInicio'] = data_inicio
-        if data_fim is not None:
-            tags['dataFim'] = data_fim
+        if inicio is not None:
+            tags['dataInicio'] = _utils.ParseDate(inicio).senado
+        if fim is not None:
+            tags['dataFim'] = _utils.ParseDate(fim).senado
         if numero_sessao is not None:
             tags['numeroSessao'] = numero_sessao
         if tipo_pronunciamento is not None:
@@ -601,14 +601,14 @@ class Senador:
 
     def licencas(
             self,
-            data: str = None
+            inicio: str = None
         ) -> list:
         '''
         Obtém as licenças de um senador.
 
         Parâmetros
         ----------
-        data: str (default=None)
+        inicio: str (default=None)
             Retorna as licenças a partir da data especificada.
 
         Retorna
@@ -620,8 +620,8 @@ class Senador:
         '''
 
         tags = {}
-        if data is not None:
-            tags['dataInicio'] = data
+        if inicio is not None:
+            tags['dataInicio'] = _utils.ParseDate(inicio).senado
 
         searchtags = _utils.convert_search_tags(tags) if len(tags)>0 else ''
         url = f'{_URL}senador/{self.cod}/licencas{searchtags}'
