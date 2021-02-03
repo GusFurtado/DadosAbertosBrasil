@@ -52,6 +52,8 @@ __author__ = 'Gustavo Furtado da Silva'
 
 
 
+from typing import Union
+
 import requests
 
 
@@ -60,6 +62,7 @@ ENDPOINTS = {
     'camara': 'https://dadosabertos.camara.leg.br/api/v2/',
     'ipea': 'http://www.ipeadata.gov.br/api/odata4/',
     'senado': 'http://legis.senado.gov.br/dadosabertos/',
+    'sidra': 'https://servicodados.ibge.gov.br/api/v3/agregados/'
 }
 
 
@@ -73,7 +76,9 @@ class API:
     endpoint: str
         Qual API deseja se conectar:
         - 'camara': Acessar API da Câmara dos Deputados;
-        - 'senado': Acessar API do Senado Federal.
+        - 'ipea': Acessar API do IPEA Data;
+        - 'senado': Acessar API do Senado Federal;
+        - 'sidra': Acessar API do SIDRA - IBGE.
 
     Exemplos
     --------
@@ -88,8 +93,12 @@ class API:
     ---------------------
     'camara'
         https://dadosabertos.camara.leg.br/swagger/api.html
+    'ipea'
+        http://www.ipeadata.gov.br/api/
     'senado'
         http://legis.senado.gov.br/dadosabertos/docs/ui/index.html#/
+    'sidra'
+        http://api.sidra.ibge.gov.br/
 
     --------------------------------------------------------------------------
     '''
@@ -97,7 +106,11 @@ class API:
     def __init__(self, endpoint:str):
         self.URL = ENDPOINTS[endpoint]
 
-    def get(self, path, params=None) -> dict:
+    def get(
+            self,
+            path: Union[str, list],
+            params: dict = None
+        ) -> dict:
         '''
         Coleta os dados requisitados.
 
