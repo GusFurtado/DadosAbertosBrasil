@@ -128,4 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+
+# DadosAbertosBrasil
 Rascunho.ipynb
+create_doc.bat

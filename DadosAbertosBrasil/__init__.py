@@ -17,7 +17,7 @@ Módulos em Desenvolvimento
 Sobre
 -----
     - Página Oficial: https://www.gustavofurtado.com/dab.html
-    - Documentação: https://www.gustavofurtado.com/doc.html
+    - Documentação: https://www.gustavofurtado.com/DadosAbertosBrasil/index.html
 
 Instalação
 ----------
@@ -25,6 +25,7 @@ Instalação
 
 Dependências
 ------------
+    - Python 3.6 ou superior
     - pandas
     - requests
 
@@ -34,15 +35,13 @@ Licença
 
 Próximos Passos
 ---------------
-    - Conclusão do módulo senado;
-    - Substituição das funções do módulo camara por classes.
-      Atualmente as funções capturam apenas dados dos últimos
-      seis meses e da última legislatura;
-    - Expansão das funções de filtro e busca de séries,
-      para facilitar encontrar a série desejada;
-    - Padronização dos nomes das colunas dos DataFrame para
-      melhor interpretação do usuário e integração entre módulos;
-    - Adição constante de novas funções no módulo favoritos.
+    - Conclusão do módulo `senado`;
+    - Desenvolvimento do módulo `transparencia` para coleta de dados do
+      Portal da Transparência do Governo Federal;
+    - Desenvolvimento do módulo `_errors` como suporte aos módulos principais;
+    - Converter strings em formato de data em objetos `datetime`;
+    - Adicionar novos exemplos à documentação;
+    - Adição constante de novas funções no módulo `favoritos`.
 '''
 
 

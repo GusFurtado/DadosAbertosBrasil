@@ -39,14 +39,14 @@ def moedas() -> _pd.DataFrame:
 
 def cambio(
         moedas = 'USD',
-        data_inicial: str = '01-01-2000',
-        data_final: str = None,
+        inicio: str = '01-01-2000',
+        fim: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
     '''
     Taxa de câmbio das principais moedas internacionais.
     É possível escolher várias moedas inserindo uma lista no campo 'moeda'.
-    Defina o período da consulta pelos campos 'data_inicial' e 'data_final'.
+    Defina o período da consulta pelos campos `inicio` e `fim`.
 
     Parâmetros
     ----------
@@ -54,10 +54,10 @@ def cambio(
         Sigla da moeda ou lista de siglas de moedas que será(ão) pesquisada(s).
         Utilize a função favoritos.moedas() para obter uma lista de moedas
         válidas.
-    data_inicial: str (default='01-01-2000')
+    inicio: str (default='01-01-2000')
         String no formato de data 'DD-MM-AAAA' que representa o primeiro dia
         da pesquisa.
-    data_final: str (default=None)
+    fim: str (default=None)
         String no formato de data 'DD-MM-AAAA' que representa o último dia
         da pesquisa.
         Caso este campo seja None, será considerada a data de hoje.
@@ -73,11 +73,11 @@ def cambio(
     --------------------------------------------------------------------------
     '''
 
-    if data_final == None:
-        data_final = datetime.today().strftime('%m-%d-%Y')
+    if fim == None:
+        fim = datetime.today().strftime('%m-%d-%Y')
     
     if isinstance(moedas, str):
-        query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moedas}'&@dataInicial='{data_inicial}'&@dataFinalCotacao='{data_final}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"
+        query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moedas}'&@dataInicial='{inicio}'&@dataFinalCotacao='{fim}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"
         cotacoes = _pd.DataFrame(_pd.read_json(query)['value'].to_list()) \
             .rename(columns = {
                 'cotacaoVenda': moedas,
@@ -89,7 +89,7 @@ def cambio(
         try:    
             cotacao_moedas = []
             for moeda in moedas:
-                query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moeda}'&@dataInicial='{data_inicial}'&@dataFinalCotacao='{data_final}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"
+                query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moeda}'&@dataInicial='{inicio}'&@dataFinalCotacao='{fim}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"
                 cotacao_moeda = _pd.DataFrame(_pd.read_json(query)['value'].to_list())
                 cotacao_moeda.dataHoraCotacao = cotacao_moeda.dataHoraCotacao.apply(
                     lambda x: datetime.strptime(x[:10], '%Y-%m-%d')

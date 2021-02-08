@@ -404,10 +404,15 @@ def sidra(
         Localidades por nível territorial.
         As chaves dos dicionários devem ser o código de nível territorial:
             - 1: Brasil;
-            - 2: Grande Região;
-            - 3: Unidade da Federação;
-            - 6: Município.
-            - etc...
+            - 2: Grande região (N, NE, SE, S, CO);
+            - 3: Unidade da Federação (UFs);
+            - 6: Município;
+            - 7: Região metropolitana;
+            - 8: Mesorregião geográfica;
+            - 9: Microrregião geográfica;
+            - 13: Região metropolitana e subdivisão;
+            - 14: Região Integrada de Desenvolvimento;
+            - 15: Aglomeração urbana.
         Os valores do dicionário devem ser:
             - 'all': Todas as localidades do nível territorial.
             - list: Códigos dos territórios desejados.
