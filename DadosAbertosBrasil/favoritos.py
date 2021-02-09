@@ -73,8 +73,11 @@ def cambio(
     --------------------------------------------------------------------------
     '''
 
+    inicio = _utils.parse_data(inicio, 'bacen')
     if fim == None:
         fim = datetime.today().strftime('%m-%d-%Y')
+    else:
+        fim = _utils.parse_data(fim, 'bacen')
     
     if isinstance(moedas, str):
         query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moedas}'&@dataInicial='{inicio}'&@dataFinalCotacao='{fim}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"

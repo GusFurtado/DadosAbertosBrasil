@@ -295,10 +295,10 @@ class Senador:
             - 'PR' para Presidência;
             - 'CR' para Comissão Representativa do Congresso;
             - 'AC' para Assembléia Constituinte.
-        inicio: int (default=None)
-            Data inicial do período da pesquisa no formato AAAAMMDD
-        fim: int (default=None)
-            Data final do período da pesquisa no formato AAAAMMDD
+        inicio: datetime.date ou str (default=None)
+            Data inicial do período da pesquisa no formato 'AAAA-MM-DD'
+        fim: datetime.date ou str (default=None)
+            Data final do período da pesquisa no formato 'AAAA-MM-DD'
         numero_sessao: int (default=None)
             Número da sessão plenária.
         tipo_pronunciamento: str (default=None)
@@ -318,9 +318,9 @@ class Senador:
         if casa is not None:
             tags['casa'] = casa
         if inicio is not None:
-            tags['dataInicio'] = _utils.ParseDate(inicio).senado
+            tags['dataInicio'] = _utils.parse_data(inicio, 'senado')
         if fim is not None:
-            tags['dataFim'] = _utils.ParseDate(fim).senado
+            tags['dataFim'] = _utils.parse_data(fim, 'senado')
         if numero_sessao is not None:
             tags['numeroSessao'] = numero_sessao
         if tipo_pronunciamento is not None:
@@ -482,10 +482,10 @@ class Senador:
             - 'PR' para Presidência;
             - 'CR' para Comissão Representativa do Congresso;
             - 'AC' para Assembléia Constituinte.
-        inicio: int (default=None)
-            Data inicial do período da pesquisa no formato AAAAMMDD
-        fim: int (default=None)
-            Data final do período da pesquisa no formato AAAAMMDD
+        inicio: datetime.date ou str (default=None)
+            Data inicial do período da pesquisa no formato 'AAAA-MM-DD'
+        fim: datetime.date ou str (default=None)
+            Data final do período da pesquisa no formato 'AAAA-MM-DD'
         numero_sessao: int (default=None)
             Número da sessão plenária.
         tipo_pronunciamento: str (default=None)
@@ -505,9 +505,9 @@ class Senador:
         if casa is not None:
             tags['casa'] = casa
         if inicio is not None:
-            tags['dataInicio'] = _utils.ParseDate(inicio).senado
+            tags['dataInicio'] = _utils.parse_data(inicio, 'senado')
         if fim is not None:
-            tags['dataFim'] = _utils.ParseDate(fim).senado
+            tags['dataFim'] = _utils.parse_data(fim, 'senado')
         if numero_sessao is not None:
             tags['numeroSessao'] = numero_sessao
         if tipo_pronunciamento is not None:
@@ -601,7 +601,7 @@ class Senador:
 
         Parâmetros
         ----------
-        inicio: str (default=None)
+        inicio: datetime.date ou str (default=None)
             Retorna as licenças a partir da data especificada.
 
         Retorna
@@ -614,7 +614,7 @@ class Senador:
 
         tags = {}
         if inicio is not None:
-            tags['dataInicio'] = _utils.ParseDate(inicio).senado
+            tags['dataInicio'] = _utils.parse_data(inicio, 'senado')
 
         path = f'senador/{self.cod}/licencas'
         keys = ['LicencaParlamentar', 'Parlamentar', 'Licencas', 'Licenca']

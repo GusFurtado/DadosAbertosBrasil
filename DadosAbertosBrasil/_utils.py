@@ -4,11 +4,15 @@ Módulo de funções de suporte aos pacotes principais.
 
 
 
-from datetime import date
+from datetime import date, datetime
+from typing import Union
 
 
 
-class ParseDate:
+def parse_data(
+        data: Union[date, str],
+        modulo: str
+    ) -> str:
     '''
     Padroniza o input de datas entre módulos.
 
@@ -16,19 +20,28 @@ class ParseDate:
     ----------
     data: datetime.date ou str
         Input a ser padronizado.
+    modulo: str
+        Módulo que o parser seja aplicado para selecionar a formatação
+        adequada:
+            - 'camara': API da Câmara dos Deputados;
+            - 'senado': API do Senado Federal;
+            - 'bacen': Consultas do Banco Central do Brasil.
 
     Atributos
     ---------
-    camara: str
-        Data no formato 'AAAA-MM-DD' para ser usado no módulo `camara`.
-    senado: str
-        Data no formato 'AAAAMMDD' para ser usado no módulo `senado`.
-    '''
+    str
+        Data no formato adequado para o módulo escolhido.
 
-    def __init__(self, data):
-        data = str(data)
-        self.camara = data
-        self.senado = data.replace('-', '')
+    --------------------------------------------------------------------------
+    '''
+    data = str(data)
+    if modulo == 'camara':
+        return data
+    elif modulo == 'senado':
+        return data.replace('-', '')
+    elif modulo == 'bacen':
+        return f'{data[5:7]}-{data[8:10]}-{data[:4]}'
+
 
 
 
@@ -103,22 +116,6 @@ def parse_uf(uf:str) -> str:
         return mapping[s]
     except:
         raise TypeError('UF não encontrada.')
-
-
-
-def convert_search_tags(tags: dict) -> str:
-    '''
-    Converte uma lista de parâmetros em search tags para a URL
-    '''
-
-    if tags is not None:
-        s = '?'
-        keys = list(tags.keys())
-        for key in keys[:-1]:
-            s += f'{key}={tags[key]}&'
-        s += f'{keys[-1]}={tags[keys[-1]]}'
-
-    return s
 
 
 
