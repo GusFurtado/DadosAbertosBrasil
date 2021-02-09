@@ -10,15 +10,15 @@
 
 Atualmente o pacote Dados Abertos Brasil possui cinco módulos em desenvolvimento:
 
-- DadosAbertosBrasil.**[ibge](https://www.gustavofurtado.com/doc.html#SessaoIBGE)**
-- DadosAbertosBrasil.**[ipea](https://www.gustavofurtado.com/doc.html#SessaoIPEA)**
-- DadosAbertosBrasil.**[camara](https://www.gustavofurtado.com/doc.html#SessaoCamara)**
-- DadosAbertosBrasil.**senado**
-- DadosAbertosBrasil.**[favoritos](https://www.gustavofurtado.com/doc.html#SessaoFavoritos)**
+- DadosAbertosBrasil.**[ibge](https://www.gustavofurtado.com/DadosAbertosBrasil/ibge.html)**
+- DadosAbertosBrasil.**[ipea](https://www.gustavofurtado.com/DadosAbertosBrasil/ipea.html)**
+- DadosAbertosBrasil.**[camara](https://www.gustavofurtado.com/DadosAbertosBrasil/camara.html)**
+- DadosAbertosBrasil.**[senado](https://www.gustavofurtado.com/DadosAbertosBrasil/senado.html)**
+- DadosAbertosBrasil.**[favoritos](https://www.gustavofurtado.com/DadosAbertosBrasil/favoritos.html)**
 
 ### Sobre
 - **[Página Oficial](https://www.gustavofurtado.com/dab.html)**
-- **[Documentação](https://www.gustavofurtado.com/doc.html)**
+- **[Documentação](https://www.gustavofurtado.com/DadosAbertosBrasil/index.html)**
 
 ### Instalação
 ```
@@ -26,6 +26,7 @@ pip install DadosAbertosBrasil
 ```
 
 ### Dependências
+- Python 3.6 ou superior
 - **[pandas](https://pandas.pydata.org/)**
 - **[requests](https://requests.readthedocs.io/en/master/)**
 
@@ -34,13 +35,13 @@ pip install DadosAbertosBrasil
 
 ### Próximos Passos
 - Conclusão do módulo `senado`;
-- Substituição das funções do módulo `camara` por classes. Atualmente as funções capturam apenas dados dos últimos seis meses e da última legislatura;
-- Expansão das funções de filtro e busca de séries, para facilitar encontrar a série desejada;
-- Padronização dos nomes das colunas dos DataFrame para melhor interpretação do usuário e integração entre módulos;
+- Desenvolvimento do módulo `transparencia` para coleta de dados do
+  Portal da Transparência do Governo Federal;
+- Desenvolvimento do módulo `_errors` como suporte aos módulos principais;
+- Converter strings em formato de data em objetos `datetime`;
+- Adicionar novos exemplos à documentação;
 - Adição constante de novas funções no módulo `favoritos`.
 
 ---
 
-<div style="text-align: right">
-  Desenvolvido por: Gustavo Furtado da Silva
-</div>
+- Desenvolvido por: **[Gustavo Furtado](https://www.gustavofurtado.com/)**
