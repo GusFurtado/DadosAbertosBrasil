@@ -28,37 +28,35 @@ def moedas() -> _pd.DataFrame:
     '''
 
     query = r"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/Moedas?$top=100&$format=json"
-    return _pd.DataFrame(_pd.read_json(query)['value'].to_list()) \
-        .rename(columns = {
-            'nomeFormatado': 'Nome',
-            'simbolo': 'Símbolo',
-            'tipoMoeda': 'Tipo'
-        })
+    r = requests.get(query)
+    df = _pd.DataFrame(r.json()['value'])
+    df.columns = ['Símbolo', 'Nome', 'Tipo']
+    return df
 
 
 
 def cambio(
         moedas = 'USD',
-        inicio: str = '01-01-2000',
+        inicio: str = '2000-01-01',
         fim: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
     '''
     Taxa de câmbio das principais moedas internacionais.
-    É possível escolher várias moedas inserindo uma lista no campo 'moeda'.
+    É possível escolher várias moedas inserindo uma lista no campo `moeda`.
     Defina o período da consulta pelos campos `inicio` e `fim`.
 
     Parâmetros
     ----------
     moedas: list ou str (default='USD')
         Sigla da moeda ou lista de siglas de moedas que será(ão) pesquisada(s).
-        Utilize a função favoritos.moedas() para obter uma lista de moedas
+        Utilize a função `favoritos.moedas` para obter uma lista de moedas
         válidas.
-    inicio: str (default='01-01-2000')
-        String no formato de data 'DD-MM-AAAA' que representa o primeiro dia
+    inicio: str (default='2000-01-01')
+        String no formato de data 'AAAA-MM-DD' que representa o primeiro dia
         da pesquisa.
     fim: str (default=None)
-        String no formato de data 'DD-MM-AAAA' que representa o último dia
+        String no formato de data 'AAAA-MM-DD' que representa o último dia
         da pesquisa.
         Caso este campo seja None, será considerada a data de hoje.
     index: bool (default=False)

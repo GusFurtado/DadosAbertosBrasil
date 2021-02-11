@@ -4,7 +4,7 @@ Funções para padronização de parâmetros entre os módulos.
 
 
 
-from datetime import date
+from datetime import datetime, date
 from typing import Union
 
 from . import errors
@@ -12,7 +12,7 @@ from . import errors
 
 
 def data(
-        data: Union[date, str],
+        data: Union[datetime, date, str],
         modulo: str
     ) -> str:
     '''
@@ -20,8 +20,9 @@ def data(
 
     Parâmetros
     ----------
-    data: datetime.date ou str
+    data: datetime.datetime, datetime.date ou str
         Input a ser padronizado.
+        Pode ser uma objeto date, datetime ou uma string no formato ISO-8601.
     modulo: str
         Módulo que o parser seja aplicado para selecionar a formatação
         adequada:
@@ -36,13 +37,30 @@ def data(
 
     --------------------------------------------------------------------------
     '''
-    data = str(data)
-    if modulo == 'camara':
-        return data
-    elif modulo == 'senado':
-        return data.replace('-', '')
-    elif modulo == 'bacen':
-        return f'{data[5:7]}-{data[8:10]}-{data[:4]}'
+
+    if isinstance(data, str):
+        try:
+            data = datetime.strptime(data, '%Y-%m-%d')
+        except ValueError:
+            raise errors.DAB_DataError(
+                "Formato de data inválido.\n"
+                "Se você está tentando inserir um string com padrão de data, "
+                "utilize o formato ISO-8601: 'AAAA-MM-DD'."
+        )
+
+    try:
+        if modulo == 'camara':
+            return data.strftime('%Y-%m-%d')
+        elif modulo == 'senado':
+            return data.strftime('%Y%m%d')
+        elif modulo == 'bacen':
+            return data.strftime('%m-%d-%Y')
+
+    except AttributeError:
+        raise errors.DAB_DataError(
+            "Formato de data inválido.\n"
+            "Insira uma data no formato datetime.datetime, datetime.date ou str."
+        )
 
 
 
@@ -160,7 +178,7 @@ def uf(
         try:
             return UFS[uf]
         except KeyError:
-            raise errors.UFError(
+            raise errors.DAB_UFError(
                 "UF incorreta.\n"
                 "Insira uma das 27 UFs válidas."
             )
@@ -205,11 +223,11 @@ def localidade(
             return localidade
 
     if on_error == 'raise':
-        raise errors.LocalidadeError('O código da localidade não está em um formato numérico.')
+        raise errors.DAB_LocalidadeError('O código da localidade não está em um formato numérico.')
     elif on_error == 'brasil':
         return brasil
     else:
-        raise errors.LocalidadeError(
+        raise errors.DAB_LocalidadeError(
             "Valor incorreto para o argumento `on_error`:\n"
             "  - 'raise': Gera um erro quando o valor não for válido;\n"
             "  - 'brasil': Retorna o valor Brasil quando o valor não for válido."
