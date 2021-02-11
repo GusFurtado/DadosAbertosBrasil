@@ -53,7 +53,7 @@ import pandas as _pd
 import requests
 
 from . import API
-from . import _utils
+from ._utils import parse
 
 
 
@@ -105,7 +105,7 @@ def nomes(
     if sexo is not None:
         params['sexo'] = sexo
     if localidade is not None:
-        params['localidade'] = _utils.parse_localidade(localidade)
+        params['localidade'] = parse.localidade(localidade)
 
     url = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nomes}"
     data = requests.get(url, params=params).json()
@@ -203,7 +203,7 @@ def nomes_ranking(
             raise TypeError(decada_error)
     
     if localidade is not None:
-        params.append(f'localidade={_utils.parse_localidade(localidade)}')
+        params.append(f'localidade={parse.localidade(localidade)}')
             
     if sexo is not None:
         if sexo in ['M', 'm', 'F', 'f']:
@@ -573,7 +573,7 @@ def populacao(
     --------------------------------------------------------------------------
     '''
 
-    localidade = _utils.parse_localidade(localidade, '')
+    localidade = parse.localidade(localidade, '')
     query = f'https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/{localidade}'
             
     r = requests.get(query).json()
@@ -645,7 +645,7 @@ def malha(localidade:int=None) -> str:
     --------------------------------------------------------------------------
     '''
 
-    localidade = _utils.parse_localidade(localidade, '')
+    localidade = parse.localidade(localidade, '')
     return f'https://servicodados.ibge.gov.br/api/v2/malhas/{localidade}'
 
 

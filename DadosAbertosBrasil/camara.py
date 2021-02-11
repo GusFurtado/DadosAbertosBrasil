@@ -28,7 +28,7 @@ https://dadosabertos.camara.leg.br/swagger/api.html
 import pandas as _pd
 
 from . import API
-from . import _utils
+from ._utils import parse
 
 
 
@@ -338,9 +338,9 @@ class Deputado:
         if legislatura is not None:
             params['idLegislatura'] = legislatura
         if inicio is not None:
-            params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+            params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
-            params['dataFim'] = _utils.parse_data(fim, 'camara')
+            params['dataFim'] = parse.data(fim, 'camara')
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -409,9 +409,9 @@ class Deputado:
         if legislatura is not None:
             params['idLegislatura'] = legislatura
         if inicio is not None:
-            params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+            params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
-            params['dataFim'] = _utils.parse_data(fim, 'camara')
+            params['dataFim'] = parse.data(fim, 'camara')
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -512,9 +512,9 @@ class Deputado:
 
         params = {}
         if inicio is not None:
-            params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+            params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
-            params['dataFim'] = _utils.parse_data(fim, 'camara')
+            params['dataFim'] = parse.data(fim, 'camara')
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -916,9 +916,9 @@ class Legislatura:
 
         params = {}
         if inicio is not None:
-            params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+            params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
-            params['dataFim'] = _utils.parse_data(fim, 'camara')
+            params['dataFim'] = parse.data(fim, 'camara')
 
         path = ['legislaturas', str(self.cod), 'mesa']
         dados = _api.get(path=path, params=params)
@@ -1055,9 +1055,9 @@ class Orgao:
         if tipo_evento is not None:
             params['idTipoEvento'] = tipo_evento
         if inicio is not None:
-            params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+            params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
-            params['dataFim'] = _utils.parse_data(fim, 'camara')
+            params['dataFim'] = parse.data(fim, 'camara')
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -1114,9 +1114,9 @@ class Orgao:
 
         params = {}
         if inicio is not None:
-            params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+            params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
-            params['dataFim'] = _utils.parse_data(fim, 'camara')
+            params['dataFim'] = parse.data(fim, 'camara')
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -1194,9 +1194,9 @@ class Orgao:
         if proposicao is not None:
             params['idProposicao'] = proposicao
         if inicio is not None:
-            params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+            params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
-            params['dataFim'] = _utils.parse_data(fim, 'camara')
+            params['dataFim'] = parse.data(fim, 'camara')
         params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
@@ -1340,9 +1340,9 @@ class Partido:
 
         params = {}
         if inicio is not None:
-            params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+            params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
-            params['dataFim'] = _utils.parse_data(fim, 'camara')
+            params['dataFim'] = parse.data(fim, 'camara')
         if legislatura is not None:
             params['idLegislatura'] = legislatura
         params['pagina'] = pagina
@@ -1606,9 +1606,9 @@ class Proposicao:
 
         params = {}
         if inicio is not None:
-            params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+            params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
-            params['dataFim'] = _utils.parse_data(fim, 'camara')
+            params['dataFim'] = parse.data(fim, 'camara')
 
         path = ['proposicoes', str(self.cod), 'tramitacoes']
         dados = _api.get(path=path, params=params)
@@ -1946,15 +1946,15 @@ def lista_deputados(
     if legislatura is not None:
         params['idLegislatura'] = legislatura
     if uf is not None:
-        params['siglaUf'] = _utils.parse_uf(uf)
+        params['siglaUf'] = parse.uf(uf)
     if partido is not None:
         params['siglaPartido'] = partido
     if sexo is not None:
         params['siglaSexo'] = sexo
     if inicio is not None:
-        params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+        params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
-        params['dataFim'] = _utils.parse_data(fim, 'camara')
+        params['dataFim'] = parse.data(fim, 'camara')
     params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
@@ -2056,9 +2056,9 @@ def lista_eventos(
     if orgao is not None:
         params['idOrgao'] = orgao
     if inicio is not None:
-        params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+        params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
-        params['dataFim'] = _utils.parse_data(fim, 'camara')
+        params['dataFim'] = parse.data(fim, 'camara')
     if hora_inicio is not None:
         params['horaInicio'] = hora_inicio
     if hora_fim is not None:
@@ -2249,9 +2249,9 @@ def lista_orgaos(
     if tipo is not None:
         params['codTipoOrgao'] = tipo
     if inicio is not None:
-        params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+        params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
-        params['dataFim'] = _utils.parse_data(fim, 'camara')
+        params['dataFim'] = parse.data(fim, 'camara')
     params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
@@ -2323,9 +2323,9 @@ def lista_partidos(
     if legislatura is not None:
         params['idLegislatura'] = legislatura
     if inicio is not None:
-        params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+        params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
-        params['dataFim'] = _utils.parse_data(fim, 'camara')
+        params['dataFim'] = parse.data(fim, 'camara')
     params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
@@ -2476,7 +2476,7 @@ def lista_proposicoes(
     if partido_cod is not None:
         params['idPartidoAutor'] = partido_cod
     if autor_uf is not None:
-        params['siglaUfAutor'] = _utils.parse_uf(autor_uf)
+        params['siglaUfAutor'] = parse.uf(autor_uf)
     if keyword is not None:
         params['keywords'] = keyword
     if tramitacao_senado is not None:
@@ -2490,9 +2490,9 @@ def lista_proposicoes(
     if tema is not None:
         params['codTema'] = tema
     if inicio is not None:
-        params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+        params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
-        params['dataFim'] = _utils.parse_data(fim, 'camara')
+        params['dataFim'] = parse.data(fim, 'camara')
     params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
@@ -2594,9 +2594,9 @@ def lista_votacoes(
     if orgao is not None:
         params['idOrgao'] = orgao
     if inicio is not None:
-        params['dataInicio'] = _utils.parse_data(inicio, 'camara')
+        params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
-        params['dataFim'] = _utils.parse_data(fim, 'camara')
+        params['dataFim'] = parse.data(fim, 'camara')
     params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens

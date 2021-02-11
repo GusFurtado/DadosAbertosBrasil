@@ -30,10 +30,9 @@ http://legis.senado.gov.br/dadosabertos/docs/
 
 
 import pandas as _pd
-import requests
 
-from . import _utils
 from . import API
+from ._utils import parse
 
 
 
@@ -89,7 +88,7 @@ def lista_atual(
     if participacao is not None:
         tags['participacao'] = participacao.upper()
     if uf is not None:
-        tags['uf'] = _utils.parse_uf(uf)
+        tags['uf'] = parse.uf(uf)
 
     path = 'senador/lista/atual'
     keys = ['ListaParlamentarEmExercicio', 'Parlamentares', 'Parlamentar']
@@ -166,7 +165,7 @@ def lista_legislatura(
     if participacao is not None:
         tags['participacao'] = participacao.upper()
     if uf is not None:
-        tags['uf'] = _utils.parse_uf(uf)
+        tags['uf'] = parse.uf(uf)
 
     keys = ['ListaParlamentarLegislatura', 'Parlamentares', 'Parlamentar']
     return _get_request(path, tags, keys)
@@ -318,9 +317,9 @@ class Senador:
         if casa is not None:
             tags['casa'] = casa
         if inicio is not None:
-            tags['dataInicio'] = _utils.parse_data(inicio, 'senado')
+            tags['dataInicio'] = parse.data(inicio, 'senado')
         if fim is not None:
-            tags['dataFim'] = _utils.parse_data(fim, 'senado')
+            tags['dataFim'] = parse.data(fim, 'senado')
         if numero_sessao is not None:
             tags['numeroSessao'] = numero_sessao
         if tipo_pronunciamento is not None:
@@ -505,9 +504,9 @@ class Senador:
         if casa is not None:
             tags['casa'] = casa
         if inicio is not None:
-            tags['dataInicio'] = _utils.parse_data(inicio, 'senado')
+            tags['dataInicio'] = parse.data(inicio, 'senado')
         if fim is not None:
-            tags['dataFim'] = _utils.parse_data(fim, 'senado')
+            tags['dataFim'] = parse.data(fim, 'senado')
         if numero_sessao is not None:
             tags['numeroSessao'] = numero_sessao
         if tipo_pronunciamento is not None:
@@ -614,7 +613,7 @@ class Senador:
 
         tags = {}
         if inicio is not None:
-            tags['dataInicio'] = _utils.parse_data(inicio, 'senado')
+            tags['dataInicio'] = parse.data(inicio, 'senado')
 
         path = f'senador/{self.cod}/licencas'
         keys = ['LicencaParlamentar', 'Parlamentar', 'Licencas', 'Licenca']
