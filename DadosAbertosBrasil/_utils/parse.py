@@ -232,3 +232,42 @@ def localidade(
             "  - 'raise': Gera um erro quando o valor não for válido;\n"
             "  - 'brasil': Retorna o valor Brasil quando o valor não for válido."
         )
+
+
+
+def moeda(moedas:Union[str, list]) -> list:
+    '''
+    Verifica se o(s) código(s) da(s) moeda(s) inserida(s) está(ão) em um
+    formato válido.
+
+    Parâmetros
+    ----------
+    moedas: str ou list of str
+        Símbolo da moeda ou lista de símbolos de moedas que se deseja validar.
+
+    Retorna
+    -------
+    list of str
+        Lista de símbolos de moedas formatados.
+
+    --------------------------------------------------------------------------
+    '''
+    if isinstance(moedas, str):
+        moedas = [moedas]
+
+    parsed = []
+    for moeda in moedas:
+        if not isinstance(moeda, str):
+            raise errors.DAB_MoedaError(
+                'Tipo inválido.\n'
+                'Insira apenas valores do tipo string para moedas.'
+            )
+        elif len(moeda) != 3:
+            raise errors.DAB_MoedaError(
+                'Código inválido.\n'
+                'O código das moedas possuem três caracteres.'
+            )
+
+        parsed.append(moeda.upper())
+
+    return parsed

@@ -22,3 +22,10 @@ class DAB_UFError(ValueError):
     '''
     Erro gerado quando o usuário insere um valor inválido para a UF.
     '''
+
+
+
+class DAB_MoedaError(ValueError):
+    '''
+    Erro gerado quando o usuário insere um valor inválido para uma moeda.
+    '''

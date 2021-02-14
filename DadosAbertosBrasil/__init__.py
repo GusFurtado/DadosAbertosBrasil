@@ -58,6 +58,7 @@ import requests
 
 
 ENDPOINTS = {
+    'bacen': 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/',
     'camara': 'https://dadosabertos.camara.leg.br/api/v2/',
     'ipea': 'http://www.ipeadata.gov.br/api/odata4/',
     'senado': 'http://legis.senado.gov.br/dadosabertos/',
