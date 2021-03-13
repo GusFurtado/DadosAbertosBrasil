@@ -1,145 +1,13 @@
 '''
-Módulo para consultas à informações variadas.
-Inclue dados de APIs do Banco Central do Brasil e outras informações úteis.
+Módulo para utilidades e consultas à informações variadas.
 '''
 
 
 
-from datetime import datetime
-
 import pandas as _pd
 import requests
 
-from ._utils import parse
-
-
-
-def moedas() -> _pd.DataFrame:
-    '''
-    Obtém os nomes e símbolos das principais moedas internacionais.
-
-    Retorna
-    -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo os nomes e símbolos das principais
-        moedas internacionais.
-
-    --------------------------------------------------------------------------
-    '''
-
-    query = r"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/Moedas?$top=100&$format=json"
-    r = requests.get(query)
-    df = _pd.DataFrame(r.json()['value'])
-    df.columns = ['Símbolo', 'Nome', 'Tipo']
-    return df
-
-
-
-def cambio(
-        moedas = 'USD',
-        inicio: str = '2000-01-01',
-        fim: str = None,
-        index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Taxa de câmbio das principais moedas internacionais.
-    É possível escolher várias moedas inserindo uma lista no campo `moeda`.
-    Defina o período da consulta pelos campos `inicio` e `fim`.
-
-    Parâmetros
-    ----------
-    moedas: list ou str (default='USD')
-        Sigla da moeda ou lista de siglas de moedas que será(ão) pesquisada(s).
-        Utilize a função `favoritos.moedas` para obter uma lista de moedas
-        válidas.
-    inicio: str (default='2000-01-01')
-        String no formato de data 'AAAA-MM-DD' que representa o primeiro dia
-        da pesquisa.
-    fim: str (default=None)
-        String no formato de data 'AAAA-MM-DD' que representa o último dia
-        da pesquisa.
-        Caso este campo seja None, será considerada a data de hoje.
-    index: bool (default=False)
-        Define se a coluna 'Data' será o index do DataFrame.
-
-    Retorna
-    -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo o valor cambial da(s) moeda(s) selecionada(s)
-        por dia.
-
-    --------------------------------------------------------------------------
-    '''
-
-    inicio = parse.data(inicio, 'bacen')
-    if fim == None:
-        fim = datetime.today().strftime('%m-%d-%Y')
-    else:
-        fim = parse.data(fim, 'bacen')
-    
-    if isinstance(moedas, str):
-        query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moedas}'&@dataInicial='{inicio}'&@dataFinalCotacao='{fim}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"
-        cotacoes = _pd.DataFrame(_pd.read_json(query)['value'].to_list()) \
-            .rename(columns = {
-                'cotacaoVenda': moedas,
-                'dataHoraCotacao': 'Data'
-            })
-        cotacoes = cotacoes[['Data', moedas]]
-    
-    else:
-        try:    
-            cotacao_moedas = []
-            for moeda in moedas:
-                query = f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moeda}'&@dataInicial='{inicio}'&@dataFinalCotacao='{fim}'&$top=10000&$filter=contains(tipoBoletim%2C'Fechamento')&$format=json&$select=cotacaoVenda,dataHoraCotacao"
-                cotacao_moeda = _pd.DataFrame(_pd.read_json(query)['value'].to_list())
-                cotacao_moeda.dataHoraCotacao = cotacao_moeda.dataHoraCotacao.apply(
-                    lambda x: datetime.strptime(x[:10], '%Y-%m-%d')
-                )
-                cotacao_moedas.append(
-                    cotacao_moeda.rename(columns = {
-                        'cotacaoVenda': moeda,
-                        'dataHoraCotacao': 'Data'
-                    }).groupby('Data').last())
-
-            cotacoes = _pd.concat(cotacao_moedas, axis=1).reset_index()
-
-        except:
-            raise TypeError("O campo 'moedas' deve ser o código de três letras maiúsculas da moeda ou um objeto iterável de códigos.")
-    
-    cotacoes.Data = _pd.to_datetime(cotacoes.Data, format='%Y-%m-%d %H:%M:%S')
-    if index:
-        cotacoes.set_index('Data', inplace=True)
-    
-    return cotacoes
-
-
-
-def ipca(index:bool=False) -> _pd.DataFrame:
-    '''
-    Valor mensal do índice IPC-A.
-
-    Parâmetros
-    ----------
-    index: bool (default=False)
-        Define se a coluna 'Data' será o index do DataFrame.
-
-    Retorna
-    -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo o valor do índice IPC-A por mês.
-
-    --------------------------------------------------------------------------
-    '''
-
-    ipca_query = r'https://api.bcb.gov.br/dados/serie/bcdata.sgs.4448/dados?formato=json'
-    ipca = _pd.read_json(ipca_query)
-    ipca.data = _pd.to_datetime(ipca.data)
-    ipca = ipca.rename(columns={'data': 'Data', 'valor':'IPCA Mensal'})
-    
-    if index:
-        ipca.set_index('Data', inplace=True)
-    
-    return ipca
+from ._utils import parse, errors
 
 
 
@@ -152,14 +20,15 @@ def catalogo() -> _pd.DataFrame:
     pandas.core.frame.DataFrame
         DataFrame contendo um catálogo de iniciativas de dados abertos.
 
+    Créditos
+    --------
+    https://github.com/dadosgovbr
+
     --------------------------------------------------------------------------
     '''
 
-    # URL do repositório no GitHub contendo o catálogo de dados abertos.
-    # Créditos: https://github.com/dadosgovbr
-    url = 'https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv'
-    
-    return _pd.read_csv(url)
+    URL = 'https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv'
+    return _pd.read_csv(URL)
 
 
 
@@ -177,6 +46,10 @@ def geojson(uf:str) -> dict:
     -------
     dict
         Coordenadas em formato .GeoJSON da UF pesquisada.
+
+    Créditos
+    --------
+    https://github.com/tbrugz
 
     --------------------------------------------------------------------------
     '''
@@ -226,10 +99,7 @@ def geojson(uf:str) -> dict:
 
     }
     
-    # URL do repositório no GitHub contendo os geojsons.
-    # Créditos: https://github.com/tbrugz
     url = f'https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-{mapping[uf]}-mun.json'
-    
     return requests.get(url).json()
 
 
@@ -245,13 +115,15 @@ def codigos_municipios() -> _pd.DataFrame:
         DataFrame contendo os códigos do IBGE e do TSE para todos os
         municípios do Brasil.
 
+    Créditos
+    --------
+    https://github.com/betafcc
+
     --------------------------------------------------------------------------
     '''
 
-    # URL do repositório no GitHub contendo os códigos.
-    # Créditos: https://github.com/betafcc
-    url = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
-    df = _pd.read_json(url)
+    URL = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
+    df = _pd.read_json(URL)
     return df[['codigo_tse', 'codigo_ibge', 'nome_municipio', 'uf', 'capital']]
 
 
@@ -329,3 +201,33 @@ def bandeira(uf:str, tamanho:int=100) -> str:
     }
     
     return URL + bandeira[parse.uf(uf)]
+
+
+
+# FUNÇÕES DEPRECIADAS
+
+
+
+def moedas():
+    raise errors.DAB_DeprecationError(
+        'Função depreciada.\nFavor utilizar a função `bacen.moedas`'
+    )
+
+
+
+def cambio(
+        moedas = 'USD',
+        inicio: str = '2000-01-01',
+        fim: str = None,
+        index: bool = False
+    ):
+    raise errors.DAB_DeprecationError(
+        'Função depreciada.\nFavor utilizar a função `bacen.cambio`'
+    )
+
+
+
+def ipca(index:bool=False) -> _pd.DataFrame:
+    raise errors.DAB_DeprecationError(
+        'Função depreciada.\nFavor utilizar a função `bacen.ipca`'
+    )

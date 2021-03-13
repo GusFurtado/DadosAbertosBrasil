@@ -29,3 +29,10 @@ class DAB_MoedaError(ValueError):
     '''
     Erro gerado quando o usuário insere um valor inválido para uma moeda.
     '''
+
+
+
+class DAB_DeprecationError(DeprecationWarning):
+    '''
+    Erro gerado quando o usuário chama uma função depreciada.
+    '''
