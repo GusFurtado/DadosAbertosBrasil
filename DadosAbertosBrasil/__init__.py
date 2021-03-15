@@ -7,11 +7,11 @@ dados de instituições como IGBE, IPEA, etc.
 
 Módulos em Desenvolvimento
 --------------------------
-    - DadosAbertosBrasil.API
     - DadosAbertosBrasil.ibge
     - DadosAbertosBrasil.ipea
     - DadosAbertosBrasil.camara
     - DadosAbertosBrasil.senado
+    - DadosAbertosBrasil.bacen
     - DadosAbertosBrasil.favoritos
 
 Sobre
@@ -38,7 +38,8 @@ Próximos Passos
     - Conclusão do módulo `senado`;
     - Desenvolvimento do módulo `transparencia` para coleta de dados do
       Portal da Transparência do Governo Federal;
-    - Desenvolvimento do módulo `_errors` como suporte aos módulos principais;
+    - Desenvolvimento do módulo `bacen` para coleta de dados do Banco Central
+      do Brasil;
     - Converter strings em formato de data em objetos `datetime`;
     - Adicionar novos exemplos à documentação;
     - Adição constante de novas funções no módulo `favoritos`.
@@ -46,7 +47,7 @@ Próximos Passos
 
 
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 __author__ = 'Gustavo Furtado da Silva'
 
 

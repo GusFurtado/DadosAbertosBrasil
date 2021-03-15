@@ -1,4 +1,15 @@
-from datetime import date, datetime
+'''
+Módulo de captura de dados do Banco Central do Brasil.
+
+Documentação Original
+---------------------
+Cotação do Câmbio
+    https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3
+'''
+
+
+
+from datetime import datetime
 
 import pandas as _pd
 
