@@ -132,3 +132,4 @@ dmypy.json
 # DadosAbertosBrasil
 Rascunho.ipynb
 create_doc.bat
+upload_to_pypi.bat

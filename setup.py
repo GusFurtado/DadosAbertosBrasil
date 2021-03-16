@@ -7,8 +7,8 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
   name = 'DadosAbertosBrasil',
-  packages = ['DadosAbertosBrasil'],
-  version = '0.2.1',
+  packages = ['DadosAbertosBrasil', 'DadosAbertosBrasil._utils'],
+  version = '0.2.1.1',
   license = 'MIT',
   description = 'Pacote Python para acesso a dados abertos e APIs do governo brasileiro.',
   long_description = long_description,
