@@ -39,23 +39,23 @@ http://www.ipeadata.gov.br/api/
 
 import pandas as _pd
 
-from . import API
-
-
-
-_api = API('ipea')
+from . import get_data
 
 
 
 def _get(
-        query: str,
+        path: str,
         index: bool = False
     ) -> _pd.DataFrame:
     '''
     Captura e formata dados deste módulo.
     '''
 
-    values = _api.get(query)['value']
+    values = get_data(
+        endpoint = 'http://www.ipeadata.gov.br/api/odata4/',
+        path = path
+    )['value']
+
     df = _pd.DataFrame(values)
     if index:
         df.set_index(df.columns[0], inplace=True)

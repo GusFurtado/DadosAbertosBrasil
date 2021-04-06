@@ -13,17 +13,14 @@ from datetime import datetime
 
 import pandas as _pd
 
-from . import API
+from . import get_data
 from ._utils import parse
 
 
 
-_api = API('bacen')
-
-
-
 def _df(path:str, params:dict) -> _pd.DataFrame:
-    data = _api.get(
+    data = get_data(
+        endpoint = 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/',
         path = path,
         params = params
     )

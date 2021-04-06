@@ -31,12 +31,8 @@ http://legis.senado.gov.br/dadosabertos/docs/
 
 import pandas as _pd
 
-from . import API
+from . import get_data
 from ._utils import parse
-
-
-
-_api = API('senado')
 
 
 
@@ -46,7 +42,11 @@ def _get_request(
         keys: list = None
     ) -> dict:
 
-    data = _api.get(path=path, params=params)
+    data = get_data(
+        endpoint = 'http://legis.senado.gov.br/dadosabertos/',
+        path = path,
+        params = params
+    )
 
     if keys is not None:
         for key in keys:

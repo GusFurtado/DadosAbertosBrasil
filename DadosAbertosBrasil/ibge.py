@@ -52,12 +52,10 @@ from typing import Union
 import pandas as _pd
 import requests
 
-from . import API
+from . import get_data
 from ._utils import parse
 
 
-
-_api = API('sidra')
 
 _normalize = _pd.io.json.json_normalize \
     if _pd.__version__[0] == '0' else _pd.json_normalize
@@ -248,7 +246,10 @@ def lista_tabelas(
         Lista de tabelas disponíveis no SIDRA.
     '''
 
-    data = _api.get('')
+    data = get_data(
+        endpoint = 'https://servicodados.ibge.gov.br/api/v3/agregados/',
+        path = ''
+    )
     df = _normalize(
         data,
         'agregados',
@@ -303,7 +304,10 @@ def lista_pesquisas(
         Lista de pesquisas disponíveis no SIDRA.
     '''
 
-    data = _api.get('')
+    data = get_data(
+        endpoint = 'https://servicodados.ibge.gov.br/api/v3/agregados/',
+        path = ''
+    )
     df = _normalize(
         data,
         'agregados',
@@ -354,7 +358,11 @@ class Metadados:
     '''
 
     def __init__(self, tabela: int):
-        data = _api.get(f'/{tabela}/metadados')
+        data = get_data(
+            endpoint = 'https://servicodados.ibge.gov.br/api/v3/agregados/',
+            path = f'/{tabela}/metadados'
+        )
+
         self.dados = data
         self.cod = tabela
         self.nome = data['nome']
@@ -469,12 +477,13 @@ def sidra(
             valor = localidades[n]
         path += f'/n{n}/{valor}'
 
-    for c in classificacoes:
-        if isinstance(classificacoes[c], list):
-            valor = ','.join([str(i) for i in classificacoes[c]])
-        else:
-            valor = classificacoes[c]
-        path += f'/c{c}/{valor}'
+    if classificacoes is not None:
+        for c in classificacoes:
+            if isinstance(classificacoes[c], list):
+                valor = ','.join([str(i) for i in classificacoes[c]])
+            else:
+                valor = classificacoes[c]
+            path += f'/c{c}/{valor}'
 
     u = 'y' if ufs_extintas else 'n'
     d = 's' if decimais is None else decimais

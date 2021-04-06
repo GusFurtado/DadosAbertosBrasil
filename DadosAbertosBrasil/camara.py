@@ -27,12 +27,20 @@ https://dadosabertos.camara.leg.br/swagger/api.html
 
 import pandas as _pd
 
-from . import API
+from . import get_data
 from ._utils import parse
 
 
 
-_api = API('camara')
+def _get(
+        path: str,
+        params: dict = None
+    ) -> dict:
+    return get_data(
+        endpoint = 'https://dadosabertos.camara.leg.br/api/v2/',
+        path = path,
+        params = params
+    )
 
 
 
@@ -98,7 +106,7 @@ class Bloco:
 
     def __init__(self, cod:int):
         self.cod = cod
-        self.dados = _api.get(['blocos', str(cod)])['dados']
+        self.dados = _get(['blocos', str(cod)])['dados']
         self.legislatura = self.dados['idLegislatura']
         self.nome = self.dados['nome']
         self.uri = self.dados['uri']
@@ -183,7 +191,7 @@ class Deputado:
 
     def __init__(self, cod:int):
         self.cod = cod
-        self.dados = _api.get(['deputados', str(cod)])['dados']
+        self.dados = _get(['deputados', str(cod)])['dados']
         self.condicao_eleitoral = self.dados['ultimoStatus']['condicaoEleitoral']
         self.cpf = self.dados['cpf']
         self.descricao_status = self.dados['ultimoStatus']['descricaoStatus']
@@ -279,7 +287,7 @@ class Deputado:
         params['ordenarPor'] = ordenar_por
 
         path = ['deputados', str(self.cod), 'despesas']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         return _df(dados)
 
 
@@ -348,7 +356,7 @@ class Deputado:
         params['ordenarPor'] = ordenar_por
 
         path = ['deputados', str(self.cod), 'discursos']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         return _df(dados)
 
 
@@ -419,7 +427,7 @@ class Deputado:
         params['ordenarPor'] = ordenar_por
 
         path = ['deputados', str(self.cod), 'eventos']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -450,7 +458,7 @@ class Deputado:
         '''
 
         path = ['deputados', str(self.cod), 'frentes']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -522,7 +530,7 @@ class Deputado:
         params['ordenarPor'] = ordenar_por
 
         path = ['deputados', str(self.cod), 'orgaos']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         index_col = 'idOrgao' if index else None
         return _df(dados, index_col)
 
@@ -592,7 +600,7 @@ class Evento:
 
     def __init__(self, cod:int):
         self.cod = cod
-        self.dados = _api.get(['eventos', str(cod)])['dados']
+        self.dados = _get(['eventos', str(cod)])['dados']
         self.andar = self.dados['localCamra']['andar']
         self.descricao = self.dados['descricao']
         self.descricao_tipo = self.dados['descricaoTipo']
@@ -641,7 +649,7 @@ class Evento:
         '''
 
         path = ['eventos', str(self.cod), 'deputados']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -670,7 +678,7 @@ class Evento:
         '''
 
         path = ['eventos', str(self.cod), 'orgaos']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -704,7 +712,7 @@ class Evento:
         '''
 
         path = ['eventos', str(self.cod), 'pauta']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         index_col = 'ordem' if index else None
         return _df(dados, index_col)
 
@@ -735,7 +743,7 @@ class Evento:
         '''
 
         path = ['eventos', str(self.cod), 'votacoes']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -791,7 +799,7 @@ class Frente:
 
     def __init__(self, cod:int):
         self.cod = cod
-        self.dados = _api.get(['frentes', str(cod)])['dados']
+        self.dados = _get(['frentes', str(cod)])['dados']
         self.coordenador = self.dados['coordenador']
         self.documento = self.dados['urlDocumento']
         self.email = self.dados['email']
@@ -832,7 +840,7 @@ class Frente:
         '''
 
         path = ['frentes', str(self.cod), 'membros']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -874,7 +882,7 @@ class Legislatura:
 
     def __init__(self, cod:int):
         self.cod = cod
-        self.dados = _api.get(['legislaturas', str(cod)])['dados']
+        self.dados = _get(['legislaturas', str(cod)])['dados']
         self.fim = self.dados['dataFim']
         self.inicio = self.dados['dataInicio']
         self.uri = self.dados['uri']
@@ -921,7 +929,7 @@ class Legislatura:
             params['dataFim'] = parse.data(fim, 'camara')
 
         path = ['legislaturas', str(self.cod), 'mesa']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -981,7 +989,7 @@ class Orgao:
 
     def __init__(self, cod:int):
         self.cod = cod
-        self.dados = _api.get(['orgaos', str(cod)])['dados']
+        self.dados = _get(['orgaos', str(cod)])['dados']
         self.apelido = self.dados['apelido']
         self.casa = self.dados['casa']
         self.cod_tipo = self.dados['codTipoOrgao']
@@ -1065,7 +1073,7 @@ class Orgao:
         params['ordenarPor'] = ordenar_por
 
         path = ['orgaos', str(self.cod), 'eventos']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -1122,7 +1130,7 @@ class Orgao:
             params['itens'] = itens
 
         path = ['orgaos', str(self.cod), 'membros']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -1204,7 +1212,7 @@ class Orgao:
         params['ordenarPor'] = ordenar_por
 
         path = ['orgaos', str(self.cod), 'votacoes']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -1267,7 +1275,7 @@ class Partido:
 
     def __init__(self, cod:int):
         self.cod = cod
-        self.dados = _api.get(['partidos', str(cod)])['dados']
+        self.dados = _get(['partidos', str(cod)])['dados']
         self.facebook = self.dados['urlFacebook']
         self.legislatura = self.dados['status']['idLegislatura']
         self.lider = self.dados['status']['lider']
@@ -1353,7 +1361,7 @@ class Partido:
             params['ordenarPor'] = ordenar_por
 
         path = ['partidos', str(self.cod), 'membros']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -1451,7 +1459,7 @@ class Proposicao:
 
     def __init__(self, cod:int):
         self.cod = cod
-        self.dados = _api.get(['proposicoes', str(cod)])['dados']
+        self.dados = _get(['proposicoes', str(cod)])['dados']
         self.uri = self.dados['uri']
         self.tipo_sigla = self.dados['siglaTipo']
         self.tipo_codigo = self.dados['codTipo']
@@ -1509,7 +1517,7 @@ class Proposicao:
         '''
 
         path = ['proposicoes', str(self.cod), 'autores']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         return _df(dados, None)
 
 
@@ -1538,7 +1546,7 @@ class Proposicao:
         '''
 
         path = ['proposicoes', str(self.cod), 'relacionadas']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -1568,7 +1576,7 @@ class Proposicao:
         '''
 
         path = ['proposicoes', str(self.cod), 'temas']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         index_col = 'codTema' if index else None
         return _df(dados, index_col)
 
@@ -1611,7 +1619,7 @@ class Proposicao:
             params['dataFim'] = parse.data(fim, 'camara')
 
         path = ['proposicoes', str(self.cod), 'tramitacoes']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         index_col = 'sequencia' if index else None
         return _df(dados, index_col)
 
@@ -1655,7 +1663,7 @@ class Proposicao:
         params['ordenarPor'] = ordenar_por
 
         path = ['proposicoes', str(self.cod), 'votacoes']
-        dados = _api.get(path=path, params=params)
+        dados = _get(path=path, params=params)
         index_col = 'id' if index else None
         return _df(dados, index_col)
 
@@ -1724,7 +1732,7 @@ class Votacao:
 
     def __init__(self, cod:int):
         self.cod = cod
-        self.dados = _api.get(['votacoes', str(cod)])['dados']
+        self.dados = _get(['votacoes', str(cod)])['dados']
         self.aprovacao = self.dados['aprovacao']
         self.data = self.dados['data']
         self.data_regitro = self.dados['dataHoraRegistro']
@@ -1773,7 +1781,7 @@ class Votacao:
         '''
 
         path = ['votacoes', str(self.cod), 'orientacoes']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         index_col = 'codPartidoBloco' if index else None
         return _df(dados, index_col)
 
@@ -1801,7 +1809,7 @@ class Votacao:
         '''
 
         path = ['votacoes', str(self.cod), 'votos']
-        dados = _api.get(path=path, params=None)
+        dados = _get(path=path, params=None)
         return _df(dados, None)
 
 
@@ -1865,7 +1873,7 @@ def lista_blocos(
     params['ordem'] = 'asc' if asc else 'desc'
     params['ordenarPor'] = ordenar_por
 
-    dados = _api.get(path='blocos', params=params)
+    dados = _get(path='blocos', params=params)
     index_col = 'id' if index else None
     return _df(dados, index_col)
 
@@ -1961,7 +1969,7 @@ def lista_deputados(
     params['ordem'] = 'asc' if asc else 'desc'
     params['ordenarPor'] = ordenar_por
 
-    dados = _api.get(path='deputados', params=params)
+    dados = _get(path='deputados', params=params)
     index_col = 'id' if index else None
     return _df(dados, index_col)
 
@@ -2069,7 +2077,7 @@ def lista_eventos(
     params['ordem'] = 'asc' if asc else 'desc'
     params['ordenarPor'] = ordenar_por
 
-    dados = _api.get(path='eventos', params=params)
+    dados = _get(path='eventos', params=params)
     index_col = 'id' if index else None
     return _df(dados, index_col)
 
@@ -2116,7 +2124,7 @@ def lista_frentes(
         params['idLegislatura'] = legislatura
     params['pagina'] = pagina
 
-    dados = _api.get(path='frentes', params=params)
+    dados = _get(path='frentes', params=params)
     index_col = 'id' if index else None
     return _df(dados, index_col)
 
@@ -2179,7 +2187,7 @@ def lista_legislaturas(
     params['ordem'] = 'asc' if asc else 'desc'
     params['ordenarPor'] = ordenar_por
 
-    dados = _api.get(path='legislaturas', params=params)
+    dados = _get(path='legislaturas', params=params)
     index_col = 'id' if index else None
     return _df(dados, index_col)
 
@@ -2258,7 +2266,7 @@ def lista_orgaos(
     params['ordem'] = 'asc' if asc else 'desc'
     params['ordenarPor'] = ordenar_por
 
-    dados = _api.get(path='orgaos', params=params)
+    dados = _get(path='orgaos', params=params)
     index_col = 'id' if index else None
     return _df(dados, index_col)
 
@@ -2332,7 +2340,7 @@ def lista_partidos(
     params['ordem'] = 'asc' if asc else 'desc'
     params['ordenarPor'] = ordenar_por
 
-    dados = _api.get(path='partidos', params=params)
+    dados = _get(path='partidos', params=params)
     index_col = 'id' if index else None
     return _df(dados, index_col)
 
@@ -2499,7 +2507,7 @@ def lista_proposicoes(
     params['ordem'] = 'asc' if asc else 'desc'
     params['ordenarPor'] = ordenar_por
 
-    dados = _api.get(path='proposicoes', params=params)
+    dados = _get(path='proposicoes', params=params)
     index_col = 'id' if index else None
     return _df(dados, index_col)
 
@@ -2603,7 +2611,7 @@ def lista_votacoes(
     params['ordem'] = 'asc' if asc else 'desc'
     params['ordenarPor'] = ordenar_por
 
-    dados = _api.get(path='votacoes', params=params)
+    dados = _get(path='votacoes', params=params)
     index_col = 'id' if index else None
     return _df(dados, index_col)
 
@@ -2655,7 +2663,7 @@ def referencias(
     }
     
     if lista in referencia.keys():
-        data = _api.get(f'referencias/{referencia[lista]}')
+        data = _get(f'referencias/{referencia[lista]}')
     else:
         raise TypeError('Referência inválida. Insira um dos seguintes valores para `lista`: ' \
             + ', '.join(list(referencia.keys())))

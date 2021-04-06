@@ -58,95 +58,39 @@ import requests
 
 
 
-ENDPOINTS = {
-    'bacen': 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/',
-    'camara': 'https://dadosabertos.camara.leg.br/api/v2/',
-    'ipea': 'http://www.ipeadata.gov.br/api/odata4/',
-    'senado': 'http://legis.senado.gov.br/dadosabertos/',
-    'sidra': 'https://servicodados.ibge.gov.br/api/v3/agregados/'
-}
-
-
-
-class API:
+def get_data(
+        endpoint: str,
+        path: Union[str, list],
+        params: dict = None
+    ) -> dict:
     '''
-    Classe para coleta direta dos dados brutos das API REST.
+    Coleta os dados requisitados das APIs REST.
 
     Parâmetros
     ----------
-    endpoint: str
-        Qual API deseja se conectar:
-        - 'camara': Acessar API da Câmara dos Deputados;
-        - 'ipea': Acessar API do IPEA Data;
-        - 'senado': Acessar API do Senado Federal;
-        - 'sidra': Acessar API do SIDRA - IBGE.
+    endpoint : str
+        Diretório base da API desejada.
+    path : list ou str
+        Caminho de parâmetros para acessar a função desejada.
+        Pode ser uma string de parâmetros unidos por barras '/' ou pode ser
+        uma lista de strings na ordem correta. Os dois métodos produzem o
+        mesmo resultado.
+    params : dict (default=None)
+        Dicionário de parâmetros de busca que serão enviados para o request.
 
-    Exemplos
-    --------
-    >>> from DadosAbertosBrasil import API
-    >>> api = API(endpoint='camara')
-    >>> api.get(path=['referencias', 'proposicoes', 'codTipoAutor'])
+    Retorna
+    -------
+    dict
+        Dados brutos coletados da API.
 
-    >>> api = API(endpoint='senado')
-    >>> api.get(path='/autor/lista/atual')
-
-    Documentação original
-    ---------------------
-    'camara'
-        https://dadosabertos.camara.leg.br/swagger/api.html
-    'ipea'
-        http://www.ipeadata.gov.br/api/
-    'senado'
-        http://legis.senado.gov.br/dadosabertos/docs/ui/index.html#/
-    'sidra'
-        http://api.sidra.ibge.gov.br/
-
-    --------------------------------------------------------------------------
+    --------------------------------------------------------------------------   
     '''
 
-    def __init__(self, endpoint:str):
-        self.URL = ENDPOINTS[endpoint]
+    if isinstance(path, list):
+        path = '/'.join(path)
 
-    def get(
-            self,
-            path: Union[str, list],
-            params: dict = None
-        ) -> dict:
-        '''
-        Coleta os dados requisitados.
-
-        Parâmetros
-        ----------
-        path: list ou str
-            Caminho de parâmetros para acessar a função desejada.
-            Pode ser uma string de parâmetros unidos por barras '/'.
-            Ou pode ser uma lista de strings na ordem correta.
-            Os dois métodos produzem o mesmo resultado.
-        params: dict (default=None)
-            Dicionário de parâmetros de busca que serão enviados
-            para o request.
-
-        Retorna
-        -------
-        dict
-            Dados brutos coletados da API.
-
-        Exemplos
-        --------
-        Acessando usando uma string
-        >>> api.get(path='/autor/lista/atual')
-
-        Acessando usando uma lista de string
-        >>> api.get(path=['autor', 'lista', 'atual'])
-
-        ----------------------------------------------------------------------      
-        '''
-        
-        if isinstance(path, list):
-            path = '/'.join(path)
-
-        return requests.get(
-            url = self.URL + path,
-            headers = {'Accept':'application/json'},
-            params = params
-        ).json()
+    return requests.get(
+        url = endpoint + path,
+        headers = {'Accept':'application/json'},
+        params = params
+    ).json()
