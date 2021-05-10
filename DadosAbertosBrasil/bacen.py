@@ -13,8 +13,8 @@ from datetime import datetime
 
 import pandas as _pd
 
-from . import get_data
 from ._utils import parse
+from ._utils.get_data import get_data
 
 
 

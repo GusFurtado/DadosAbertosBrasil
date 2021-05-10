@@ -39,7 +39,7 @@ http://www.ipeadata.gov.br/api/
 
 import pandas as _pd
 
-from . import get_data
+from ._utils.get_data import get_data
 
 
 

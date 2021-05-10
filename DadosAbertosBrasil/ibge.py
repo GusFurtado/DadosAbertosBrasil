@@ -52,8 +52,8 @@ from typing import Union
 import pandas as _pd
 import requests
 
-from . import get_data
 from ._utils import parse
+from ._utils.get_data import get_data
 
 
 
@@ -74,13 +74,13 @@ def nomes(
 
     Parâmetros
     ----------
-    nomes: list ou str
+    nomes : list ou str
         Nome ou lista de nomes a ser consultado.
-    sexo: str (default=None)
+    sexo : str (default=None)
         - 'M' para consultar apenas o nome de pessoas do sexo masculino;
         - 'F' para consultar apenas o nome de pessoas do sexo feminino;
         - None para consultar ambos.
-    localidade: int (default=None)
+    localidade : int (default=None)
         Caso deseje obter a frequência referente a uma dada localidade,
         informe o parâmetro localidade. Por padrão, assume o valor BR,
         mas pode ser o identificador de um município ou de uma UF.
@@ -123,7 +123,7 @@ def nomes_uf(nome: str) -> _pd.DataFrame:
 
     Parâmetros
     ----------
-    nome: str
+    nome : str
         Nome que se deseja pesquisar.
 
     Retorna
@@ -165,13 +165,13 @@ def nomes_ranking(
 
     Parâmetros
     ----------
-    decada: int (default=None)
+    decada : int (default=None)
         Deve ser um número múltiplo de 10 no formato AAAA.
-    sexo: str (default=None)
+    sexo : str (default=None)
         - 'M' para consultar apenas o nome de pessoas do sexo masculino;
         - 'F' para consultar apenas o nome de pessoas do sexo feminino;
         - None para consultar ambos.
-    localidade: int (default=None)
+    localidade : int (default=None)
         Caso deseje obter o ranking de nomes referente a uma dada localidade,
         informe o parâmetro localidade. Por padrão, assume o valor BR,
         mas pode ser o identificador de um município ou de uma UF.
@@ -230,14 +230,14 @@ def lista_tabelas(
 
     Parâmetros
     ----------
-    pesquisa: str (default=None)
+    pesquisa : str (default=None)
         Código de duas letras da pesquisa que será buscada.
         Utilize a função `ibge_lista_pesquisas` para encontrar o código.
-    contendo: str (default=None)
+    contendo : str (default=None)
         Buscar apenas tabelas que contenham essa sequência de caracteres.
-    excluindo: str (default=None)
+    excluindo : str (default=None)
         Buscar tabelas que não contenham essa sequência de caracteres.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna 'tabela_id' como index do DataFrame.
 
     Retorna
@@ -295,7 +295,7 @@ def lista_pesquisas(
 
     Parâmetros
     ----------
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna 'pesquisa_id' como index do DataFrame.
 
     Retorna
@@ -331,27 +331,27 @@ class Metadados:
 
     Parâmetros
     ----------
-    tabela: int
+    tabela : int
         Código numérico da tabela desejada.
         Utilize a função `ibge.lista_tabelas` para encontrar o código.
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Lista completa de metadados da tabela.
-    cod: int
+    cod : int
         Código numérico da tabela.
-    nome: str
+    nome : str
         Nome da tabela.
-    assunto: str
+    assunto : str
         Assunto da tabela.
-    periodos: dict
+    periodos : dict
         Dicionário contendo a frequência, início e fim da tabela.
-    localidades: dict
+    localidades : dict
         Dicionário contendo os níveis territoriais da tabela.
-    variaveis: list of dict
+    variaveis : list of dict
         Lista de variáveis disponíveis para a tabela.
-    classificacoes: list of dict
+    classificacoes : list of dict
         Lista de classificações e categorias disponíveis para a tabela.
 
     --------------------------------------------------------------------------
@@ -372,6 +372,9 @@ class Metadados:
         self.variaveis = data['variaveis']
         self.classificacoes = data['classificacoes']
 
+    def __repr__(self):
+        return f'DadosAbertosBrasil.ibge - Metadados da Tabela {self.cod} - {self.nome}'
+
 
 
 def sidra(
@@ -390,9 +393,9 @@ def sidra(
 
     Parâmetros
     ----------
-    tabela: int
+    tabela : int
         Código numérico identificador da tabela.
-    periodos: list, int ou str (default='last')
+    periodos : list, int ou str (default='last')
         Períodos de consulta desejados:
             - 'last': Último período;
             - 'last n': Últimos n períodos;
@@ -402,13 +405,13 @@ def sidra(
             - list: Lista de períodos desejados;
             - int: Um período específico;
             - Range de períodos separados por hífen.
-    variaveis: list, int ou str (default='allxp')
+    variaveis : list, int ou str (default='allxp')
         Variáveis de consulta desejadas:
             - 'all': Todas as variáveis disponíveis;
             - 'allxp': Todas as variáveis, exceto as percentuais;
             - list: Lista de variáveis;
             - int: Uma variáveis específica.
-    localidades: dict (default={1:'all'})
+    localidades : dict (default={1:'all'})
         Localidades por nível territorial.
         As chaves dos dicionários devem ser o código de nível territorial:
             - 1: Brasil;
@@ -425,7 +428,7 @@ def sidra(
             - 'all': Todas as localidades do nível territorial.
             - list: Códigos dos territórios desejados.
             - int: Um território específico.
-    classificacoes: dict (default=None)
+    classificacoes : dict (default=None)
         Dicionário de classificações e categorias.
         As chaves do dicionário devem ser o código da classificação.
         Os valores do dicionário devem ser:
@@ -433,14 +436,14 @@ def sidra(
             - 'allxt': Todas as categorias, exceto as totais;
             - list: Lista de categorias desejadas;
             - int: Uma categoria específica.
-    ufs_extintas: bool (default=False)
+    ufs_extintas : bool (default=False)
         Se True, adiciona as UFs extintas (se disponível na tabela).
             - 20: Fernando de Noronha
             - 34: Guanabara
-    decimais: int (default=None)
+    decimais : int (default=None)
         Número de fixo de casas decimais do resultado, entre 0 e 9.
         Se None, utiliza o padrão de cada variável. 
-    retorna: str (default='dataframe')
+    retorna : str (default='dataframe')
         Formato do dado retornado:
             - 'dataframe': Retorna um DataFrame Pandas;
             - 'json': Retorna um dicionário no formato json original;
@@ -511,7 +514,7 @@ def referencias(
 
     Parâmetros
     ----------
-    cod: str
+    cod : str
         - 'A': Assuntos;
         - 'C': Classificações;
         - 'N': Níveis geográficos;
@@ -563,12 +566,12 @@ def populacao(
 
     Parâmetros
     ----------
-    projecao: str (default=None)
+    projecao : str (default=None)
         - 'populacao' obtém o valor projetado da população total da localidade;
         - 'nascimento' obtém o valor projetado de nascimentos da localidade
         - 'obito' obtém o valor projetado de óbitos da localidade;
         - None obtém um dicionário com todos os valores anteriores.
-    localidade: int (default=None)
+    localidade : int (default=None)
         Código da localidade desejada.
         Por padrão, obtém os valores do Brasil.
         Utilize a função `ibge.localidades` para identificar
@@ -640,7 +643,7 @@ def malha(localidade:int=None) -> str:
 
     Parâmetros
     ----------
-    localidade: int (default=None)
+    localidade : int (default=None)
         Código da localidade desejada.
         Por padrão, obtém a malha do Brasil.
         Utilize a função `ibge.localidades` para identificar

@@ -27,8 +27,8 @@ https://dadosabertos.camara.leg.br/swagger/api.html
 
 import pandas as _pd
 
-from . import get_data
 from ._utils import parse
+from ._utils.get_data import get_data
 
 
 
