@@ -53,9 +53,9 @@ def _df(
 
     Parâmetros
     ----------
-    dados: dict
+    dados : dict
         Dados brutos da API.
-    index_col: str (default=None)
+    index_col : str (default=None)
         Nome da coluna que será usada como index do DataFrame.
 
     Retorna
@@ -83,15 +83,15 @@ class Bloco:
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Conjunto completo de dados.
-    cod: int
+    cod : int
         Código numérico do bloco partidário.
-    legislatura: str
+    legislatura : str
         Legislatura do bloco partidário.
-    nome: str
+    nome : str
         Nome do bloco partidário.
-    uri: str
+    uri : str
         Endereço para coleta de dados direta pela API do bloco partidário.
 
     Exemplos
@@ -112,6 +112,10 @@ class Bloco:
         self.uri = self.dados['uri']
 
 
+    def __repr__(self):
+        return f"DadosAbertosBrasil.camara: Bloco {self.nome}"
+
+
 
 class Deputado:
     '''
@@ -120,62 +124,62 @@ class Deputado:
 
     Parâmetros
     ----------
-    cod: int
+    cod : int
         Código do parlamentar.
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Conjunto completo de dados.
-    cod: int
+    cod : int
         Código de identificação.
-    condicao_eleitoral: str
+    condicao_eleitoral : str
         Condição eleitoral.
-    cpf: str
+    cpf : str
         Número do CPF.
-    descricao_status: str
+    descricao_status : str
         Descrição do último status.
-    email: str
+    email : str
         E-mail.
-    escolaridade: str
+    escolaridade : str
         Escolaridade.
-    falecimento: str
+    falecimento : str
         Data de falecimento no formato 'AAAA-MM-DD'.
         Retorna vazio caso o parlamentar não tenha falecido.
-    foto: str
+    foto : str
         URL da foto.
-    gabinete: dict
+    gabinete : dict
         Informações de identificação e contato do gabinete.
-    legislatura: int
+    legislatura : int
         ID da legislatura mais recente.
-    municipio_nascimento: str
+    municipio_nascimento : str
         Município de nascimento.
-    nascimento: str
+    nascimento : str
         Data de nascimento no formato 'AAAA-MM-DD'.
-    nome: str
+    nome : str
         Nome mais comum.
-    nome_completo: str
+    nome_completo : str
         Nome civil completo.
-    nome_eleitoral: str
+    nome_eleitoral : str
         Nome utilizado na campanha eleitoral.
-    partido: str
+    partido : str
         Último partido.
-    rede_social: list
+    rede_social : list
         Lista de nomes em redes sociais.
-    sexo: str
+    sexo : str
         - 'M': Masculino;
         - 'F': Feminino.
-    situacao: str
+    situacao : str
         Situação do último status.
-    uf: str
+    uf : str
         Sigla da Unidade Federativa pela qual foi eleito.
-    uf_nascimento: str
+    uf_nascimento : str
         Unidade Federativa de nascimento.
-    ultima_atualizacao: str
+    ultima_atualizacao : str
         Dia e horário da última atualização de status.
-    uri: str
+    uri : str
         Endereço para coleta de dados direta pela API.
-    website: str
+    website : str
         Website.
 
     Exemplos
@@ -202,8 +206,8 @@ class Deputado:
         self.gabinete = self.dados['ultimoStatus']['gabinete']
         self.legislatura = self.dados['ultimoStatus']['idLegislatura']
         self.municipio_nascimento = self.dados['municipioNascimento']
-        self.nascimento = self.dados['dataNascimento']       
-        self.nome = self.dados['ultimoStatus']
+        self.nascimento = self.dados['dataNascimento']
+        self.nome = self.dados['ultimoStatus']['nome']
         self.nome_completo = self.dados['nomeCivil']
         self.nome_eleitoral = self.dados['ultimoStatus']['nomeEleitoral']
         self.partido = self.dados['ultimoStatus']['siglaPartido']
@@ -215,6 +219,10 @@ class Deputado:
         self.ultima_atualizacao = self.dados['ultimoStatus']['data']
         self.uri = self.dados['uri']
         self.website = self.dados['urlWebsite']
+
+
+    def __repr__(self):
+        return f"DadosAbertosBrasil.camara: Deputad{'a' if self.sexo == 'F' else 'o'} {self.nome_eleitoral}"
 
 
     def despesas(
@@ -239,27 +247,27 @@ class Deputado:
 
         Parâmetros
         ----------
-        legislatura: int (default=None)
+        legislatura : int (default=None)
             ID da legislatura em que tenham ocorrido as despesas.
-        ano: int (default=None)
+        ano : int (default=None)
             Ano de ocorrência das despesas.
-        mes: int (default=None)
+        mes : int (default=None)
             Número do mês de ocorrência das despesas.
-        fornecedor: int (default=None)
+        fornecedor : int (default=None)
             CNPJ de uma pessoa jurídica, ou CPF de uma pessoa física,
             fornecedora do produto ou serviço (apenas números).
-        pagina: int (default=1)
+        pagina : int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens: int (default=None)
+        itens : int (default=None)
             Número máximo de itens na página que se deseja obter com
             esta requisição.
-        asc: bool (default=True)
+        asc : bool (default=True)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default='ano')
+        ordenar_por : str (default='ano')
             Nome do campo pelo qual a lista deverá ser ordenada:
             qualquer um dos campos do retorno, e também idLegislatura.
 
@@ -313,24 +321,24 @@ class Deputado:
 
         Parâmetros
         ----------
-        legislatura: int (default=None)
+        legislatura : int (default=None)
             Número da legislatura a qual os dados buscados devem corresponder.
-        inicio: str (default=None)
+        inicio : str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str (default=None)
+        fim : str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        itens: int (default=None)
+        itens : int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        pagina: int (default=1)
+        pagina : int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        asc: bool (default=True)
+        asc : bool (default=True)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default='dataHoraInicio')
+        ordenar_por : str (default='dataHoraInicio')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
 
@@ -382,27 +390,27 @@ class Deputado:
 
         Parâmetros
         ----------
-        legislatura: int (default=None)
+        legislatura : int (default=None)
             Número da legislatura a qual os dados buscados devem corresponder.
-        inicio: str (default=None)
+        inicio : str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str (default=None)
+        fim : str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina: int (default=1)
+        pagina : int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens: int (default=None)
+        itens : int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc: bool (default=True)
+        asc : bool (default=True)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default='dataHoraInicio')
+        ordenar_por : str (default='dataHoraInicio')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -446,7 +454,7 @@ class Deputado:
 
         Parâmetros
         ----------
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -489,25 +497,25 @@ class Deputado:
 
         Parâmetros
         ----------
-        inicio: str (default=None)
+        inicio : str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str (default=None)
+        fim : str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina: int (default=1)
+        pagina : int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens: int (default=None)
+        itens : int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc: bool (default=True)
+        asc : bool (default=True)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default='dataInicio')
+        ordenar_por : str (default='dataInicio')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `idOrgao` como index do DataFrame.
 
         Retorna
@@ -542,50 +550,50 @@ class Evento:
 
     Parâmetros
     ----------
-    cod: int
+    cod : int
         Código numérico do evento do qual se deseja informações.
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Conjunto completo de dados.
-    cod: int
+    cod : int
         Código numérico do evento.
-    andar: str
+    andar : str
         Andar do prédio onde ocorreu o evento.
-    descricao: str
+    descricao : str
         Descrição do evento.
-    descricao_tipo: str
+    descricao_tipo : str
         Tipo do evento.
-    fases: str
+    fases : str
         Fases do evento.
-    fim: str
+    fim : str
         Data e horário que o evento foi finalizado no formato 'AAAA-MM-DD'.
-    inicio: str
+    inicio : str
         Data e horário que o evento foi iniciado no formato 'AAAA-MM-DD'.
-    local: str
+    local : str
         Local onde ocorreu o evento.
-    local_externo: str
+    local_externo : str
         Local externo do evento.
-    lista_orgaos: list of dict
+    lista_orgaos : list of dict
         Lista de orgãos e informações sobre os mesmos.
-    predio: str
+    predio : str
         Prédio que ocorreu o evento.
-    requerimentos: list of dict
+    requerimentos : list of dict
         Requerimentos do evento.
-    sala: str
+    sala : str
         Sala do prédio onde ocorreu o evento.
-    situacao: str
+    situacao : str
         Situação do evento.
-    uri: str
+    uri : str
         Endereço para coleta de dados direta pela API do evento.
-    uri_convidados: str
+    uri_convidados : str
         Endereço para coleta de dados direta pela API dos convidados.
-    uri_deputados: str
+    uri_deputados : str
         Endereço para coleta de dados direta pela API dos deputados.
-    url_documento_pauta: str
+    url_documento_pauta : str
         Endereço URL para visualizar a pauta do evento.
-    url_registro: str
+    url_registro : str
         Endereço URL onde o evento foi registrado.
 
     Exemplos
@@ -601,7 +609,7 @@ class Evento:
     def __init__(self, cod:int):
         self.cod = cod
         self.dados = _get(['eventos', str(cod)])['dados']
-        self.andar = self.dados['localCamra']['andar']
+        self.andar = self.dados['localCamara']['andar']
         self.descricao = self.dados['descricao']
         self.descricao_tipo = self.dados['descricaoTipo']
         self.fases = self.dados['fases']
@@ -621,6 +629,10 @@ class Evento:
         self.url_registro = self.dados['urlRegistro']
 
 
+    def __repr__(self):
+        return f"DadosAbertosBrasil.camara: Evento {self.descricao}"
+
+
     def deputados(
             self,
             index: bool = False
@@ -637,7 +649,7 @@ class Evento:
 
         Parâmetros
         ----------
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -666,7 +678,7 @@ class Evento:
 
         Parâmetros
         ----------
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -700,7 +712,7 @@ class Evento:
 
         Parâmetros
         ----------
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `ordem` como index do DataFrame.
 
         Retorna
@@ -731,7 +743,7 @@ class Evento:
 
         Parâmetros
         ----------
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -755,36 +767,36 @@ class Frente:
 
     Parâmetros
     ----------
-    cod: int
+    cod : int
         Código numérico da frente parlamentar da qual se deseja informações.
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Conjunto completo de dados.
-    cod: int
+    cod : int
         Código numérico da frente parlamentar.
-    coordenador: dict
+    coordenador : dict
         Informações do(a) coordenador(a) da frente parlamentar.
-    documento: str
+    documento : str
         URL do documento da frente parlamentar.
-    email: str
+    email : str
         E-mail de contato.
-    id_sitacao: int
+    id_sitacao : int
         ID da situação da frente parlamentar.
-    keywords: str
+    keywords : str
         Palavras-chaves da frente parlamentar.
-    legislatura: int
+    legislatura : int
         ID da legislatura da frente parlamentar.
-    situacao: str
+    situacao : str
         Situação da frente parlamentar.
-    telefone: str
+    telefone : str
         Telefone de contato.
-    titulo: str
+    titulo : str
         Título da frente parlamentar.
-    uri: str
+    uri : str
         Endereço para coleta de dados direta pela API da frente parlamentar.
-    website: str
+    website : str
         URL do website da frente parlamentar.
 
     Exemplos
@@ -811,6 +823,10 @@ class Frente:
         self.titulo = self.dados['titulo']
         self.uri = self.dados['uri']
         self.website = self.dados['urlWebsite']
+
+
+    def __repr__(self):
+        return f"DadosAbertosBrasil.camara: {self.titulo}"
         
 
     def membros(
@@ -828,7 +844,7 @@ class Frente:
 
         Parâmetros
         ----------
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -852,20 +868,20 @@ class Legislatura:
 
     Parâmetros
     ----------
-    cod: int
+    cod : int
         Código numérico da legislatura da qual se deseja informações.
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Conjunto completo de dados.
-    cod: int
+    cod : int
         Código numérico da legislatura.
-    inicio: str
+    inicio : str
         Primeiro dia da legislatura.
-    fim: str
+    fim : str
         Último dia da legislatura.
-    uri: str
+    uri : str
         Endereço para coleta de dados direta pela API da legislatura.
 
     Exemplos
@@ -888,6 +904,10 @@ class Legislatura:
         self.uri = self.dados['uri']
 
 
+    def __repr__(self):
+        return f"DadosAbertosBrasil.camara: Legislatura {self.cod}"
+
+
     def mesa(
             self,
             inicio: str = None,
@@ -905,13 +925,13 @@ class Legislatura:
 
         Parâmetros
         ----------
-        inicio: str (default=None)
+        inicio : str (default=None)
             Dia de início do intervalo de tempo do qual se deseja saber a
             composição da Mesa, no formato 'AAAA-MM-DD'.
-        fim: str (default=None)
+        fim : str (default=None)
             Data de término do intervalo de tempo do qual se deseja saber a
             composição da Mesa, no formato 'AAAA-MM-DD'.
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -941,40 +961,40 @@ class Orgao:
 
     Parâmetros
     ----------
-    cod: int
+    cod : int
         Código numérico do órgão do qual se deseja informações.
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Conjunto completo de dados.
-    cod: int
+    cod : int
         Código numérico do órgão.
-    apelido: str
+    apelido : str
         Apelido do órgão.
-    casa: str
+    casa : str
         Casa do órgão.
-    cod_tipo: int
+    cod_tipo : int
         Código do tipo do órgão.
-    fim: str
+    fim : str
         Data final do órgão.
-    inicio: str
+    inicio : str
         Data inicial do órgão.
-    instalacao: str
+    instalacao : str
         Data de instalação do órgão.
-    nome: str
+    nome : str
         Nome do órgão.
-    nome_publicacao: str
+    nome_publicacao : str
         Nome de publicação.
-    sala: str
+    sala : str
         Sala do órgão.
-    sigla: str
+    sigla : str
         Sigla do órgão.
-    tipo: str
+    tipo : str
         Tipo do órgão.
-    uri: str
+    uri : str
         Endereço para coleta de dados direta pela API do órgão.
-    urlWebsite: str
+    urlWebsite : str
         URL para acessar o website do órgão.
 
     Exemplos
@@ -1005,6 +1025,10 @@ class Orgao:
         self.urlWebsite = self.dados['urlWebsite']
 
 
+    def __repr__(self):
+        return f"DadosAbertosBrasil.camara: Órgão {self.nome}"
+
+
 
     def eventos(
             self,
@@ -1028,27 +1052,27 @@ class Orgao:
 
         Parâmetros
         ----------
-        tipo_evento: str (default=None)
+        tipo_evento : str (default=None)
             Identificador numérico do tipo de evento que se deseja obter.
-        inicio: str (default=None)
+        inicio : str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str (default=None)
+        fim : str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina: int (default=1)
+        pagina : int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens: int (default=None)
+        itens : int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc: bool (default=True)
+        asc : bool (default=True)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default='dataHoraInicio')
+        ordenar_por : str (default='dataHoraInicio')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -1098,18 +1122,18 @@ class Orgao:
 
         Parâmetros
         ----------
-        inicio: str (default=None)
+        inicio : str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str (default=None)
+        fim : str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina: int (default=1)
+        pagina : int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens: int (default=None)
+        itens : int (default=None)
             Número máximo de itens na “página” que se deseja obter com esta
             requisição.
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -1164,30 +1188,30 @@ class Orgao:
 
         Parâmetros
         ----------
-        proposicao: int (default=None)
+        proposicao : int (default=None)
             Código numérico da proposição, que podem ser obtidos por meio da
             função `camara.lista_proposicoes`. Se presente, listará as
             votações que tiveram a proposição como objeto de votação ou que
             afetaram as proposições listadas.
-        inicio: str (default=None)
+        inicio : str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str (default=None)
+        fim : str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina: int (default=1)
+        pagina : int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens: int (default=None)
+        itens : int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc: bool (default=False)
+        asc : bool (default=False)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default='dataHoraRegistro')
+        ordenar_por : str (default='dataHoraRegistro')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -1224,42 +1248,42 @@ class Partido:
 
     Parâmetros
     ----------
-    cod: int
+    cod : int
         Código numérico do partido do qual se deseja informações.
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Conjunto completo de dados.
-    cod: int
+    cod : int
         Código numérico do partido.
-    facebook: str
+    facebook : str
         URL da página no Facebook do partido.
-    legislatura: str
+    legislatura : str
         Código numérico da última legislatura.
-    lider: dict
+    lider : dict
         Informações sobre o líder do partido.
-    logo: str
+    logo : str
         URL da logo do partido.
-    nome: str
+    nome : str
         Nome completo do partido.
-    numero: int
+    numero : int
         Número eleitoral do partido.
-    sigla: str
+    sigla : str
         Sigla do partido.
-    situacao: str
+    situacao : str
         Situação do partido.
-    total_membros: str
+    total_membros : str
         Total de membros do partido.
-    total_posse: str
+    total_posse : str
         Total de posse do partido.
-    ultima_atualizacao: str
+    ultima_atualizacao : str
         Última atualização das informações sobre o partido.
-    uri: str
+    uri : str
         Endereço para coleta de dados direta pela API do partido.
-    uri_membros: str
+    uri_membros : str
         Endereço para coleta de dados direta pela API dos membros do partido.
-    website: str
+    website : str
         URL do website do partido.
 
 
@@ -1292,6 +1316,10 @@ class Partido:
         self.website = self.dados['urlWebSite']
 
 
+    def __repr__(self):
+        return f"DadosAbertosBrasil.camara: {self.nome}"
+
+
     def membros(
             self,
             inicio: str = None,
@@ -1315,27 +1343,27 @@ class Partido:
 
         Parâmetros
         ----------
-        inicio: str (default=None)
+        inicio : str (default=None)
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim: str (default=None)
+        fim : str (default=None)
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        legislatura: int (default=None)
+        legislatura : int (default=None)
             Número da legislatura, à qual os dados buscados devem corresponder.
-        pagina: int (default=1)
+        pagina : int (default=1)
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens: int (default=None)
+        itens : int (default=None)
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc: bool (default=True)
+        asc : bool (default=True)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default=None)
+        ordenar_por : str (default=None)
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -1373,78 +1401,78 @@ class Proposicao:
 
     Parâmetros
     ----------
-    cod: int
+    cod : int
         Código numérico da proposição da qual se deseja informações.
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Conjunto completo de dados.
-    cod: int
+    cod : int
         Código numérico da proposição.
-    uri: str
+    uri : str
         Endereço para coleta de dados direta pela API da proposição.
-    tipo_sigla: str
+    tipo_sigla : str
         Sigla do tipo de proposição.
-    tipo_codigo: int
+    tipo_codigo : int
         Código numérico do tipo de proposição.
-    numero: int
+    numero : int
         Número da proposição.
-    ano: int
+    ano : int
         Ano da proposição.
-    ementa: str
+    ementa : str
         Ementa da proposição.
-    apresentacao: str
+    apresentacao : str
         Horário da apresentação da proposição no formato 'AAAA-MM-DD HH:MM'.
-    uri_orgao_numerador: str
+    uri_orgao_numerador : str
         Endereço para coleta de dados direta pela API do órgão numerador.
-    ultima_atualizacao: str
+    ultima_atualizacao : str
         Data da última atualização do status da proposição.
-    sequencia: int
+    sequencia : int
         Sequência da proposição.
-    sigla_orgao: str
+    sigla_orgao : str
         Sigla do órgão.
-    uri_orgao: str
+    uri_orgao : str
         Endereço para coleta de dados direta pela API do órgão.
-    uri_ultimo_relator: str
+    uri_ultimo_relator : str
         Endereço para coleta de dados direta pela API do último relaltor.
-    regime: str
+    regime : str
         Regime da proposição.
-    descricao_tramitacao: str
+    descricao_tramitacao : str
         Descrição da tramitação.
-    cod_tipo_tramitacao: str
+    cod_tipo_tramitacao : str
         Código do tipo da tramitação.
-    descricao_situacao: str
+    descricao_situacao : str
         Descrição da situação da proposição.
-    cod_situacao: int
+    cod_situacao : int
         Código númerico da situação da proposição.
-    despacho: str
+    despacho : str
         Despacho.
-    url: str
+    url : str
         URL da proposição.
-    ambito: str
+    ambito : str
         Âmbito da proposição.
-    uri_autores: str
+    uri_autores : str
         Endereço para coleta de dados direta pela API dos autores.
-    descricao_tipo: str
+    descricao_tipo : str
         Descrição do tipo da proposição.
-    ementa_detalhada: str
+    ementa_detalhada : str
         Ementa detalhada da proposição.
-    keywords: str
+    keywords : str
         Palavras-chaves da proposição.
-    uri_proposicao_principal: str
+    uri_proposicao_principal : str
         Endereço para coleta de dados direta pela API da proposição principal.
-    uri_proposicao_anterior: str
+    uri_proposicao_anterior : str
         Endereço para coleta de dados direta pela API da proposição anterior.
-    uri_proposicao_posterior: str
+    uri_proposicao_posterior : str
         Endereço para coleta de dados direta pela API da proposição posterior.
-    url_inteiro_teor: str
+    url_inteiro_teor : str
         URL do inteiro teor.
-    urn_final: str
+    urn_final : str
         URN final.
-    texto: str
+    texto : str
         Texto da proposição.
-    justificativa: str
+    justificativa : str
         Justificativa da proposição.
 
     Exemplos
@@ -1494,6 +1522,10 @@ class Proposicao:
         self.justificativa = self.dados['justificativa']
 
 
+    def __repr__(self):
+        return f"DadosAbertosBrasil.camara: Proposição {self.cod}"
+
+
     def autores(self) -> _pd.DataFrame:
         '''
         Lista pessoas e/ou entidades autoras da proposição.
@@ -1534,7 +1566,7 @@ class Proposicao:
 
         Parâmetros
         ----------
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -1564,7 +1596,7 @@ class Proposicao:
 
         Parâmetros
         ----------
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `codTema` como index do DataFrame.
 
         Retorna
@@ -1597,11 +1629,11 @@ class Proposicao:
 
         Parâmetros
         ----------
-        inicio: str (default=None)
+        inicio : str (default=None)
             Data de início da tramitação, no formato 'AAAA-MM-DD'.
-        fim: str (default=None)
+        fim : str (default=None)
             Data de término da tramitação, no formato 'AAAA-MM-DD'.
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `sequencia` como index do DataFrame.
 
         Retorna
@@ -1640,14 +1672,14 @@ class Proposicao:
 
         Parâmetros
         ----------
-        asc: bool (default=False)
+        asc : bool (default=False)
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por: str (default='dataHoraRegistro')
+        ordenar_por : str (default='dataHoraRegistro')
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `id` como index do DataFrame.
 
         Retorna
@@ -1680,44 +1712,44 @@ class Votacao:
 
     Parâmetros
     ----------
-    cod: str
+    cod : str
         Código alfa-numérico da votação da qual se deseja informações.
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Conjunto completo de dados.
-    cod: str
+    cod : str
         Código alfa-numérico da votação.
-    aprovacao: int
+    aprovacao : int
         Aprovação da votação.
-    data: str
+    data : str
         Data da votação.
-    data_regitro: str
+    data_regitro : str
         Data e horário de registro da votação.
-    data_ultima_abertura: str
+    data_ultima_abertura : str
         Data e horário da última abertura da votação.
-    descricao: str
+    descricao : str
         Descrição da votação.
-    efeitos_registrados: list
+    efeitos_registrados : list
         Lista de efeitos registrados.
-    evento: int
+    evento : int
         Código numérico do evento da votação.
-    orgao: int
+    orgao : int
         Código numérico do órgão da votação.
-    objetos_possiveis: list of dict
+    objetos_possiveis : list of dict
         Lista de objetos possíveis.
-    proposicoes_afetadas: str
+    proposicoes_afetadas : str
         Proposições afetadas.
-    sigla_orgao: str
+    sigla_orgao : str
         Sigla do órgão.
-    ultima_apresentacao_proposicao: dict
+    ultima_apresentacao_proposicao : dict
         Última apresentação da proposição.
-    uri: str
+    uri : str
         Endereço para coleta de dados direta pela API da votação.
-    uri_evento: str
+    uri_evento : str
         Endereço para coleta de dados direta pela API do evento.
-    uri_orgao: str
+    uri_orgao : str
         Endereço para coleta de dados direta pela API do órgão.
 
     Exemplos
@@ -1750,6 +1782,10 @@ class Votacao:
         self.uri_orgao = self.dados['uriOrgao']
 
 
+    def __repr__(self):
+        return f"DadosAbertosBrasil.camara: Votação {self.cod}"
+
+
     def orientacoes(self, index=False) -> _pd.DataFrame:
         '''
         O voto recomendado pelas lideranças aos seus deputados na votação.
@@ -1769,7 +1805,7 @@ class Votacao:
 
         Parâmetros
         ----------
-        index: bool (default=False)
+        index : bool (default=False)
             Se True, define a coluna `codPartidoBloco` como index do DataFrame.
 
         Retorna
@@ -1837,23 +1873,23 @@ def lista_blocos(
 
     Parâmetros
     ----------
-    legislatura: int (default=None)
+    legislatura : int (default=None)
         Número da legislatura a qual os dados buscados devem corresponder.
-    pagina: int (default=1)
+    pagina : int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens: int (default=None)
+    itens : int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc: bool (default=True)
+    asc : bool (default=True)
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default='nome')
+    ordenar_por : str (default='nome')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
     Retorna
@@ -1903,41 +1939,41 @@ def lista_deputados(
 
     Parâmetros
     ----------
-    nome: str (default=None)
+    nome : str (default=None)
         Parte do nome dos parlamentares.
-    legislatura: int (default=None)
+    legislatura : int (default=None)
         Número da legislatura a qual os dados buscados devem corresponder.
-    uf: str (default=None)
+    uf : str (default=None)
         Sigla da unidade federativa (estados e Distrito Federal).
         Se None, serão retornados deputados de todos os estados.
-    partido: str (default=None)
+    partido : str (default=None)
         Sigla do partido ao qual sejam filiados os deputados.
         Para obter as siglas válidas, consulte a função `camara.lista_partidos`.
         Atenção: partidos diferentes podem usar a mesma sigla em diferentes
         legislaturas.
-    sexo: str (default=None)
+    sexo : str (default=None)
         Letra que designe o gênero dos parlamentares que se deseja buscar,
         - 'M': Masculino;
         - 'F': Feminino.
-    inicio: str (default=None)
+    inicio : str (default=None)
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    fim: str (default=None)
+    fim : str (default=None)
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    pagina: int (default=1)
+    pagina : int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens: int (default=None)
+    itens : int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc: bool (default=True)
+    asc : bool (default=True)
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default='nome')
+    ordenar_por : str (default='nome')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
     Retorna
@@ -2002,46 +2038,46 @@ def lista_eventos(
 
     Parâmetros
     ----------
-    tipo_evento: int (default=None)
+    tipo_evento : int (default=None)
         Identificador numérico do tipo de evento que se deseja obter.
         Os valores válidos podem ser obtidos pela função
         `camara.referencias('tiposEvento')`.
-    situacao: int (default=None)
+    situacao : int (default=None)
         Identificador numéricos do tipo de situação de evento.
         Valores válidos podem ser obtidos pela função
         `camara.referencias('situacoesEvento')`.
-    tipo_orgao: int (default=None)
+    tipo_orgao : int (default=None)
         Identificador numérico do tipo de órgão realizador dos eventos que se
         deseja obter. Os valores válidos podem ser obtidos pela função
         `camara.referencias('tiposOrgao').
-    orgao: int (default=None)
+    orgao : int (default=None)
         Identificador numérico do órgão. Os identificadores podem ser obtidos
         pela função `camara.lista_orgaos`.
-    inicio: str (default=None)
+    inicio : str (default=None)
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    fim: str (default=None)
+    fim : str (default=None)
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    hora_inicio: str (default=None)
+    hora_inicio : str (default=None)
         Hora inicial de um intervalo de tempo, no formato 'HH:MM', em horário
         de Brasília.
-    hora_fim: str (default=None)
+    hora_fim : str (default=None)
         Hora final de um intervalo de tempo, no formato 'HH:MM', em horário
         de Brasília.
-    pagina: int (default=1)
+    pagina : int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens: int (default=None)
+    itens : int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc: bool (default=True)
+    asc : bool (default=True)
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default='dataHoraInicio')
+    ordenar_por : str (default='dataHoraInicio')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
     Retorna
@@ -2101,13 +2137,13 @@ def lista_frentes(
 
     Parâmetros
     ----------
-    legislatura: int (default=None)
+    legislatura : int (default=None)
         Número da legislatura a qual os dados buscados devem corresponder.
-    pagina: int (default=1)
+    pagina : int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
     Retorna
@@ -2148,25 +2184,25 @@ def lista_legislaturas(
 
     Parâmetros
     ----------
-    data: str (default=None)
+    data : str (default=None)
         Data no formato 'AAAA-MM-DD'. Se este parâmetro estiver presente, a
         função retornará as informações básicas sobre a legislatura que estava
         em curso na data informada.
-    pagina: int (default=1)
+    pagina : int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens: int (default=None)
+    itens : int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc: bool (default=False)
+    asc : bool (default=False)
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default='id')
+    ordenar_por : str (default='id')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
     Retorna
@@ -2214,32 +2250,32 @@ def lista_orgaos(
     
     Parâmetros
     ----------
-    sigla: str (default=None)
+    sigla : str (default=None)
         Sigla oficialmente usadas para designar o órgão da câmara.
-    tipo: int (default=None)
+    tipo : int (default=None)
         Código numérico do tipo de órgãos que se deseja buscar dados. Pode ser
         obtido pela função `camara.referencias`.
-    inicio: str (default=None)
+    inicio : str (default=None)
         Data de início, no formato 'AAAA-MM-DD', de um intervalo de tempo no
         qual os órgãos buscados devem ter estado em atividade.
-    fim: str (default=None)
+    fim : str (default=None)
         Data de término, no formato 'AAAA-MM-DD', de um intervalo de tempo no
         qual os órgãos buscados devem ter estado em atividade.
-    pagina: int (default=1)
+    pagina : int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens: int (default=None)
+    itens : int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc: bool (default=True)
+    asc : bool (default=True)
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default='id')
+    ordenar_por : str (default='id')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
     Retorna
@@ -2294,27 +2330,27 @@ def lista_partidos(
     
     Parâmetros
     ----------
-    legislatura: int (default=None)
+    legislatura : int (default=None)
         Número da legislatura a qual os dados buscados devem corresponder.
-    inicio: str (default=None)
+    inicio : str (default=None)
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    fim: str (default=None)
+    fim : str (default=None)
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    pagina: int (default=1)
+    pagina : int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens: int (default=None)
+    itens : int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc: bool (default=True)
+    asc : bool (default=True)
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default='sigla')
+    ordenar_por : str (default='sigla')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
     Retorna
@@ -2388,75 +2424,75 @@ def lista_proposicoes(
     
     Parâmetros
     ----------
-    tipo: str (default=None)
+    tipo : str (default=None)
         Sigla do tipo das proposições que se deseja obter. A lista de tipos e
         siglas existentes pode ser obtida pela função `camara.referencias`.
-    numero: int (default=None)
+    numero : int (default=None)
         Número oficialmente atribuídos às proposições segundo o art. 137 do
         Regimento Interno, como “PL 1234/2016”
-    ano: int (default=None)
+    ano : int (default=None)
         Ano de apresentação das proposições que serão listadas no formato
         'AAAA'.
-    autor_cod: int (default=None)
+    autor_cod : int (default=None)
         Código numérico identificador do deputado autor das proposições que
         serão listadas.
-    autor_nome: str (default=None)
+    autor_nome : str (default=None)
         Nome ou parte do nome do(s) autor(es) das proposições que se deseja
         obter. Deve estar entre aspas.
-    partido_sigla: str (default=None)
+    partido_sigla : str (default=None)
         Sigla do partido a que pertençam os autores das proposições a serem
         listadas.
-    partido_cod: int (default=None)
+    partido_cod : int (default=None)
         Identificador numérico do partido a que pertençam os autores das
         proposições que serão listadas. Esses identificadores podem ser
         obtidos pela função `camara.lista_partidos` e são mais precisos do
         que as siglas, que podem ser usadas por partidos diferentes em épocas
         diferentes.
-    autor_uf: str (default=None)
+    autor_uf : str (default=None)
         Sigla da unidade da federação (estados e Distrito Federal) pela qual
         o(s) autor(es) das proposições selecionadas tenha(m) sido eleito(s).
-    keyword: str (default=None)
+    keyword : str (default=None)
         Palavra-chave sobre o tema a que a proposição se relaciona.
-    tramitacao_senado: bool (default=None)
+    tramitacao_senado : bool (default=None)
         Buscar proposições que já tenha tramitado no Senado.
-    inicio: str (default=None)
+    inicio : str (default=None)
         Data do início do intervalo de tempo em que tenha havido tramitação
         das proposições a serem listadas, no formato 'AAAA-MM-DD'. Se omitido,
         é assumido como a data de 30 dias anteriores à proposição.
-    fim: str (default=None)
+    fim : str (default=None)
         Data do fim do intervalo de tempo em que tenha havido tramitação das
         proposições a serem listadas. Se omitido, é considerado ser o dia em
         que é feita a requisição.
-    apresentacao_inicio: str (default=None)
+    apresentacao_inicio : str (default=None)
         Data do início do intervalo de tempo em que tenham sido apresentadas
         as proposições a serem listadas, no formato 'AAAA-MM-DD'.
-    apresentacao_fim: str (default=None)
+    apresentacao_fim : str (default=None)
         Data do fim do intervalo de tempo em que tenham sido apresentadas as
         proposições a serem listadas.
-    situacao: int (default=None)
+    situacao : int (default=None)
         Código numérico do tipo de situação em que se encontram as proposições
         que serão listadas. As situações possíveis podem ser obtidas pela
         função `camara.referencias`. Atenção: este parâmetro pode apresentar
         resultados inesperados, por problemas com o registro dos dados.
-    tema: int (default=None)
+    tema : int (default=None)
         Código numérico das áreas temáticas das proposições que serão
         listadas. Os temas possíveis podem ser obtidos pela função
         `camara.referencias`.
-    pagina: int (default=1)
+    pagina : int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens: int (default=None)
+    itens : int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc: bool (default=True)
+    asc : bool (default=True)
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default='id')
+    ordenar_por : str (default='id')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
     Retorna
@@ -2541,48 +2577,48 @@ def lista_votacoes(
     
     Parâmetros
     ----------
-    proposicao: int (default=None)
+    proposicao : int (default=None)
         Código numérico da proposição, que podem ser obtidos pela função
         `camara.lista_proposições`. Se presente, listará as votações que
         tiveram a proposição como objeto de votação ou que afetaram as
         proposições listadas.
-    evento: int (default=None)
+    evento : int (default=None)
         Código numérico do evento realizado na Câmara, no qual tenham sido
         realizadas as votações a serem listadas. Os códigos podem ser obtidos
         pela função `camara.lista_eventos`. Somente os eventos deliberativos
         podem ter votações. Os eventos podem ter ocorrido fora do intervalo de
         tempo padrão ou definido por `inicio` e/ou `fim`.
-    orgao: int (default=None)
+    orgao : int (default=None)
         Código numérico do órgão da Câmara. Se presente, serão retornadas
         somente votações do órgão enumerado. Os códigos existentes podem ser
         obtidos pela função `camara.lista_orgaos`.
-    inicio: str (default=None)
+    inicio : str (default=None)
         Data em formato 'AAAA-MM-DD' para início do intervalo de tempo no qual
         tenham sido realizadas as votações a serem listadas. Se usado sozinho,
         esse parâmetro faz com que sejam retornadas votações ocorridas dessa
         data até o fim do mesmo ano. Se usado com `fim`, as duas datas devem
         ser de um mesmo ano.
-    fim: str (default=None)
+    fim : str (default=None)
         Data em formato 'AAAA-MM-DD' que define o fim do intervalo de tempo no
         qual tenham sido realizadas as votações a serem listadas. Se usado
         sozinho, esse parâmetro faz com que sejam retornadas todas as votações
         ocorridas desde 1º de janeiro do mesmo ano até esta data. Se usado com
         `inicio`, é preciso que as duas datas sejam de um mesmo ano.
-    pagina: int (default=1)
+    pagina : int (default=1)
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens: int (default=None)
+    itens : int (default=None)
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc: bool (default=False)
+    asc : bool (default=False)
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por: str (default='dataHoraRegistro')
+    ordenar_por : str (default='dataHoraRegistro')
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `id` como index do DataFrame.
 
     Retorna
@@ -2626,7 +2662,7 @@ def referencias(
 
     Parâmetros
     ----------
-    lista: str
+    lista : str
         Referências que serão listadas. Deve ser uma destas opções:
             - 'autores'
             - 'temas'
@@ -2639,7 +2675,7 @@ def referencias(
             - 'situacoes_eventos'
             - 'situacoes_orgaos'
             - 'situacoes_proposicoes'
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `cod` como index do DataFrame.
 
     Retorna

@@ -67,12 +67,12 @@ def lista_atual(
 
     Parâmetros
     ----------
-    participacao: str (default=None)
+    participacao : str (default=None)
         Tipo de participação.
         - None: Busca qualquer tipo de participação.
         - 'T': Busca apenas titulares.
         - 'S': Busca apenas suplentes.
-    uf: str (default=None)
+    uf : str (default=None)
         Filtra uma unidade federativa.
         Se uf=None, lista senadores de todas as UFs.
 
@@ -126,22 +126,22 @@ def lista_legislatura(
 
     Parâmetros
     ----------
-    inicio: int
+    inicio : int
         Código da primeira legislatura da consulta.
-    fim: int (default=None)
+    fim : int (default=None)
         Código da última legislatura da consulta.
         Se fim=None, pesquisa apenas pela legislatura do campo `inicio`.
         Caso contrário, pesquisa todas os valores de todas as legislaturas
         entre `inicio` e `fim`. 
-    exercicio: str (default=None)
+    exercicio : str (default=None)
         - 'S': Consulta apenas os senadores que entraram em exercício.
         - 'N': Consulta apenas os senadores que não entratam em exercício.
-    participacao: str (default=None)
+    participacao : str (default=None)
         Tipo de participação.
         - None: Busca qualquer tipo de participação.
         - 'T': Busca apenas titulares.
         - 'S': Busca apenas suplentes.
-    uf: str (default=None)
+    uf : str (default=None)
         Filtra uma unidade federativa.
         Se uf=None, lista senadores de todas as UFs.
 
@@ -181,10 +181,10 @@ def partidos(
 
     Parâmetros
     ----------
-    ativos: bool (default=True)
+    ativos : bool (default=True)
         - True para listar apenas os partidos ativos.
         - False para incluir partidos inativos na lista.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna `Codigo` como index do DataFrame.
 
     Retorna
@@ -220,25 +220,25 @@ class Senador:
 
     Parâmetros
     ----------
-    cod: int
+    cod : int
         Código de senador que se dejesa consulta.
         O código pode ser encontrado pelas funções `lista_*` deste módulo.
 
     Atributos
     ---------
-    dados: dict
+    dados : dict
         Dicionário completo de dados do(a) parlamentar.
-    nome: str
+    nome : str
         Nome do(a) parlamentar.
-    nome_completo: str
+    nome_completo : str
         Nome completo do(a) parlamentar.
-    nascimento: str
+    nascimento : str
         Data de nascimento do(a) parlamentar no formato 'AAAA-MM-DD'.
-    partido: str
+    partido : str
         Atual partido político do(a) parlamentar.
-    sexo: str
+    sexo : str
         Sexo ('Masculino' ou 'Feminino') do(a) parlamentar.
-    tratamento: str
+    tratamento : str
         Pronome de tratamento usado para o(a) parlamentar.
 
     --------------------------------------------------------------------------
@@ -260,6 +260,10 @@ class Senador:
             ['IdentificacaoParlamentar', 'SexoParlamentar'])
         self.tratamento = self._get_info(
             ['IdentificacaoParlamentar', 'FormaTratamento'])
+
+
+    def __repr__(self):
+        return f"DadosAbertosBrasil.senado: Senador{'a' if self.sexo == 'Feminino' else ''} {self.nome}"
 
 
     def _get_info(self, keys:list):
@@ -286,7 +290,7 @@ class Senador:
 
         Parâmetros
         ----------
-        casa: str (default=None)
+        casa : str (default=None)
             Sigla da casa aonde ocorre o pronunciamento:
             - 'SF' para Senado;
             - 'CD' para Câmara;
@@ -294,15 +298,15 @@ class Senador:
             - 'PR' para Presidência;
             - 'CR' para Comissão Representativa do Congresso;
             - 'AC' para Assembléia Constituinte.
-        inicio: datetime.date ou str (default=None)
+        inicio : datetime.date ou str (default=None)
             Data inicial do período da pesquisa no formato 'AAAA-MM-DD'
-        fim: datetime.date ou str (default=None)
+        fim : datetime.date ou str (default=None)
             Data final do período da pesquisa no formato 'AAAA-MM-DD'
-        numero_sessao: int (default=None)
+        numero_sessao : int (default=None)
             Número da sessão plenária.
-        tipo_pronunciamento: str (default=None)
+        tipo_pronunciamento : str (default=None)
             Sigla do tipo de pronunciamento.
-        tipo_sessao: str (default=None)
+        tipo_sessao : str (default=None)
             Tipo da sessão plenária.
         
         Retorna
@@ -345,17 +349,17 @@ class Senador:
 
         Parâmetros
         ----------
-        ano: int (default=None)
+        ano : int (default=None)
             Retorna apenas as matérias do ano informado.
-        numero: int (default=None)
+        numero : int (default=None)
             Retorna apenas as matérias do número informado.
-        primeiro_autor: bool (default=None)
+        primeiro_autor : bool (default=None)
             - True: Retorna apenas as matérias cujo senador é o primeiro autor;
             - False: Retorna apenas as que o senador é coautor;
             - None: Retorna ambas.
-        sigla: str (default=None)
+        sigla : str (default=None)
             Retorna apenas as matérias da sigla informada.
-        tramitando: bool (default=None)
+        tramitando : bool (default=None)
             - True: Retorna apenas as matérias que estão tramitando;
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
@@ -397,9 +401,9 @@ class Senador:
 
         Parâmetros
         ----------
-        comissao: str (default=None)
+        comissao : str (default=None)
             Retorna apenas os cargos da sigla de comissão informada.
-        ativos: bool (default=None)
+        ativos : bool (default=None)
             - True: Retorna apenas os cargos atuais;
             - False: Retorna apenas os cargos já finalizadas;
             - None: Retorna ambos.
@@ -433,9 +437,9 @@ class Senador:
 
         Parâmetros
         ----------
-        comissao: str (default=None)
+        comissao : str (default=None)
             Retorna apenas as comissões com a sigla informada.
-        ativos: bool (default=None)
+        ativos : bool (default=None)
             - True: Retorna apenas as comissões atuais;
             - False: Retorna apenas as comissões já finalizadas;
             - None: Retorna ambas.
@@ -473,7 +477,7 @@ class Senador:
 
         Parâmetros
         ----------
-        casa: str (default=None)
+        casa : str (default=None)
             Sigla da casa aonde ocorre o pronunciamento:
             - 'SF' para Senado;
             - 'CD' para Câmara;
@@ -481,15 +485,15 @@ class Senador:
             - 'PR' para Presidência;
             - 'CR' para Comissão Representativa do Congresso;
             - 'AC' para Assembléia Constituinte.
-        inicio: datetime.date ou str (default=None)
+        inicio : datetime.date ou str (default=None)
             Data inicial do período da pesquisa no formato 'AAAA-MM-DD'
-        fim: datetime.date ou str (default=None)
+        fim : datetime.date ou str (default=None)
             Data final do período da pesquisa no formato 'AAAA-MM-DD'
-        numero_sessao: int (default=None)
+        numero_sessao : int (default=None)
             Número da sessão plenária.
-        tipo_pronunciamento: str (default=None)
+        tipo_pronunciamento : str (default=None)
             Sigla do tipo de pronunciamento.
-        tipo_sessao: str (default=None)
+        tipo_sessao : str (default=None)
             Tipo da sessão plenária.
         
         Retorna
@@ -600,7 +604,7 @@ class Senador:
 
         Parâmetros
         ----------
-        inicio: datetime.date ou str (default=None)
+        inicio : datetime.date ou str (default=None)
             Retorna as licenças a partir da data especificada.
 
         Retorna
@@ -633,15 +637,15 @@ class Senador:
 
         Parâmetros
         ----------
-        ano: int (default=None)
+        ano : int (default=None)
             Retorna apenas as matérias do ano informado.
-        comissao: str (default=None)
+        comissao : str (default=None)
             Retorna apenas as relatorias da comissão informada.
-        numero: int (default=None)
+        numero : int (default=None)
             Retorna apenas as matérias do número informado. 
-        sigla: str (default=None)
+        sigla : str (default=None)
             Retorna apenas as matérias da sigla informada.	 
-        tramitando: bool (default=None)
+        tramitando : bool (default=None)
             - True: Retorna apenas as matérias que estão tramitando;
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
@@ -683,13 +687,13 @@ class Senador:
 
         Parâmetros
         ----------
-        ano: int (default=None)
+        ano : int (default=None)
             Retorna apenas as matérias do ano informado.
-        numero: int (default=None)
+        numero : int (default=None)
             Retorna apenas as matérias do número informado. 	 
-        sigla: str (default=None)
+        sigla : str (default=None)
             Retorna apenas as matérias da sigla informada. 	 
-        tramitando: bool (default=None)
+        tramitando : bool (default=None)
             - True: Retorna apenas as matérias que estão tramitando;
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.

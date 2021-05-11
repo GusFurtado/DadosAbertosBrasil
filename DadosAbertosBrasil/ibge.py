@@ -373,7 +373,7 @@ class Metadados:
         self.classificacoes = data['classificacoes']
 
     def __repr__(self):
-        return f'DadosAbertosBrasil.ibge - Metadados da Tabela {self.cod} - {self.nome}'
+        return f'DadosAbertosBrasil.ibge: Metadados da Tabela {self.cod} - {self.nome}'
 
 
 

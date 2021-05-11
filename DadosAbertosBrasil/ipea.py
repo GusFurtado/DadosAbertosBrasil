@@ -69,54 +69,54 @@ class Serie:
 
     Parâmetros
     ----------
-    cod: str
+    cod : str
         Código da série que se deseja obter os dados.
         Utilize a função `ipea.lista_series` para identificar a série desejada.
         O código desejado estará na coluna 'SERCODIGO'.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna 'SERCODIGO' como index do atributo 'valores'.
 
     Atributos
     ---------
-    cod: str
+    cod : str
         Código da série escolhida.
-    valores: pandas.core.frame.DataFrame
+    valores : pandas.core.frame.DataFrame
         Dados históricos da série escolhida. Alias de `dados`.
     dados : pandas.core.frame.DataFrame
         Dados históricos da série escolhida. Alias de `valores`.
-    metadados: pandas.core.frame.DataFrame
+    metadados : pandas.core.frame.DataFrame
         Metadados da série escolhida.
-    base: str
+    base : str
         Nome da base de dados da série.
-    fonte_nome: str
+    fonte_nome : str
         Nome completo da fonte da série, em português.
-    fonte_sigla: str
+    fonte_sigla : str
         Sigla ou nome abreviado da fonte da série, em português.
-    fonte_url: str
+    fonte_url : str
         URL para o site da fonte da série.
-    mutiplicador: str
+    mutiplicador : str
         Nome do fator multiplicador dos valores da série.
-    periodicidade: str
+    periodicidade : str
         Nome da periodicidade, em português.
-    atualizacao: str
+    atualizacao : str
         Data da última carga de dados na série.
-    comentario: str
+    comentario : str
         Comentários relativos a série, em português.
-    nome: str
+    nome : str
         Nome da série, em português.
-    unidade: str
+    unidade : str
         Nome da unidade dos valores da série.
-    status: str
+    status : str
         Indica se uma série macroeconômica ainda é atualizada.
         - 'A' (Ativa) para séries atualizadas;
         - 'I' (Inativa) para séries que não são atualizadas.
         As séries regionais ou sociais não possuem este metadado.
-    tema: int
+    tema : int
         Código de identificação do tema ao qual a série está associada.
-    pais: str
+    pais : str
         Código de identificação país ou região (como América Latina, Zona do
         Euro, etc.) ao qual a série está associada.
-    numerica: bool
+    numerica : bool
         - True: Série possui valores numéricos (tratados como números);
         - False: Série possui valores são alfanuméricos (string).
 
@@ -186,6 +186,10 @@ class Serie:
         self.numerica = self.metadados.loc[0, 'SERNUMERICA']
 
 
+    def __repr__(self):
+        return f"DadosAbertosBrasil.ipea: Dados da série '{self.cod}' ({self.nome})"
+
+
 
 def lista_series(index=False) -> _pd.DataFrame:
     '''
@@ -193,7 +197,7 @@ def lista_series(index=False) -> _pd.DataFrame:
 
     Parâmetros
     ----------
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna 'SERCODIGO' como index do DataFrame.
 
     Retorna
@@ -241,9 +245,9 @@ def lista_temas(
 
     Parâmetros
     ----------
-    cod: int (default=None)
+    cod : int (default=None)
         Código do tema, caso queira ver os dados deste tema exclusivamente.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna 'TEMCODIGO' como index do DataFrame.
 
     Retorna
@@ -295,10 +299,10 @@ def lista_paises(
 
     Parâmetros
     ----------
-    cod: str (default=None)
+    cod : str (default=None)
         Sigla de três letras do país, caso queira ver os dados deste
         país exclusivamente.
-    index: bool (default=False)
+    index : bool (default=False)
         Se True, define a coluna 'PAICODIGO' como index do DataFrame.
 
     Retorna
@@ -350,10 +354,10 @@ def lista_territorios(
 
     Parâmetros
     ----------
-    cod: int (default=None)
+    cod : int (default=None)
         Código do território, caso queira ver os dados deste
         território exclusivamente.
-    nivel: str (default=None)
+    nivel : str (default=None)
         Nome do nível territorial.
         Utilize a função ipea.niveis_territoriais() para verificar
         as opções disponíveis.
