@@ -18,7 +18,7 @@ from ._utils.get_data import get_data
 
 
 
-def _df(path:str, params:dict) -> _pd.DataFrame:
+def _df(path:str, params:dict=None) -> _pd.DataFrame:
     data = get_data(
         endpoint = 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/',
         path = path,
@@ -40,10 +40,7 @@ def moedas():
 
     --------------------------------------------------------------------------
     '''
-    df = _df(
-        path = 'Moedas',
-        params = None
-    )
+    df = _df('Moedas')
     df.columns = ['simbolo', 'nome', 'tipo']
     return df
 
@@ -53,6 +50,8 @@ def cambio(
         moedas = 'USD',
         inicio: str = '2000-01-01',
         fim: str = None,
+        cotacao: str = 'compra',
+        boletim: str = 'fechamento',
         index: bool = False
     ) -> _pd.DataFrame:
     '''
@@ -62,18 +61,26 @@ def cambio(
 
     Parâmetros
     ----------
-    moedas: list ou str (default='USD')
+    moedas : list ou str (default='USD')
         Sigla da moeda ou lista de siglas de moedas que será(ão) pesquisada(s).
         Utilize a função `favoritos.moedas` para obter uma lista de moedas
         válidas.
-    inicio: str (default='2000-01-01')
+    inicio : str (default='2000-01-01')
         String no formato de data 'AAAA-MM-DD' que representa o primeiro dia
         da pesquisa.
-    fim: str (default=None)
+    fim : str (default=None)
         String no formato de data 'AAAA-MM-DD' que representa o último dia
         da pesquisa.
         Caso este campo seja None, será considerada a data de hoje.
-    index: bool (default=False)
+    cotacao : str (default='compra')
+        Tipo de cotação:
+            - 'compra';
+            - 'venda'.
+    boletim : str (default='fechamento')
+        Tipo de boletim:
+            - 'abertura';
+            - 'fechamento'.
+    index : bool (default=False)
         Define se a coluna 'Data' será o index do DataFrame.
 
     Retorna
@@ -97,8 +104,15 @@ def cambio(
         cotacao_moedas = []
         for moeda in moedas:
             cotacao_moeda = _df(
-                f"CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='{moeda}'&@dataInicial='{inicio}'&@dataFinalCotacao='{fim}'&$filter=contains(tipoBoletim%2C'Fechamento')&$select=cotacaoVenda,dataHoraCotacao",
-                params = None
+                "CotacaoMoedaPeriodo(" \
+                + "moeda=@moeda," \
+                + "dataInicial=@dataInicial," \
+                + "dataFinalCotacao=@dataFinalCotacao)" \
+                + f"?@moeda='{moeda}'" \
+                + f"&@dataInicial='{inicio}'" \
+                + f"&@dataFinalCotacao='{fim}'" \
+                + f"&$filter=contains(tipoBoletim%2C'{boletim.title()}')" \
+                + f"&$select=cotacao{cotacao.title()},dataHoraCotacao"
             )
             
             cotacao_moeda.dataHoraCotacao = cotacao_moeda.dataHoraCotacao \
@@ -106,7 +120,7 @@ def cambio(
 
             cotacao_moedas.append(
                 cotacao_moeda.rename(columns = {
-                    'cotacaoVenda': moeda,
+                    f'cotacao{cotacao.title()}': moeda,
                     'dataHoraCotacao': 'Data'
                 }).groupby('Data').last())
 
@@ -129,7 +143,7 @@ def ipca(index:bool=False) -> _pd.DataFrame:
 
     Parâmetros
     ----------
-    index: bool (default=False)
+    index : bool (default=False)
         Define se a coluna 'Data' será o index do DataFrame.
 
     Retorna
