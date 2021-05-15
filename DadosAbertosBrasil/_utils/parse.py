@@ -55,6 +55,8 @@ def data(
             return data.strftime('%Y%m%d')
         elif modulo == 'bacen':
             return data.strftime('%m-%d-%Y')
+        elif modulo == 'sgs':
+            return data.strftime('%d/%m/%Y')
 
     except AttributeError:
         raise errors.DAB_DataError(

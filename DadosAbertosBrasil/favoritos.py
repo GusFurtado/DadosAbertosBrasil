@@ -7,7 +7,8 @@ Módulo para utilidades e consultas à informações variadas.
 import pandas as _pd
 import requests
 
-from ._utils import parse, errors
+from ._utils import parse
+from . import bacen
 
 
 
@@ -39,7 +40,7 @@ def geojson(uf:str) -> dict:
 
     Parâmetros
     ----------
-    uf: str
+    uf : str
         Nome ou sigla da Unidade Federativa.
 
     Retorna
@@ -155,9 +156,9 @@ def bandeira(uf:str, tamanho:int=100) -> str:
 
     Parâmetros
     ----------
-    uf: str
+    uf : str
         Sigla da Unidade Federativa.
-    tamanho: int (default=100)
+    tamanho : int (default=100)
         Tamanho em pixels da bandeira.
 
     Retorna
@@ -204,30 +205,10 @@ def bandeira(uf:str, tamanho:int=100) -> str:
 
 
 
-# FUNÇÕES DEPRECIADAS
+# Principais séries temporais do Banco Central
 
+def ipca(**kwargs) -> _pd.DataFrame:
+    return bacen.sgs(4448, **kwargs)
 
-
-def moedas():
-    raise errors.DAB_DeprecationError(
-        'Função depreciada.\nFavor utilizar a função `bacen.moedas`'
-    )
-
-
-
-def cambio(
-        moedas = 'USD',
-        inicio: str = '2000-01-01',
-        fim: str = None,
-        index: bool = False
-    ):
-    raise errors.DAB_DeprecationError(
-        'Função depreciada.\nFavor utilizar a função `bacen.cambio`'
-    )
-
-
-
-def ipca(index:bool=False) -> _pd.DataFrame:
-    raise errors.DAB_DeprecationError(
-        'Função depreciada.\nFavor utilizar a função `bacen.ipca`'
-    )
+def selic(**kwargs) -> _pd.DataFrame:
+    return bacen.sgs(432, **kwargs)
