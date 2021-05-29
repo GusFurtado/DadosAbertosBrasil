@@ -208,7 +208,7 @@ def cambio(
 
 
 
-def sgs(
+def serie(
         serie: int,
         ultimos: int = None,
         inicio: str = None,
@@ -216,12 +216,12 @@ def sgs(
         index: bool = False
     ) -> _pd.DataFrame:
     '''
-    Valor mensal do índice IPC-A.
+    Série do Sistema Gerenciador de Série Temporais (SGS) do Banco Central.
 
     Parâmetros
     ----------
-    serie : int
-        Número da série temporal.
+    cod : int
+        Código da série temporal.
         Utilize o seguinte link para obter o número da série desejada:
         https://www3.bcb.gov.br/sgspub/
     ultimos : int (default=None)
@@ -244,7 +244,7 @@ def sgs(
     Exemplos
     --------
     Capturar a taxa SELIC desde 2010 até 2021:
-        >>> bacen.sgs(serie=432, inicio='2010-01-01', fim='2021-01-01')
+        >>> bacen.serie(cod=432, inicio='2010-01-01', fim='2021-01-01')
         ...            data valor
         ... 0    2010-01-01  8.75
         ... 1    2010-01-02  8.75
@@ -254,7 +254,7 @@ def sgs(
         ... ...         ...   ...
 
     Capturar os últimos 5 valores da meta de inflação:
-        >>> bacen.sgs(serie=13521, ultimos=5)
+        >>> bacen.serie(cod=13521, ultimos=5)
         ...         data valor
         ... 0 2019-01-01  4.25
         ... 1 2020-01-01  4.00
@@ -264,7 +264,7 @@ def sgs(
 
     Capturar toda a série de reservas internacionais (em milhões de dólares)
     usando a data como index do DataFrame:
-        >>> bacen.sgs(serie=3546, index=True)
+        >>> bacen.serie(cod=3546, index=True)
         ...              valor
         ... data              
         ... 1970-12-01    1187
