@@ -9,6 +9,7 @@ import requests
 
 from ._utils import parse
 from . import bacen
+from . import ipea
 
 
 
@@ -208,7 +209,42 @@ def bandeira(uf:str, tamanho:int=100) -> str:
 # Principais séries temporais do Banco Central
 
 def ipca(**kwargs) -> _pd.DataFrame:
-    return bacen.sgs(4448, **kwargs)
+    return bacen.sgs(433, **kwargs)
 
 def selic(**kwargs) -> _pd.DataFrame:
     return bacen.sgs(432, **kwargs)
+
+def taxa_referencial(**kwargs) -> _pd.DataFrame:
+    return bacen.sgs(226, **kwargs)
+
+def rentabilidade_poupanca(**kwargs) -> _pd.DataFrame:
+    return bacen.sgs(195, **kwargs)
+
+def reservas_internacionais(periodo='mensal', **kwargs) -> _pd.DataFrame:
+    if periodo.lower() == 'mensal':
+        return bacen.sgs(3546, **kwargs)
+    elif periodo.lower() in ['diaria', 'diario', 'diário', 'diária']:
+        return bacen.sgs(13621, **kwargs)
+    else:
+        raise ValueError(
+            "Período inválido. Escolha um dos seguintes valores: 'mensal' ou 'diaria'."
+        )
+
+
+
+# Principais séries temporais do Ipeadata
+
+def risco_brasil(index=False) -> _pd.DataFrame:
+    return ipea.serie(cod='JPM366_EMBI366', index=index)
+
+def salario_minimo(tipo='nominal', index=False) -> _pd.DataFrame:
+    if tipo.lower() == 'nominal':
+        return ipea.serie(cod='MTE12_SALMIN12', index=index)
+    elif tipo.lower() == 'real':
+        return ipea.serie(cod='GAC12_SALMINRE12', index=index)
+    elif tipo.lower() == 'ppc':
+        return ipea.serie(cod='GAC12_SALMINDOL12', index=index)
+    else:
+        raise ValueError(
+            "Tipo inválido. Escolha um dos seguintes valores: 'nominal', 'real' ou 'ppc'."
+        )

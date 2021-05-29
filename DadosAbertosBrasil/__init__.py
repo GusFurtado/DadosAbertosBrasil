@@ -52,7 +52,7 @@ __author__ = 'Gustavo Furtado da Silva'
 
 from . import bacen
 from . import camara
-from . import favoritos
 from . import ibge
 from . import ipea
 from . import senado
+from .favoritos import *
