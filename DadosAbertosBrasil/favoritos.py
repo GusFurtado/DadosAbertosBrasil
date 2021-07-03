@@ -258,10 +258,85 @@ def bandeira(uf:str, tamanho:int=100) -> str:
         'SC': f'1/1a/Bandeira_de_Santa_Catarina.svg/{tamanho}px-Bandeira_de_Santa_Catarina.svg.png',
         'SE': f'b/be/Bandeira_de_Sergipe.svg/{tamanho}px-Bandeira_de_Sergipe.svg.png',
         'SP': f'2/2b/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/{tamanho}px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png',
-        'TO': f'f/ff/Bandeira_do_Tocantins.svg/{tamanho}px-Bandeira_do_Tocantins.svg.png',        
+        'TO': f'f/ff/Bandeira_do_Tocantins.svg/{tamanho}px-Bandeira_do_Tocantins.svg.png',
+
+        # Extintos
+        'FN': f'3/3b/Fernando_de_Noronha%2C_PE_-_Bandeira.svg/{tamanho}px-Fernando_de_Noronha%2C_PE_-_Bandeira.svg.png',
+        'GB': f'c/c3/Bandeira_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png/{tamanho}px-Bandeira_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png'
     }
     
-    return URL + bandeira[parse.uf(uf)]
+    return URL + bandeira[parse.uf(uf, extintos=True)]
+
+
+
+def brasao(uf:str, tamanho:int=100) -> str:
+    '''Gera a URL da WikiMedia para o brasão de um estado de um tamanho
+    escolhido.
+
+    Parâmetros
+    ----------
+    uf : str
+        Sigla da Unidade Federativa.
+    tamanho : int (default=100)
+        Tamanho em pixels da bandeira.
+
+    Retorna
+    -------
+    str
+        URL da bandeira do estado no formato PNG.
+
+    Erros
+    -----
+    DAB_UFError
+        Caso seja inserida uma UF inválida.
+
+    Exemplos
+    --------
+    Gera o link para uma imagem do brasão de Santa Catarina de 200 pixels.
+
+    >>> favoritos.brasao(uf='SC', tamanho=200)
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/' ...
+
+    '''
+    
+    URL = r'https://upload.wikimedia.org/wikipedia/commons/thumb/'
+    
+    brasao = {
+        'BR': f'b/bf/Coat_of_arms_of_Brazil.svg/{tamanho}px-Coat_of_arms_of_Brazil.svg.png',
+        'AC': f'5/52/Brasão_do_Acre.svg/{tamanho}px-Brasão_do_Acre.svg.png',
+        'AM': f'2/2c/Bras%C3%A3o_do_Amazonas.svg/{tamanho}px-Bras%C3%A3o_do_Amazonas.svg.png',
+        'AL': f'5/5c/Bras%C3%A3o_do_Estado_de_Alagoas.svg/{tamanho}px-Bras%C3%A3o_do_Estado_de_Alagoas.svg.png',
+        'AP': f'6/63/Bras%C3%A3o_do_Amap%C3%A1.svg/{tamanho}px-Bras%C3%A3o_do_Amap%C3%A1.svg.png',
+        'BA': f'1/12/Bras%C3%A3o_do_estado_da_Bahia.svg/{tamanho}px-Bras%C3%A3o_do_estado_da_Bahia.svg.png',
+        'CE': f'f/fe/Bras%C3%A3o_do_Cear%C3%A1.svg/{tamanho}px-Bras%C3%A3o_do_Cear%C3%A1.svg.png',
+        'DF': f'e/e0/Bras%C3%A3o_do_Distrito_Federal_%28Brasil%29.svg/{tamanho}px-Bras%C3%A3o_do_Distrito_Federal_%28Brasil%29.svg.png',
+        'ES': f'a/a0/Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg/{tamanho}px-Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg.png',
+        'GO': f'b/bf/Bras%C3%A3o_de_Goi%C3%A1s.svg/{tamanho}px-Bras%C3%A3o_de_Goi%C3%A1s.svg.png',
+        'MA': f'a/ab/Brasão_do_Maranhão.svg/{tamanho}px-Brasão_do_Maranhão.svg.png',
+        'MG': f'd/d2/Brasão_de_Minas_Gerais.svg/{tamanho}px-Brasão_de_Minas_Gerais.svg.png',
+        'MT': f'0/04/Brasão_de_Mato_Grosso.png/{tamanho}px-Brasão_de_Mato_Grosso.png',
+        'MS': f'f/fa/Brasão_de_Mato_Grosso_do_Sul.svg/{tamanho}px-Brasão_de_Mato_Grosso_do_Sul.svg.png',
+        'PA': f'b/bc/Brasão_do_Pará.svg/{tamanho}px-Brasão_do_Pará.svg.png',
+        'PB': f'f/fd/Brasão_da_Paraíba.svg/{tamanho}px-Brasão_da_Paraíba.svg.png',
+        'PE': f'0/04/Brasão_do_estado_de_Pernambuco.svg/{tamanho}px-Brasão_do_estado_de_Pernambuco.svg.png',
+        'PI': f'a/ad/Brasão_do_Piauí.svg/{tamanho}px-Brasão_do_Piauí.svg.png',
+        'PR': f'4/49/Brasão_do_Paraná.svg/{tamanho}px-Brasão_do_Paraná.svg.png',
+        'RJ': f'5/5b/Brasão_do_estado_do_Rio_de_Janeiro.svg/{tamanho}px-Brasão_do_estado_do_Rio_de_Janeiro.svg.png',
+        'RO': f'f/f1/Brasão_de_Rondônia.svg/{tamanho}px-Brasão_de_Rondônia.svg.png',
+        'RN': f'2/26/Brasão_do_Rio_Grande_do_Norte.svg/{tamanho}px-Brasão_do_Rio_Grande_do_Norte.svg.png',        
+        'RR': f'e/ed/Brasão_de_Roraima.svg/{tamanho}px-Brasão_de_Roraima.svg.png',
+        'RS': f'3/38/Brasão_do_Rio_Grande_do_Sul.svg/{tamanho}px-Brasão_do_Rio_Grande_do_Sul.svg.png',
+        'SC': f'6/65/Brasão_de_Santa_Catarina.svg/{tamanho}px-Brasão_de_Santa_Catarina.svg.png',
+        'SE': f'5/52/Brasão_de_Sergipe.svg/{tamanho}px-Brasão_de_Sergipe.svg.png',
+        'SP': f'1/1a/Brasão_do_estado_de_São_Paulo.svg/{tamanho}px-Brasão_do_estado_de_São_Paulo.svg.png',
+        'TO': f'c/cc/Brasão_do_Tocantins.svg/{tamanho}px-Brasão_do_Tocantins.svg.png',
+
+        # Extintos
+        'FN': f'5/5a/Fernando_de_Noronha%2C_PE_-_Bras%C3%A3o.svg/{tamanho}px-Fernando_de_Noronha%2C_PE_-_Bras%C3%A3o.svg.png',
+        'GB': f'c/cf/Bras%C3%A3o_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png/{tamanho}px-Bras%C3%A3o_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png'
+    }
+    
+    return URL + brasao[parse.uf(uf, extintos=True)]
 
 
 

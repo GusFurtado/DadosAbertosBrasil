@@ -76,8 +76,7 @@ def uf(
     uf: str
         Nome ou sigla da UF.
     extintos: bool (default=None)
-        !!! AINDA NÃO IMPLEMENTADO !!!
-        Permitir as UFs extintas:
+        Verificar também as UFs extintas:
             - 20: Fernando de Noronha / FN
             - 34: Guanabara / GB
 
@@ -169,6 +168,9 @@ def uf(
     }
     
     uf = str(uf).upper().replace(' ', '')
+
+    if extintos:
+        UFS.update(EXTINTOS)
 
     if uf in UFS.values():
         return uf
