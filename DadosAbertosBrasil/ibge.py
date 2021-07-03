@@ -1,5 +1,4 @@
-'''
-Módulo para captura dos dados abertos das APIs do IBGE.
+'''Módulo para captura dos dados abertos das APIs do IBGE.
 
 Serviços Disponíveis
 --------------------
@@ -43,10 +42,8 @@ Serviços
     https://servicodados.ibge.gov.br/api/docs
 SIDRA
     http://api.sidra.ibge.gov.br/
+
 '''
-
-
-
 from typing import Union
 
 import pandas as _pd
@@ -67,9 +64,9 @@ def nomes(
         sexo: str = None,
         localidade: int = None
     ) -> _pd.DataFrame:
-    '''
-    Obtém a frequência de nascimentos por década dos nomes consultados.
-    Defina o campo 'nomes' com um string ou uma lista de string.
+    '''Obtém a frequência de nascimentos por década dos nomes consultados.
+    
+    Defina o campo `nomes` com um string ou uma lista de string.
     Use os argumentos opcionais para definir sexo e localidade dos nomes.
 
     Parâmetros
@@ -93,7 +90,46 @@ def nomes(
         DataFrame contendo a frequência de nascimentos por década para
         o(s) nome(s) consultado(s).
 
-    --------------------------------------------------------------------------
+    Erros
+    -----
+    DAB_LocalidadeError
+        Caso o código da localidade seja inválido.
+    ValueError
+        Caso nenhum valor seja encontrado ou em caso de um argumento inválido.
+
+    Exemplos
+    --------
+    Forma mais simples da função.
+
+    >>> ibge.nomes('Joao')
+    nome           JOAO
+    periodo            
+    1930[         60155
+    [1930,1940[  141772
+    [1940,1950[  256001
+    [1950,1960[  396438
+    [1960,1970[  429148
+    [1970,1980[  279975
+    [1980,1990[  273960
+    [1990,2000[  352552
+    [2000,2010[  794118
+
+    Quantidade de nascimento de "João" no Rio de Janeiro (localidade 33)
+    e do sexo masculino ('M').
+
+    >>> ibge.nomes('Joao', sexo='M', localidade=33)
+    nome          JOAO
+    periodo           
+    1930[         3592
+    [1930,1940[   9207
+    [1940,1950[  16860
+    [1950,1960[  25221
+    [1960,1970[  25839
+    [1970,1980[  15477
+    [1980,1990[  16114
+    [1990,2000[  26862
+    [2000,2010[  68741
+
     '''
     
     if isinstance(nomes, list):
@@ -118,8 +154,7 @@ def nomes(
 
 
 def nomes_uf(nome: str) -> _pd.DataFrame:
-    '''
-    Obtém a frequência de nascimentos por UF para o nome consultado.
+    '''Obtém a frequência de nascimentos por UF para o nome consultado.
 
     Parâmetros
     ----------
@@ -132,7 +167,18 @@ def nomes_uf(nome: str) -> _pd.DataFrame:
         DataFrame contendo a frequência de nascimentos do nome pesquisado,
         agrupado por Unidade da Federação.
 
-    --------------------------------------------------------------------------
+    Exemplos
+    --------
+    >>> ibge.nomes_uf('Joao')
+
+                populacao  frequencia  proporcao
+    localidade                                  
+    11            1562409       23366    1495.51
+    12             733559       10383    1415.43
+    13            3483985       41234    1183.53
+    14             450479        5664    1257.33
+    ..                ...         ...        ...
+
     '''
     
     if isinstance(nome, str):
@@ -160,8 +206,7 @@ def nomes_ranking(
         sexo: str = None,
         localidade: int = None
     ) -> _pd.DataFrame:
-    '''
-    Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
+    '''Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
 
     Parâmetros
     ----------
@@ -184,7 +229,35 @@ def nomes_ranking(
         DataFrame contendo os nomes mais populadores dentro do universo de
         parâmetros pesquisados.
 
-    --------------------------------------------------------------------------
+    Erros
+    -----
+    DAB_LocalidadeError
+        Caso o código da localidade seja inválido.
+
+    Exemplos
+    --------
+    Forma mais simples da função.
+
+    >>> ibge.nomes_ranking()
+                nome  frequencia
+    ranking                       
+    1            MARIA    11734129
+    2             JOSE     5754529
+    3              ANA     3089858
+    4             JOAO     2984119
+    ..             ...         ...
+
+    Ranking de nomes femininos no Rio de Janeiro na decada de 1990.
+
+    >>> ibge.nomes_ranking(decada=1990, localidade=33, sexo='F')
+                nome  frequencia
+    ranking                       
+    1              ANA       44284
+    2            MARIA       27944
+    3            ALINE       26084
+    4          VANESSA       24225
+    ..             ...         ...
+
     '''
     
     query = 'https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking'
@@ -225,14 +298,13 @@ def lista_tabelas(
         excluindo: str = None,
         index: bool = False
     ) -> _pd.DataFrame:
-    '''
-    Lista de tabelas disponíveis no SIDRA.
+    '''Lista de tabelas disponíveis no SIDRA.
 
     Parâmetros
     ----------
     pesquisa : str (default=None)
         Código de duas letras da pesquisa que será buscada.
-        Utilize a função `ibge_lista_pesquisas` para encontrar o código.
+        Utilize a função `ibge.lista_pesquisas` para encontrar o código.
     contendo : str (default=None)
         Buscar apenas tabelas que contenham essa sequência de caracteres.
     excluindo : str (default=None)
@@ -244,6 +316,37 @@ def lista_tabelas(
     -------
     pandas.core.frame.DataFrame
         Lista de tabelas disponíveis no SIDRA.
+
+    Exemplos
+    --------
+    Forma mais simples da função.
+
+    >>> ibge.lista_tabelas()    
+        tabela_id                                        tabela_nome  \
+    0        1732  Dados gerais das empresas por faixas de pessoa...  \
+    1        1735  Dados gerais das unidades locais por faixas de...  \
+    2        1734  Dados gerais das unidades locais por faixas de...  \
+    3        1733  Dados gerais das unidades locais por faixas de...  \
+    4        2869  Empresas e outras organizações e suas unidades...  \
+
+    Listar tabelas do Censo Demográfico (pesquisa 'CD'), contendo o termo
+    'rendimento' no título, porém não contendo 'Distribuição', definindo a
+    coluna `tabela_id` como index do DataFrame.
+
+    >>> ibge.lista_tabelas(
+    ...     pesquisa = 'CD',
+    ...     contendo = 'rendimento',
+    ...     excluindo = 'Distribuição',
+    ...     index = True
+    ... )
+                                                     tabela_nome pesquisa_id  \
+    tabela_id                                                                 \
+    171        Chefes de domicílios particulares permanentes ...          CD  \
+    3534       Domicílios particulares permanentes com rendim...          CD  \
+    3525       Domicílios particulares permanentes com rendim...          CD  \
+    2428       Domicílios particulares permanentes com rendim...          CD  \
+    2427       Domicílios particulares permanentes com rendim...          CD  \
+
     '''
 
     data = get_data(
@@ -290,8 +393,10 @@ def lista_tabelas(
 def lista_pesquisas(
         index: bool = False
     ) -> _pd.DataFrame:
-    '''
-    Lista de pesquisas disponíveis no SIDRA.
+    '''Lista de pesquisas disponíveis no SIDRA.
+
+    Esta função é utilizada para identificar o código usado pela função
+    `ibge.lista_tabelas`.
 
     Parâmetros
     ----------
@@ -302,6 +407,18 @@ def lista_pesquisas(
     -------
     pandas.core.frame.DataFrame
         Lista de pesquisas disponíveis no SIDRA.
+
+    Exemplos
+    --------
+    >>> ibge.lista_pesquisas()
+       pesquisa_id                                      pesquisa_nome
+    0           CL                       Cadastro Central de Empresas
+    1           CA                                 Censo Agropecuário
+    2           ME           Censo Comum do Mercosul, Bolívia e Chile
+    3           CD                                  Censo Demográfico
+    4           CM                             Contagem da População 
+    ..         ...                                                ...
+    
     '''
 
     data = get_data(
@@ -326,8 +443,7 @@ def lista_pesquisas(
 
 
 class Metadados:
-    '''
-    Metadados da tabela desejada.
+    '''Metadados da tabela desejada.
 
     Parâmetros
     ----------
@@ -354,7 +470,22 @@ class Metadados:
     classificacoes : list of dict
         Lista de classificações e categorias disponíveis para a tabela.
 
-    --------------------------------------------------------------------------
+    Exemplos
+    --------
+    1. Crie uma instância de `Metadados` utilizando o código da tabela SIDRA
+    como argumento.
+
+    >>> m = ibge.Metadados(tabela=1301)
+
+    2. Chame os atributos para obter informações sobre a tabela.
+
+    >>> m.nome
+    'Área e Densidade demográfica da unidade territorial'
+    >>> m.assunto
+    'Território'
+    >>> m.periodos
+    {'frequencia': 'anual', 'inicio': 2010, 'fim': 2010}
+
     '''
 
     def __init__(self, tabela: int):
@@ -372,6 +503,7 @@ class Metadados:
         self.variaveis = data['variaveis']
         self.classificacoes = data['classificacoes']
 
+
     def __repr__(self):
         return f'DadosAbertosBrasil.ibge: Metadados da Tabela {self.cod} - {self.nome}'
 
@@ -387,8 +519,7 @@ def sidra(
         decimais: int = None,
         retorna: str = 'dataframe'
     ) -> Union[_pd.DataFrame, dict, str]:
-    '''
-    Função para captura de dados do SIDRA - Sistema IBGE de Recuperação
+    '''Função para captura de dados do SIDRA - Sistema IBGE de Recuperação
     Automática.
 
     Parâmetros
@@ -458,7 +589,6 @@ def sidra(
     str
         Se retorna='url', retorna a URL para consulta.
 
-    --------------------------------------------------------------------------
     '''
 
     path = f'http://api.sidra.ibge.gov.br/values/t/{tabela}'
@@ -509,8 +639,7 @@ def referencias(
         cod: str,
         index: bool = False
     ) -> _pd.DataFrame:
-    '''
-    Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
+    '''Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
 
     Parâmetros
     ----------
@@ -529,20 +658,51 @@ def referencias(
     pandas.core.frame.DataFrame
         DataFrame contendo todas as referências do código pesquisado.
 
-    --------------------------------------------------------------------------
+    Erros
+    -----
+    ValueError
+        Caso o código da referência seja inválido.
+
+    Exemplos
+    --------
+    Lista assuntos.
+
+    >>> ibge.referencias('a')
+          id                                       literal
+    0    148                         Abastecimento de água
+    1     70                              Abate de animais
+    2    110                Acesso a esgotamento sanitário
+    3    147                             Acesso à internet
+    4    107  Acesso a serviço de coleta de lixo doméstico
+    ..    ..                                            ..
+
+    Lista classificações usando o `ìd` da classificação como index
+    do DataFrame.
+    
+    >>> ibge.referencias('c', index=True)
+                                                     literal
+    id                                                      
+    588    Acessibilidade possível na maior parte das via...
+    957    Acesso à Internet por telefone móvel celular p...
+    681                    Acesso a televisão por assinatura
+    12236                               Adequação da moradia
+    806                      Adubação, calagem e agrotóxicos
+    ...                                                  ...
+
     '''
 
-    if cod in ['A', 'a', 'assuntos']:
+    cod = cod.lower()
+    if cod in ('a', 'assuntos'):
         s = 'A'
-    elif cod in ['C', 'c', 'classificacoes']:
+    elif cod in ('c', 'classificacoes'):
         s = 'C'
-    elif cod in ['N', 'n', 'niveis_geograficos', 'T', 't', 'territorios']:
+    elif cod in ('n', 't', 'niveis_geograficos', 'territorios'):
         s = 'N'
-    elif cod in ['P', 'p', 'periodos']:
+    elif cod in ('p', 'periodos'):
         s = 'P'
-    elif cod in ['E', 'e', 'periodicidades']:
+    elif cod in ('e', 'periodicidades'):
         s = 'E'
-    elif cod in ['V', 'v', 'variaveis']:
+    elif cod in ('v', 'variaveis'):
         s = 'V'
     else:
         raise ValueError("O campo 'cod' deve ser do tipo string.")
@@ -561,8 +721,7 @@ def populacao(
         projecao: str = None,
         localidade: int = None
     ) -> Union[dict, int]:
-    '''
-    Obtém a projecao da população referente ao Brasil.
+    '''Obtém a projecao da população referente ao Brasil.
 
     Parâmetros
     ----------
@@ -570,6 +729,7 @@ def populacao(
         - 'populacao' obtém o valor projetado da população total da localidade;
         - 'nascimento' obtém o valor projetado de nascimentos da localidade
         - 'obito' obtém o valor projetado de óbitos da localidade;
+        - 'incremento' obtém o incremento populacional projetado.
         - None obtém um dicionário com todos os valores anteriores.
     localidade : int (default=None)
         Código da localidade desejada.
@@ -582,7 +742,34 @@ def populacao(
     dict ou int:
         Valor(es) projetado(s) para o indicador escolhido.
 
-    --------------------------------------------------------------------------
+    Erros
+    -----
+    DAB_LocalidadeError
+        Caso código da localidade seja inválido.
+    ValueError
+        Caso o argumento `projecao` seja inválido.
+
+    Exemplos
+    --------
+    Projeção de óbito do Brasil.
+
+    >>> ibge.populacao('obito')
+    45000
+
+    Obter dados do Rio de Janeiro (localidade 33)
+
+    >>> ibge.populacao(localidade=33)
+    {
+        'localidade': '33',
+        'horario': '03/07/2021 19:15:48',
+        'projecao': {
+            'populacao': 17459953,
+            'periodoMedio': {
+                'incrementoPopulacional': 330508
+            }
+        }
+    }
+
     '''
 
     localidade = parse.localidade(localidade, '')
@@ -598,15 +785,21 @@ def populacao(
         return r['projecao']['periodoMedio']['nascimento']
     elif projecao == 'obito':
         return r['projecao']['periodoMedio']['obito']
+    elif projecao == 'incremento':
+        return r['projecao']['periodoMedio']['incrementoPopulacional']
     else:
-        raise TypeError("O argumento 'projecao' deve ser um dos seguintes valores tipo string: 'populacao', 'nascimento' ou 'obito'.")
+        raise ValueError('''O argumento 'projecao' deve ser um dos seguintes valores tipo string:
+            - 'populacao';
+            - 'nascimento';
+            - 'obito';
+            - 'incremento'.''')
 
 
 
 def _loc_columns(x: str) -> str:
-    '''
-    Função de suporte à função `ibge.localidades`.
+    '''Função de suporte à função `ibge.localidades`.
     Usada para renomear as colunas do DataFrame de distritos.
+    
     '''
 
     y = x.replace('-', '_').split('.')
@@ -615,15 +808,24 @@ def _loc_columns(x: str) -> str:
 
 
 def localidades() -> _pd.DataFrame:
-    '''
-    Obtém o conjunto de distritos do Brasil.
+    '''Obtém o conjunto de distritos do Brasil.
 
     Retorna
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo todas as divisões de distritos do Brasil.
 
-    --------------------------------------------------------------------------
+    Exemplos
+    --------
+    >>> ibge.localidades()
+                  id                 nome  municipio_id       municipio_nome  \
+    0      520005005      Abadia de Goiás       5200050      Abadia de Goiás  \
+    1      310010405  Abadia dos Dourados       3100104  Abadia dos Dourados  \
+    2      520010005            Abadiânia       5200100            Abadiânia  \
+    3      520010010       Posse d'Abadia       5200100            Abadiânia  \
+    4      310020305               Abaeté       3100203               Abaeté  \
+    ..           ...                  ...           ...                  ...
+
     '''
 
     df = _normalize(
@@ -638,8 +840,7 @@ def localidades() -> _pd.DataFrame:
 
 
 def malha(localidade:int=None) -> str:
-    '''
-    Obtém a URL para a malha referente ao identificador da localidade.
+    '''Obtém a URL para a malha referente ao identificador da localidade.
 
     Parâmetros
     ----------
@@ -654,7 +855,16 @@ def malha(localidade:int=None) -> str:
     str
         URL da malha da localidade desejada.
 
-    --------------------------------------------------------------------------
+    Erros
+    -----
+    DAB_LocalidadeError
+        Caso o código da localidade seja inválido.
+
+    Exemplos
+    --------
+    >>> ibge.malha(localidade=4209102)
+    https://servicodados.ibge.gov.br/api/v2/malhas/4209102
+
     '''
 
     localidade = parse.localidade(localidade, '')
@@ -663,8 +873,7 @@ def malha(localidade:int=None) -> str:
 
 
 def coordenadas() -> _pd.DataFrame:
-    '''
-    Obtém as coordenadas de todas as localidades brasileiras, incluindo
+    '''Obtém as coordenadas de todas as localidades brasileiras, incluindo
     latitude, longitude e altitude.
 
     Retorna
@@ -672,7 +881,17 @@ def coordenadas() -> _pd.DataFrame:
     pandas.core.frame.DataFrame
         DataFrame das coordenadas de todas as localidade brasileiras.
 
-    --------------------------------------------------------------------------
+    Exemplos
+    --------
+    >>> ibge.coordenadas()
+           GM_PONTO     ID     CD_GEOCODIGO    TIPO   CD_GEOCODBA NM_BAIRRO  \
+    0           NaN      1  110001505000001  URBANO  1.100015e+11   Redondo  \
+    1           NaN      2  110001515000001  URBANO           NaN       NaN  \
+    2           NaN      3  110001520000001  URBANO           NaN       NaN  \
+    3           NaN      4  110001525000001  URBANO           NaN       NaN  \
+    4           NaN      5  110001530000001  URBANO           NaN       NaN  \
+    ..          ...     ..              ...     ...           ...       ...  \
+
     '''
 
     return _pd.read_excel(

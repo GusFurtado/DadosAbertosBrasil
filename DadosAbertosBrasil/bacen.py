@@ -146,32 +146,34 @@ def cambio(
 
     Exemplos
     --------
-    Retornar uma moeda usando argumentos padrões:
-        >>> bacen.cambio(moedas='EUR')
-                   Data      EUR
-        0    2000-01-03  1.84601
-        1    2000-01-04  1.88695
-        2    2000-01-05  1.91121
-        3    2000-01-06  1.90357
-        4    2000-01-07  1.87790
-        ...         ...      ...
+    Retornar uma moeda usando argumentos padrões.
 
-    Retornar várias moedas, alterando argumentos:
-        >>> bacen.cambio(
-        ...     moedas = ['USD', 'CAD'],
-        ...     inicio = '2021-01-01',
-        ...     fim = '2021-01-10',
-        ...     cotacao = 'venda',
-        ...     boletim = 'abertura',
-        ...     index = True
-        ... )
-                       USD     CAD
-        Data                      
-        2021-01-04  5.1402  4.0500
-        2021-01-05  5.3405  4.1890
-        2021-01-06  5.3013  4.1798
-        2021-01-07  5.3174  4.1833
-        2021-01-08  5.3612  4.2237
+    >>> bacen.cambio(moedas='EUR')
+                Data      EUR
+    0    2000-01-03  1.84601
+    1    2000-01-04  1.88695
+    2    2000-01-05  1.91121
+    3    2000-01-06  1.90357
+    4    2000-01-07  1.87790
+    ...         ...      ...
+
+    Retornar várias moedas, alterando argumentos.
+
+    >>> bacen.cambio(
+    ...     moedas = ['USD', 'CAD'],
+    ...     inicio = '2021-01-01',
+    ...     fim = '2021-01-10',
+    ...     cotacao = 'venda',
+    ...     boletim = 'abertura',
+    ...     index = True
+    ... )
+                    USD     CAD
+    Data                      
+    2021-01-04  5.1402  4.0500
+    2021-01-05  5.3405  4.1890
+    2021-01-06  5.3013  4.1798
+    2021-01-07  5.3174  4.1833
+    2021-01-08  5.3612  4.2237
 
     '''
 
@@ -271,36 +273,39 @@ def serie(
 
     Exemplos
     --------
-    Capturar a taxa SELIC desde 2010 até 2021:
-        >>> bacen.serie(cod=432, inicio='2010-01-01', fim='2021-01-01')
-                   data valor
-        0    2010-01-01  8.75
-        1    2010-01-02  8.75
-        2    2010-01-03  8.75
-        3    2010-01-04  8.75
-        4    2010-01-05  8.75
-        ...         ...   ...
+    Capturar a taxa SELIC desde 2010 até 2021.
 
-    Capturar os últimos 5 valores da meta de inflação:
-        >>> bacen.serie(cod=13521, ultimos=5)
+    >>> bacen.serie(cod=432, inicio='2010-01-01', fim='2021-01-01')
                 data valor
-        0 2019-01-01  4.25
-        1 2020-01-01  4.00
-        2 2021-01-01  3.75
-        3 2022-01-01  3.50
-        4 2023-01-01  3.25
+    0    2010-01-01  8.75
+    1    2010-01-02  8.75
+    2    2010-01-03  8.75
+    3    2010-01-04  8.75
+    4    2010-01-05  8.75
+    ...         ...   ...
+
+    Capturar os últimos 5 valores da meta de inflação.
+
+    >>> bacen.serie(cod=13521, ultimos=5)
+            data valor
+    0 2019-01-01  4.25
+    1 2020-01-01  4.00
+    2 2021-01-01  3.75
+    3 2022-01-01  3.50
+    4 2023-01-01  3.25
 
     Capturar toda a série de reservas internacionais (em milhões de dólares)
-    usando a data como index do DataFrame:
-        >>> bacen.serie(cod=3546, index=True)
-                     valor
-        data              
-        1970-12-01    1187
-        1971-01-01    1229
-        1971-02-01    1280
-        1971-03-01    1316
-        1971-04-01    1379
-        ...            ...
+    usando a data como index do DataFrame.
+
+    >>> bacen.serie(cod=3546, index=True)
+                    valor
+    data              
+    1970-12-01    1187
+    1971-01-01    1229
+    1971-02-01    1280
+    1971-03-01    1316
+    1971-04-01    1379
+    ...            ...
 
     '''
 

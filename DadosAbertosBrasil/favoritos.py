@@ -1,9 +1,13 @@
+'''Módulo para consulta a informações variadas.
+
+Essas funções são importadas pelo `__init__` do super-módulo
+`DadosAbertosBrasil`.
+
+Elas consistem em informações diversas ou em funções pré-parametrizadas de
+outros módulo. Seu objetivo é facilitar o acesso às informações de maior
+interesse público.
+
 '''
-Módulo para consulta a informações variadas.
-'''
-
-
-
 import pandas as _pd
 import requests
 
@@ -14,8 +18,7 @@ from . import ipea
 
 
 def catalogo() -> _pd.DataFrame:
-    '''
-    Catálogo de iniciativas oficiais de dados abertos no Brasil.
+    '''Catálogo de iniciativas oficiais de dados abertos no Brasil.
 
     Retorna
     -------
@@ -26,7 +29,17 @@ def catalogo() -> _pd.DataFrame:
     --------
     https://github.com/dadosgovbr
 
-    --------------------------------------------------------------------------
+    Exemplos
+    --------
+    >>> favoritos.catalogo()
+                                                   Título  \
+    0                      Alagoas em dados e informações  \
+    1                             Fortaleza Dados Abertos  \
+    2                              Dados abertos – TCM-CE  \
+    3                      Dados abertos Distrito Federal  \
+    4                       Dados abertos – Governo do ES  \
+    ..                                                ...  \
+
     '''
 
     URL = 'https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv'
@@ -35,8 +48,7 @@ def catalogo() -> _pd.DataFrame:
 
 
 def geojson(uf:str) -> dict:
-    '''
-    Coordenadas dos municípios brasileiros em formato GeoJSON para criação
+    '''Coordenadas dos municípios brasileiros em formato GeoJSON para criação
     de mapas.
 
     Parâmetros
@@ -49,11 +61,37 @@ def geojson(uf:str) -> dict:
     dict
         Coordenadas em formato .GeoJSON da UF pesquisada.
 
+    Erros
+    -----
+    DAB_UFError
+        Caso seja inserida uma UF inválida.
+
     Créditos
     --------
     https://github.com/tbrugz
 
-    --------------------------------------------------------------------------
+    Exemplos
+    --------
+    >>> favoritos.geojson('SC')
+    {
+        'type': 'FeatureCollection',
+        'features': [{
+            'type': 'Feature',
+            'properties': {
+                'id': '4200051',
+                'name': 'Abdon Batista',
+                'description': 'Abdon Batista'
+            },
+            'geometry': {
+                'type': 'Polygon',
+                'coordinates': [[
+                    [-51.0378352721, -27.5044338231],
+                    [-51.0307859254, -27.5196681175],
+                    [-51.0175689993, -27.5309862449],
+                    [-50.9902859975, -27.5334223314],
+                    [-50.9858971419, -27.5302011257],
+                    ...
+
     '''
 
     uf = parse.uf(uf)
@@ -62,7 +100,6 @@ def geojson(uf:str) -> dict:
 
         'BR': 100,
 
-        # Região Norte
         'AC': 12,
         'AM': 13,
         'AP': 16,
@@ -71,7 +108,6 @@ def geojson(uf:str) -> dict:
         'RR': 14,
         'TO': 17,
 
-        # Região Nordeste
         'AL': 27,
         'BA': 29,
         'CE': 23,
@@ -82,22 +118,19 @@ def geojson(uf:str) -> dict:
         'RN': 24,
         'SE': 28,
 
-        # Região Centro-Oeste
-        'DF': 53,
-        'GO': 52,
-        'MT': 51,
-        'MS': 50,
-
-        # Região Sudeste
         'ES': 32,
         'MG': 31,
         'RJ': 33,
         'SP': 35,
 
-        # Região Sul
         'PR': 41,
         'RS': 43,
-        'SC': 42
+        'SC': 42,
+
+        'DF': 53,
+        'GO': 52,
+        'MT': 51,
+        'MS': 50
 
     }
     
@@ -107,8 +140,7 @@ def geojson(uf:str) -> dict:
 
 
 def codigos_municipios() -> _pd.DataFrame:
-    '''
-    Lista dos códigos dos municípios do IBGE e do TSE.
+    '''Lista dos códigos dos municípios do IBGE e do TSE.
     Utilizado para correlacionar dados das duas APIs diferentes.
 
     Retorna
@@ -121,7 +153,17 @@ def codigos_municipios() -> _pd.DataFrame:
     --------
     https://github.com/betafcc
 
-    --------------------------------------------------------------------------
+    Exemplos
+    --------
+    >>> favoritos.codigos_municipios()
+          codigo_tse  codigo_ibge nome_municipio  uf  capital
+    0           1120      1200013     ACRELÂNDIA  AC        0
+    1           1570      1200054   ASSIS BRASIL  AC        0
+    2           1058      1200104      BRASILÉIA  AC        0
+    3           1007      1200138         BUJARI  AC        0
+    4           1015      1200179       CAPIXABA  AC        0
+    ..           ...          ...            ...  ..      ...
+
     '''
 
     URL = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
@@ -131,15 +173,21 @@ def codigos_municipios() -> _pd.DataFrame:
 
 
 def perfil_eleitorado() -> _pd.DataFrame:
-    '''
-    Tabela com perfil do eleitorado por município.
+    '''Tabela com perfil do eleitorado por município.
 
     Retorna
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo o perfil do eleitorado em todos os municípios.
 
-    --------------------------------------------------------------------------
+    Exemplos
+    --------
+    >>> favoritos.perfil_eleitorado()
+          NR_ANO_ELEICAO  CD_PAIS NM_PAIS SG_REGIAO NM_REGIAO SG_UF     NM_UF  \
+    0               2020        1  Brasil         N     Norte    AC      Acre  \
+    1               2020        1  Brasil         N     Norte    AC      Acre  \
+    ..               ...      ...     ...       ...       ...   ...       ...  \
+
     '''
 
     return _pd.read_csv(
@@ -151,8 +199,7 @@ def perfil_eleitorado() -> _pd.DataFrame:
 
 
 def bandeira(uf:str, tamanho:int=100) -> str:
-    '''
-    Gera a URL da WikiMedia para a bandeira de um estado de um tamanho
+    '''Gera a URL da WikiMedia para a bandeira de um estado de um tamanho
     escolhido.
 
     Parâmetros
@@ -167,12 +214,24 @@ def bandeira(uf:str, tamanho:int=100) -> str:
     str
         URL da bandeira do estado no formato PNG.
 
-    --------------------------------------------------------------------------
+    Erros
+    -----
+    DAB_UFError
+        Caso seja inserida uma UF inválida.
+
+    Exemplos
+    --------
+    Gera o link para uma imagem da bandeira de Santa Catarina de 200 pixels.
+
+    >>> favoritos.bandeira(uf='SC', tamanho=200)
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/' ...
+
     '''
     
     URL = r'https://upload.wikimedia.org/wikipedia/commons/thumb/'
     
     bandeira = {
+        'BR': f'0/05/Flag_of_Brazil.svg/{tamanho}px-Flag_of_Brazil.svg.png',
         'AC': f'4/4c/Bandeira_do_Acre.svg/{tamanho}px-Bandeira_do_Acre.svg.png',
         'AM': f'6/6b/Bandeira_do_Amazonas.svg/{tamanho}px-Bandeira_do_Amazonas.svg.png',
         'AL': f'8/88/Bandeira_de_Alagoas.svg/{tamanho}px-Bandeira_de_Alagoas.svg.png',

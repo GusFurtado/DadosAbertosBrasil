@@ -1,9 +1,8 @@
+'''Função que captura os dados das APIs.
+
+Adiciona o endpoint, path e parâmetros do request e retorna um arquivo JSON.
+
 '''
-Função que captura os dados das APIs.
-'''
-
-
-
 from typing import Union
 
 import requests
@@ -15,8 +14,7 @@ def get_data(
         path: Union[str, list],
         params: dict = None
     ) -> dict:
-    '''
-    Coleta os dados requisitados das APIs REST.
+    '''Coleta os dados requisitados das APIs REST.
 
     Parâmetros
     ----------
@@ -35,7 +33,6 @@ def get_data(
     dict
         Dados brutos coletados da API.
 
-    --------------------------------------------------------------------------   
     '''
 
     if isinstance(path, list):

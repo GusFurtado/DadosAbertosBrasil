@@ -1,9 +1,9 @@
+'''Funções para padronização de parâmetros entre os módulos.
+
+Padroniza argumentos de data, UF, localidades e moeda, gerando `Exceptions`
+especiais do módulo `_utils.errors`.
+
 '''
-Funções para padronização de parâmetros entre os módulos.
-'''
-
-
-
 from datetime import datetime, date
 from typing import Union
 
@@ -15,8 +15,7 @@ def data(
         data: Union[datetime, date, str],
         modulo: str
     ) -> str:
-    '''
-    Padroniza o input de datas entre módulos.
+    '''Padroniza o input de datas entre módulos.
 
     Parâmetros
     ----------
@@ -35,7 +34,6 @@ def data(
     str
         Data no formato adequado para o módulo escolhido.
 
-    --------------------------------------------------------------------------
     '''
 
     if isinstance(data, str):
@@ -70,8 +68,7 @@ def uf(
         uf: str,
         extintos: bool = False
     ) -> str:
-    '''
-    Converte os nomes dos estados em siglas padrões.
+    '''Converte os nomes dos estados em siglas padrões.
     Suporta abreviaturas, acentuação e case sensibility.
 
     Parametros
@@ -90,7 +87,6 @@ def uf(
         String de dois caracteres maiúsculos que representam a sigla da
         Unidade Federativa desejada.
 
-    --------------------------------------------------------------------------
     '''
 
     UFS = {
@@ -192,8 +188,7 @@ def localidade(
         brasil = 1,
         on_error = 'raise'
     ) -> str:
-    '''
-    Verifica se o código da localidade é válido.
+    '''Verifica se o código da localidade é válido.
 
     Parametros
     ----------
@@ -202,7 +197,7 @@ def localidade(
         Caso localidade == None, retorna o valor padrão do Brasil.
     brasil: default = 1
         Valor padrão para o Brasil.
-    on_error: str (default = 'raise')
+    on_error: str (default='raise')
         - 'raise': Gera um erro quando o valor não for válido;
         - 'brasil': Retorna o valor Brasil quando o valor não for válido.
 
@@ -211,7 +206,6 @@ def localidade(
     str ou int
         Valor da localidade validado.
 
-    --------------------------------------------------------------------------
     '''
 
     if localidade is None:
@@ -238,8 +232,7 @@ def localidade(
 
 
 def moeda(moedas:Union[str, list]) -> list:
-    '''
-    Verifica se o(s) código(s) da(s) moeda(s) inserida(s) está(ão) em um
+    '''Verifica se o(s) código(s) da(s) moeda(s) inserida(s) está(ão) em um
     formato válido.
 
     Parâmetros
@@ -252,8 +245,8 @@ def moeda(moedas:Union[str, list]) -> list:
     list of str
         Lista de símbolos de moedas formatados.
 
-    --------------------------------------------------------------------------
     '''
+
     if isinstance(moedas, str):
         moedas = [moedas]
 
