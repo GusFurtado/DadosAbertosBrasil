@@ -244,7 +244,7 @@ def serie(
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
     index : bool (default=False)
-        Define se a coluna 'Data' será o index do DataFrame.
+        Define se a coluna 'data' será o index do DataFrame.
 
     Retorna
     -------
@@ -276,7 +276,7 @@ def serie(
     Capturar a taxa SELIC desde 2010 até 2021.
 
     >>> bacen.serie(cod=432, inicio='2010-01-01', fim='2021-01-01')
-                data valor
+               data valor
     0    2010-01-01  8.75
     1    2010-01-02  8.75
     2    2010-01-03  8.75
@@ -298,7 +298,7 @@ def serie(
     usando a data como index do DataFrame.
 
     >>> bacen.serie(cod=3546, index=True)
-                    valor
+                 valor
     data              
     1970-12-01    1187
     1971-01-01    1229

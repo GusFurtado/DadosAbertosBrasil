@@ -5,7 +5,7 @@ Mini-Tutorial
 1. Importe o módulo `ipea`.
 >>> from DadosAbertosBrasil import ipea
 
-2. Busque o código o código alfanumérico da série desejada com a função
+2. Busque o código alfanumérico da série desejada com a função
 `ipea.lista_series`.
 >>> ipea.lista_series( ... )
 
@@ -448,7 +448,7 @@ def serie(
         Utilize a função `ipea.lista_series` para identificar a série desejada.
         O código desejado estará na coluna 'SERCODIGO'.
     index : bool (default=False)
-        Se True, define a coluna 'SERCODIGO' como index do atributo 'valores'.
+        Se True, define a coluna 'VALDATA' como index do atributo 'valores'.
 
     Retorna
     -------
@@ -480,6 +480,8 @@ def serie(
 
     '''
 
-    df = _get(f"Metadados(SERCODIGO='{cod}')/Valores", index)
-    df.VALDATA = _pd.to_datetime(df.VALDATA)
+    df = _get(f"Metadados(SERCODIGO='{cod}')/Valores", index=False)
+    df.VALDATA = _pd.to_datetime(df.VALDATA, utc=True).dt.date
+    if index:
+        df.set_index('VALDATA', inplace=True)
     return df

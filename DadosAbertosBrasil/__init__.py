@@ -38,14 +38,13 @@ Próximos Passos
     - Conclusão do módulo `senado`;
     - Desenvolvimento do módulo `transparencia` para coleta de dados do
       Portal da Transparência do Governo Federal;
-    - Expandir módulo `bacen` com coleta de dados de expectativas de mercado;
     - Adicionar novos exemplos à documentação;
     - Adição constante de novas funções no módulo `favoritos`.
 '''
 
 
 
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 __author__ = 'Gustavo Furtado da Silva'
 
 

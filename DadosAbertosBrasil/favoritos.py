@@ -340,25 +340,380 @@ def brasao(uf:str, tamanho:int=100) -> str:
 
 
 
-# Principais séries temporais do Banco Central
+def ipca(
+        ultimos: int = None,
+        inicio: str = None,
+        fim: str = None,
+        index: bool = False
+    ) -> _pd.DataFrame:
+    '''Índice nacional de preços ao consumidor-amplo (IPCA).
 
-def ipca(**kwargs) -> _pd.DataFrame:
-    return bacen.serie(433, **kwargs)
+    Esta é uma função de fácil acesso à série temporal 433 do módulo `bacen`.
 
-def selic(**kwargs) -> _pd.DataFrame:
-    return bacen.serie(432, **kwargs)
+    Parâmetros
+    ----------
+    ultimos : int (default=None)
+        Retorna os últimos N valores da série numérica.
+    inicio : str ou datetime (default='2000-01-01')
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o primeiro dia da pesquisa.
+    fim : str ou datetime (default=None)
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o último dia da pesquisa. Caso este campo seja None, será
+        considerada a data de hoje.
+    index : bool (default=False)
+        Define se a coluna 'data' será o index do DataFrame.
 
-def taxa_referencial(**kwargs) -> _pd.DataFrame:
-    return bacen.serie(226, **kwargs)
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame contendo os valores da série temporal.
 
-def rentabilidade_poupanca(**kwargs) -> _pd.DataFrame:
-    return bacen.serie(195, **kwargs)
+    Erros
+    -----
+    JSONDecodeError
+        Em caso de parâmetros inválidos.
 
-def reservas_internacionais(periodo='mensal', **kwargs) -> _pd.DataFrame:
+    Notas
+    -----
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
+    funcionar.
+
+    Exemplos
+    --------
+    Os quatro valores mais recentes.
+
+    >>> favoritos.ipca(ultimos=4)
+            data valor
+    0 2021-03-01  0.93
+    1 2021-04-01  0.31
+    2 2021-05-01  0.83
+    3 2021-06-01  0.53
+
+    Os valores entre Janeiro e Abril de 2021 usando a data como índice.
+
+    >>> favoritos.ipca(inicio='2021-01-01', fim='2021-04-01', index=True)
+               valor
+    data            
+    2021-01-01  0.25
+    2021-02-01  0.86
+    2021-03-01  0.93
+    2021-04-01  0.31
+
+    '''
+
+    return bacen.serie(
+        serie = 433,
+        ultimos = ultimos,
+        inicio = inicio,
+        fim = fim,
+        index = index
+    )
+
+def selic(
+        ultimos: int = None,
+        inicio: str = None,
+        fim: str = None,
+        index: bool = False
+    ) -> _pd.DataFrame:
+    '''Taxa de juros - Meta Selic definida pelo COPOM.
+
+    Esta é uma função de fácil acesso à série temporal 432 do módulo `bacen`.
+
+    Parâmetros
+    ----------
+    ultimos : int (default=None)
+        Retorna os últimos N valores da série numérica.
+    inicio : str ou datetime (default='2000-01-01')
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o primeiro dia da pesquisa.
+    fim : str ou datetime (default=None)
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o último dia da pesquisa. Caso este campo seja None, será
+        considerada a data de hoje.
+    index : bool (default=False)
+        Define se a coluna 'data' será o index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame contendo os valores da série temporal.
+
+    Erros
+    -----
+    JSONDecodeError
+        Em caso de parâmetros inválidos.
+
+    Notas
+    -----
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
+    funcionar.
+
+    Exemplos
+    --------
+    Os quatro valores mais recentes.
+
+    >>> favoritos.selic(ultimos=4)
+            data valor
+    0 2021-08-01  4.25
+    1 2021-08-02  4.25
+    2 2021-08-03  4.25
+    3 2021-08-04  4.25
+
+    Os valores entre Janeiro e Abril de 2021 usando a data como índice.
+
+    >>> favoritos.selic(inicio='2021-01-01', fim='2021-04-01', index=True)
+               valor
+    data            
+    2021-01-01  2.00
+    2021-01-02  2.00
+    2021-01-03  2.00
+    2021-01-04  2.00
+    2021-01-05  2.00
+    ...          ...
+
+    '''
+
+    return bacen.serie(
+        serie = 432,
+        ultimos = ultimos,
+        inicio = inicio,
+        fim = fim,
+        index = index
+    )
+
+def taxa_referencial(
+        ultimos: int = None,
+        inicio: str = None,
+        fim: str = None,
+        index: bool = False
+    ) -> _pd.DataFrame:
+    '''Taxa referencial (TR).
+
+    Esta é uma função de fácil acesso à série temporal 226 do módulo `bacen`.
+
+    Parâmetros
+    ----------
+    ultimos : int (default=None)
+        Retorna os últimos N valores da série numérica.
+    inicio : str ou datetime (default='2000-01-01')
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o primeiro dia da pesquisa.
+    fim : str ou datetime (default=None)
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o último dia da pesquisa. Caso este campo seja None, será
+        considerada a data de hoje.
+    index : bool (default=False)
+        Define se a coluna 'data' será o index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame contendo os valores da série temporal.
+
+    Erros
+    -----
+    JSONDecodeError
+        Em caso de parâmetros inválidos.
+
+    Notas
+    -----
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
+    funcionar.
+
+    Exemplos
+    --------
+    Os quatro valores mais recentes.
+
+    >>> favoritos.taxa_referencial(ultimos=4)
+            data    datafim   valor
+    0 2021-07-05 2021-08-05  0.0000
+    1 2021-07-06 2021-08-06  0.0000
+    2 2021-07-07 2021-08-07  0.0000
+    3 2021-07-08 2021-08-08  0.0000
+
+    Os valores entre Janeiro e Abril de 2021 usando a data como índice.
+
+    >>> favoritos.taxa_referencial(inicio='2021-01-01', fim='2021-04-01', index=True)
+                  datafim   valor
+    data                         
+    2021-01-01 2021-02-01  0.0000
+    2021-01-02 2021-02-02  0.0000
+    2021-01-03 2021-02-03  0.0000
+    2021-01-04 2021-02-04  0.0000
+    2021-01-05 2021-02-05  0.0000
+    ...               ...     ...
+
+    '''
+
+    return bacen.serie(
+        serie = 226,
+        ultimos = ultimos,
+        inicio = inicio,
+        fim = fim,
+        index = index
+    )
+
+def rentabilidade_poupanca(
+        ultimos: int = None,
+        inicio: str = None,
+        fim: str = None,
+        index: bool = False
+    ) -> _pd.DataFrame:
+    '''Rentailidade dos depósitos de poupança a partir de Maio de 2012. 
+
+    Esta é uma função de fácil acesso à série temporal 195 do módulo `bacen`.
+
+    Parâmetros
+    ----------
+    ultimos : int (default=None)
+        Retorna os últimos N valores da série numérica.
+    inicio : str ou datetime (default='2000-01-01')
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o primeiro dia da pesquisa.
+    fim : str ou datetime (default=None)
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o último dia da pesquisa. Caso este campo seja None, será
+        considerada a data de hoje.
+    index : bool (default=False)
+        Define se a coluna 'data' será o index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame contendo os valores da série temporal.
+
+    Erros
+    -----
+    JSONDecodeError
+        Em caso de parâmetros inválidos.
+
+    Notas
+    -----
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
+    funcionar.
+
+    Exemplos
+    --------
+    Os quatro valores mais recentes.
+
+    >>> favoritos.rentabilidade_poupanca(ultimos=4)
+            data    datafim   valor
+    0 2021-07-05 2021-08-05  0.2446
+    1 2021-07-06 2021-08-06  0.2446
+    2 2021-07-07 2021-08-07  0.2446
+    3 2021-07-08 2021-08-08  0.2446
+
+    Os valores entre Janeiro e Abril de 2021 usando a data como índice.
+
+    >>> favoritos.rentabilidade_poupanca(inicio='2021-01-01', fim='2021-04-01', index=True)
+                  datafim   valor
+    data                         
+    2021-01-01 2021-02-01  0.1159
+    2021-01-02 2021-02-02  0.1159
+    2021-01-03 2021-02-03  0.1159
+    2021-01-04 2021-02-04  0.1159
+    2021-01-05 2021-02-05  0.1159
+    ...               ...     ...
+
+    '''
+
+    return bacen.serie(
+        serie = 195,
+        ultimos = ultimos,
+        inicio = inicio,
+        fim = fim,
+        index = index
+    )
+
+def reservas_internacionais(
+        periodo = 'mensal',
+        ultimos: int = None,
+        inicio: str = None,
+        fim: str = None,
+        index: bool = False
+    ) -> _pd.DataFrame:
+    '''Reservar internacionais mensais ou diárias.
+
+    Esta é uma função de fácil acesso às séries temporais 3546 e 13621
+    do módulo `bacen`.
+
+    Parâmetros
+    ----------
+    periodo : {'mensal', 'diario'} (default='mensal')
+        Período dos dados consultados.
+    ultimos : int (default=None)
+        Retorna os últimos N valores da série numérica.
+    inicio : str ou datetime (default='2000-01-01')
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o primeiro dia da pesquisa.
+    fim : str ou datetime (default=None)
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o último dia da pesquisa. Caso este campo seja None, será
+        considerada a data de hoje.
+    index : bool (default=False)
+        Define se a coluna 'data' será o index do DataFrame.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame contendo os valores da série temporal.
+
+    Erros
+    -----
+    JSONDecodeError
+        Em caso de parâmetros inválidos.
+
+    Notas
+    -----
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
+    funcionar.
+
+    Exemplos
+    --------
+    Os quatro valores diários mais recentes.
+
+    >>> favoritos.reservas_internacionais(periodo='diario', ultimos=4)
+            data   valor
+    0 2021-07-05  353870
+    1 2021-07-06  354086
+    2 2021-07-07  354140
+    3 2021-07-08  354303
+
+    Os valores mensais entre Janeiro e Abril de 2021 usando a data como
+    índice.
+
+    >>> favoritos.reservas_internacionais(
+    ...     periodo = 'mensal',
+    ...     inicio = '2021-01-01',
+    ...     fim = '2021-04-01',
+    ...     index = True
+    ... )
+                 valor
+    data              
+    2021-01-01  355416
+    2021-02-01  356070
+    2021-03-01  347413
+    2021-04-01  350996
+
+    '''
+
     if periodo.lower() == 'mensal':
-        return bacen.serie(3546, **kwargs)
+        return bacen.serie(
+            serie = 3546,
+            ultimos = ultimos,
+            inicio = inicio,
+            fim = fim,
+            index = index
+        )
     elif periodo.lower() in ['diaria', 'diario', 'diário', 'diária']:
-        return bacen.serie(13621, **kwargs)
+        return bacen.serie(
+            serie = 13621,
+            ultimos = ultimos,
+            inicio = inicio,
+            fim = fim,
+            index = index
+        )
     else:
         raise ValueError(
             "Período inválido. Escolha um dos seguintes valores: 'mensal' ou 'diaria'."
@@ -366,19 +721,105 @@ def reservas_internacionais(periodo='mensal', **kwargs) -> _pd.DataFrame:
 
 
 
-# Principais séries temporais do Ipeadata
-
 def risco_brasil(index=False) -> _pd.DataFrame:
-    return ipea.serie(cod='JPM366_EMBI366', index=index)
+    '''Valores diários do Risco-Brasil, disponibilizados pela J.P. Morgan
+    desde 1994.
+
+    Esta é uma função de fácil acesso à série temporal 'JPM366_EMBI366' do
+    módulo `ipea`.
+
+    Parâmetros
+    ----------
+    index : bool (default=False)
+        Define a coluna `data` como index da tabela.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        Tabela contendo os valores diários do Risco-Brasil.
+
+    Exemplos
+    --------
+    >>> favoritos.risco_brasil()
+                data   valor
+    0     1994-04-29  1120.0
+    1     1994-04-30     NaN
+    2     1994-05-01     NaN
+    3     1994-05-02  1131.0
+    4     1994-05-03  1081.0
+    ..           ...     ...
+
+    '''
+
+    df = ipea.serie(cod='JPM366_EMBI366', index=False)
+    df.drop(columns=['SERCODIGO', 'NIVNOME', 'TERCODIGO'], inplace=True)
+    df.columns = ['data', 'valor']
+    if index:
+        df.set_index('data', inplace=True)
+    return df
+
+
 
 def salario_minimo(tipo='nominal', index=False) -> _pd.DataFrame:
+    '''Valores do salário-mínimo mensal brasileiro desde 1940.
+
+    Esta é uma função de fácil acesso às série temporais do módulo `ipea`.
+
+    Parâmetros
+    ----------
+    tipo : {'nominal', 'real', 'pcc'} (default='nominal')
+        Tipo de salário-mínimo.
+        - 'nominal': Salário-mínimo nominal;
+        - 'real': Salário-mínimo real (abatido pela inflação);
+        - 'ppc': Salario-mínimo por Paridade de Poder de Compra.
+    index : bool (default=False)
+        Define a coluna `data` como index da tabela.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        Tabela contendo os valores mensais do salário-mínimo.
+
+    Exemplos
+    --------
+    Forma mais simples da função.
+
+    >>> favoritos.salario_minimo()
+               data         valor
+    0    1940-07-01  8.727273e-14
+    1    1940-08-01  8.727273e-14
+    2    1940-09-01  8.727273e-14
+    3    1940-10-01  8.727273e-14
+    4    1940-11-01  8.727273e-14
+    ..          ...           ...
+
+    Salário-mínimo real usando a data como índice da tabela.
+
+    >>> favoritos.salario_minimo(tipo='real', index=True)
+                      valor
+    data                   
+    1940-07-01   962.321161
+    1940-08-01   959.634185
+    1940-09-01   958.771291
+    1940-10-01   943.765421
+    1940-11-01   922.546843
+    ...                 ...
+
+    '''
+
     if tipo.lower() == 'nominal':
-        return ipea.serie(cod='MTE12_SALMIN12', index=index)
+        df = ipea.serie(cod='MTE12_SALMIN12', index=False)
     elif tipo.lower() == 'real':
-        return ipea.serie(cod='GAC12_SALMINRE12', index=index)
+        df = ipea.serie(cod='GAC12_SALMINRE12', index=False)
     elif tipo.lower() == 'ppc':
-        return ipea.serie(cod='GAC12_SALMINDOL12', index=index)
+        df = ipea.serie(cod='GAC12_SALMINDOL12', index=False)
     else:
         raise ValueError(
             "Tipo inválido. Escolha um dos seguintes valores: 'nominal', 'real' ou 'ppc'."
         )
+
+    df.drop(columns=['SERCODIGO', 'NIVNOME', 'TERCODIGO'], inplace=True)
+    df.columns = ['data', 'valor']
+    if index:
+        df.set_index('data', inplace=True)
+    return df
