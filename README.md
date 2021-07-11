@@ -37,8 +37,8 @@ pip install DadosAbertosBrasil
 ### Próximos Passos
 - Conclusão do módulo `senado`;
 - Desenvolvimento do módulo `transparencia` para coleta de dados do Portal da Transparência do Governo Federal;
-- Adicionar novos exemplos à documentação;
-- Adição constante de novas funções no módulo `favoritos`.
+- Adição constante de novas funções no módulo `favoritos`;
+- Adição constante de novos métodos à classe `UF`.
 
 ---
 
