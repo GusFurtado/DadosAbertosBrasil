@@ -895,5 +895,6 @@ def coordenadas() -> _pd.DataFrame:
     '''
 
     return _pd.read_excel(
-        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/coordenadas.csv'
+        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/coordenadas.csv',
+        sep = ';'
     )
