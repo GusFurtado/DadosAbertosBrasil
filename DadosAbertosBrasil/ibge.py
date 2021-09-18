@@ -59,6 +59,88 @@ _normalize = _pd.io.json.json_normalize \
 
 
 
+class Historia:
+    '''Histórico de uma localidade.
+
+    Parâmetros
+    ----------
+    localidade : int | str
+        Código da localidade.
+        Este código pode ser obtido com auxílio da função `ìbge.localidades`.
+
+    Atributos
+    ---------
+    ano : int
+        Ano da publicação do histórico.
+    estado : str
+        Nome do estado no formato 'Estado - UF'.
+    estado1 : str
+        Nome do estado sem a sigla.
+    formacao_administrativa : str
+        Descrição da formação administrativa da localidade.
+    gentilico : str
+        Gentílico dos naturais desta localidade.
+    historico : str
+        Texto descrevendo a história da localidade.
+    historico_fonte : str
+        Fonte do texto do atributo `historico`.
+    localidade : int
+        Código da localidade.
+    municipio : str
+        Nome do município.
+
+    Erros
+    -----
+    DAB_LocalidadeError
+        Caso o código da localidade seja inválido.
+
+    Exemplos
+    --------
+    Capturar o histórico de Belo Horizonte e a fonte do texto.
+
+    >>> bh = ibge.Historia(localidade=310620)
+    >>> bh.historico
+    'Foi à procura de ouro que, no distante 1701, o bandeirante João Leite...'
+
+    >>> bh.historico_fonte
+    'Belo Horizonte (MG). Prefeitura. 2014. Disponível em: ...'
+
+    Capturar o histórico do estado de Minas Gerais
+    >>> mg = ibge.Historia(52)
+
+    Fonte
+    -----
+    https://cidades.ibge.gov.br/
+
+    '''
+
+    def __init__(self, localidade:Union[int,str]):
+        self.localidade = parse.localidade(localidade)
+        d = self.historia()
+        self.set_attribs(d)
+
+
+    def __repr__(self) -> str:
+        return f'<DadosAbertosBrasil.ibge: História da localidade {self.localidade}>'
+
+
+    def historia(self):
+        return get_data(
+            endpoint = 'https://servicodados.ibge.gov.br/api/v1/',
+            path = 'biblioteca',
+            params = {
+                'aspas': '3',
+                'codmun': self.localidade
+            })
+
+
+    def set_attribs(self, d:dict):
+        for attribs in d:
+            for k in d[attribs]:
+                self.__setattr__(k.lower(), d[attribs][k])
+
+
+
 def nomes(
         nomes: Union[list, str],
         sexo: str = None,
@@ -71,7 +153,7 @@ def nomes(
 
     Parâmetros
     ----------
-    nomes : list ou str
+    nomes : list | str
         Nome ou lista de nomes a ser consultado.
     sexo : str (default=None)
         - 'M' para consultar apenas o nome de pessoas do sexo masculino;
@@ -505,7 +587,7 @@ class Metadados:
 
 
     def __repr__(self):
-        return f'DadosAbertosBrasil.ibge: Metadados da Tabela {self.cod} - {self.nome}'
+        return f'<DadosAbertosBrasil.ibge: Metadados da Tabela {self.cod} - {self.nome}>'
 
 
 
@@ -526,7 +608,7 @@ def sidra(
     ----------
     tabela : int
         Código numérico identificador da tabela.
-    periodos : list, int ou str (default='last')
+    periodos : list | int | str (default='last')
         Períodos de consulta desejados:
             - 'last': Último período;
             - 'last n': Últimos n períodos;
@@ -536,7 +618,7 @@ def sidra(
             - list: Lista de períodos desejados;
             - int: Um período específico;
             - Range de períodos separados por hífen.
-    variaveis : list, int ou str (default='allxp')
+    variaveis : list | int | str (default='allxp')
         Variáveis de consulta desejadas:
             - 'all': Todas as variáveis disponíveis;
             - 'allxp': Todas as variáveis, exceto as percentuais;
