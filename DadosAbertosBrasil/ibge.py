@@ -2,6 +2,7 @@
 
 Serviços Disponíveis
 --------------------
+- IBGE Cidades
 - Nomes 2.0
 - Agregados 3.0 (SIDRA)
 - Malhas Geográficas 2.0
@@ -36,8 +37,11 @@ disponíveis para consulta desta tabela.
 função `sidra`.
 >>> ibge.sidra( ... )
 
-Documentação da API original
-----------------------------
+Documentações da APIs originais
+-------------------------------
+IBGE Cidades
+------------
+    https://cidades.ibge.gov.br/
 Serviços
     https://servicodados.ibge.gov.br/api/docs
 SIDRA
@@ -56,6 +60,148 @@ from ._utils.get_data import get_data
 
 _normalize = _pd.io.json.json_normalize \
     if _pd.__version__[0] == '0' else _pd.json_normalize
+
+
+
+class _Fotografia:
+    '''Metadados de uma fotografia da bblioteca do IBGE.
+
+    Atributos
+    ---------
+    ano : str
+        Ano que a fotografia foi tirada.
+    autor : str
+        Autor(a) da fotografia.
+    codigo_municipal : str
+        Código IBGE da localidade.
+    id : str
+        Código da fotografia.
+    link : str
+        Nome do arquivo na biblioteca do IBGE.
+    titulo : str
+        Título da fotografia.
+
+    Exemplo
+    -------
+    Capturar a primeira fotografia da galeria de Fortaleza.
+
+    >>> fortaleza = ibge.Galeria(2304400)
+    >>> foto = fortaleza.fotografias[0]
+    
+    Gerar uma URL da fotografia com altura máxima de 500 pixels.
+
+    >>> foto.url(altura=500)
+    'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600&max...'
+
+    Fonte
+    -----
+    https://cidades.ibge.gov.br/
+
+    '''
+
+    def __init__(self, dados):
+        for k in dados:
+            self.__setattr__(k.lower(), dados[k])
+
+
+    def __repr__(self) -> str:
+        return f'<DadosAbertosBrasil.ibge: Fotografia {self.id}>'
+
+
+    def url(self, altura:int=None, largura:int=None) -> str:
+        '''Gera a URL da foto.
+
+        Parâmetros
+        ----------
+        altura : int
+            Altura máxima da fotografia em pixels.
+        largura : int
+            Largura máxima da fotografia em pixels.
+        
+        Retorna
+        -------
+        str
+            URL da fotografia.
+
+        Exemplo
+        -------
+        Capturar a primeira fotografia da galeria de Fortaleza.
+
+        >>> fortaleza = ibge.Galeria(2304400)
+        >>> foto = fortaleza.fotografias[0]
+        
+        Gerar uma URL da fotografia com altura máxima de 500 pixels.
+
+        >>> foto.url(altura=500)
+        'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600...'
+
+        '''
+        
+        if altura is None and largura is None:
+            altura, largura = 600, 600
+        elif altura is None:
+            altura = largura
+        elif largura is None:
+            largura = altura
+        return f'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth={largura}&maxheight={altura}&caminho=biblioteca.ibge.gov.br/visualizacao/fotografias/GEBIS%20-%20RJ/{self.link}'
+
+
+
+class Galeria:
+    '''Gera uma galeria de fotos da localidade desejada.
+    
+    Parâmetros
+    ----------
+    localidade : int
+        Código IBGE da localidade.
+        O código pode ser obtido com auxílio da função `ibge.localidades`.
+
+    Atributos
+    ---------
+    fotografias : lista de ibge._Fotografia
+        Lista de fotografias da localidade.
+    localidade : int
+        Código IBGE da localidade.
+    
+    Exemplo
+    -------
+    Capturar a primeira fotografia da galeria de Fortaleza.
+
+    >>> fortaleza = ibge.Galeria(2304400)
+    >>> foto = fortaleza.fotografias[0]
+    
+    Gerar uma URL da fotografia com altura máxima de 500 pixels.
+
+    >>> foto.url(altura=500)
+    'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600&max...'
+
+    Fonte
+    -----
+    https://cidades.ibge.gov.br/
+
+    '''
+
+    def __init__(self, localidade:Union[str,int]):
+        self.localidade = parse.localidade(localidade)
+        galeria = self._get_photos()
+        self.fotografias = [_Fotografia(galeria[foto]) for foto in galeria]
+
+
+    def __repr__(self) -> str:
+        return f'<DadosAbertosBrasil.ibge: Galeria de fotos da localidade {self.localidade}>'
+
+
+    def _get_photos(self):
+        return get_data(
+            endpoint = 'https://servicodados.ibge.gov.br/api/v1/',
+            path = 'biblioteca',
+            params = {
+                'codmun': self.localidade,
+                'aspas': '3',
+                'fotografias': '1',
+                'serie': 'Acervo dos Trabalhos Geográficos de Campo|Acervo dos Municípios brasileiros'
+            }
+        )
 
 
 
