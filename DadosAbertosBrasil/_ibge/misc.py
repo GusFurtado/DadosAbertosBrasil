@@ -128,6 +128,11 @@ def localidades(
     pandas.core.frame.DataFrame
         DataFrame contendo os localidades desejadas.
 
+    Erros
+    -----
+    DAB_LocalidadeError
+        Caso o nível geográfico seja inválido.
+
     Exemplos
     --------
     Captura todos os estados do Brasil
@@ -164,7 +169,7 @@ def localidades(
     4   3300233  Armação dos Búzios            33010                       Lagos   
     ..      ...                 ...              ...                         ...
 
-    Documentação Original
+    Documentação original
     ---------------------
     https://servicodados.ibge.gov.br/api/docs/localidades
 
@@ -228,36 +233,149 @@ def localidades(
 
 
 
-def malha(localidade:int=None) -> str:
+def malha(
+        localidade: int,
+        nivel: str = 'estados',
+        divisoes: str = None,
+        periodo: int = 2020,
+        formato: str = 'svg',
+        qualidade: str = 'maxima'
+    ) -> _pd.DataFrame:
     '''Obtém a URL para a malha referente ao identificador da localidade.
 
     Parâmetros
     ----------
     localidade : int (default=None)
         Código da localidade desejada.
-        Por padrão, obtém a malha do Brasil.
-        Utilize a função `ibge.localidades` para identificar
-        a localidade desejada.
+        Utilize a função `ibge.localidades` para identificar a localidade.
+    nivel : str (default='estados')
+        Nível geográfico dos dados.
+    divisoes : str (default=None)
+        Subdiviões intrarregionais do nível.
+        Se None, apresenta a malha sem subdivisões.
+    periodo : int (default=2020)
+        Ano da revisão da malha.
+    formato : str {'svg', 'json', 'geojson'} (default='svg')
+        Formato dos dados da malha.
+    qualidade : str {'minima', 'intermediaria', 'maxima'} (default='maxima')
+        Qualidade de imagem da malha.
 
     Retorna
     -------
     str
-        URL da malha da localidade desejada.
+        Se formato='svg', retorna a URL da malha da localidade desejada.
+    json
+        Se formato='json', retorna a malha em formato TopoJSON.
+    geojson
+        Se formato='geojson', retorna a malha em formato GeoJSON.
 
     Erros
     -----
     DAB_LocalidadeError
-        Caso o código da localidade seja inválido.
+        Caso o nível geográfico seja inválido.
 
     Exemplos
     --------
-    >>> ibge.malha(localidade=4209102)
-    https://servicodados.ibge.gov.br/api/v2/malhas/4209102
+    Captura a malha do Distrito Federal (localidade=53) em formato GeoJSON.
+
+    >>> ibge.malha(localidade=53, formato='geojson')
+    {'type': 'FeatureCollection',
+        'features': [{'type': 'Feature',
+            'geometry': {'type': 'Polygon',
+                'coordinates': [[[-47.31, -16.0363], ...
+
+    Captura a malha de Joinville em formato SVG com qualidade mínima.
+
+    >>> ibge.malha(
+    ...     nivel = 'municipios',
+    ...     localidade = 4209102,
+    ...     formato = 'svg',
+    ...     qualidade = 'minima'
+    ... )
+    'https://servicodados.ibge.gov.br/api/v3/malhas/municipios/4209102?...'
+
+    Captura a malha do Brasil subdividido por UF em formato TopoJSON.
+
+    >>> ibge.malha(
+    ...     nivel = 'paises',
+    ...     localidade = 'BR',
+    ...     divisoes = 'uf',
+    ...     formato = 'json'
+    ... )
+    {'type': 'Topology',
+        'arcs': [[[32967, 111009], [-821, 372]],
+            [[32146, 111381],
+            [133, 124],
+            [15, 106], ...
+
+    Documentação original
+    ---------------------
+    https://servicodados.ibge.gov.br/api/docs/malhas?versao=3
 
     '''
 
-    localidade = parse.localidade(localidade, '')
-    return f'https://servicodados.ibge.gov.br/api/v2/malhas/{localidade}'
+    FORMATOS = {
+        'svg': 'image/svg+xml',
+        'geojson': 'application/vnd.geo+json',
+        'json': 'application/json'
+    }
+
+    NIVEIS = {
+        'estados',
+        'mesorregioes',
+        'microrregioes',
+        'municipios',
+        'regioes-imediatas',
+        'regioes-intermediarias',
+        'regioes',
+        'paises'    
+    }
+
+    DIVISOES = {
+        'uf',
+        'mesorregiao',
+        'microrregiao',
+        'municipio',
+        'regiao-imediata',
+        'regiao-intermediaria',
+        'regiao'
+    }
+
+    nivel = nivel.lower()
+    if nivel not in NIVEIS:
+        raise DAB_LocalidadeError(f'''Nível inválido:
+        Preencha o argumento `nivel` com um dos seguintes valores:
+        {NIVEIS}''')
+
+    path = ['malhas', nivel, localidade]
+
+    params = {
+        'periodo': periodo,
+        'qualidade': qualidade.lower(),
+        'formato': FORMATOS[formato.lower()]
+    }
+
+    if divisoes is not None:
+        divisoes = divisoes.lower()
+        if divisoes not in DIVISOES:
+            raise DAB_LocalidadeError(f'''Subdivisões inválida:
+            Preencha o argumento `divisoes` com um dos seguintes valores:
+            {DIVISOES}''')
+        if nivel != divisoes:
+            params['intrarregiao'] = divisoes
+
+    url = 'https://servicodados.ibge.gov.br/api/v3/'
+    url += '/'.join([str(p) for p in path])
+
+    data = requests.get(
+        url = url,
+        params = params
+    )
+    
+    if formato.lower().endswith('json'):
+        return data.json()
+    else:
+        return data.url
 
 
 
