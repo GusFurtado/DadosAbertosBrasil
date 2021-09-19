@@ -10,7 +10,7 @@ from ._utils.errors import DAB_UFError
 from ._utils import parse
 from . import favoritos
 from .camara import lista_deputados
-from .ibge import populacao, malha
+from .ibge import populacao, malha, Historia, Galeria
 from .senado import lista_atual
 
 
@@ -432,7 +432,7 @@ class UF:
 
 
     def __repr__(self):
-        return f'DadosAbertosBrasil.UF: {self.nome}'
+        return f'<DadosAbertosBrasil.UF: {self.nome}>'
 
 
     def bandeira(self, tamanho:int=100):
@@ -563,6 +563,41 @@ class UF:
         return lista_deputados(uf=self.sigla)
 
 
+    def galeria(self):
+        '''Gera uma galeria de fotos da UF.
+
+        Atributos
+        ---------
+        fotografias : lista de ibge._Fotografia
+            Lista de fotografias da localidade.
+        localidade : int
+            Código IBGE da localidade.
+
+        Ver também
+        ----------
+        DadosAbertosBrasil.ibge.Galeria
+            Classe original.
+
+        Exemplo
+        -------
+        Capturar a primeira fotografia da galeria do Espírito Santo.
+
+        >>> es = dab.UF('ES')
+        >>> galeria = es.galeria()
+        >>> foto = galeria.fotografias[0]
+        
+        Gerar uma URL da fotografia com altura máxima de 500 pixels.
+
+        >>> foto.url(altura=500)
+        'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600...'
+
+        '''
+
+        if self.extinto:
+            raise DAB_UFError('Método `galeria` indisponível para UFs extintas.')
+        return Galeria(self.cod)
+
+
     def geojson(self):
         '''Coordenadas dos municípios brasileiros em formato GeoJSON para
         criação de mapas.
@@ -614,6 +649,54 @@ class UF:
         if self.extinto:
             raise DAB_UFError('Método `geojson` indisponível para UFs extintas.')
         return favoritos.geojson(self.sigla)
+
+
+    def historia(self):
+        '''Objeto contendo a história da UF.
+
+        Atributos
+        ---------
+        ano : int
+            Ano da publicação do histórico.
+        estado : str
+            Nome do estado no formato 'Estado - UF'.
+        estado1 : str
+            Nome do estado sem a sigla.
+        formacao_administrativa : str
+            Descrição da formação administrativa da localidade.
+        gentilico : str
+            Gentílico dos naturais desta localidade.
+        historico : str
+            Texto descrevendo a história da localidade.
+        historico_fonte : str
+            Fonte do texto do atributo `historico`.
+        localidade : int
+            Código da localidade.
+        municipio : str
+            Nome do município.
+
+        Ver também
+        ----------
+        DadosAbertosBrasil.ibge.Historia
+            Classe original.
+
+        Exemplos
+        --------
+        Capturar o texto da história de Minas Gerais.
+
+        >>> mg = dab.UF('MG')
+        >>> hist = mg.historia()
+        >>> hist.historico
+        "O Município de Wenceslau Braz tem sua origem praticamente desconh..."
+
+        '''
+
+        if self.sigla == 'GB':
+            raise DAB_UFError('Método `historia` indisponível para a UF Guanabara.')
+        elif self.sigla == 'FN':
+            return Historia(localidade=260545)
+        else:
+            return Historia(localidade=self.cod)
 
 
     def malha(self):
