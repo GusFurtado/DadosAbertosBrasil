@@ -35,10 +35,10 @@ Licença
 
 Próximos Passos
 ---------------
-    - Atualização das APIs do módulo `ibge`;
     - Conclusão do módulo `senado`;
     - Desenvolvimento do módulo `transparencia` para coleta de dados do
       Portal da Transparência do Governo Federal;
+    - Expansão do módulo `ibge`;
     - Adição constante de novas funções no módulo `favoritos`;
     - Adição constante de novos métodos à classe `UF`.
 
@@ -53,5 +53,5 @@ from .uf import UF
 
 
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 __author__ = 'Gustavo Furtado da Silva'

@@ -6,9 +6,9 @@
 
 **Dados Abertos Brasil** é uma iniciativa para facilitar o acesso a dados abertos e APIs do governo brasileiro.
 
-É um pacote open-source para **Python** e **Pandas** e a forma mais simples de acessar dados de instituições como **IGBE**, **IPEA**, etc.
+É um pacote open-source para **Python** e **Pandas** e a forma mais simples de acessar dados de instituições como **IGBE**, **IPEA**, **Banco Central**, etc.
 
-Atualmente o pacote Dados Abertos Brasil possui seis módulos em desenvolvimento:
+Atualmente o pacote Dados Abertos Brasil possui seis módulos em desenvolvimento, além da classe **UF** que consolida dados diversos de Unidades Federativas em um único objeto.
 
 - DadosAbertosBrasil.**[ibge](https://www.gustavofurtado.com/DadosAbertosBrasil/ibge.html)**
 - DadosAbertosBrasil.**[ipea](https://www.gustavofurtado.com/DadosAbertosBrasil/ipea.html)**
@@ -16,6 +16,7 @@ Atualmente o pacote Dados Abertos Brasil possui seis módulos em desenvolvimento
 - DadosAbertosBrasil.**[senado](https://www.gustavofurtado.com/DadosAbertosBrasil/senado.html)**
 - DadosAbertosBrasil.**[bacen](https://www.gustavofurtado.com/DadosAbertosBrasil/bacen.html)**
 - DadosAbertosBrasil.**[favoritos](https://www.gustavofurtado.com/DadosAbertosBrasil/favoritos.html)**
+
 
 ### Sobre
 - **[Página Oficial](https://www.gustavofurtado.com/dab.html)**
@@ -37,6 +38,7 @@ pip install DadosAbertosBrasil
 ### Próximos Passos
 - Conclusão do módulo `senado`;
 - Desenvolvimento do módulo `transparencia` para coleta de dados do Portal da Transparência do Governo Federal;
+- Expansão do módulo `ibge`;
 - Adição constante de novas funções no módulo `favoritos`;
 - Adição constante de novos métodos à classe `UF`.
 
