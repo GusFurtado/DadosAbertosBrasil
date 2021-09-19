@@ -36,6 +36,7 @@ def get_data(
     '''
 
     if isinstance(path, list):
+        path = [str(p) for p in path]
         path = '/'.join(path)
 
     return requests.get(

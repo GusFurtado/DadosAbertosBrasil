@@ -11,6 +11,8 @@ import pandas as _pd
 import requests
 
 from DadosAbertosBrasil._utils import parse
+from DadosAbertosBrasil._utils.errors import DAB_LocalidadeError
+from DadosAbertosBrasil._utils.get_data import get_data
 
 
 
@@ -98,46 +100,131 @@ def populacao(
 
 
 
-def _loc_columns(x: str) -> str:
-    '''Função de suporte à função `ibge.localidades`.
-    Usada para renomear as colunas do DataFrame de distritos.
-    
-    '''
+def localidades(
+        nivel: str = 'distritos',
+        divisoes: str = None,
+        localidade: Union[int, str, list] = None,
+        ordenar_por: str = None,
+        index: bool = False
+    ) -> _pd.DataFrame:
+    '''Obtém o conjunto de localidades do Brasil e suas intrarregiões.
 
-    y = x.replace('-', '_').split('.')
-    return f'{y[-2]}_{y[-1]}' if len(y)>1 else y[0]
-
-
-
-def localidades() -> _pd.DataFrame:
-    '''Obtém o conjunto de distritos do Brasil.
+    Parameters
+    ----------
+    nivel : str (default='distritos')
+        Nível geográfico dos dados.
+    divisoes : str (default=None)
+        Subdiviões intrarregionais do nível.
+        Se None, captura todos os registros do `nivel`.
+    localidade : int | str | list (default=None)
+        ID (os lista de IDs) da localidade que filtrará o `nivel`.
+    ordenar_por : str (default=None)
+        Coluna pela qual a tabela será ordenada.
+    index : bool (default=False)
+        Se True, defina a coluna 'id' como index do DataFrame.
 
     Retorna
     -------
     pandas.core.frame.DataFrame
-        DataFrame contendo todas as divisões de distritos do Brasil.
+        DataFrame contendo os localidades desejadas.
 
     Exemplos
     --------
-    >>> ibge.localidades()
-                  id                 nome  municipio_id       municipio_nome  \
-    0      520005005      Abadia de Goiás       5200050      Abadia de Goiás  \
-    1      310010405  Abadia dos Dourados       3100104  Abadia dos Dourados  \
-    2      520010005            Abadiânia       5200100            Abadiânia  \
-    3      520010010       Posse d'Abadia       5200100            Abadiânia  \
-    4      310020305               Abaeté       3100203               Abaeté  \
-    ..           ...                  ...           ...                  ...
+    Captura todos os estados do Brasil
+
+    >>> ibge.localidades(nivel='estados')
+        id sigla                 nome  regiao_id regiao_sigla   regiao_nome
+    0   11    RO             Rondônia          1            N         Norte
+    1   12    AC                 Acre          1            N         Norte
+    2   13    AM             Amazonas          1            N         Norte
+    3   14    RR              Roraima          1            N         Norte
+    4   15    PA                 Pará          1            N         Norte
+    .. ...   ...                  ...        ...          ...           ...
+
+    Captura todos os distritos do Brasil, colocando o ID como index.
+
+    >>> ibge.localidades(index=True)
+                              nome  municipio_id  ... regiao_sigla   regiao_nome
+    id                                            ...                           
+    520005005      Abadia de Goiás       5200050  ...           CO  Centro-Oeste
+    310010405  Abadia dos Dourados       3100104  ...           SE       Sudeste
+    520010005            Abadiânia       5200100  ...           CO  Centro-Oeste
+    520010010       Posse d'Abadia       5200100  ...           CO  Centro-Oeste
+    310020305               Abaeté       3100203  ...           SE       Sudeste
+    ...                        ...           ...  ...          ...           ...
+
+    Captura todos os municípios do estado do Rio de Janeiro (localidade=33)
+
+    >>> ibge.localidades(nivel='estados', divisoes='municipios', localidade=33)
+             id                nome  microrregiao_id           microrregiao_nome  \
+    0   3300100      Angra dos Reis            33013         Baía da Ilha Grande   
+    1   3300159             Aperibé            33002      Santo Antônio de Pádua   
+    2   3300209            Araruama            33010                       Lagos   
+    3   3300225               Areal            33005                   Três Rios   
+    4   3300233  Armação dos Búzios            33010                       Lagos   
+    ..      ...                 ...              ...                         ...
+
+    Documentação Original
+    ---------------------
+    https://servicodados.ibge.gov.br/api/docs/localidades
 
     '''
 
-    df = _normalize(
-        requests.get(
-            r'https://servicodados.ibge.gov.br/api/v1/localidades/distritos'
-        ).json()
+    NIVEIS = {
+        'distritos',
+        'estados',
+        'mesorregioes',
+        'microrregioes',
+        'municipios',
+        'regioes-imediatas',
+        'regioes-intermediarias',
+        'regioes',
+        'paises'
+    }
+
+    nivel = nivel.lower()
+    if nivel not in NIVEIS:
+        raise DAB_LocalidadeError(f'''Nível inválido:
+        Preencha o argumento `nivel` com um dos seguintes valores:
+        {NIVEIS}''')
+
+    path = ['localidades', nivel]
+    params = {}
+
+    if localidade is not None:
+        if isinstance(localidade, list):
+            localidade = '|'.join([str(loc) for loc in localidade])
+        path.append(localidade)
+
+    if divisoes is not None:
+        divisoes = divisoes.lower()
+        if divisoes not in NIVEIS:
+            raise DAB_LocalidadeError(f'''Subdivisões inválida:
+            Preencha o argumento `divisoes` com um dos seguintes valores:
+            {NIVEIS}''')
+        if nivel != divisoes:
+            path.append(divisoes)
+        
+    if ordenar_por is not None:
+        params['orderBy'] = ordenar_por
+    
+    data = get_data(
+        endpoint = 'https://servicodados.ibge.gov.br/api/v1/',
+        path = path,
+        params = params
     )
 
+    df = _normalize(data)
+
+    def _loc_columns(x: str) -> str:
+        y = x.replace('-', '_').split('.')
+        return f'{y[-2]}_{y[-1]}' if len(y)>1 else y[0]
     df.columns = df.columns.map(_loc_columns)
-    return df.loc[:,~df.columns.duplicated()]
+
+    if index:
+        df.set_index('id', inplace=True)
+        
+    return df
 
 
 
