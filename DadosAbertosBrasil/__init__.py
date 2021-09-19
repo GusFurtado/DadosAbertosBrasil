@@ -2,7 +2,7 @@
 abertos e APIs do governo brasileiro.
 
 É um pacote open-source para Python e Pandas e a forma mais simples de acessar
-dados de instituições como IGBE, IPEA, etc.
+dados de instituições como IGBE, IPEA, Banco Central, etc.
 
 Módulos em Desenvolvimento
 --------------------------
@@ -12,6 +12,7 @@ Módulos em Desenvolvimento
     - DadosAbertosBrasil.senado
     - DadosAbertosBrasil.bacen
     - DadosAbertosBrasil.favoritos
+    - DadosAbertosBrasil.UF
 
 Sobre
 -----
@@ -34,6 +35,7 @@ Licença
 
 Próximos Passos
 ---------------
+    - Atualização das APIs do módulo `ibge`;
     - Conclusão do módulo `senado`;
     - Desenvolvimento do módulo `transparencia` para coleta de dados do
       Portal da Transparência do Governo Federal;

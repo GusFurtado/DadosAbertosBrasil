@@ -8,9 +8,10 @@ DadosAbertosBrasil.
 '''
 from ._utils.errors import DAB_UFError
 from ._utils import parse
+from ._ibge.misc import populacao, malha
+from ._ibge.cidades import Historia, Galeria
 from . import favoritos
 from .camara import lista_deputados
-from .ibge import populacao, malha, Historia, Galeria
 from .senado import lista_atual
 
 
