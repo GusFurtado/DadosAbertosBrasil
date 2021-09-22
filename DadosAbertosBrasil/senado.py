@@ -36,6 +36,11 @@ from ._utils.get_data import get_data
 
 
 
+_normalize = _pd.io.json.json_normalize \
+    if _pd.__version__[0] == '0' else _pd.json_normalize
+
+
+
 def _get_request(
         path: str,
         params: dict = None,
@@ -55,6 +60,157 @@ def _get_request(
                     data = data[key]
 
     return data
+
+
+
+def lista_senadores(
+        tipo: str = 'titulares+suplentes',
+        uf: str = None,
+        sexo: str = None,
+        partido: str = None,
+        contendo: str = None,
+        excluindo: str = None,
+        index: bool = False
+    ) -> _pd.DataFrame:
+    '''Lista de senadores da república.
+
+    Parâmetros
+    ----------
+    tipo : str {'atual', 'titulares', 'suplentes', 'afastados'}
+        - 'atual' (default): Todos os senadores em exercício;
+        - 'titulares': Apenas senadores que iniciaram o mandato como titulares;
+        - 'suplentes': Apenas senadores que iniciaram o mandato como suplentes;
+        - 'afastados': Todos os senadores afastados.
+    uf : str (default=None)
+        Filtro de Unidade Federativa dos senadores.
+    sexo : str (default=None)
+        Filtro de sexo dos senadores.
+    partido : str (default=None)
+        Filtro de partido dos senadores.
+    contendo : str (default=None)
+        Captura apenas senadores contendo esse texto no nome.
+    excluindo : str (default=None)
+        Exclui da consulta senadores contendo esse texto no nome.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        Tabela com informações básicas dos senadores consultados.
+
+    Erros
+    -----
+    DAB_UFError
+        Caso seja inserida uma UF inválida no argumento `uf`.
+
+    Exemplos
+    --------
+    Lista todos os senadores ativos, colocando o código como index da tabela.
+
+    >>> senado.lista_senadores(index=True)
+    
+    Lista senadores do partido PL do Rio de Janeiro.
+
+    >>> senado.lista_senadores(partido='PL', uf='RJ')
+
+    Lista senadores contendo 'Gomes' no nome, exceto os que contém 'Cid'.
+
+    >>> senado.lista_senadores(contendo='Gomes', excluindo='Cid')
+
+    Lista senadoras afastadas do sexo feminino.
+
+    >>> senado.lista_senadores(tipo='afastados', sexo='F')
+    
+    '''
+
+    tipo = tipo.lower()
+    TIPOS = {
+        'titulares': {
+            'path': 'atual',
+            'key': 'ListaParlamentarEmExercicio',
+            'params': {'participacao': 'T'}
+        },
+        'suplentes': {
+            'path': 'atual',
+            'key': 'ListaParlamentarEmExercicio',
+            'params': {'participacao': 'S'}
+        },
+        'atual': {
+            'path': 'atual',
+            'key': 'ListaParlamentarEmExercicio',
+            'params': {}
+        },
+        'afastados': {
+            'path': 'afastados',
+            'key': 'AfastamentoAtual',
+            'params': {}
+        }
+    }
+
+    params = TIPOS[tipo]['params']
+    if uf is not None:
+        params['uf'] = parse.uf(uf=uf)
+
+
+    lista = _get_request(
+        path = ['senador', 'lista', TIPOS[tipo]['path']],
+        keys = [TIPOS[tipo]['key'], 'Parlamentares', 'Parlamentar'],
+        params = params
+    )
+
+    df = _normalize(lista)
+
+    col_mapping = {
+        'IdentificacaoParlamentar.CodigoParlamentar': 'codigo',
+        'IdentificacaoParlamentar.NomeParlamentar': 'nome_parlamentar',
+        'IdentificacaoParlamentar.NomeCompletoParlamentar': 'nome_completo',
+        'IdentificacaoParlamentar.SexoParlamentar': 'sexo',
+        'IdentificacaoParlamentar.FormaTratamento': 'forma_tratamento',
+        'IdentificacaoParlamentar.UrlFotoParlamentar': 'foto',
+        'IdentificacaoParlamentar.UrlPaginaParlamentar': 'pagina_parlamentar',
+        'IdentificacaoParlamentar.UrlPaginaParticular': 'pagina_particular',
+        'IdentificacaoParlamentar.EmailParlamentar': 'email',
+        'IdentificacaoParlamentar.SiglaPartidoParlamentar': 'partido',
+        'Mandato.UfParlamentar': 'uf',
+        'Mandato.Exercicios.Exercicio.DataInicio': 'data_inicio',
+        'Mandato.Exercicios.Exercicio.DataFim': 'data_fim',
+        'Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento': 'causa_afastamento'
+    }
+
+    df = df[[col for col in df.columns if col in col_mapping.keys()]]
+    df.columns = df.columns.map(col_mapping)
+
+    if sexo is not None:
+        sexo = sexo.title()
+        SEXOS = {
+            'Masculino': 'Masculino',
+            'Feminino': 'Feminino',
+            'M': 'Masculino',
+            'F': 'Feminino'
+        }
+        df = df[df.sexo == SEXOS[sexo]]
+
+    if (uf is not None) and (tipo == 'afastados'):
+        df = df[df.uf == parse.uf(uf=uf)]
+
+    if partido is not None:
+        df = df[df.partido == partido.upper()]
+
+    if contendo is not None:
+        nome_parlamentar = df.nome_parlamentar.str.contains(contendo)
+        nome_completo = df.nome_completo.str.contains(contendo)
+        df = df[nome_parlamentar | nome_completo]
+
+    if excluindo is not None:
+        nome_parlamentar = ~df.nome_parlamentar.str.contains(excluindo)
+        nome_completo = ~df.nome_completo.str.contains(excluindo)
+        df = df[nome_parlamentar | nome_completo]
+
+    if index:
+        df.set_index('codigo', inplace=True)
+    else:
+        df.reset_index(drop=True, inplace=True)
+
+    return df
 
 
 
