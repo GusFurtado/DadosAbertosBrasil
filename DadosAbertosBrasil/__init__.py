@@ -50,6 +50,7 @@ from . import ipea
 from . import senado
 from .favoritos import *
 from .uf import UF
+from ._utils.errors import *
 
 
 
