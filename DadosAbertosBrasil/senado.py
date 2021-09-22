@@ -11,10 +11,10 @@ Mini-Tutorial
 >>> senado.lista_afastados( ... )
 >>> senado.lista_legislatura( ... )
 
-3. Utilize a classe `Senador` para obter as informações do(a) parlamentar.
+3. Utilize a class `Senador` para obter as informações do(a) parlamentar.
 >>> sen = senado.Senador(cod)
 
-4. Após a class Senador ser instanciada, utilize seus métodos para buscas
+4. Após a class `Senador` ser instanciada, utilize seus métodos para buscas
 outros tipos de informação sobre ele(a).
 >>> sen.cargos( ... )
 >>> sen.votacoes( ... )
@@ -64,7 +64,7 @@ def _get_request(
 
 
 def lista_senadores(
-        tipo: str = 'titulares+suplentes',
+        tipo: str = 'atual',
         uf: str = None,
         sexo: str = None,
         partido: str = None,
@@ -146,10 +146,10 @@ def lista_senadores(
         }
     }
 
+    # Baixar dados
     params = TIPOS[tipo]['params']
     if uf is not None:
         params['uf'] = parse.uf(uf=uf)
-
 
     lista = _get_request(
         path = ['senador', 'lista', TIPOS[tipo]['path']],
@@ -159,6 +159,7 @@ def lista_senadores(
 
     df = _normalize(lista)
 
+    # Selecionar e renomear colunas
     col_mapping = {
         'IdentificacaoParlamentar.CodigoParlamentar': 'codigo',
         'IdentificacaoParlamentar.NomeParlamentar': 'nome_parlamentar',
@@ -175,10 +176,10 @@ def lista_senadores(
         'Mandato.Exercicios.Exercicio.DataFim': 'data_fim',
         'Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento': 'causa_afastamento'
     }
-
     df = df[[col for col in df.columns if col in col_mapping.keys()]]
     df.columns = df.columns.map(col_mapping)
 
+    # Filtros
     if sexo is not None:
         sexo = sexo.title()
         SEXOS = {
@@ -199,12 +200,13 @@ def lista_senadores(
         nome_parlamentar = df.nome_parlamentar.str.contains(contendo)
         nome_completo = df.nome_completo.str.contains(contendo)
         df = df[nome_parlamentar | nome_completo]
-
+        
     if excluindo is not None:
         nome_parlamentar = ~df.nome_parlamentar.str.contains(excluindo)
         nome_completo = ~df.nome_completo.str.contains(excluindo)
         df = df[nome_parlamentar | nome_completo]
 
+    # Corrigir index
     if index:
         df.set_index('codigo', inplace=True)
     else:
@@ -328,6 +330,85 @@ def lista_legislatura(
 
 
 
+def orcamento(
+        autor: str = None,
+        tipo: str = None,
+        ano_execucao: int = None,
+        ano_materia: int = None
+    ) -> _pd.DataFrame:
+    '''Obtém a lista dos lotes de emendas orçamentárias.
+
+    Parâmetros
+    ----------
+    autor : str (default=None)
+        Texto contendo nome do autor.
+    tipo : str (default=None)
+        Tipo de orçamento.
+    ano_execucao : int (default=None)
+        Ano que o orçamento foi executado.
+    ano_materia : int (default)
+        Ano da matéria.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        Tabela contendo todas as emendas orçamentárias pesquisadas.
+
+    Exemplos
+    --------
+    Buscar o orçamento da Lei de Diretrizes Orçamentárias de 2020.
+
+    >>> senado.orcamento(tipo='LDO', ano_execucao=2020)
+
+    Pesquisar por emendas da Adriana Ventura
+
+    >>> senado.orcamento(autor='Adriana')
+    
+    '''
+
+    # Baixar dados
+    data = _get_request(
+        path = ['orcamento', 'lista'],
+        keys = ['ListaLoteEmendas', 'LotesEmendasOrcamento', 'LoteEmendasOrcamento']
+    )
+    df = _pd.DataFrame(data)
+
+    # Renomear colunas    
+    col_mapping = {
+        'NomeAutorOrcamento': 'autor_nome',
+        'IndicadorAtivo': 'ativo',
+        'EmailAutorOrcamento': 'autor_email',
+        'CodigoAutorOrcamento': 'autor_codigo',
+        'DataOperacao': 'data_operacao',
+        'QuantidadeEmendas': 'quantidade_emendas',
+        'AnoExecucao': 'ano_execucao',
+        'NumeroMateria': 'numero_materia',
+        'AnoMateria': 'ano_materia',
+        'SiglaTipoPlOrcamento': 'tipo_sigla',
+        'DescricaoTipoPlOrcamento': 'tipo_descricao'
+    }
+    df.columns = df.columns.map(col_mapping)
+
+    # Corrigir tipos das colunas
+    df.ativo = df.ativo == 'Sim'
+    df.data_operacao = _pd.to_datetime(df.data_operacao)
+    for col in ['autor_codigo', 'quantidade_emendas', 'ano_execucao', 'ano_materia']:
+        df[col] = df[col].astype(int)
+
+    # Filtros
+    if autor is not None:
+        df = df[df.autor_nome.str.contains(autor)]
+    if tipo is not None:
+        df = df[df.tipo_sigla == tipo]
+    if ano_execucao is not None:
+        df = df[df.ano_execucao == ano_execucao]
+    if ano_materia is not None:
+        df = df[df.ano_materia == ano_materia]
+
+    return df.reset_index(drop=True)
+
+
+
 def partidos(
         ativos: bool = True,
         index: bool = False
@@ -419,7 +500,7 @@ class Senador:
 
 
     def __repr__(self):
-        return f"DadosAbertosBrasil.senado: Senador{'a' if self.sexo == 'Feminino' else ''} {self.nome}"
+        return f"<DadosAbertosBrasil.senado: Senador{'a' if self.sexo == 'Feminino' else ''} {self.nome}>"
 
 
     def _get_info(self, keys:list):
