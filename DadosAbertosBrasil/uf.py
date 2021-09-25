@@ -12,11 +12,11 @@ from ._ibge.misc import populacao, malha
 from ._ibge.cidades import Historia, Galeria
 from . import favoritos
 from .camara import lista_deputados
-from .senado import lista_atual
+from .senado import lista_senadores
 
 
 
-UF_INFO = {
+_UF_INFO = {
     'BR': {
         'nome': 'Brasil',
         'cod': 1,
@@ -420,16 +420,19 @@ class UF:
 
     def __init__(self, uf:str):
         self.sigla = parse.uf(uf=uf, extintos=True)
-        self.cod = UF_INFO[self.sigla]['cod']
-        self.nome = UF_INFO[self.sigla]['nome']
-        self.area = UF_INFO[self.sigla]['area']
-        self.capital = UF_INFO[self.sigla]['capital']
-        self.extinto = UF_INFO[self.sigla]['extinto']
-        self.gentilico = UF_INFO[self.sigla]['gentilico']
-        self.lema = UF_INFO[self.sigla]['lema']
-        self.regiao = UF_INFO[self.sigla]['regiao']
-        self.governador = UF_INFO[self.sigla]['governador']
-        self.vice_governador = UF_INFO[self.sigla]['vice-governador']
+        # self.cod = UF_INFO[self.sigla]['cod']
+        # self.nome = UF_INFO[self.sigla]['nome']
+        # self.area = UF_INFO[self.sigla]['area']
+        # self.capital = UF_INFO[self.sigla]['capital']
+        # self.extinto = UF_INFO[self.sigla]['extinto']
+        # self.gentilico = UF_INFO[self.sigla]['gentilico']
+        # self.lema = UF_INFO[self.sigla]['lema']
+        # self.regiao = UF_INFO[self.sigla]['regiao']
+        # self.governador = UF_INFO[self.sigla]['governador']
+        # self.vice_governador = UF_INFO[self.sigla]['vice-governador']
+
+        for attr in _UF_INFO[self.sigla]:
+            setattr(self, attr, _UF_INFO[self.sigla][attr])
 
 
     def __repr__(self):
@@ -789,31 +792,71 @@ class UF:
         return populacao(projecao='populacao', localidade=self.cod)
 
 
-    def senadores(self):
-        '''Lista dos três senadores em exercício.
+    def senadores(
+            self,
+            tipo: str = 'atual',
+            sexo: str = None,
+            partido: str = None,
+            contendo: str = None,
+            excluindo: str = None,
+            index: bool = False,
+            formato: str = 'dataframe'
+        ):
+        '''Lista de senadores da república desta UF.
+
+        Parâmetros
+        ----------
+        tipo : str {'atual', 'titulares', 'suplentes', 'afastados'}
+            - 'atual' (default): Todos os senadores em exercício;
+            - 'titulares': Apenas senadores que iniciaram o mandato como titulares;
+            - 'suplentes': Apenas senadores que iniciaram o mandato como suplentes;
+            - 'afastados': Todos os senadores afastados.
+        sexo : str (default=None)
+            Filtro de sexo dos senadores.
+        partido : str (default=None)
+            Filtro de partido dos senadores.
+        contendo : str (default=None)
+            Captura apenas senadores contendo esse texto no nome.
+        excluindo : str (default=None)
+            Exclui da consulta senadores contendo esse texto no nome.
+        index : bool (default=False)
+            Se True, define a coluna `codigo` como index do DataFrame.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Obs.: Alguns filtros não serão aplicados no formato 'json'.
 
         Retorna
         -------
-        list of dict
-            Lista de senadores.
+        pandas.core.frame.DataFrame
+            Tabela com informações básicas dos senadores consultados.
 
-        Erros
-        -----
-        DAB_UFError
-            Caso seja uma UF extinta.
-
-        Ver Também
+        Ver também
         ----------
-        DadosAbertosBrasil.senado.lista_atual
+        DadosAbertosBrasil.senado.lista_senadores
             Função original.
-
+        
         Exemplos
         --------
-        >>> rj = UF('RJ')
-        >>> rj.senadores()
+        Lista senadores do partido PL do Rio de Janeiro.
+
+        >>> rj = UF('rj')
+        >>> rj.senadores(partido='PL')
+        codigo nome_parlamentar              nome_completo       sexo \
+        0   5936  Carlos Portinho  Carlos Francisco Portinho  Masculino
+        1   5322          Romário     Romario de Souza Faria  Masculino
         
         '''
     
         if self.extinto:
             raise DAB_UFError('Método `senadores` indisponível para UFs extintas.')
-        return lista_atual(uf=self.sigla)
+
+        return lista_senadores(
+            uf = self.sigla,
+            tipo = tipo,
+            sexo = sexo,
+            partido = partido,
+            contendo = contendo,
+            excluindo = excluindo,
+            index = index,
+            formato = formato
+        )

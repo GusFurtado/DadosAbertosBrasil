@@ -1,5 +1,4 @@
-'''
-Módulo para captura dos dados abertos da Senado Brasileiro.
+'''Módulo para captura dos dados abertos da Senado Brasileiro.
 
 Mini-Tutorial
 -------------
@@ -7,8 +6,7 @@ Mini-Tutorial
 >>> from DadosAbertosBrasil import senado
 
 2. Utilize as funções `lista` para identificar o código do Senado desejado.
->>> senado.lista_atual( ... )
->>> senado.lista_afastados( ... )
+>>> senado.lista_senadores( ... )
 >>> senado.lista_legislatura( ... )
 
 3. Utilize a class `Senador` para obter as informações do(a) parlamentar.
@@ -24,11 +22,7 @@ Documentação da API original
 ----------------------------
 http://legis.senado.gov.br/dadosabertos/docs/
 
-------------------------------------------------------------------------------
 '''
-
-
-
 import pandas as _pd
 
 from ._utils import parse
@@ -70,7 +64,8 @@ def lista_senadores(
         partido: str = None,
         contendo: str = None,
         excluindo: str = None,
-        index: bool = False
+        index: bool = False,
+        formato: str = 'dataframe'
     ) -> _pd.DataFrame:
     '''Lista de senadores da república.
 
@@ -91,6 +86,11 @@ def lista_senadores(
         Captura apenas senadores contendo esse texto no nome.
     excluindo : str (default=None)
         Exclui da consulta senadores contendo esse texto no nome.
+    index : bool (default=False)
+        Se True, define a coluna `codigo` como index do DataFrame.
+    formato : str {'dataframe', 'json'} (default='dataframe')
+        Formato do dado que será retornado.
+        Obs.: Alguns filtros não serão aplicados no formato 'json'.
 
     Retorna
     -------
@@ -102,23 +102,50 @@ def lista_senadores(
     DAB_UFError
         Caso seja inserida uma UF inválida no argumento `uf`.
 
+    Ver também
+    ----------
+    DadosAbertosBrasil.senado.Senador
+        Use o `codigo` para obter um detalhamento do senador.
+    DadosAbertosBrasil.senado.lista_legislatura
+        Pesquisa por senadores de outras legislaturas, além da atual.
+    DadosAbertosBrasil.camara.lista_deputados
+        Função similar para o módulo `camara`.
+    
     Exemplos
     --------
     Lista todos os senadores ativos, colocando o código como index da tabela.
 
     >>> senado.lista_senadores(index=True)
-    
+                   nome_parlamentar                nome_completo \
+    codigo                                                         
+    4981               Acir Gurgacz          Acir Marcos Gurgacz
+    5982          Alessandro Vieira            Alessandro Vieira
+    945                 Alvaro Dias        Alvaro Fernandes Dias
+    ...                         ...                          ...
+
     Lista senadores do partido PL do Rio de Janeiro.
 
     >>> senado.lista_senadores(partido='PL', uf='RJ')
+      codigo nome_parlamentar              nome_completo       sexo \
+    0   5936  Carlos Portinho  Carlos Francisco Portinho  Masculino
+    1   5322          Romário     Romario de Souza Faria  Masculino
 
     Lista senadores contendo 'Gomes' no nome, exceto os que contém 'Cid'.
 
     >>> senado.lista_senadores(contendo='Gomes', excluindo='Cid')
+      codigo nome_parlamentar                nome_completo       sexo \
+    0   3777    Eduardo Gomes  Carlos Eduardo Torres Gomes  Masculino
+    1   5979     Leila Barros   Leila Gomes de Barros Rêgo   Feminino
+    2   5557     Mailza Gomes        Mailza Assis da Silva   Feminino
 
     Lista senadoras afastadas do sexo feminino.
 
     >>> senado.lista_senadores(tipo='afastados', sexo='F')
+      codigo nome_parlamentar                    nome_completo      sexo \
+    0   3713   Fátima Bezerra          Maria de Fátima Bezerra  Feminino
+    1   5929      Juíza Selma       Selma Rosane Santos Arruda  Feminino
+    2   5997     Nailde Panta  Nailde Fernandes Panta da Silva  Feminino
+    ..   ...              ...                              ...       ...
     
     '''
 
@@ -146,7 +173,6 @@ def lista_senadores(
         }
     }
 
-    # Baixar dados
     params = TIPOS[tipo]['params']
     if uf is not None:
         params['uf'] = parse.uf(uf=uf)
@@ -157,9 +183,10 @@ def lista_senadores(
         params = params
     )
 
-    df = _normalize(lista)
+    if formato == 'json':
+        return lista
 
-    # Selecionar e renomear colunas
+    df = _normalize(lista)
     col_mapping = {
         'IdentificacaoParlamentar.CodigoParlamentar': 'codigo',
         'IdentificacaoParlamentar.NomeParlamentar': 'nome_parlamentar',
@@ -179,7 +206,6 @@ def lista_senadores(
     df = df[[col for col in df.columns if col in col_mapping.keys()]]
     df.columns = df.columns.map(col_mapping)
 
-    # Filtros
     if sexo is not None:
         sexo = sexo.title()
         SEXOS = {
@@ -200,13 +226,12 @@ def lista_senadores(
         nome_parlamentar = df.nome_parlamentar.str.contains(contendo)
         nome_completo = df.nome_completo.str.contains(contendo)
         df = df[nome_parlamentar | nome_completo]
-        
+
     if excluindo is not None:
         nome_parlamentar = ~df.nome_parlamentar.str.contains(excluindo)
         nome_completo = ~df.nome_completo.str.contains(excluindo)
         df = df[nome_parlamentar | nome_completo]
 
-    # Corrigir index
     if index:
         df.set_index('codigo', inplace=True)
     else:
@@ -216,71 +241,20 @@ def lista_senadores(
 
 
 
-def lista_atual(
-        participacao: str = None,
-        uf: str = None
-    ) -> dict:
-    '''
-    Lista senadores em exercício.
-
-    Parâmetros
-    ----------
-    participacao : str (default=None)
-        Tipo de participação.
-        - None: Busca qualquer tipo de participação.
-        - 'T': Busca apenas titulares.
-        - 'S': Busca apenas suplentes.
-    uf : str (default=None)
-        Filtra uma unidade federativa.
-        Se uf=None, lista senadores de todas as UFs.
-
-    Retorna
-    -------
-    dict
-        Dicionário contendo informações dos senadores em exercício.
-
-    --------------------------------------------------------------------------
-    '''
-
-    tags = {}
-    if participacao is not None:
-        tags['participacao'] = participacao.upper()
-    if uf is not None:
-        tags['uf'] = parse.uf(uf)
-
-    path = 'senador/lista/atual'
-    keys = ['ListaParlamentarEmExercicio', 'Parlamentares', 'Parlamentar']
-    return _get_request(path, tags, keys)
-
-
-
-def lista_afastados() -> dict:
-    '''
-    Lista senadores atualmente afastados.
-
-    Retorna
-    -------
-    dict
-        Dicionário contendo informações dos senadores afastados.
-
-    --------------------------------------------------------------------------
-    '''
-
-    url = f'senador/lista/afastados'
-    keys = ['AfastamentoAtual', 'Parlamentares', 'Parlamentar']
-    return _get_request(url, None, keys)
-
-
-
 def lista_legislatura(
         inicio: int,
         fim: int = None,
         exercicio: str = None,
         participacao: str = None,
-        uf: str = None
+        uf: str = None,
+        sexo: str = None,
+        partido: str = None,
+        contendo: str = None,
+        excluindo: str = None,
+        index: bool = False,
+        formato: str = 'dataframe'
     ) -> dict:
-    '''
-    Lista senadores de uma legislatura ou de um intervalo de legislaturas.
+    '''Lista senadores de uma legislatura ou de um intervalo de legislaturas.
 
     Parâmetros
     ----------
@@ -292,41 +266,139 @@ def lista_legislatura(
         Caso contrário, pesquisa todas os valores de todas as legislaturas
         entre `inicio` e `fim`. 
     exercicio : str (default=None)
-        - 'S': Consulta apenas os senadores que entraram em exercício.
-        - 'N': Consulta apenas os senadores que não entratam em exercício.
-    participacao : str (default=None)
-        Tipo de participação.
+        - True: Consulta apenas os senadores que entraram em exercício.
+        - False: Consulta apenas os senadores que não entratam em exercício.
+    participacao : str {None, 'titulares', 'suplentes'} (default=None)
         - None: Busca qualquer tipo de participação.
-        - 'T': Busca apenas titulares.
-        - 'S': Busca apenas suplentes.
+        - 'titulares': Busca apenas titulares.
+        - 'suplentes': Busca apenas suplentes.
     uf : str (default=None)
         Filtra uma unidade federativa.
         Se uf=None, lista senadores de todas as UFs.
+    sexo : str (default=None)
+        Filtro de sexo dos senadores.
+    partido : str (default=None)
+        Filtro de partido dos senadores.
+    contendo : str (default=None)
+        Captura apenas senadores contendo esse texto no nome.
+    excluindo : str (default=None)
+        Exclui da consulta senadores contendo esse texto no nome.
+    index : bool (default=False)
+        Se True, define a coluna `codigo` como index do DataFrame.
+    formato : str {'dataframe', 'json'} (default='dataframe')
+        Formato do dado que será retornado.
+        Obs.: Alguns filtros não serão aplicados no formato 'json'.
 
     Retorna
     -------
-    dict
-        Dicionário contendo informações dos senadores das legislaturas
-        consultadas.
+    pandas.core.frame.DataFrame
+        Tabela com informações básicas dos senadores consultados.
 
-    --------------------------------------------------------------------------
+    Erros
+    -----
+    DAB_UFError
+        Caso seja inserida uma UF inválida no argumento `uf`.
+
+    Ver também
+    ----------
+    DadosAbertosBrasil.senado.Senador
+        Use o `codigo` para obter um detalhamento do senador.
+    DadosAbertosBrasil.senado.lista_senadores
+        Função de busca de senadores específica para a legislação atual.
+
+    Exemplos
+    --------
+    Lista senadores titulares em exercício na legislatura 56.
+
+    >>> senado.lista_legislatura(
+    ...     inicio = 56,
+    ...     participacao = 'titulares',
+    ...     exercicio = True
+    ... )
+       codigo         nome_parlamentar               nome_completo \
+    0    4981             Acir Gurgacz         Acir Marcos Gurgacz   
+    1    5982        Alessandro Vieira           Alessandro Vieira   
+    2     945              Alvaro Dias       Alvaro Fernandes Dias 
+    ..    ...                      ...                         ...
+
+    Lista mulheres senadoras do PT na legislatura 55.
+
+    >>> senado.lista_legislatura(inicio=55, partido='PT', sexo='F')
+      codigo nome_parlamentar                      nome_completo      sexo \
+    0   3713   Fátima Bezerra            Maria de Fátima Bezerra  Feminino   
+    1   5006  Gleisi Hoffmann             Gleisi Helena Hoffmann  Feminino   
+    2   5575         Marizete  Marizete Lisboa Fernandes Pereira  Feminino   
+    3   5182     Regina Sousa                 Maria Regina Sousa  Feminino 
+
     '''
 
-    path = f'senador/lista/legislatura/{inicio}'
-    
+    path = ['senador', 'lista', 'legislatura', inicio]
     if fim is not None:
-        path += f'/{fim}'
+        path.append(fim)
 
-    tags = {}
+    params = {}
     if exercicio is not None:
-        tags['exercicio'] = exercicio.upper()
+        params['exercicio'] = 'S' if exercicio else 'N'
     if participacao is not None:
-        tags['participacao'] = participacao.upper()
+        params['participacao'] = participacao[0].upper()
     if uf is not None:
-        tags['uf'] = parse.uf(uf)
+        params['uf'] = parse.uf(uf)
 
     keys = ['ListaParlamentarLegislatura', 'Parlamentares', 'Parlamentar']
-    return _get_request(path, tags, keys)
+    lista = _get_request(path=path, params=params, keys=keys)
+
+    if formato == 'json':
+        return lista
+
+    df = _normalize(lista)
+    col_mapping = {
+        'IdentificacaoParlamentar.CodigoParlamentar': 'codigo',
+        'IdentificacaoParlamentar.NomeParlamentar': 'nome_parlamentar',
+        'IdentificacaoParlamentar.NomeCompletoParlamentar': 'nome_completo',
+        'IdentificacaoParlamentar.SexoParlamentar': 'sexo',
+        'IdentificacaoParlamentar.FormaTratamento': 'forma_tratamento',
+        'IdentificacaoParlamentar.UrlFotoParlamentar': 'foto',
+        'IdentificacaoParlamentar.UrlPaginaParlamentar': 'pagina_parlamentar',
+        'IdentificacaoParlamentar.UrlPaginaParticular': 'pagina_particular',
+        'IdentificacaoParlamentar.EmailParlamentar': 'email',
+        'IdentificacaoParlamentar.SiglaPartidoParlamentar': 'partido',
+        'Mandato.UfParlamentar': 'uf',
+        'Mandato.Exercicios.Exercicio.DataInicio': 'data_inicio',
+        'Mandato.Exercicios.Exercicio.DataFim': 'data_fim',
+        'Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento': 'causa_afastamento'
+    }
+    df = df[[col for col in df.columns if col in col_mapping.keys()]]
+    df.columns = df.columns.map(col_mapping)
+
+    if sexo is not None:
+        sexo = sexo.title()
+        SEXOS = {
+            'Masculino': 'Masculino',
+            'Feminino': 'Feminino',
+            'M': 'Masculino',
+            'F': 'Feminino'
+        }
+        df = df[df.sexo == SEXOS[sexo]]
+
+    if partido is not None:
+        df = df[df.partido == partido.upper()]
+
+    if contendo is not None:
+        nome_parlamentar = df.nome_parlamentar.str.contains(contendo)
+        nome_completo = df.nome_completo.str.contains(contendo)
+        df = df[nome_parlamentar | nome_completo]
+
+    if excluindo is not None:
+        nome_parlamentar = ~df.nome_parlamentar.str.contains(excluindo)
+        nome_completo = ~df.nome_completo.str.contains(excluindo)
+        df = df[nome_parlamentar | nome_completo]
+
+    if index:
+        df.set_index('codigo', inplace=True)
+    else:
+        df.reset_index(drop=True, inplace=True)
+
+    return df
 
 
 
@@ -334,7 +406,8 @@ def orcamento(
         autor: str = None,
         tipo: str = None,
         ano_execucao: int = None,
-        ano_materia: int = None
+        ano_materia: int = None,
+        formato: str = 'dataframe'
     ) -> _pd.DataFrame:
     '''Obtém a lista dos lotes de emendas orçamentárias.
 
@@ -348,6 +421,9 @@ def orcamento(
         Ano que o orçamento foi executado.
     ano_materia : int (default)
         Ano da matéria.
+    formato : str {'dataframe', 'json'} (default='dataframe')
+        Formato do dado que será retornado.
+        Obs.: Alguns filtros não serão aplicados no formato 'json'.
 
     Retorna
     -------
@@ -359,21 +435,29 @@ def orcamento(
     Buscar o orçamento da Lei de Diretrizes Orçamentárias de 2020.
 
     >>> senado.orcamento(tipo='LDO', ano_execucao=2020)
+              autor_nome  ativo                       autor_email  autor_codigo \
+    0          Abou Anni   True        dep.abouanni@camara.leg.br          3896
+    1       Acir Gurgacz   True               acir@senador.leg.br          2633
+    2    Adriana Ventura   True  dep.adrianaventura@camara.leg.br          3899
+    ..               ...    ...                               ...           ...
 
-    Pesquisar por emendas da Adriana Ventura
+    Pesquisar por emendas da deputada Adriana Ventura
 
     >>> senado.orcamento(autor='Adriana')
-    
+            autor_nome  ativo                       autor_email  autor_codigo \
+    0  Adriana Ventura   True  dep.adrianaventura@camara.leg.br          3899
+
     '''
 
-    # Baixar dados
     data = _get_request(
         path = ['orcamento', 'lista'],
         keys = ['ListaLoteEmendas', 'LotesEmendasOrcamento', 'LoteEmendasOrcamento']
     )
-    df = _pd.DataFrame(data)
 
-    # Renomear colunas    
+    if formato == 'lista':
+        return data
+
+    df = _pd.DataFrame(data)
     col_mapping = {
         'NomeAutorOrcamento': 'autor_nome',
         'IndicadorAtivo': 'ativo',
@@ -389,13 +473,11 @@ def orcamento(
     }
     df.columns = df.columns.map(col_mapping)
 
-    # Corrigir tipos das colunas
     df.ativo = df.ativo == 'Sim'
     df.data_operacao = _pd.to_datetime(df.data_operacao)
     for col in ['autor_codigo', 'quantidade_emendas', 'ano_execucao', 'ano_materia']:
         df[col] = df[col].astype(int)
 
-    # Filtros
     if autor is not None:
         df = df[df.autor_nome.str.contains(autor)]
     if tipo is not None:
@@ -409,108 +491,163 @@ def orcamento(
 
 
 
-def partidos(
-        ativos: bool = True,
-        index: bool = False
+def lista_partidos(
+        inativos: bool = False,
+        index: bool = False,
+        formato: str = 'dataframe'
     ) -> _pd.DataFrame:
-    '''
-    Lista os partidos políticos.
+    '''Lista os partidos políticos.
 
     Parâmetros
     ----------
-    ativos : bool (default=True)
-        - True para listar apenas os partidos ativos.
-        - False para incluir partidos inativos na lista.
+    inativos : bool (default=False)
+        - True para incluir partidos inativos na lista.
+        - False para listar apenas os partidos ativos.
     index : bool (default=False)
         Se True, define a coluna `Codigo` como index do DataFrame.
+    formato : str {'dataframe', 'json'} (default='dataframe')
+        Formato do dado que será retornado.
+        Obs.: Alguns filtros não serão aplicados no formato 'json'.
 
     Retorna
     -------
     pandas.DataFrame
         DataFrame contendo a lista de partidos políticos consultados.
 
-    --------------------------------------------------------------------------
+    Ver também
+    ----------
+    DadosAbertosBrasil.camara.lista_partidos
+        Função semelhante do módulo `camara`.
+
+    Exemplos
+    --------
+    Capturar todos os partidos, incluindo inativos.
+    
+    >>> senado.lista_partido(inativos=True)
+       codigo          sigla                          nome data_criacao \
+    0     525            ANL  Aliança Nacional Libertadora   1935-01-01   
+    1     238          ARENA   Aliança Renovadora Nacional   1965-11-24   
+    2     578         AVANTE                        AVANTE   2017-09-12
+
     '''
 
-    url = 'senador/partidos'
-    if not ativos:
-        url += '?indAtivos=N'
+    path = ['senador', 'partidos']
+    params = {'indAtivos': 'N'} if inativos else {}
     
     keys = ['ListaPartidos', 'Partidos', 'Partido']
-    r = _get_request(url, None, keys)
-    df = _pd.DataFrame(r)
+    lista = _get_request(path, params, keys)
+
+    if formato == 'json':
+        return lista
+
+    df = _pd.DataFrame(lista)
+    col_mapping = {
+        'Codigo': 'codigo',
+        'Sigla': 'sigla',
+        'Nome': 'nome',
+        'DataCriacao': 'data_criacao',
+        'DataExtincao': 'data_extincao'
+    }
+    df.columns = df.columns.map(col_mapping)
+
+    df.data_criacao = _pd.to_datetime(df.data_criacao)
+    if 'data_extincao' in df.columns:
+        df.data_extincao = _pd.to_datetime(df.data_extincao)
 
     if index:
-        df.set_index('Codigo', inplace=True)
-
-    df.DataCriacao = _pd.to_datetime(df.DataCriacao)
-    if not ativos:
-        df.DataExtincao = _pd.to_datetime(df.DataExtincao)
+        df.set_index('codigo', inplace=True)
 
     return df
 
 
 
 class Senador:
-    '''
-    Coleta os dados dos senadores.
+    '''Coleta os dados dos senadores.
 
     Parâmetros
     ----------
     cod : int
         Código de senador que se dejesa consulta.
-        O código pode ser encontrado pelas funções `lista_*` deste módulo.
+        O código pode ser encontrado pela função `lista_senadores`.
 
     Atributos
     ---------
     dados : dict
         Dicionário completo de dados do(a) parlamentar.
-    nome : str
-        Nome do(a) parlamentar.
-    nome_completo : str
-        Nome completo do(a) parlamentar.
+    email : str
+        E-mail do parlamentar.
+    endereco : str
+        Endereço da sala do parlamentar no Senado Federal.
+    foto : str
+        URL para a foto do parlamentar.
     nascimento : str
-        Data de nascimento do(a) parlamentar no formato 'AAAA-MM-DD'.
+        Data de nascimento do parlamentar no formato 'AAAA-MM-DD'.
+    naturalidade : str
+        Município de nascimento do parlamentar.
+    nome : str
+        Nome do parlamentar.
+    nome_completo : str
+        Nome completo do parlamentar.
+    pagina : str
+        Website do parlamentar.
     partido : str
-        Atual partido político do(a) parlamentar.
+        Atual partido político do parlamentar.
     sexo : str
-        Sexo ('Masculino' ou 'Feminino') do(a) parlamentar.
+        Sexo ('Masculino' ou 'Feminino') do parlamentar.
+    telefones : list of str
+        Lista de telefones oficiais do parlamentar.
     tratamento : str
-        Pronome de tratamento usado para o(a) parlamentar.
+        Pronome de tratamento usado para o parlamentar.
+    uf : str
+        Unidade Federativa pela qual o parlamentar foi eleito.
+    uf_naturalidade : str
+        Unidade Federativa de nascimento do parlamentar.
 
-    --------------------------------------------------------------------------
     '''
 
     def __init__(self, cod:int):
         self.cod = cod
         keys = ['DetalheParlamentar', 'Parlamentar']
-        self.dados = _get_request(f'senador/{cod}', None, keys)
-        self.nome = self._get_info(
-            ['IdentificacaoParlamentar', 'NomeParlamentar'])
-        self.nome_completo = self._get_info(
-            ['IdentificacaoParlamentar', 'NomeCompletoParlamentar'])
-        self.nascimento = self._get_info(
-            ['DadosBasicosParlamentar', 'DataNascimento'])
-        self.partido = self._get_info(
-            ['IdentificacaoParlamentar', 'SiglaPartidoParlamentar'])
-        self.sexo = self._get_info(
-            ['IdentificacaoParlamentar', 'SexoParlamentar'])
-        self.tratamento = self._get_info(
-            ['IdentificacaoParlamentar', 'FormaTratamento'])
+        self.dados = _get_request(
+            path = ['senador', cod],
+            keys = keys
+        )
+
+        _ATTR = {
+            'email': ['IdentificacaoParlamentar', 'EmailParlamentar'],
+            'endereco': ['DadosBasicosParlamentar', 'EnderecoParlamentar'],
+            'foto': ['IdentificacaoParlamentar', 'UrlFotoParlamentar'],
+            'nascimento': ['DadosBasicosParlamentar', 'DataNascimento'],
+            'naturalidade': ['DadosBasicosParlamentar', 'Naturalidade'],
+            'nome': ['IdentificacaoParlamentar', 'NomeParlamentar'],
+            'nome_completo': ['IdentificacaoParlamentar', 'NomeCompletoParlamentar'],
+            'pagina': ['IdentificacaoParlamentar', 'UrlPaginaParlamentar'],
+            'partido': ['IdentificacaoParlamentar', 'SiglaPartidoParlamentar'],
+            'sexo': ['IdentificacaoParlamentar', 'SexoParlamentar'],
+            'tratamento': ['IdentificacaoParlamentar', 'FormaTratamento'],
+            'uf': ['IdentificacaoParlamentar', 'UfParlamentar'],
+            'uf_naturalidade': ['DadosBasicosParlamentar', 'UfNaturalidade'],
+        }
+        for attr in _ATTR:
+            self._set_attribute(attr, _ATTR)
+
+        if 'Telefones' in self.dados:
+            self.telefones = [fone['NumeroTelefone'] \
+                for fone in self.dados['Telefones']['Telefone']]
 
 
     def __repr__(self):
         return f"<DadosAbertosBrasil.senado: Senador{'a' if self.sexo == 'Feminino' else ''} {self.nome}>"
 
 
-    def _get_info(self, keys:list):
+    def _set_attribute(self, attr:str, attr_dict:dict):
         x = self.dados
         try:
-            for key in keys:
+            for key in attr_dict[attr]:
                 x = x[key]
-            return x
+            setattr(self, attr, x)
         except (KeyError, TypeError):
-            return None
+            return
 
 
     def apartes(
@@ -522,8 +659,7 @@ class Senador:
             tipo_pronunciamento: str = None,
             tipo_sessao: str = None
         ) -> list:
-        '''
-        Obtém a relação de apartes do senador.
+        '''Obtém a relação de apartes do senador.
 
         Parâmetros
         ----------
@@ -551,7 +687,6 @@ class Senador:
         list of dict
             Lista de apartes do(a) parlamentar.
 
-        --------------------------------------------------------------------------
         '''
 
         tags = {}
@@ -581,8 +716,7 @@ class Senador:
             sigla: str = None,
             tramitando: bool = None
         ) -> list:
-        '''
-        Obtém as matérias de autoria de um senador.
+        '''Obtém as matérias de autoria de um senador.
 
         Parâmetros
         ----------
@@ -606,7 +740,6 @@ class Senador:
         list of dict
             Lista de matérias de autoria do(a) parlamentar.
 
-        --------------------------------------------------------------------------
         '''
 
         tags = {}
@@ -633,8 +766,7 @@ class Senador:
             comissao: bool = None,
             ativos: bool = None
         ) -> list:
-        '''
-        Obtém a relação de cargos que o senador ja ocupou.
+        '''Obtém a relação de cargos que o senador ja ocupou.
 
         Parâmetros
         ----------
@@ -650,7 +782,6 @@ class Senador:
         list of dict
             Lista de comissões que o(a) parlamentar seja membro.
 
-        --------------------------------------------------------------------------
         '''
 
         tags = {}
@@ -669,8 +800,7 @@ class Senador:
             comissao: str = None,
             ativos: bool = None
         ) -> list:
-        '''
-        Obtém as comissões de que um senador é membro.
+        '''Obtém as comissões de que um senador é membro.
 
         Parâmetros
         ----------
@@ -686,7 +816,6 @@ class Senador:
         list of dict
             Lista de comissões que o(a) parlamentar seja membro.
 
-        --------------------------------------------------------------------------
         '''
 
         tags = {}
@@ -709,8 +838,7 @@ class Senador:
             tipo_pronunciamento: str = None,
             tipo_sessao: str = None
         ) -> list:
-        '''
-        Obtém a relação de discursos do senador.
+        '''Obtém a relação de discursos do senador.
 
         Parâmetros
         ----------
@@ -738,7 +866,6 @@ class Senador:
         list of dict
             Lista de discursos do(a) parlamentar.
 
-        --------------------------------------------------------------------------
         '''
 
         tags = {}
@@ -761,15 +888,13 @@ class Senador:
 
 
     def filiacoes(self) -> list:
-        '''
-        Obtém as filiações partidárias que o senador já teve.
+        '''Obtém as filiações partidárias que o senador já teve.
 
         Retorna
         -------
         list of dict
             Lista de filiações do(a) parlamentar.
 
-        --------------------------------------------------------------------------
         '''
 
         path = f'senador/{self.cod}/filiacoes'
@@ -778,8 +903,7 @@ class Senador:
 
 
     def historico(self) -> dict:
-        '''
-        Obtém todos os detalhes de um parlamentar no(s) mandato(s) como
+        '''Obtém todos os detalhes de um parlamentar no(s) mandato(s) como
         senador (mandato atual e anteriores, se houver).
 
         Retorna
@@ -787,7 +911,6 @@ class Senador:
         dict
             Dados históricos do(a) parlamentar.
 
-        --------------------------------------------------------------------------
         '''
 
         path = f'senador/{self.cod}/historico'
@@ -799,15 +922,13 @@ class Senador:
 
     
     def mandatos(self) -> list:
-        '''
-        Obtém os mandatos que o senador já teve.
+        '''Obtém os mandatos que o senador já teve.
 
         Retorna
         -------
         list of dict
             Lista de mandatos do(a) parlamentar.
 
-        --------------------------------------------------------------------------
         '''
 
         path = f'senador/{self.cod}/mandatos'
@@ -816,15 +937,13 @@ class Senador:
 
 
     def liderancas(self) -> list:
-        '''
-        Obtém os cargos de liderança de um senador.
+        '''Obtém os cargos de liderança de um senador.
 
         Retorna
         -------
         list of dict
             Lista de cargos de liderança do(a) parlamentar.
 
-        --------------------------------------------------------------------------
         '''
 
         path = f'senador/{self.cod}/liderancas'
@@ -836,8 +955,7 @@ class Senador:
             self,
             inicio: str = None
         ) -> list:
-        '''
-        Obtém as licenças de um senador.
+        '''Obtém as licenças de um senador.
 
         Parâmetros
         ----------
@@ -849,7 +967,6 @@ class Senador:
         list of dict
             Lista de licenças do(a) parlamentar.
 
-        --------------------------------------------------------------------------
         '''
 
         tags = {}
@@ -869,8 +986,7 @@ class Senador:
             sigla: str = None,
             tramitando: bool = None
         ) -> list:
-        '''
-        Obtém as matérias de relatoria de um senador.
+        '''Obtém as matérias de relatoria de um senador.
 
         Parâmetros
         ----------
@@ -892,7 +1008,6 @@ class Senador:
         list of dict
             Lista de matérias de relatoria de um senador.
 
-        ----------------------------------------------------------------------
         '''
 
         tags = {}
@@ -919,8 +1034,7 @@ class Senador:
             sigla: str = None,
             tramitando: bool = None
         ) -> list:
-        '''
-        Obtém as votações de um senador.
+        '''Obtém as votações de um senador.
 
         Parâmetros
         ----------
@@ -940,7 +1054,6 @@ class Senador:
         list of dict
             Lista de votações do(a) parlamentar.
 
-        --------------------------------------------------------------------------
         '''
 
         tags = {}
