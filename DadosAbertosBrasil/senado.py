@@ -23,6 +23,8 @@ Documentação da API original
 http://legis.senado.gov.br/dadosabertos/docs/
 
 '''
+from typing import List, Union
+
 import pandas as _pd
 
 from ._utils import parse
@@ -30,8 +32,62 @@ from ._utils.get_data import get_data
 
 
 
-_normalize = _pd.io.json.json_normalize \
-    if _pd.__version__[0] == '0' else _pd.json_normalize
+def _format_df(
+        data: dict,
+        mapping: dict,
+        cols_to_int: List[str] = None,
+        cols_to_date: List[str] = None,
+        cols_to_bool: List[str] = None
+    ) -> _pd.DataFrame:
+    '''Função auxiliar para converter `json` em `dataframe`.
+
+    Parâmetros
+    ----------
+    data : list[dict]
+        Dados obtidos pela função auxiliar `_get_request`.
+    mapping : dict
+        Dicionário para selecionar e corrigir nomes das colunas do DataFrame.
+    cols_to_int : list[str]
+        Colunas cujo `dtype` deve ser `int`.
+    cols_to_date : list[str]
+        Colunas cujo `dtype` deve ser `datetime.date`.
+    cols_to_bool : list[str]
+        Colunas cujo `dtype` deve ser `bool`.
+
+    Retorna
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame formatado.
+    
+    '''
+
+    _normalize = _pd.io.json.json_normalize \
+        if _pd.__version__[0] == '0' else _pd.json_normalize
+
+    df = _normalize(data)
+    df = df[[col for col in mapping.keys() if col in df.columns]]
+    df.columns = df.columns.map(mapping)
+
+    if isinstance(cols_to_int, list):
+        for col in cols_to_int:
+            if col in df.columns:
+                df[col] = _pd.to_numeric(
+                    df[col],
+                    errors = 'coerce',
+                    downcast = 'integer'
+                )
+
+    if isinstance(cols_to_date, list):
+        for col in cols_to_date:
+            if col in df.columns:
+                df[col] = _pd.to_datetime(df[col])
+
+    if isinstance(cols_to_date, list):
+        for col in cols_to_bool:
+            if col in df.columns:
+                df[col] = df[col].map({'Sim': True, 'Não': False})
+
+    return df
 
 
 
@@ -53,7 +109,10 @@ def _get_request(
                 if key in data:
                     data = data[key]
 
-    return data
+    if data is None:
+        raise ValueError('Nenhum dado encontrado. Verifique os parâmetros da consulta.')
+    else:
+        return data
 
 
 
@@ -66,7 +125,7 @@ def lista_senadores(
         excluindo: str = None,
         index: bool = False,
         formato: str = 'dataframe'
-    ) -> _pd.DataFrame:
+    ) -> Union[_pd.DataFrame, List[dict]]:
     '''Lista de senadores da república.
 
     Parâmetros
@@ -88,14 +147,18 @@ def lista_senadores(
         Exclui da consulta senadores contendo esse texto no nome.
     index : bool (default=False)
         Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     formato : str {'dataframe', 'json'} (default='dataframe')
         Formato do dado que será retornado.
-        Obs.: Alguns filtros não serão aplicados no formato 'json'.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Retorna
     -------
     pandas.core.frame.DataFrame
-        Tabela com informações básicas dos senadores consultados.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list[dict]
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     Erros
     -----
@@ -186,7 +249,6 @@ def lista_senadores(
     if formato == 'json':
         return lista
 
-    df = _normalize(lista)
     col_mapping = {
         'IdentificacaoParlamentar.CodigoParlamentar': 'codigo',
         'IdentificacaoParlamentar.NomeParlamentar': 'nome_parlamentar',
@@ -203,8 +265,12 @@ def lista_senadores(
         'Mandato.Exercicios.Exercicio.DataFim': 'data_fim',
         'Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento': 'causa_afastamento'
     }
-    df = df[[col for col in df.columns if col in col_mapping.keys()]]
-    df.columns = df.columns.map(col_mapping)
+    df = _format_df(
+        data = lista,
+        mapping = col_mapping,
+        cols_to_int = ['codigo'],
+        cols_to_date= ['data_inicio', 'data_fim']
+    )
 
     if sexo is not None:
         sexo = sexo.title()
@@ -253,7 +319,7 @@ def lista_legislatura(
         excluindo: str = None,
         index: bool = False,
         formato: str = 'dataframe'
-    ) -> dict:
+    ) -> Union[_pd.DataFrame, List[dict]]:
     '''Lista senadores de uma legislatura ou de um intervalo de legislaturas.
 
     Parâmetros
@@ -285,14 +351,18 @@ def lista_legislatura(
         Exclui da consulta senadores contendo esse texto no nome.
     index : bool (default=False)
         Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     formato : str {'dataframe', 'json'} (default='dataframe')
         Formato do dado que será retornado.
-        Obs.: Alguns filtros não serão aplicados no formato 'json'.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Retorna
     -------
     pandas.core.frame.DataFrame
-        Tabela com informações básicas dos senadores consultados.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list[dict]
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     Erros
     -----
@@ -350,7 +420,6 @@ def lista_legislatura(
     if formato == 'json':
         return lista
 
-    df = _normalize(lista)
     col_mapping = {
         'IdentificacaoParlamentar.CodigoParlamentar': 'codigo',
         'IdentificacaoParlamentar.NomeParlamentar': 'nome_parlamentar',
@@ -367,8 +436,12 @@ def lista_legislatura(
         'Mandato.Exercicios.Exercicio.DataFim': 'data_fim',
         'Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento': 'causa_afastamento'
     }
-    df = df[[col for col in df.columns if col in col_mapping.keys()]]
-    df.columns = df.columns.map(col_mapping)
+    df = _format_df(
+        data = lista,
+        mapping = col_mapping,
+        cols_to_int = ['codigo'],
+        cols_to_date= ['data_inicio', 'data_fim']
+    )
 
     if sexo is not None:
         sexo = sexo.title()
@@ -408,7 +481,7 @@ def orcamento(
         ano_execucao: int = None,
         ano_materia: int = None,
         formato: str = 'dataframe'
-    ) -> _pd.DataFrame:
+    ) -> Union[_pd.DataFrame, List[dict]]:
     '''Obtém a lista dos lotes de emendas orçamentárias.
 
     Parâmetros
@@ -423,12 +496,15 @@ def orcamento(
         Ano da matéria.
     formato : str {'dataframe', 'json'} (default='dataframe')
         Formato do dado que será retornado.
-        Obs.: Alguns filtros não serão aplicados no formato 'json'.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Retorna
     -------
     pandas.core.frame.DataFrame
-        Tabela contendo todas as emendas orçamentárias pesquisadas.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list[dict]
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     Exemplos
     --------
@@ -457,7 +533,6 @@ def orcamento(
     if formato == 'lista':
         return data
 
-    df = _pd.DataFrame(data)
     col_mapping = {
         'NomeAutorOrcamento': 'autor_nome',
         'IndicadorAtivo': 'ativo',
@@ -466,17 +541,18 @@ def orcamento(
         'DataOperacao': 'data_operacao',
         'QuantidadeEmendas': 'quantidade_emendas',
         'AnoExecucao': 'ano_execucao',
-        'NumeroMateria': 'numero_materia',
-        'AnoMateria': 'ano_materia',
+        'NumeroMateria': 'materia_numero',
+        'AnoMateria': 'materia_ano',
         'SiglaTipoPlOrcamento': 'tipo_sigla',
         'DescricaoTipoPlOrcamento': 'tipo_descricao'
     }
-    df.columns = df.columns.map(col_mapping)
-
+    df = _format_df(
+        data = data,
+        mapping = col_mapping,
+        cols_to_int = ['autor_codigo', 'quantidade_emendas', 'ano_execucao', 'materia_ano'],
+        cols_to_date = ['data_operacao']
+    )
     df.ativo = df.ativo == 'Sim'
-    df.data_operacao = _pd.to_datetime(df.data_operacao)
-    for col in ['autor_codigo', 'quantidade_emendas', 'ano_execucao', 'ano_materia']:
-        df[col] = df[col].astype(int)
 
     if autor is not None:
         df = df[df.autor_nome.str.contains(autor)]
@@ -495,7 +571,7 @@ def lista_partidos(
         inativos: bool = False,
         index: bool = False,
         formato: str = 'dataframe'
-    ) -> _pd.DataFrame:
+    ) -> Union[_pd.DataFrame, List[dict]]:
     '''Lista os partidos políticos.
 
     Parâmetros
@@ -504,15 +580,19 @@ def lista_partidos(
         - True para incluir partidos inativos na lista.
         - False para listar apenas os partidos ativos.
     index : bool (default=False)
-        Se True, define a coluna `Codigo` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     formato : str {'dataframe', 'json'} (default='dataframe')
         Formato do dado que será retornado.
-        Obs.: Alguns filtros não serão aplicados no formato 'json'.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Retorna
     -------
-    pandas.DataFrame
-        DataFrame contendo a lista de partidos políticos consultados.
+    pandas.core.frame.DataFrame
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list[dict]
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     Ver também
     ----------
@@ -540,7 +620,6 @@ def lista_partidos(
     if formato == 'json':
         return lista
 
-    df = _pd.DataFrame(lista)
     col_mapping = {
         'Codigo': 'codigo',
         'Sigla': 'sigla',
@@ -548,12 +627,12 @@ def lista_partidos(
         'DataCriacao': 'data_criacao',
         'DataExtincao': 'data_extincao'
     }
-    df.columns = df.columns.map(col_mapping)
-
-    df.data_criacao = _pd.to_datetime(df.data_criacao)
-    if 'data_extincao' in df.columns:
-        df.data_extincao = _pd.to_datetime(df.data_extincao)
-
+    df = _format_df(
+        data = lista,
+        mapping = col_mapping,
+        cols_to_int = ['codigo'],
+        cols_to_date = ['data_criacao', 'data_extincao']
+    )
     if index:
         df.set_index('codigo', inplace=True)
 
@@ -657,8 +736,10 @@ class Senador:
             fim: int = None,
             numero_sessao: int = None,
             tipo_pronunciamento: str = None,
-            tipo_sessao: str = None
-        ) -> list:
+            tipo_sessao: str = None,
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém a relação de apartes do senador.
 
         Parâmetros
@@ -681,31 +762,80 @@ class Senador:
             Sigla do tipo de pronunciamento.
         tipo_sessao : str (default=None)
             Tipo da sessão plenária.
-        
+        index : bool (default=False)
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
         Retorna
         -------
-        list of dict
-            Lista de apartes do(a) parlamentar.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        tags = {}
-        if casa is not None:
-            tags['casa'] = casa
-        if inicio is not None:
-            tags['dataInicio'] = parse.data(inicio, 'senado')
-        if fim is not None:
-            tags['dataFim'] = parse.data(fim, 'senado')
-        if numero_sessao is not None:
-            tags['numeroSessao'] = numero_sessao
-        if tipo_pronunciamento is not None:
-            tags['tipoPronunciamento'] = tipo_pronunciamento
-        if tipo_sessao is not None:
-            tags['tipoSessao'] = tipo_sessao
-
         path = f'senador/{self.cod}/apartes'
         keys = ['ApartesParlamentar', 'Parlamentar', 'Apartes', 'Aparte']
-        return _get_request(path, tags, keys)
+        params = {}
+        if casa is not None:
+            params['casa'] = casa
+        if inicio is not None:
+            params['dataInicio'] = parse.data(inicio, 'senado')
+        if fim is not None:
+            params['dataFim'] = parse.data(fim, 'senado')
+        if numero_sessao is not None:
+            params['numeroSessao'] = numero_sessao
+        if tipo_pronunciamento is not None:
+            params['tipoPronunciamento'] = tipo_pronunciamento
+        if tipo_sessao is not None:
+            params['tipoSessao'] = tipo_sessao
+        lista = _get_request(path=path, params=params, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'CodigoPronunciamento': 'codigo',
+            'DataPronunciamento': 'data',
+            'SiglaCasaPronunciamento': 'casa_sigla',
+            'NomeCasaPronunciamento': 'casa_nome',
+            'TextoResumo': 'resumo',
+            'Indexacao': 'indexacao',
+            'UrlTexto': 'url',
+            'TipoUsoPalavra.Codigo': 'uso_palavra',
+            'SessaoPlenaria.CodigoSessao': 'sessao',
+            'Orador.CodigoParlamentar': 'orador',
+            'Publicacoes.Publicacao.DescricaoVeiculoPublicacao': 'publicacao_veiculo',
+            'Publicacoes.Publicacao.DataPublicacao': 'publicacao_data',
+            'Publicacoes.Publicacao.NumeroPagInicioPublicacao': 'publicacao_primeira_pagina',
+            'Publicacoes.Publicacao.NumeroPagFimPublicacao': 'publicacao_ultima_pagina',
+            'Publicacoes.Publicacao.IndicadorRepublicacao': 'republicacao',
+            'Publicacoes.Publicacao.UrlDiario': 'publicacao_url'
+        }
+
+        df = _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_date = ['data', 'publicacao_data'],
+            cols_to_bool = ['republicacao'],
+            cols_to_int = [
+                'codigo',
+                'uso_palavra',
+                'sessao',
+                'orador',
+                'publicacao_primeira_pagina',
+                'publicacao_ultima_pagina'
+            ]
+        )
+        if index:
+            df.set_index('codigo', inplace=True)
+
+        return df
 
         
     def autorias(
@@ -714,8 +844,10 @@ class Senador:
             numero: int = None,
             primeiro_autor: bool = None,
             sigla: str = None,
-            tramitando: bool = None
-        ) -> list:
+            tramitando: bool = None,
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém as matérias de autoria de um senador.
 
         Parâmetros
@@ -734,38 +866,75 @@ class Senador:
             - True: Retorna apenas as matérias que estão tramitando;
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
+        index : bool (default=False)
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Retorna
         -------
-        list of dict
-            Lista de matérias de autoria do(a) parlamentar.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        tags = {}
-        if ano is not None:
-            tags['ano'] = ano
-        if numero is not None:
-            tags['numero'] = numero
-        if primeiro_autor is not None:
-            tags['primeiro'] = 'S' if primeiro_autor else 'N'
-        else:
-            tags['primeiro'] = 'T'
-        if sigla is not None:
-            tags['sigla'] = sigla
-        if tramitando is not None:
-            tags['tramitando'] = 'S' if tramitando else 'N'
-
-        path = f'senador/{self.cod}/autorias'
+        path = ['senador', self.cod, 'autorias']
         keys = ['MateriasAutoriaParlamentar', 'Parlamentar', 'Autorias', 'Autoria']
-        return _get_request(path, tags, keys)
+        params = {}
+        if ano is not None:
+            params['ano'] = ano
+        if numero is not None:
+            params['numero'] = numero
+        if primeiro_autor is not None:
+            params['primeiro'] = 'S' if primeiro_autor else 'N'
+        else:
+            params['primeiro'] = 'T'
+        if sigla is not None:
+            params['sigla'] = sigla
+        if tramitando is not None:
+            params['tramitando'] = 'S' if tramitando else 'N'
+        lista = _get_request(path=path, params=params, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'IndicadorAutorPrincipal': 'autor_principal',
+            'Materia.Codigo': 'codigo',
+            'Materia.IdentificacaoProcesso': 'processo',
+            'Materia.DescricaoIdentificacao': 'descricao',
+            'Materia.Sigla': 'sigla',
+            'Materia.Numero': 'numero',
+            'Materia.Ano': 'ano',
+            'Materia.Ementa': 'ementa',
+            'Materia.Data': 'data',
+            'IndicadorOutrosAutores': 'outros_autores'
+        }
+
+        df = _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_date = ['data'],
+            cols_to_int = ['codigo', 'processo', 'ano'],
+            cols_to_bool = ['autor_principal', 'outros_autores']
+        )
+        if index:
+            df.set_index('codigo', inplace=True)
+
+        return df
 
     
     def cargos(
             self,
             comissao: bool = None,
-            ativos: bool = None
-        ) -> list:
+            ativos: bool = None,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém a relação de cargos que o senador ja ocupou.
 
         Parâmetros
@@ -776,30 +945,57 @@ class Senador:
             - True: Retorna apenas os cargos atuais;
             - False: Retorna apenas os cargos já finalizadas;
             - None: Retorna ambos.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Retorna
         -------
-        list of dict
-            Lista de comissões que o(a) parlamentar seja membro.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        tags = {}
-        if comissao is not None:
-            tags['comissao'] = comissao
-        if ativos is not None:
-            tags['indAtivos'] = 'S' if ativos else 'N'
-
-        path = f'senador/{self.cod}/cargos'
+        path = ['senador', self.cod, 'cargos']
         keys = ['CargoParlamentar', 'Parlamentar', 'Cargos', 'Cargo']
-        return _get_request(path, tags, keys)
+        params = {}
+        if comissao is not None:
+            params['comissao'] = comissao
+        if ativos is not None:
+            params['indAtivos'] = 'S' if ativos else 'N'
+        lista = _get_request(path=path, params=params, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'CodigoCargo': 'cargo_codigo',
+            'DescricaoCargo': 'cargo_descricao',
+            'DataInicio': 'data_inicio',
+            'DataFim': 'data_fim',
+            'IdentificacaoComissao.CodigoComissao': 'comissao_codigo',
+            'IdentificacaoComissao.SiglaComissao': 'comissao_sigla',
+            'IdentificacaoComissao.NomeComissao': 'comissao_nome',
+            'IdentificacaoComissao.SiglaCasaComissao': 'casa'
+        }
+
+        return _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_date = ['data_inicio', 'data_fim'],
+            cols_to_int = ['cargo_codigo', 'comisao_codigo']
+        )
 
 
     def comissoes(
             self,
             comissao: str = None,
-            ativos: bool = None
-        ) -> list:
+            ativos: bool = None,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém as comissões de que um senador é membro.
 
         Parâmetros
@@ -810,23 +1006,48 @@ class Senador:
             - True: Retorna apenas as comissões atuais;
             - False: Retorna apenas as comissões já finalizadas;
             - None: Retorna ambas.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Retorna
         -------
-        list of dict
-            Lista de comissões que o(a) parlamentar seja membro.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        tags = {}
-        if comissao is not None:
-            tags['comissao'] = comissao
-        if ativos is not None:
-            tags['indAtivos'] = 'S' if ativos else 'N'
-
-        path = f'senador/{self.cod}/comissoes'
+        path = ['senador', self.cod, 'comissoes']
         keys = ['MembroComissaoParlamentar', 'Parlamentar', 'MembroComissoes', 'Comissao']
-        return _get_request(path, tags, keys)
+        params = {}
+        if comissao is not None:
+            params['comissao'] = comissao
+        if ativos is not None:
+            params['indAtivos'] = 'S' if ativos else 'N'
+        lista = _get_request(path=path, params=params, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'DescricaoParticipacao': 'participacao',
+            'DataInicio': 'data_inicio',
+            'DataFim': 'data_fim',
+            'IdentificacaoComissao.CodigoComissao': 'comissao_codigo',
+            'IdentificacaoComissao.SiglaComissao': 'comissao_sigla',
+            'IdentificacaoComissao.NomeComissao': 'comissao_nome',
+            'IdentificacaoComissao.SiglaCasaComissao': 'casa'
+        }
+
+        return _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_date = ['data_inicio', 'data_fim'],
+            cols_to_int = ['comissao_codigo']
+        )
 
 
     def discursos(
@@ -836,9 +1057,14 @@ class Senador:
             fim: int = None,
             numero_sessao: int = None,
             tipo_pronunciamento: str = None,
-            tipo_sessao: str = None
-        ) -> list:
+            tipo_sessao: str = None,
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém a relação de discursos do senador.
+
+        Se os argumentos `inicio` e `fim` não forem informados, retorna os
+        pronunciamentos dos últimos 30 dias.
 
         Parâmetros
         ----------
@@ -860,46 +1086,131 @@ class Senador:
             Sigla do tipo de pronunciamento.
         tipo_sessao : str (default=None)
             Tipo da sessão plenária.
-        
+        index : bool (default=False)
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
         Retorna
         -------
-        list of dict
-            Lista de discursos do(a) parlamentar.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        tags = {}
-        if casa is not None:
-            tags['casa'] = casa
-        if inicio is not None:
-            tags['dataInicio'] = parse.data(inicio, 'senado')
-        if fim is not None:
-            tags['dataFim'] = parse.data(fim, 'senado')
-        if numero_sessao is not None:
-            tags['numeroSessao'] = numero_sessao
-        if tipo_pronunciamento is not None:
-            tags['tipoPronunciamento'] = tipo_pronunciamento
-        if tipo_sessao is not None:
-            tags['tipoSessao'] = tipo_sessao
-
-        path = f'senador/{self.cod}/discursos'
+        path = ['senador', self.cod, 'discursos']
         keys = ['DiscursosParlamentar', 'Parlamentar', 'Pronunciamentos', 'Pronunciamento']
-        return _get_request(path, tags, keys)
+        params = {}
+        if casa is not None:
+            params['casa'] = casa
+        if inicio is not None:
+            params['dataInicio'] = parse.data(inicio, 'senado')
+        if fim is not None:
+            params['dataFim'] = parse.data(fim, 'senado')
+        if numero_sessao is not None:
+            params['numeroSessao'] = numero_sessao
+        if tipo_pronunciamento is not None:
+            params['tipoPronunciamento'] = tipo_pronunciamento
+        if tipo_sessao is not None:
+            params['tipoSessao'] = tipo_sessao
+        lista = _get_request(path=path, params=params, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'CodigoPronunciamento': 'codigo',
+            'DataPronunciamento': 'data',
+            'SiglaCasaPronunciamento': 'casa_sigla',
+            'NomeCasaPronunciamento': 'casa_nome',
+            'TextoResumo': 'resumo',
+            'Indexacao': 'indexacao',
+            'UrlTexto': 'url',
+            'TipoUsoPalavra.Codigo': 'uso_palavra',
+            'SessaoPlenaria.CodigoSessao': 'sessao',
+            'Publicacoes.Publicacao.DescricaoVeiculoPublicacao': 'publicacao_veiculo',
+            'Publicacoes.Publicacao.DataPublicacao': 'publicacao_data',
+            'Publicacoes.Publicacao.NumeroPagInicioPublicacao': 'publicacao_primeira_pagina',
+            'Publicacoes.Publicacao.NumeroPagFimPublicacao': 'publicacao_ultima_pagina',
+            'Publicacoes.Publicacao.IndicadorRepublicacao': 'republicacao',
+            'Publicacoes.Publicacao.UrlDiario': 'publicacao_url'
+        }
+
+        df = _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_date = ['data', 'publicacao_data'],
+            cols_to_bool = ['republicacao'],
+            cols_to_int = [
+                'codigo',
+                'uso_palavra',
+                'sessao',
+                'publicacao_primeira_pagina',
+                'publicacao_ultima_pagina'
+            ]
+        )
+        if index:
+            df.set_index('codigo', inplace=True)
+
+        return df
 
 
-    def filiacoes(self) -> list:
+    def filiacoes(
+            self,
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém as filiações partidárias que o senador já teve.
 
+        Parâmetros
+        ----------
+        index : bool (default=False)
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
         Retorna
         -------
-        list of dict
-            Lista de filiações do(a) parlamentar.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        path = f'senador/{self.cod}/filiacoes'
+        path = ['senador', self.cod, 'filiacoes']
         keys = ['FiliacaoParlamentar', 'Parlamentar', 'Filiacoes', 'Filiacao']
-        return _get_request(path, None, keys)
+        lista = _get_request(path=path, params=None, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'Partido.CodigoPartido': 'codigo',
+            'Partido.SiglaPartido': 'sigla',
+            'Partido.NomePartido': 'nome',
+            'DataFiliacao': 'data_filiacao',
+            'DataDesfiliacao': 'data_desfiliacao'
+        }
+
+        df = _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_int = ['codigo'],
+            cols_to_date = ['data_filiacao', 'data_desfiliacao']
+        )
+        if index:
+            df.set_index('codigo', inplace=True)
+
+        return df
 
 
     def historico(self) -> dict:
@@ -913,69 +1224,182 @@ class Senador:
 
         '''
 
-        path = f'senador/{self.cod}/historico'
+        path = ['senador', self.cod, 'historico']
         keys = ['DetalheParlamentar', 'Parlamentar']
-        d = _get_request(path, None, keys)
-        d.pop('OutrasInformacoes', None)
-        d.pop('UrlGlossario', None)
-        return d
+        return _get_request(path=path, params=None, keys=keys)
+        
 
-    
-    def mandatos(self) -> list:
+    def mandatos(
+            self,
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém os mandatos que o senador já teve.
 
+        Parâmetros
+        ----------
+        index : bool (default=False)
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
         Retorna
         -------
-        list of dict
-            Lista de mandatos do(a) parlamentar.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        path = f'senador/{self.cod}/mandatos'
+        path = ['senador', self.cod, 'mandatos']
         keys = ['MandatoParlamentar', 'Parlamentar', 'Mandatos', 'Mandato']
-        return _get_request(path, None, keys)
+        lista = _get_request(path=path, params=None, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'CodigoMandato': 'codigo',
+            'UfParlamentar': 'uf',
+            'DescricaoParticipacao': 'participacao',
+            'PrimeiraLegislaturaDoMandato.NumeroLegislatura': 'primeira_legislatura',
+            'PrimeiraLegislaturaDoMandato.DataInicio': 'primeira_legislatura_inicio',
+            'PrimeiraLegislaturaDoMandato.DataFim': 'primeira_legislatura_fim',
+            'SegundaLegislaturaDoMandato.NumeroLegislatura': 'segunda_legislatura',
+            'SegundaLegislaturaDoMandato.DataInicio': 'segunda_legislatura_inicio',
+            'SegundaLegislaturaDoMandato.DataFim': 'segunda_legislatura_fim'
+        }
+        df = _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_int = ['codigo'],
+            cols_to_date = [
+                'primeira_legislatura_inicio',
+                'primeira_legislatura_fim',
+                'segunda_legislatura_inicio',
+                'segunda_legislatura_fim'
+            ]
+        )
+        if index:
+            df.set_index('codigo', inplace=True)
+
+        return df
 
 
-    def liderancas(self) -> list:
+    def liderancas(
+            self,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém os cargos de liderança de um senador.
 
+        Parâmetros
+        ----------
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
         Retorna
         -------
-        list of dict
-            Lista de cargos de liderança do(a) parlamentar.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        path = f'senador/{self.cod}/liderancas'
+        path = ['senador', self.cod, 'liderancas']
         keys = ['LiderancaParlamentar', 'Parlamentar', 'Liderancas', 'Lideranca']
-        return _get_request(path, None, keys)
+        lista = _get_request(path=path, params=None, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'UnidadeLideranca': 'lideranca',
+            'DescricaoTipoLideranca': 'tipo',
+            'SiglaCasaLideranca': 'casa_sigla',
+            'NomeCasaLideranca': 'casa_nome',
+            'DataDesignacao': 'data_designacao',
+            'DataFim': 'data_fim',
+            'Partido.CodigoPartido': 'partido_codigo',
+            'Partido.SiglaPartido': 'partido_sigla',
+            'Partido.NomePartido': 'partido_nome',
+            'Bloco.CodigoBloco': 'bloco_codigo',
+            'Bloco.SiglaBloco': 'bloco_sigla',
+            'Bloco.NomeBloco': 'bloco_nome',
+            'Bloco.ApelidoBloco': 'bloco_apelido'
+        }
+        return _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_int = ['partido_codigo', 'bloco_codigo'],
+            cols_to_date = ['data_designacao', 'data_fim']
+        )
 
 
     def licencas(
             self,
-            inicio: str = None
-        ) -> list:
+            inicio: str = None,
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém as licenças de um senador.
 
         Parâmetros
         ----------
-        inicio : datetime.date ou str (default=None)
+        inicio : datetime.date | str (default=None)
             Retorna as licenças a partir da data especificada.
+        index : bool (default=False)
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Retorna
         -------
-        list of dict
-            Lista de licenças do(a) parlamentar.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        tags = {}
-        if inicio is not None:
-            tags['dataInicio'] = parse.data(inicio, 'senado')
-
-        path = f'senador/{self.cod}/licencas'
+        path = ['senador', self.cod, 'licencas']
         keys = ['LicencaParlamentar', 'Parlamentar', 'Licencas', 'Licenca']
-        return _get_request(path, tags, keys)
+        params = {}
+        if inicio is not None:
+            params['dataInicio'] = parse.data(inicio, 'senado')
+        lista = _get_request(path=path, params=params, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'Codigo': 'codigo',
+            'DataInicio': 'inicio',
+            'DataInicioPrevista': 'inicio_previsto',
+            'DataFim': 'fim',
+            'DataFimPrevista': 'fim_previsto',
+            'SiglaTipoAfastamento': 'afastamento_sigla',
+            'DescricaoTipoAfastamento': 'afastamento_descricao',
+        }
+        df = _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_int = ['codigo'],
+            cols_to_date = ['inicio', 'inicio_previsto', 'fim', 'fim_previsto']
+        )
+        if index:
+            df.set_index('codigo', inplace=True)
+
+        return df
 
 
     def relatorias(
@@ -984,8 +1408,9 @@ class Senador:
             comissao: str = None,
             numero: int = None,
             sigla: str = None,
-            tramitando: bool = None
-        ) -> list:
+            tramitando: bool = None,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém as matérias de relatoria de um senador.
 
         Parâmetros
@@ -1002,29 +1427,53 @@ class Senador:
             - True: Retorna apenas as matérias que estão tramitando;
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Retorna
         -------
-        list of dict
-            Lista de matérias de relatoria de um senador.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        tags = {}
-        if ano is not None:
-            tags['ano'] = ano
-        if comissao is not None:
-            tags['comissao'] = comissao
-        if numero is not None:
-            tags['numero'] = numero
-        if sigla is not None:
-            tags['sigla'] = sigla
-        if tramitando is not None:
-            tags['tramitando'] = 'S' if tramitando else 'N'
-
-        path = f'senador/{self.cod}/relatorias'
+        path = ['senador', self.cod, 'relatorias']
         keys = ['MateriasRelatoriaParlamentar', 'Parlamentar', 'Relatorias', 'Relatoria']
-        return _get_request(path, tags, keys)
+        params = {}
+        if ano is not None:
+            params['ano'] = ano
+        if comissao is not None:
+            params['comissao'] = comissao
+        if numero is not None:
+            params['numero'] = numero
+        if sigla is not None:
+            params['sigla'] = sigla
+        if tramitando is not None:
+            params['tramitando'] = 'S' if tramitando else 'N'
+        lista = _get_request(path=path, params=params, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'Materia.Codigo': 'materia',
+            'Comissao.Codigo': 'comissao',
+            'CodigoTipoRelator': 'codigo',
+            'DescricaoTipoRelator': 'descricao',
+            'DataDesignacao': 'data_designacao',
+            'DataDestituicao': 'data_destituicao',
+            'DescricaoMotivoDestituicao': 'motivo_destituicao'
+        }
+        return _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_int = ['codigo', 'materia', 'comissao'],
+            cols_to_date = ['data_designacao', 'data_destituicao']    
+        )
 
 
     def votacoes(
@@ -1032,8 +1481,10 @@ class Senador:
             ano: int = None,
             numero: int = None,
             sigla: str = None,
-            tramitando: bool = None
-        ) -> list:
+            tramitando: bool = None,
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
         '''Obtém as votações de um senador.
 
         Parâmetros
@@ -1048,24 +1499,57 @@ class Senador:
             - True: Retorna apenas as matérias que estão tramitando;
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
+        index : bool (default=False)
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Retorna
         -------
-        list of dict
-            Lista de votações do(a) parlamentar.
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         '''
 
-        tags = {}
-        if ano is not None:
-            tags['ano'] = ano
-        if numero is not None:
-            tags['numero'] = numero
-        if sigla is not None:
-            tags['sigla'] = sigla
-        if tramitando is not None:
-            tags['tramitando'] = 'S' if tramitando else 'N'
-
-        path = f'senador/{self.cod}/votacoes'
+        path = ['senador', self.cod, 'votacoes']
         keys = ['VotacaoParlamentar', 'Parlamentar', 'Votacoes', 'Votacao']
-        return _get_request(path, tags, keys)
+        params = {}
+        if ano is not None:
+            params['ano'] = ano
+        if numero is not None:
+            params['numero'] = numero
+        if sigla is not None:
+            params['sigla'] = sigla
+        if tramitando is not None:
+            params['tramitando'] = 'S' if tramitando else 'N'
+        lista = _get_request(path=path, params=params, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'CodigoSessaoVotacao': 'codigo',
+            'SessaoPlenaria.CodigoSessao': 'sessao',
+            'Materia.Codigo': 'materia',
+            'Tramitacao.IdentificacaoTramitacao.CodigoTramitacao': 'tramitacao',
+            'Sequencial': 'sequencial',
+            'DescricaoVotacao': 'descricao',
+            'IndicadorVotacaoSecreta': 'votacao_secreta',
+            'SiglaDescricaoVoto': 'voto',
+            'DescricaoResultado': 'resultado'
+        }
+        df = _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_int = ['sequencial', 'votacao', 'sessao', 'materia', 'tramitacao'],
+            cols_to_bool = ['votacao_secreta']
+        )
+        if index:
+            df.set_index('codigo', inplace=True)
+
+        return df
