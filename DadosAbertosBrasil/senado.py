@@ -82,7 +82,7 @@ def _format_df(
             if col in df.columns:
                 df[col] = _pd.to_datetime(df[col])
 
-    if isinstance(cols_to_date, list):
+    if isinstance(cols_to_bool, list):
         for col in cols_to_bool:
             if col in df.columns:
                 df[col] = df[col].map({'Sim': True, 'Não': False})
@@ -818,8 +818,12 @@ class Senador:
             self._set_attribute(attr, _ATTR)
 
         if 'Telefones' in self.dados:
-            self.telefones = [fone['NumeroTelefone'] \
-                for fone in self.dados['Telefones']['Telefone']]
+            lista_telefones = self.dados['Telefones']['Telefone']
+            if isinstance(lista_telefones, list):
+                self.telefones = [fone['NumeroTelefone'] \
+                    for fone in lista_telefones]
+            elif isinstance(lista_telefones, dict):
+                self.telefones = [lista_telefones['NumeroTelefone']]
 
 
     def __repr__(self):
@@ -1157,6 +1161,49 @@ class Senador:
         )
 
 
+    def cursos(
+            self,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
+        '''Obtém o histórico acadêmico de um senador.
+
+        Parâmetros
+        ----------
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
+
+        '''
+
+        path = ['senador', self.cod, 'historicoAcademico']
+        keys = ['HistoricoAcademicoParlamentar', 'Parlamentar', 'HistoricoAcademico', 'Curso']
+        lista = _get_request(path=path, params=None, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'NomeCurso': 'nome',
+            'GrauInstrucao': 'grau_instrucao',
+            'Estabelecimento': 'estabelecimento',
+            'Local': 'local'
+        }
+
+        return _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_bool= ['atividade_principal']
+        )
+
+
     def discursos(
             self,
             casa: str = None,
@@ -1334,7 +1381,7 @@ class Senador:
         path = ['senador', self.cod, 'historico']
         keys = ['DetalheParlamentar', 'Parlamentar']
         return _get_request(path=path, params=None, keys=keys)
-        
+
 
     def mandatos(
             self,
@@ -1507,6 +1554,47 @@ class Senador:
             df.set_index('codigo', inplace=True)
 
         return df
+
+
+    def profissoes(
+            self,
+            formato: str = 'dataframe'
+        ) -> Union[_pd.DataFrame, List[dict]]:
+        '''Obtém a(s) profissão(ões) de um senador.
+
+        Parâmetros
+        ----------
+        formato : str {'dataframe', 'json'} (default='dataframe')
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
+        Retorna
+        -------
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list[dict]
+            Se formato = 'json', retorna os dados brutos no formato json.
+
+        '''
+
+        path = ['senador', self.cod, 'profissao']
+        keys = ['ProfissaoParlamentar', 'Parlamentar', 'Profissoes', 'Profissao']
+        lista = _get_request(path=path, params=None, keys=keys)
+
+        if formato == 'json':
+            return lista
+
+        col_mapping = {
+            'NomeProfissao': 'nome',
+            'IndicadorAtividadePrincipal': 'atividade_principal'
+        }
+
+        return _format_df(
+            data = lista,
+            mapping = col_mapping,
+            cols_to_bool= ['atividade_principal']
+        )
 
 
     def relatorias(
