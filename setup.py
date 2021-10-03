@@ -7,8 +7,12 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
   name = 'DadosAbertosBrasil',
-  packages = ['DadosAbertosBrasil', 'DadosAbertosBrasil._utils'],
-  version = '0.3.1',
+  packages = [
+    'DadosAbertosBrasil',
+    'DadosAbertosBrasil._utils',
+    'DadosAbertosBrasil._ibge'
+  ],
+  version = '0.3.2',
   license = 'MIT',
   description = 'Pacote Python para acesso a dados abertos e APIs do governo brasileiro.',
   long_description = long_description,
@@ -16,7 +20,7 @@ setup(
   author = 'Gustavo Furtado',
   author_email = 'gustavofurtado2@gmail.com',
   url = 'https://github.com/GusFurtado/DadosAbertosBrasil',
-  download_url = 'https://github.com/GusFurtado/DadosAbertosBrasil/archive/0.3.1.tar.gz',
+  download_url = 'https://github.com/GusFurtado/DadosAbertosBrasil/archive/0.3.2.tar.gz',
 
   keywords = [
     'brasil',
@@ -33,7 +37,7 @@ setup(
 
   install_requires = [
     'pandas',
-    'requests',
+    'requests'
   ],
 
   classifiers = [
