@@ -1,4 +1,4 @@
-'''Módulo para captura dos dados abertos da API do IpeaData.
+"""Módulo para captura dos dados abertos da API do IpeaData.
 
 Mini-Tutorial
 -------------
@@ -27,12 +27,15 @@ as outras funções `lista`.
 valores da série, sem os metadados. Está é uma forma simplificada e mais
 rápida de obter os dados de uma série.
 
-Documentação da API original
-----------------------------
-http://www.ipeadata.gov.br/api/
+References
+----------
+.. [1] http://www.ipeadata.gov.br/api/
 
-'''
-import pandas as _pd
+"""
+
+from typing import List, Optional
+
+import pandas as pd
 
 from ._utils.get_data import get_data
 
@@ -41,28 +44,28 @@ from ._utils.get_data import get_data
 def _get(
         path: str,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Captura e formata dados deste módulo.
+    ) -> pd.DataFrame:
+    """Captura e formata dados deste módulo.
     
-    Parâmetros
+    Parameters
     ----------
     path : str
         Parâmetros da coleta.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna chave como index do DataFrame
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
 
-    '''
+    """
 
     values = get_data(
         endpoint = 'http://www.ipeadata.gov.br/api/odata4/',
         path = path
     )['value']
 
-    df = _pd.DataFrame(values)
+    df = pd.DataFrame(values)
     if index:
         df.set_index(df.columns[0], inplace=True)
     return df
@@ -70,18 +73,18 @@ def _get(
 
 
 class Serie:
-    '''Dados de uma série IPEA.
+    """Dados de uma série IPEA.
 
-    Parâmetros
+    Parameters
     ----------
     cod : str
         Código da série que se deseja obter os dados.
         Utilize a função `ipea.lista_series` para identificar a série desejada.
         O código desejado estará na coluna 'SERCODIGO'.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna 'SERCODIGO' como index do atributo 'valores'.
 
-    Atributos
+    Attributes
     ---------
     cod : str
         Código da série escolhida.
@@ -125,19 +128,19 @@ class Serie:
         - True: Série possui valores numéricos (tratados como números);
         - False: Série possui valores são alfanuméricos (string).
 
-    Notas
+    Notes
     -----
     Os atributos `dados` e `valores` apresentam os mesmos dados. "Valores" é o
     termo padrão para os dados históricos do Ipeadata, porém o termo "Dados" é
     o padrão do pacote `DadosAbertosBrasil`.
 
-    Ver também
-    ----------
+    See Also
+    --------
     DadosAbertosBrasil.ipea.serie
         Função que coleta os mesmos dados históricos desta classe, porém é
         mais simples e não coleta os metadados da série.
 
-    Exemplos
+    Examples
     --------
     1. Utilize as funções `lista` para encontrar a série desejada.
 
@@ -165,7 +168,7 @@ class Serie:
     >>> s.periodicidade
     'Trimestral'
 
-    '''
+    """
 
     def __init__(
             self,
@@ -175,7 +178,7 @@ class Serie:
 
         self.cod = cod
         self.valores = _get(f"Metadados(SERCODIGO='{cod}')/Valores", index)
-        self.valores.VALDATA = _pd.to_datetime(self.valores.VALDATA)
+        self.valores.VALDATA = pd.to_datetime(self.valores.VALDATA)
         self.dados = self.valores
         self.metadados = _get(f"Metadados('{cod}')")
         self.base = self.metadados.loc[0, 'BASNOME']
@@ -194,76 +197,80 @@ class Serie:
         self.numerica = self.metadados.loc[0, 'SERNUMERICA']
 
 
-    def __repr__(self):
-        return f"DadosAbertosBrasil.ipea: Dados da série '{self.cod}' ({self.nome})"
+    def __repr__(self) -> str:
+        return f"<DadosAbertosBrasil.ipea: Dados da série '{self.cod}'>"
+
+
+    def __str__(self) -> str:
+        return self.nome
 
 
 
-def lista_series(index=False) -> _pd.DataFrame:
-    '''Registros de metadados de todas as séries do IPEA.
+def lista_series(index=False) -> pd.DataFrame:
+    """Registros de metadados de todas as séries do IPEA.
 
-    Parâmetros
+    Parameters
     ----------
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna 'SERCODIGO' como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame onde cada coluna é um metadado e cada registro é uma série
         do IPEA.
 
-    Exemplo
+    Example
     -------
     Forma mais simples da função.
 
     >>> ipea.lista_series()
-               SERCODIGO                                SERNOME  \
-    0       ABATE_ABPEAV       Abate - aves - peso das carcaças  \
-    1       ABATE_ABPEBV    Abate - bovinos - peso das carcaças  \
-    2       ABATE_ABPESU     Abate - suínos - peso das carcaças  \
-    3       ABATE_ABQUAV                    Abate - aves - qde.  \
-    4       ABATE_ABQUBV                 Abate - bovinos - qde.  \
-    ...              ...                                    ...  \
+               SERCODIGO                                SERNOME  ...
+    0       ABATE_ABPEAV       Abate - aves - peso das carcaças  ...
+    1       ABATE_ABPEBV    Abate - bovinos - peso das carcaças  ...
+    2       ABATE_ABPESU     Abate - suínos - peso das carcaças  ...
+    3       ABATE_ABQUAV                    Abate - aves - qde.  ...
+    4       ABATE_ABQUBV                 Abate - bovinos - qde.  ...
+    ...              ...                                    ...  ...
 
     Utilize o argumento `index=True` para colocar a coluna 'SERCODIGO'
     como index do DataFrame.
 
     >>> ipea.lista_series(index=True)
-                                                SERNOME  \
-    SERCODIGO                                            \
-    ABATE_ABPEAV       Abate - aves - peso das carcaças  \
-    ABATE_ABPEBV    Abate - bovinos - peso das carcaças  \
-    ABATE_ABPESU     Abate - suínos - peso das carcaças  \
-    ABATE_ABQUAV                    Abate - aves - qde.  \
-    ABATE_ABQUBV                 Abate - bovinos - qde.  \
-    ...                                             ...  \
+                                                SERNOME  ...
+    SERCODIGO                                            ...
+    ABATE_ABPEAV       Abate - aves - peso das carcaças  ...
+    ABATE_ABPEBV    Abate - bovinos - peso das carcaças  ...
+    ABATE_ABPESU     Abate - suínos - peso das carcaças  ...
+    ABATE_ABQUAV                    Abate - aves - qde.  ...
+    ABATE_ABQUBV                 Abate - bovinos - qde.  ...
+    ...                                             ...  ...
 
-    '''
+    """
 
     return _get('Metadados', index)
 
 
 
 def lista_temas(
-        cod: int = None,
+        cod: Optional[int] = None,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Registros de todos os temas cadastrados.
+    ) -> pd.DataFrame:
+    """Registros de todos os temas cadastrados.
 
-    Parâmetros
+    Parameters
     ----------
-    cod : int (default=None)
+    cod : int, optional
         Código do tema, caso queira ver os dados deste tema exclusivamente.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna 'TEMCODIGO' como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo um registro de todos os temas das séries do IPEA.
 
-    Exemplos
+    Examples
     --------
     Forma mais simples da função.
 
@@ -289,7 +296,7 @@ def lista_temas(
     5                    NaN        Comércio exterior
     ...                  ...                      ...
 
-    '''
+    """
     
     if cod is None:
         return _get('Temas', index)
@@ -301,25 +308,25 @@ def lista_temas(
 
 
 def lista_paises(
-        cod: str = None,
+        cod: Optional[str] = None,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Registros de todos os países cadastrados.
+    ) -> pd.DataFrame:
+    """Registros de todos os países cadastrados.
 
-    Parâmetros
+    Parameters
     ----------
-    cod : str (default=None)
+    cod : str, optional
         Sigla de três letras do país, caso queira ver os dados deste
         país exclusivamente.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna 'PAICODIGO' como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo um registro de todos os países das séries do IPEA.
 
-    Exemplos
+    Examples
     --------
     Forma mais simples da função.
 
@@ -345,40 +352,42 @@ def lista_paises(
     AGO                 Angola
     ...                    ...
 
-    '''
+    """
 
     if cod is None:
         return _get('Paises', index)
     elif isinstance(cod, str):
         return _get(f"Paises('{cod.upper()}')", index)
     else:
-        raise TypeError('Código do país deve ser um string de três letras maísculas.')
+        raise TypeError(
+            'Código do país deve ser um string de três letras maísculas.'
+        )
 
 
 
 def lista_territorios(
-        cod: int = None,
-        nivel: str = None
-    ) -> _pd.DataFrame:
-    '''Registros de todos os territórios brasileiros cadastrados.
+        cod: Optional[int] = None,
+        nivel: Optional[str] = None
+    ) -> pd.DataFrame:
+    """Registros de todos os territórios brasileiros cadastrados.
 
-    Parâmetros
+    Parameters
     ----------
-    cod : int (default=None)
+    cod : int, optional
         Código do território, caso queira ver os dados deste
         território exclusivamente.
-    nivel : str (default=None)
+    nivel : str, optional
         Nome do nível territorial.
         Utilize a função ipea.niveis_territoriais() para verificar
         as opções disponíveis.
     
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo o registro de todos os territórios
         das séries do IPEA.
 
-    Exemplos
+    Examples
     --------
     >>> ipea.lista_territorios()
            NIVNOME  TERCODIGO                TERNOME  \
@@ -389,7 +398,7 @@ def lista_territorios(
     4   Municípios    1100015  Alta Floresta D'Oeste  \
     ..         ...        ...                    ...  \
 
-    '''
+    """
 
     if (cod is None) or (nivel is None):
         return _get('Territorios')
@@ -399,20 +408,20 @@ def lista_territorios(
 
     
 
-def lista_niveis() -> list:
-    '''Lista dos possíveis níveis territoriais.
+def lista_niveis() -> List[str]:
+    """Lista dos possíveis níveis territoriais.
 
-    Retorna
+    Returns
     -------
-    list
+    list of str
         Lista de todos os níveis territoriais das séries do IPEA.
 
-    Exemplos
+    Examples
     --------
     >>> ipea.lista_niveis()
     ['Brasil', 'Regiões', ... , 'AMC 70-00', 'Outros Países']
 
-    '''
+    """
 
     return [
         'Brasil',
@@ -438,24 +447,24 @@ def lista_niveis() -> list:
 def serie(
         cod: str,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Valores de uma série IPEA.
+    ) -> pd.DataFrame:
+    """Valores de uma série IPEA.
 
-    Parâmetros
+    Parameters
     ----------
     cod : str
         Código da série que se deseja obter os dados.
         Utilize a função `ipea.lista_series` para identificar a série desejada.
         O código desejado estará na coluna 'SERCODIGO'.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna 'VALDATA' como index do atributo 'valores'.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Série temporal do Ipeadata em formato de DataFrame.
 
-    Exemplo
+    Example
     -------
     1. Utilize as funções `lista` para encontrar a série desejada.
 
@@ -472,16 +481,16 @@ def serie(
     4   PAN4_PIBPMV4  1997-01-01T00:00:00-02:00  2.191170e+05  \
     ..           ...                        ...           ...  \
 
-    Ver também
-    ----------
+    See Also
+    --------
     DadosAbertosBrasil.ipea.Serie
         Class do módulo `ipea` que coleta os mesmos valores desta função,
         porém também coleta os metadados da série.
 
-    '''
+    """
 
     df = _get(f"Metadados(SERCODIGO='{cod}')/Valores", index=False)
-    df.VALDATA = _pd.to_datetime(df.VALDATA, utc=True).dt.date
+    df.VALDATA = pd.to_datetime(df.VALDATA, utc=True).dt.date
     if index:
         df.set_index('VALDATA', inplace=True)
     return df

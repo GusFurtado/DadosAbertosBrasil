@@ -1,4 +1,4 @@
-'''Módulo para consulta a informações variadas.
+"""Módulo para consulta a informações variadas.
 
 Essas funções são importadas pelo `__init__` do super-módulo
 `DadosAbertosBrasil`.
@@ -7,8 +7,12 @@ Elas consistem em informações diversas ou em funções pré-parametrizadas de
 outros módulo. Seu objetivo é facilitar o acesso às informações de maior
 interesse público.
 
-'''
-import pandas as _pd
+"""
+
+from datetime import datetime
+from typing import Union, Optional
+
+import pandas as pd
 import requests
 
 from ._utils import parse
@@ -17,60 +21,59 @@ from . import ipea
 
 
 
-def catalogo() -> _pd.DataFrame:
-    '''Catálogo de iniciativas oficiais de dados abertos no Brasil.
+def catalogo() -> pd.DataFrame:
+    """Catálogo de iniciativas oficiais de dados abertos no Brasil.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo um catálogo de iniciativas de dados abertos.
 
-    Créditos
-    --------
-    https://github.com/dadosgovbr
+    References
+    ----------
+    .. [1] https://github.com/dadosgovbr
 
-    Exemplos
+    Examples
     --------
     >>> favoritos.catalogo()
-                                                   Título  \
-    0                      Alagoas em dados e informações  \
-    1                             Fortaleza Dados Abertos  \
-    2                              Dados abertos – TCM-CE  \
-    3                      Dados abertos Distrito Federal  \
-    4                       Dados abertos – Governo do ES  \
-    ..                                                ...  \
+                                                   Título  ...
+    0                      Alagoas em dados e informações  ...
+    1                             Fortaleza Dados Abertos  ...
+    2                              Dados abertos – TCM-CE  ...
+    3                      Dados abertos Distrito Federal  ...
+    4                       Dados abertos – Governo do ES  ...
+    ..                                                ...  ...
 
-    '''
+    """
 
     URL = 'https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv'
-    return _pd.read_csv(URL)
+    return pd.read_csv(URL)
 
 
 
 def geojson(uf:str) -> dict:
-    '''Coordenadas dos municípios brasileiros em formato GeoJSON para criação
-    de mapas.
+    """Coordenadas dos municípios brasileiros em formato GeoJSON.
 
-    Parâmetros
+    Parameters
     ----------
     uf : str
         Nome ou sigla da Unidade Federativa.
 
-    Retorna
+    Returns
     -------
     dict
         Coordenadas em formato .GeoJSON da UF pesquisada.
 
-    Erros
+    Raises
     -----
     DAB_UFError
         Caso seja inserida uma UF inválida.
 
-    Créditos
-    --------
-    https://github.com/tbrugz
+    References
+    ----------
+    .. [1] https://github.com/tbrugz
 
-    Exemplos
+    Examples
     --------
     >>> favoritos.geojson('SC')
     {
@@ -92,14 +95,12 @@ def geojson(uf:str) -> dict:
                     [-50.9858971419, -27.5302011257],
                     ...
 
-    '''
+    """
 
     uf = parse.uf(uf)
     
     mapping = {
-
         'BR': 100,
-
         'AC': 12,
         'AM': 13,
         'AP': 16,
@@ -107,7 +108,6 @@ def geojson(uf:str) -> dict:
         'RO': 11,
         'RR': 14,
         'TO': 17,
-
         'AL': 27,
         'BA': 29,
         'CE': 23,
@@ -117,21 +117,17 @@ def geojson(uf:str) -> dict:
         'PI': 22,
         'RN': 24,
         'SE': 28,
-
         'ES': 32,
         'MG': 31,
         'RJ': 33,
         'SP': 35,
-
         'PR': 41,
         'RS': 43,
         'SC': 42,
-
         'DF': 53,
         'GO': 52,
         'MT': 51,
         'MS': 50
-
     }
     
     url = f'https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-{mapping[uf]}-mun.json'
@@ -139,21 +135,22 @@ def geojson(uf:str) -> dict:
 
 
 
-def codigos_municipios() -> _pd.DataFrame:
-    '''Lista dos códigos dos municípios do IBGE e do TSE.
+def codigos_municipios() -> pd.DataFrame:
+    """Lista dos códigos dos municípios do IBGE e do TSE.
+
     Utilizado para correlacionar dados das duas APIs diferentes.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo os códigos do IBGE e do TSE para todos os
         municípios do Brasil.
 
-    Créditos
-    --------
-    https://github.com/betafcc
+    References
+    ----------
+    .. [1] https://github.com/betafcc
 
-    Exemplos
+    Examples
     --------
     >>> favoritos.codigos_municipios()
           codigo_tse  codigo_ibge nome_municipio  uf  capital
@@ -164,33 +161,33 @@ def codigos_municipios() -> _pd.DataFrame:
     4           1015      1200179       CAPIXABA  AC        0
     ..           ...          ...            ...  ..      ...
 
-    '''
+    """
 
     URL = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
-    df = _pd.read_json(URL)
+    df = pd.read_json(URL)
     return df[['codigo_tse', 'codigo_ibge', 'nome_municipio', 'uf', 'capital']]
 
 
 
-def perfil_eleitorado() -> _pd.DataFrame:
-    '''Tabela com perfil do eleitorado por município.
+def perfil_eleitorado() -> pd.DataFrame:
+    """Tabela com perfil do eleitorado por município.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo o perfil do eleitorado em todos os municípios.
 
-    Exemplos
+    Examples
     --------
     >>> favoritos.perfil_eleitorado()
-          NR_ANO_ELEICAO  CD_PAIS NM_PAIS SG_REGIAO NM_REGIAO SG_UF     NM_UF  \
-    0               2020        1  Brasil         N     Norte    AC      Acre  \
-    1               2020        1  Brasil         N     Norte    AC      Acre  \
-    ..               ...      ...     ...       ...       ...   ...       ...  \
+          NR_ANO_ELEICAO  CD_PAIS NM_PAIS SG_REGIAO NM_REGIAO SG_UF     NM_UF  ...
+    0               2020        1  Brasil         N     Norte    AC      Acre  ...
+    1               2020        1  Brasil         N     Norte    AC      Acre  ...
+    ..               ...      ...     ...       ...       ...   ...       ...  ...
 
-    '''
+    """
 
-    return _pd.read_csv(
+    return pd.read_csv(
         r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.csv',
         encoding = 'latin-1',
         sep = ';'
@@ -199,34 +196,33 @@ def perfil_eleitorado() -> _pd.DataFrame:
 
 
 def bandeira(uf:str, tamanho:int=100) -> str:
-    '''Gera a URL da WikiMedia para a bandeira de um estado de um tamanho
-    escolhido.
+    """Gera a URL da WikiMedia para a bandeira de um estado.
 
-    Parâmetros
+    Parameters
     ----------
     uf : str
         Sigla da Unidade Federativa.
-    tamanho : int (default=100)
+    tamanho : int, default=100
         Tamanho em pixels da bandeira.
 
-    Retorna
+    Returns
     -------
     str
         URL da bandeira do estado no formato PNG.
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_UFError
         Caso seja inserida uma UF inválida.
 
-    Exemplos
+    Examples
     --------
     Gera o link para uma imagem da bandeira de Santa Catarina de 200 pixels.
 
     >>> favoritos.bandeira(uf='SC', tamanho=200)
     'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/' ...
 
-    '''
+    """
     
     URL = r'https://upload.wikimedia.org/wikipedia/commons/thumb/'
     
@@ -270,34 +266,33 @@ def bandeira(uf:str, tamanho:int=100) -> str:
 
 
 def brasao(uf:str, tamanho:int=100) -> str:
-    '''Gera a URL da WikiMedia para o brasão de um estado de um tamanho
-    escolhido.
+    """Gera a URL da WikiMedia para o brasão de um estado.
 
-    Parâmetros
+    Parameters
     ----------
     uf : str
         Sigla da Unidade Federativa.
-    tamanho : int (default=100)
+    tamanho : int, default=100
         Tamanho em pixels da bandeira.
 
-    Retorna
+    Returns
     -------
     str
         URL da bandeira do estado no formato PNG.
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_UFError
         Caso seja inserida uma UF inválida.
 
-    Exemplos
+    Examples
     --------
     Gera o link para uma imagem do brasão de Santa Catarina de 200 pixels.
 
     >>> favoritos.brasao(uf='SC', tamanho=200)
     'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/' ...
 
-    '''
+    """
     
     URL = r'https://upload.wikimedia.org/wikipedia/commons/thumb/'
     
@@ -341,45 +336,45 @@ def brasao(uf:str, tamanho:int=100) -> str:
 
 
 def ipca(
-        ultimos: int = None,
-        inicio: str = None,
-        fim: str = None,
+        ultimos: Optional[int] = None,
+        inicio: Union[datetime, str] = None,
+        fim: Union[datetime, str] = None,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Índice nacional de preços ao consumidor-amplo (IPCA).
+    ) -> pd.DataFrame:
+    """Índice nacional de preços ao consumidor-amplo (IPCA).
 
     Esta é uma função de fácil acesso à série temporal 433 do módulo `bacen`.
 
-    Parâmetros
+    Parameters
     ----------
-    ultimos : int (default=None)
+    ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : str ou datetime (default='2000-01-01')
+    inicio : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o primeiro dia da pesquisa.
-    fim : str ou datetime (default=None)
+    fim : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
-    index : bool (default=False)
+    index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo os valores da série temporal.
 
-    Erros
-    -----
+    Raises
+    ------
     JSONDecodeError
         Em caso de parâmetros inválidos.
 
-    Notas
+    Notes
     -----
     Os argumentos `inicio` e `fim` devem ser usados em conjunto para
     funcionar.
 
-    Exemplos
+    Examples
     --------
     Os quatro valores mais recentes.
 
@@ -400,7 +395,7 @@ def ipca(
     2021-03-01  0.93
     2021-04-01  0.31
 
-    '''
+    """
 
     return bacen.serie(
         serie = 433,
@@ -410,46 +405,48 @@ def ipca(
         index = index
     )
 
+
+
 def selic(
-        ultimos: int = None,
-        inicio: str = None,
-        fim: str = None,
+        ultimos: Optional[int] = None,
+        inicio: Union[datetime, str] = None,
+        fim: Union[datetime, str] = None,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Taxa de juros - Meta Selic definida pelo COPOM.
+    ) -> pd.DataFrame:
+    """Taxa de juros - Meta Selic definida pelo COPOM.
 
     Esta é uma função de fácil acesso à série temporal 432 do módulo `bacen`.
 
-    Parâmetros
+    Parameters
     ----------
-    ultimos : int (default=None)
+    ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : str ou datetime (default='2000-01-01')
+    inicio : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o primeiro dia da pesquisa.
-    fim : str ou datetime (default=None)
+    fim : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
-    index : bool (default=False)
+    index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo os valores da série temporal.
 
-    Erros
-    -----
+    Raises
+    ------
     JSONDecodeError
         Em caso de parâmetros inválidos.
 
-    Notas
+    Notes
     -----
     Os argumentos `inicio` e `fim` devem ser usados em conjunto para
     funcionar.
 
-    Exemplos
+    Examples
     --------
     Os quatro valores mais recentes.
 
@@ -472,7 +469,7 @@ def selic(
     2021-01-05  2.00
     ...          ...
 
-    '''
+    """
 
     return bacen.serie(
         serie = 432,
@@ -482,46 +479,48 @@ def selic(
         index = index
     )
 
+
+
 def taxa_referencial(
-        ultimos: int = None,
-        inicio: str = None,
-        fim: str = None,
+        ultimos: Optional[int] = None,
+        inicio: Union[datetime, str] = None,
+        fim: Union[datetime, str] = None,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Taxa referencial (TR).
+    ) -> pd.DataFrame:
+    """Taxa referencial (TR).
 
     Esta é uma função de fácil acesso à série temporal 226 do módulo `bacen`.
 
-    Parâmetros
+    Parameters
     ----------
-    ultimos : int (default=None)
+    ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : str ou datetime (default='2000-01-01')
+    inicio : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o primeiro dia da pesquisa.
-    fim : str ou datetime (default=None)
+    fim : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
-    index : bool (default=False)
+    index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo os valores da série temporal.
 
-    Erros
-    -----
+    Raises
+    ------
     JSONDecodeError
         Em caso de parâmetros inválidos.
 
-    Notas
+    Notes
     -----
     Os argumentos `inicio` e `fim` devem ser usados em conjunto para
     funcionar.
 
-    Exemplos
+    Examples
     --------
     Os quatro valores mais recentes.
 
@@ -544,7 +543,7 @@ def taxa_referencial(
     2021-01-05 2021-02-05  0.0000
     ...               ...     ...
 
-    '''
+    """
 
     return bacen.serie(
         serie = 226,
@@ -554,46 +553,48 @@ def taxa_referencial(
         index = index
     )
 
+
+
 def rentabilidade_poupanca(
-        ultimos: int = None,
-        inicio: str = None,
-        fim: str = None,
+        ultimos: Optional[int] = None,
+        inicio: Union[datetime, str] = None,
+        fim: Union[datetime, str] = None,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Rentailidade dos depósitos de poupança a partir de Maio de 2012. 
+    ) -> pd.DataFrame:
+    """Rentailidade dos depósitos de poupança a partir de Maio de 2012. 
 
     Esta é uma função de fácil acesso à série temporal 195 do módulo `bacen`.
 
-    Parâmetros
+    Parameters
     ----------
-    ultimos : int (default=None)
+    ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : str ou datetime (default='2000-01-01')
+    inicio : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o primeiro dia da pesquisa.
-    fim : str ou datetime (default=None)
+    fim : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
-    index : bool (default=False)
+    index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo os valores da série temporal.
 
-    Erros
-    -----
+    Raises
+    ------
     JSONDecodeError
         Em caso de parâmetros inválidos.
 
-    Notas
+    Notes
     -----
     Os argumentos `inicio` e `fim` devem ser usados em conjunto para
     funcionar.
 
-    Exemplos
+    Examples
     --------
     Os quatro valores mais recentes.
 
@@ -616,7 +617,7 @@ def rentabilidade_poupanca(
     2021-01-05 2021-02-05  0.1159
     ...               ...     ...
 
-    '''
+    """
 
     return bacen.serie(
         serie = 195,
@@ -626,50 +627,52 @@ def rentabilidade_poupanca(
         index = index
     )
 
+
+
 def reservas_internacionais(
-        periodo = 'mensal',
-        ultimos: int = None,
-        inicio: str = None,
-        fim: str = None,
+        periodo: str = 'mensal',
+        ultimos: Optional[int] = None,
+        inicio: Union[datetime, str] = None,
+        fim: Union[datetime, str] = None,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Reservar internacionais mensais ou diárias.
+    ) -> pd.DataFrame:
+    """Reservar internacionais mensais ou diárias.
 
     Esta é uma função de fácil acesso às séries temporais 3546 e 13621
     do módulo `bacen`.
 
-    Parâmetros
+    Parameters
     ----------
-    periodo : {'mensal', 'diario'} (default='mensal')
+    periodo : {'mensal', 'diario'}, default='mensal'
         Período dos dados consultados.
-    ultimos : int (default=None)
+    ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : str ou datetime (default='2000-01-01')
+    inicio : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o primeiro dia da pesquisa.
-    fim : str ou datetime (default=None)
+    fim : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
-    index : bool (default=False)
+    index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo os valores da série temporal.
 
-    Erros
-    -----
+    Raises
+    ------
     JSONDecodeError
         Em caso de parâmetros inválidos.
 
-    Notas
+    Notes
     -----
     Os argumentos `inicio` e `fim` devem ser usados em conjunto para
     funcionar.
 
-    Exemplos
+    Examples
     --------
     Os quatro valores diários mais recentes.
 
@@ -696,7 +699,7 @@ def reservas_internacionais(
     2021-03-01  347413
     2021-04-01  350996
 
-    '''
+    """
 
     if periodo.lower() == 'mensal':
         return bacen.serie(
@@ -721,24 +724,24 @@ def reservas_internacionais(
 
 
 
-def risco_brasil(index=False) -> _pd.DataFrame:
-    '''Valores diários do Risco-Brasil, disponibilizados pela J.P. Morgan
+def risco_brasil(index:bool=False) -> pd.DataFrame:
+    """Valores diários do Risco-Brasil, disponibilizados pela J.P. Morgan
     desde 1994.
 
     Esta é uma função de fácil acesso à série temporal 'JPM366_EMBI366' do
     módulo `ipea`.
 
-    Parâmetros
+    Parameters
     ----------
-    index : bool (default=False)
+    index : bool, default=False
         Define a coluna `data` como index da tabela.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Tabela contendo os valores diários do Risco-Brasil.
 
-    Exemplos
+    Examples
     --------
     >>> favoritos.risco_brasil()
                 data   valor
@@ -749,7 +752,7 @@ def risco_brasil(index=False) -> _pd.DataFrame:
     4     1994-05-03  1081.0
     ..           ...     ...
 
-    '''
+    """
 
     df = ipea.serie(cod='JPM366_EMBI366', index=False)
     df.drop(columns=['SERCODIGO', 'NIVNOME', 'TERCODIGO'], inplace=True)
@@ -760,27 +763,30 @@ def risco_brasil(index=False) -> _pd.DataFrame:
 
 
 
-def salario_minimo(tipo='nominal', index=False) -> _pd.DataFrame:
-    '''Valores do salário-mínimo mensal brasileiro desde 1940.
+def salario_minimo(
+        tipo: str = 'nominal',
+        index: bool = False
+    ) -> pd.DataFrame:
+    """Valores do salário-mínimo mensal brasileiro desde 1940.
 
     Esta é uma função de fácil acesso às série temporais do módulo `ipea`.
 
-    Parâmetros
+    Parameters
     ----------
-    tipo : {'nominal', 'real', 'pcc'} (default='nominal')
+    tipo : {'nominal', 'real', 'pcc'}, default='nominal'
         Tipo de salário-mínimo.
         - 'nominal': Salário-mínimo nominal;
         - 'real': Salário-mínimo real (abatido pela inflação);
         - 'ppc': Salario-mínimo por Paridade de Poder de Compra.
-    index : bool (default=False)
+    index : bool, default=False
         Define a coluna `data` como index da tabela.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Tabela contendo os valores mensais do salário-mínimo.
 
-    Exemplos
+    Examples
     --------
     Forma mais simples da função.
 
@@ -805,7 +811,7 @@ def salario_minimo(tipo='nominal', index=False) -> _pd.DataFrame:
     1940-11-01   922.546843
     ...                 ...
 
-    '''
+    """
 
     if tipo.lower() == 'nominal':
         df = ipea.serie(cod='MTE12_SALMIN12', index=False)

@@ -1,4 +1,4 @@
-'''O subpacote `_utils` contém ferramentas de auxílio às funções do pacote.
+"""O subpacote `_utils` contém ferramentas de auxílio às funções do pacote.
 
 Módulos
 -------
@@ -9,4 +9,4 @@ get_data
 parse
     Pacote para padronização de inputs das funções do `DadosAbertosBrasil`
 
-'''
+"""

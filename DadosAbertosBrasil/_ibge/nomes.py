@@ -1,4 +1,4 @@
-'''Submódulo IBGE contendo os wrappers da API do Nomes 2.0.
+"""Submódulo IBGE contendo os wrappers da API do Nomes 2.0.
 
 Este submódulo é importado automaticamente com o módulo `ibge`.
 
@@ -8,10 +8,10 @@ Documentação Original
 ---------------------
 https://servicodados.ibge.gov.br/api/docs
 
-'''
-from typing import Union
+"""
+from typing import Optional, Union
 
-import pandas as _pd
+import pandas as pd
 import requests
 
 from DadosAbertosBrasil._utils import parse
@@ -20,43 +20,43 @@ from DadosAbertosBrasil._utils import parse
 
 def nomes(
         nomes: Union[list, str],
-        sexo: str = None,
-        localidade: int = None
-    ) -> _pd.DataFrame:
-    '''Obtém a frequência de nascimentos por década dos nomes consultados.
+        sexo: Optional[str] = None,
+        localidade: Optional[int] = None
+    ) -> pd.DataFrame:
+    """Obtém a frequência de nascimentos por década dos nomes consultados.
     
     Defina o campo `nomes` com um string ou uma lista de string.
     Use os argumentos opcionais para definir sexo e localidade dos nomes.
 
-    Parâmetros
+    Parameters
     ----------
-    nomes : list | str
+    nomes : list or str
         Nome ou lista de nomes a ser consultado.
-    sexo : str (default=None)
+    sexo : {'F', 'M'}, optional
         - 'M' para consultar apenas o nome de pessoas do sexo masculino;
         - 'F' para consultar apenas o nome de pessoas do sexo feminino;
         - None para consultar ambos.
-    localidade : int (default=None)
+    localidade : int, optional
         Caso deseje obter a frequência referente a uma dada localidade,
         informe o parâmetro localidade. Por padrão, assume o valor BR,
         mas pode ser o identificador de um município ou de uma UF.
         Utilize a função `ibge.localidade` para encontrar a localidade
         desejada.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo a frequência de nascimentos por década para
         o(s) nome(s) consultado(s).
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_LocalidadeError
         Caso o código da localidade seja inválido.
     ValueError
         Caso nenhum valor seja encontrado ou em caso de um argumento inválido.
 
-    Exemplos
+    Examples
     --------
     Forma mais simples da função.
 
@@ -89,7 +89,7 @@ def nomes(
     [1990,2000[  26862
     [2000,2010[  68741
 
-    '''
+    """
     
     if isinstance(nomes, list):
         nomes = '|'.join(nomes)
@@ -102,31 +102,31 @@ def nomes(
 
     url = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nomes}"
     data = requests.get(url, params=params).json()
-    json = _pd.DataFrame(data)
+    json = pd.DataFrame(data)
 
-    dfs = [_pd.DataFrame(json.res[i]).set_index('periodo') for i in json.index]
-    df = _pd.concat(dfs, axis=1)
+    dfs = [pd.DataFrame(json.res[i]).set_index('periodo') for i in json.index]
+    df = pd.concat(dfs, axis=1)
     df.columns = json.nome
 
     return df
 
 
 
-def nomes_uf(nome: str) -> _pd.DataFrame:
-    '''Obtém a frequência de nascimentos por UF para o nome consultado.
+def nomes_uf(nome: str) -> pd.DataFrame:
+    """Obtém a frequência de nascimentos por UF para o nome consultado.
 
-    Parâmetros
+    Parameters
     ----------
     nome : str
         Nome que se deseja pesquisar.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo a frequência de nascimentos do nome pesquisado,
         agrupado por Unidade da Federação.
 
-    Exemplos
+    Examples
     --------
     >>> ibge.nomes_uf('Joao')
 
@@ -138,15 +138,15 @@ def nomes_uf(nome: str) -> _pd.DataFrame:
     14             450479        5664    1257.33
     ..                ...         ...        ...
 
-    '''
+    """
     
     if isinstance(nome, str):
 
-        json = _pd.read_json(
+        json = pd.read_json(
             f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nome}?groupBy=UF"
         )
 
-        df = _pd.DataFrame(
+        df = pd.DataFrame(
             [json[json.localidade == i].res.values[0][0] for i in json.localidade]
         )
 
@@ -161,39 +161,39 @@ def nomes_uf(nome: str) -> _pd.DataFrame:
 
 
 def nomes_ranking(
-        decada: int = None,
-        sexo: str = None,
-        localidade: int = None
-    ) -> _pd.DataFrame:
-    '''Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
+        decada: Optional[int] = None,
+        sexo: Optional[str] = None,
+        localidade: Optional[int] = None
+    ) -> pd.DataFrame:
+    """Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
 
-    Parâmetros
+    Parameters
     ----------
-    decada : int (default=None)
+    decada : int, optional
         Deve ser um número múltiplo de 10 no formato AAAA.
-    sexo : str (default=None)
+    sexo : {'F', 'M'}, optional
         - 'M' para consultar apenas o nome de pessoas do sexo masculino;
         - 'F' para consultar apenas o nome de pessoas do sexo feminino;
         - None para consultar ambos.
-    localidade : int (default=None)
+    localidade : int, optional
         Caso deseje obter o ranking de nomes referente a uma dada localidade,
         informe o parâmetro localidade. Por padrão, assume o valor BR,
         mas pode ser o identificador de um município ou de uma UF.
         Utilize a função `ibge.localidade` para encontrar a localidade
         desejada.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo os nomes mais populadores dentro do universo de
         parâmetros pesquisados.
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_LocalidadeError
         Caso o código da localidade seja inválido.
 
-    Exemplos
+    Examples
     --------
     Forma mais simples da função.
 
@@ -217,7 +217,7 @@ def nomes_ranking(
     4          VANESSA       24225
     ..             ...         ...
 
-    '''
+    """
     
     query = 'https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking'
     params = []
@@ -245,6 +245,6 @@ def nomes_ranking(
     if params != '':
         query += f'?{params}'
     
-    return _pd.DataFrame(
-        _pd.read_json(query).res[0]
+    return pd.DataFrame(
+        pd.read_json(query).res[0]
     ).set_index('ranking')

@@ -1,4 +1,4 @@
-'''O subpacote `_ibge` contém as funções e classes das APIS do IBGE.
+"""O subpacote `_ibge` contém as funções e classes das APIS do IBGE.
 
 Módulos
 -------
@@ -11,4 +11,4 @@ nomes
 sidra
     Funções do serviço Agregados 3.0 (SIDRA)
 
-'''
+"""

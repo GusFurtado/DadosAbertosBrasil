@@ -1,15 +1,16 @@
-'''Submódulo IBGE contendo os wrappers das APIs do IBGE Cidades.
+"""Submódulo IBGE contendo os wrappers das APIs do IBGE Cidades.
 
 Este submódulo é importado automaticamente com o módulo `ibge`.
 
 >>> from DadosAbertosBrasil import ibge
 
-Fonte
------
-https://cidades.ibge.gov.br/
+References
+----------
+.. [1] https://cidades.ibge.gov.br/
 
-'''
-from typing import Union
+"""
+
+from typing import Optional, Union
 
 from DadosAbertosBrasil._utils import parse
 from DadosAbertosBrasil._utils.get_data import get_data
@@ -17,10 +18,10 @@ from DadosAbertosBrasil._utils.get_data import get_data
 
 
 class _Fotografia:
-    '''Metadados de uma fotografia da bblioteca do IBGE.
+    """Metadados de uma fotografia da bblioteca do IBGE.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     ano : str
         Ano que a fotografia foi tirada.
     autor : str
@@ -34,8 +35,8 @@ class _Fotografia:
     titulo : str
         Título da fotografia.
 
-    Exemplo
-    -------
+    Examples
+    --------
     Capturar a primeira fotografia da galeria de Fortaleza.
 
     >>> fortaleza = ibge.Galeria(2304400)
@@ -46,11 +47,11 @@ class _Fotografia:
     >>> foto.url(altura=500)
     'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600&max...'
 
-    Fonte
-    -----
-    https://cidades.ibge.gov.br/
+    References
+    ----------
+    .. [1] https://cidades.ibge.gov.br/
 
-    '''
+    """
 
     def __init__(self, dados):
         for k in dados:
@@ -61,23 +62,31 @@ class _Fotografia:
         return f'<DadosAbertosBrasil.ibge: Fotografia {self.id}>'
 
 
-    def url(self, altura:int=None, largura:int=None) -> str:
-        '''Gera a URL da foto.
+    def __str__(self) -> str:
+        return f'Fotografia {self.id}'
 
-        Parâmetros
+
+    def url(
+            self,
+            altura: Optional[int] = None,
+            largura: Optional[int] = None
+        ) -> str:
+        """Gera a URL da foto.
+
+        Parameters
         ----------
-        altura : int
+        altura : int, optional
             Altura máxima da fotografia em pixels.
-        largura : int
+        largura : int, optional
             Largura máxima da fotografia em pixels.
         
-        Retorna
+        Returns
         -------
         str
             URL da fotografia.
 
-        Exemplo
-        -------
+        Examples
+        --------
         Capturar a primeira fotografia da galeria de Fortaleza.
 
         >>> fortaleza = ibge.Galeria(2304400)
@@ -88,7 +97,7 @@ class _Fotografia:
         >>> foto.url(altura=500)
         'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600...'
 
-        '''
+        """
         
         if altura is None and largura is None:
             altura, largura = 600, 600
@@ -101,23 +110,23 @@ class _Fotografia:
 
 
 class Galeria:
-    '''Gera uma galeria de fotos da localidade desejada.
+    """Gera uma galeria de fotos da localidade desejada.
     
-    Parâmetros
+    Parameters
     ----------
     localidade : int
         Código IBGE da localidade.
         O código pode ser obtido com auxílio da função `ibge.localidades`.
 
-    Atributos
-    ---------
-    fotografias : lista de ibge._Fotografia
+    Attributes
+    ----------
+    fotografias : list of ibge._Fotografia
         Lista de fotografias da localidade.
     localidade : int
         Código IBGE da localidade.
     
-    Exemplo
-    -------
+    Examples
+    --------
     Capturar a primeira fotografia da galeria de Fortaleza.
 
     >>> fortaleza = ibge.Galeria(2304400)
@@ -128,11 +137,11 @@ class Galeria:
     >>> foto.url(altura=500)
     'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600&max...'
 
-    Fonte
-    -----
-    https://cidades.ibge.gov.br/
+    References
+    ----------
+    .. [1] https://cidades.ibge.gov.br/
 
-    '''
+    """
 
     def __init__(self, localidade:Union[str,int]):
         self.localidade = parse.localidade(localidade)
@@ -144,7 +153,11 @@ class Galeria:
         return f'<DadosAbertosBrasil.ibge: Galeria de fotos da localidade {self.localidade}>'
 
 
-    def _get_photos(self):
+    def __str__(self) -> str:
+        return f'Galeria {self.localidade}'
+
+
+    def _get_photos(self) -> dict:
         return get_data(
             endpoint = 'https://servicodados.ibge.gov.br/api/v1/',
             path = 'biblioteca',
@@ -159,16 +172,16 @@ class Galeria:
 
 
 class Historia:
-    '''Histórico de uma localidade.
+    """Histórico de uma localidade.
 
-    Parâmetros
+    Parameters
     ----------
-    localidade : int | str
+    localidade : int or str
         Código da localidade.
         Este código pode ser obtido com auxílio da função `ìbge.localidades`.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     ano : int
         Ano da publicação do histórico.
     estado : str
@@ -188,12 +201,12 @@ class Historia:
     municipio : str
         Nome do município.
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_LocalidadeError
         Caso o código da localidade seja inválido.
 
-    Exemplos
+    Examples
     --------
     Capturar o histórico de Belo Horizonte e a fonte do texto.
 
@@ -207,11 +220,11 @@ class Historia:
     Capturar o histórico do estado de Minas Gerais
     >>> mg = ibge.Historia(52)
 
-    Fonte
-    -----
-    https://cidades.ibge.gov.br/
+    References
+    ----------
+    .. [1] https://cidades.ibge.gov.br/
 
-    '''
+    """
 
     def __init__(self, localidade:Union[int,str]):
         self.localidade = parse.localidade(localidade)
@@ -223,7 +236,11 @@ class Historia:
         return f'<DadosAbertosBrasil.ibge: História da localidade {self.localidade}>'
 
 
-    def _get_historia(self):
+    def __str__(self) -> str:
+        return f'História ({self.localidade})'
+
+
+    def _get_historia(self) -> dict:
         return get_data(
             endpoint = 'https://servicodados.ibge.gov.br/api/v1/',
             path = 'biblioteca',
@@ -233,7 +250,7 @@ class Historia:
             })
 
 
-    def _set_attribs(self, d:dict):
+    def _set_attribs(self, d:dict) -> None:
         for attribs in d:
             for k in d[attribs]:
                 self.__setattr__(k.lower(), d[attribs][k])

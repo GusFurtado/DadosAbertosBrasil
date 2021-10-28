@@ -1,5 +1,4 @@
-'''
-Módulo para captura dos dados abertos da Câmara dos Deputados do Brasil.
+"""Módulo para captura dos dados abertos da Câmara dos Deputados do Brasil.
 
 Mini-Tutorial
 -------------
@@ -18,14 +17,16 @@ Mini-Tutorial
 5. Utilize os métodos da classe para obter informações detalhadas do objeto.
 >>> dep.despesas( ... )
 
-Documentação da API original
-----------------------------
-https://dadosabertos.camara.leg.br/swagger/api.html
-'''
+References
+----------
+.. [1] https://dadosabertos.camara.leg.br/swagger/api.html
 
+"""
 
+from datetime import datetime
+from typing import Optional, Union
 
-import pandas as _pd
+import pandas as pd
 
 from ._utils import parse
 from ._utils.get_data import get_data
@@ -46,25 +47,25 @@ def _get(
 
 def _df(
         dados: dict,
-        index_col: str = None
-    ) -> _pd.DataFrame:
-    '''
-    Converte dados brutos da API em um DataFrame.
+        index_col: Optional[str] = None
+    ) -> pd.DataFrame:
+    """Converte dados brutos da API em um DataFrame.
 
-    Parâmetros
+    Parameters
     ----------
     dados : dict
         Dados brutos da API.
-    index_col : str (default=None)
+    index_col : str, optional
         Nome da coluna que será usada como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Dados convertidos em DataFrame.
-    '''
 
-    df = _pd.DataFrame(dados['dados'])
+    """
+
+    df = pd.DataFrame(dados['dados'])
     if (index_col is not None) and (not df.empty):
         df.set_index(index_col, inplace=True)
 
@@ -73,16 +74,15 @@ def _df(
 
 
 class Bloco:
-    '''
-    Informações sobre um bloco partidário específico.
+    """Informações sobre um bloco partidário específico.
 
-    Parâmetros
+    Parameters
     ----------
     cod: int
         Código numérico do bloco partidário do qual se deseja informações.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     dados : dict
         Conjunto completo de dados.
     cod : int
@@ -94,15 +94,14 @@ class Bloco:
     uri : str
         Endereço para coleta de dados direta pela API do bloco partidário.
 
-    Exemplos
+    Examples
     --------
     Obter o nome do bloco #576.
     >>> bl = camara.Bloco(cod=576)
     >>> bl.nome
     ... 'PSL, PTB'
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     def __init__(self, cod:int):
         self.cod = cod
@@ -112,23 +111,26 @@ class Bloco:
         self.uri = self.dados['uri']
 
 
-    def __repr__(self):
-        return f"DadosAbertosBrasil.camara: Bloco {self.nome}"
+    def __repr__(self) -> str:
+        return f"<DadosAbertosBrasil.camara: Bloco {self.nome}>"
+
+
+    def __str__(self) -> str:
+        return f'Bloco {self.nome}'
 
 
 
 class Deputado:
-    '''
-    Retorna os dados cadastrais de um parlamentar que, em algum momento
+    """Retorna os dados cadastrais de um parlamentar que, em algum momento
     da história e por qualquer período, entrou em exercício na Câmara.
 
-    Parâmetros
+    Parameters
     ----------
     cod : int
         Código do parlamentar.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     dados : dict
         Conjunto completo de dados.
     cod : int
@@ -182,7 +184,7 @@ class Deputado:
     website : str
         Website.
 
-    Exemplos
+    Examples
     --------
     Coletar partido mais recente do deputado Rodrigo Maia.
     >>> cod = 74693   # Código do deputado
@@ -190,8 +192,7 @@ class Deputado:
     >>> dep.partido
     ... 'DEM'
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     def __init__(self, cod:int):
         self.cod = cod
@@ -221,23 +222,26 @@ class Deputado:
         self.website = self.dados['urlWebsite']
 
 
-    def __repr__(self):
-        return f"DadosAbertosBrasil.camara: Deputad{'a' if self.sexo == 'F' else 'o'} {self.nome_eleitoral}"
+    def __repr__(self) -> str:
+        return f"<DadosAbertosBrasil.camara: Deputad{'a' if self.sexo == 'F' else 'o'} {self.nome_eleitoral}>"
+
+
+    def __str__(self) -> str:
+        return self.nome
 
 
     def despesas(
             self,
-            legislatura: int = None,
-            ano: int = None,
-            mes: int = None,
-            fornecedor: int = None,
+            legislatura: Optional[int] = None,
+            ano: Optional[int] = None,
+            mes: Optional[int] = None,
+            fornecedor: Optional[int] = None,
             pagina: int = 1,
-            itens: int = None,
+            itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'ano'
-        ) -> _pd.DataFrame:
-        '''
-        As despesas com exercício parlamentar do deputado.
+        ) -> pd.DataFrame:
+        """As despesas com exercício parlamentar do deputado.
 
         Dá acesso aos registros de pagamentos e reembolsos feitos pela Câmara
         em prol do deputado, a título da Cota para Exercício da Atividade
@@ -245,39 +249,38 @@ class Deputado:
         Se não forem passados os parâmetros de tempo, o serviço retorna os
         dados dos seis meses anteriores à requisição.
 
-        Parâmetros
+        Parameters
         ----------
-        legislatura : int (default=None)
+        legislatura : int, optional
             ID da legislatura em que tenham ocorrido as despesas.
-        ano : int (default=None)
+        ano : int, optional
             Ano de ocorrência das despesas.
-        mes : int (default=None)
+        mes : int, optional
             Número do mês de ocorrência das despesas.
-        fornecedor : int (default=None)
+        fornecedor : int, optional
             CNPJ de uma pessoa jurídica, ou CPF de uma pessoa física,
             fornecedora do produto ou serviço (apenas números).
-        pagina : int (default=1)
+        pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens : int (default=None)
+        itens : int, optional
             Número máximo de itens na página que se deseja obter com
             esta requisição.
-        asc : bool (default=True)
+        asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por : str (default='ano')
+        ordenar_por : str, default='ano'
             Nome do campo pelo qual a lista deverá ser ordenada:
             qualquer um dos campos do retorno, e também idLegislatura.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de despesas com exercício parlamentar do deputado.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         if legislatura is not None:
@@ -301,16 +304,15 @@ class Deputado:
 
     def discursos(
             self,
-            legislatura: int = None,
-            inicio: str = None,
-            fim: str = None,
+            legislatura: Optional[int] = None,
+            inicio: Union[datetime, str, None] = None,
+            fim: Union[datetime, str, None] = None,
             pagina: int = 1,
-            itens: int = None,
+            itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataHoraInicio'
-        ) -> _pd.DataFrame:
-        '''
-        Os discursos feitos por um deputado em eventos diversos.
+        ) -> pd.DataFrame:
+        """Os discursos feitos por um deputado em eventos diversos.
 
         Retorna uma lista de informações sobre os pronunciamentos feitos
         pelo deputado que tenham sido registrados, em quaisquer eventos,
@@ -319,36 +321,35 @@ class Deputado:
         são buscados os discursos ocorridos nos sete dias anteriores ao
         da requisição.
 
-        Parâmetros
+        Parameters
         ----------
-        legislatura : int (default=None)
+        legislatura : int, optional
             Número da legislatura a qual os dados buscados devem corresponder.
-        inicio : str (default=None)
+        inicio : str, optional
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim : str (default=None)
+        fim : str, optional
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        itens : int (default=None)
+        itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        pagina : int (default=1)
+        pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        asc : bool (default=True)
+        asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por : str (default='dataHoraInicio')
+        ordenar_por : str, default='dataHoraInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de discursos feitos por um deputado em eventos diversos.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         if legislatura is not None:
@@ -370,17 +371,16 @@ class Deputado:
 
     def eventos(
             self,
-            legislatura: int = None,
-            inicio: str = None,
-            fim: str = None,
+            legislatura: Optional[int] = None,
+            inicio: Union[datetime, str, None] = None,
+            fim: Union[datetime, str, None] = None,
             pagina: int = 1,
-            itens: int = None,
+            itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataHoraInicio',
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Uma lista de eventos com a participação do parlamentar.
+        ) -> pd.DataFrame:
+        """Uma lista de eventos com a participação do parlamentar.
 
         Retorna uma lista de objetos evento nos quais a participação do
         parlamentar era ou é prevista.
@@ -388,38 +388,37 @@ class Deputado:
         num período de cinco dias, sendo dois antes e dois depois do dia da
         requisição.
 
-        Parâmetros
+        Parameters
         ----------
-        legislatura : int (default=None)
+        legislatura : int, optional
             Número da legislatura a qual os dados buscados devem corresponder.
-        inicio : str (default=None)
+        inicio : str, optional
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim : str (default=None)
+        fim : str, optional
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina : int (default=1)
+        pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens : int (default=None)
+        itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc : bool (default=True)
+        asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por : str (default='dataHoraInicio')
+        ordenar_por : str, default='dataHoraInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de discursos feitos por um deputado em eventos diversos.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         if legislatura is not None:
@@ -443,27 +442,25 @@ class Deputado:
     def frentes(
             self,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        As frentes parlamentares das quais um deputado é integrante.
+        ) -> pd.DataFrame:
+        """As frentes parlamentares das quais um deputado é integrante.
 
         Retorna uma lista de informações básicas sobre as frentes
         parlamentares das quais o parlamentar seja membro, ou, no caso de
         frentes existentes em legislaturas anteriores, tenha encerrado a
         legislatura como integrante.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de frentes parlamentares das quais um deputado é integrante.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['deputados', str(self.cod), 'frentes']
         dados = _get(path=path, params=None)
@@ -473,17 +470,15 @@ class Deputado:
 
     def orgaos(
             self,
-            legislatura: int = None,
-            inicio: str = None,
-            fim: str = None,
+            inicio: Union[datetime, str, None] = None,
+            fim: Union[datetime, str, None] = None,
             pagina: int = 1,
-            itens: int = None,
+            itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataInicio',
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Os órgãos dos quais um deputado é integrante.
+        ) -> pd.DataFrame:
+        """Os órgãos dos quais um deputado é integrante.
 
         Retorna uma lista de órgãos, como as comissões e procuradorias,
         dos quais o deputado participa ou participou durante um intervalo
@@ -495,36 +490,35 @@ class Deputado:
         ocupados pelo parlamentar no momento da requisição. Neste caso a
         lista será vazia se o deputado não estiver em exercício.
 
-        Parâmetros
+        Parameters
         ----------
-        inicio : str (default=None)
+        inicio : str, optional
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim : str (default=None)
+        fim : str, optional
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina : int (default=1)
+        pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens : int (default=None)
+        itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc : bool (default=True)
+        asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por : str (default='dataInicio')
+        ordenar_por : str, default='dataInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `idOrgao` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista dos órgãos dos quais um deputado é integrante.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         if inicio is not None:
@@ -545,16 +539,15 @@ class Deputado:
 
 
 class Evento:
-    '''
-    Retorna um conjunto detalhado de informações sobre o evento da Câmara.
+    """Retorna um conjunto detalhado de informações sobre o evento da Câmara.
 
-    Parâmetros
+    Parameters
     ----------
     cod : int
         Código numérico do evento do qual se deseja informações.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     dados : dict
         Conjunto completo de dados.
     cod : int
@@ -596,15 +589,14 @@ class Evento:
     url_registro : str
         Endereço URL onde o evento foi registrado.
 
-    Exemplos
+    Examples
     --------
     Obter a URL para assistir ao evento #59265.
     >>> ev = camara.Evento(cod=59265)
     >>> ev.url_registro
     ... 'https://www.youtube.com/watch?v=8D2gjMrTnMA'
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     def __init__(self, cod:int):
         self.cod = cod
@@ -629,16 +621,19 @@ class Evento:
         self.url_registro = self.dados['urlRegistro']
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: Evento {self.descricao}"
+
+
+    def __str__(self) -> str:
+        return self.descricao
 
 
     def deputados(
             self,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Os deputados participantes de um evento específico.
+        ) -> pd.DataFrame:
+        """Os deputados participantes de um evento específico.
 
         Retorna uma lista de dados resumidos sobre deputados participantes do
         evento. Se o evento já ocorreu, a lista identifica os deputados que
@@ -647,18 +642,17 @@ class Evento:
         por serem convidados ou por serem membros do(s) órgão(s) responsável
         pelo evento.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista dos deputados participantes de um evento específico.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['eventos', str(self.cod), 'deputados']
         dados = _get(path=path, params=None)
@@ -669,25 +663,23 @@ class Evento:
     def orgaos(
             self,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Lista de órgãos organizadores do evento.
+        ) -> pd.DataFrame:
+        """Lista de órgãos organizadores do evento.
 
         Retorna uma lista em que cada item é um conjunto mínimo de dados sobre
         o(s) órgão(s) responsável(is) pelo evento.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de órgãos organizadores do evento.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['eventos', str(self.cod), 'orgaos']
         dados = _get(path=path, params=None)
@@ -698,9 +690,8 @@ class Evento:
     def pauta(
             self,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Lista de proposições que foram ou deverão ser avaliadas em um evento
+        ) -> pd.DataFrame:
+        """Lista de proposições que foram ou deverão ser avaliadas em um evento
         de caráter deliberativo.
 
         Se o evento for de caráter deliberativo (uma reunião ordinária,
@@ -710,18 +701,17 @@ class Evento:
         de preferência para avaliação, o relator e seu parecer, o resultado
         da apreciação e a votação realizada.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `ordem` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de proposições do evento.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['eventos', str(self.cod), 'pauta']
         dados = _get(path=path, params=None)
@@ -732,27 +722,25 @@ class Evento:
     def votacoes(
             self,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Informações detalhadas de votações sobre o evento.
+        ) -> pd.DataFrame:
+        """Informações detalhadas de votações sobre o evento.
 
         Retorna uma lista de dados básicos sobre votações que tenham sido
         realizadas no evento. Votações só ocorrem em eventos de caráter
         deliberativo. Dados complementares sobre cada votação listada podem
         ser obtidos no recurso.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de de votações sobre o evento.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['eventos', str(self.cod), 'votacoes']
         dados = _get(path=path, params=None)
@@ -762,16 +750,15 @@ class Evento:
 
 
 class Frente:
-    '''
-    Informações detalhadas sobre uma frente parlamentar.
+    """Informações detalhadas sobre uma frente parlamentar.
 
-    Parâmetros
+    Parameters
     ----------
     cod : int
         Código numérico da frente parlamentar da qual se deseja informações.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     dados : dict
         Conjunto completo de dados.
     cod : int
@@ -799,15 +786,14 @@ class Frente:
     website : str
         URL do website da frente parlamentar.
 
-    Exemplos
+    Examples
     --------
     Obter título da frente parlamentar #54258.
     >>> fr = camara.Frente(cod=54258)
     >>> fr.url_registro
     ... 'Frente Parlamentar Mista da Telessaúde'
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     def __init__(self, cod:int):
         self.cod = cod
@@ -825,16 +811,19 @@ class Frente:
         self.website = self.dados['urlWebsite']
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: {self.titulo}"
+
+
+    def __str__(self) -> str:
+        return self.titulo
         
 
     def membros(
             self,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Os deputados que participam da frente parlamentar.
+        ) -> pd.DataFrame:
+        """Os deputados que participam da frente parlamentar.
 
         Uma lista dos deputados participantes da frente parlamentar e os
         papéis que exerceram nessa frente (signatário, coordenador ou
@@ -842,18 +831,17 @@ class Frente:
         mistas (compostas por deputados e senadores), são retornados apenas
         dados sobre os deputados.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista dos deputados que participam da frente parlamentar.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['frentes', str(self.cod), 'membros']
         dados = _get(path=path, params=None)
@@ -863,16 +851,15 @@ class Frente:
 
 
 class Legislatura:
-    '''
-    Informações extras sobre uma determinada legislatura da Câmara.
+    """Informações extras sobre uma determinada legislatura da Câmara.
 
-    Parâmetros
+    Parameters
     ----------
     cod : int
         Código numérico da legislatura da qual se deseja informações.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     dados : dict
         Conjunto completo de dados.
     cod : int
@@ -884,7 +871,7 @@ class Legislatura:
     uri : str
         Endereço para coleta de dados direta pela API da legislatura.
 
-    Exemplos
+    Examples
     --------
     Obter o primeiro e último dia da legislatura #56.
     >>> leg = camara.Legislatura(cod=54)
@@ -893,8 +880,7 @@ class Legislatura:
     >>> leg.fim
     ... '2015-01-31'
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     def __init__(self, cod:int):
         self.cod = cod
@@ -904,18 +890,21 @@ class Legislatura:
         self.uri = self.dados['uri']
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: Legislatura {self.cod}"
+
+
+    def __str__(self) -> str:
+        return f'Legislatura {self.cod}'
 
 
     def mesa(
             self,
-            inicio: str = None,
-            fim: str = None,
+            inicio: Union[datetime, str, None] = None,
+            fim: Union[datetime, str, None] = None,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
+        ) -> pd.DataFrame:
+        """Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
 
         Retorna uma lista com dados básicos sobre todos os deputados que
         ocuparam algum posto na Mesa Diretora da Câmara em algum período de
@@ -923,24 +912,23 @@ class Legislatura:
         Mesas Diretoras, com presidente, dois vice-presidentes, quatro
         secretários parlamentares e os suplentes dos secretários.
 
-        Parâmetros
+        Parameters
         ----------
-        inicio : str (default=None)
+        inicio : str, optional
             Dia de início do intervalo de tempo do qual se deseja saber a
             composição da Mesa, no formato 'AAAA-MM-DD'.
-        fim : str (default=None)
+        fim : str, optional
             Data de término do intervalo de tempo do qual se deseja saber a
             composição da Mesa, no formato 'AAAA-MM-DD'.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista dos deputados que participam da frente parlamentar.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         if inicio is not None:
@@ -956,16 +944,15 @@ class Legislatura:
 
 
 class Orgao:
-    '''
-    Informações detalhadas sobre um órgão da Câmara.
+    """Informações detalhadas sobre um órgão da Câmara.
 
-    Parâmetros
+    Parameters
     ----------
     cod : int
         Código numérico do órgão do qual se deseja informações.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     dados : dict
         Conjunto completo de dados.
     cod : int
@@ -997,15 +984,14 @@ class Orgao:
     urlWebsite : str
         URL para acessar o website do órgão.
 
-    Exemplos
+    Examples
     --------
     Obter o apelido do órgão #4.
     >>> org = camara.Orgao(cod=4)
     >>> org.apelido
     ... 'Mesa Diretora'
     
-    --------------------------------------------------------------------------
-    '''
+    """
 
     def __init__(self, cod:int):
         self.cod = cod
@@ -1025,24 +1011,26 @@ class Orgao:
         self.urlWebsite = self.dados['urlWebsite']
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: Órgão {self.nome}"
 
+
+    def __str__(self) -> str:
+        return f'Órgão {self.nome}'
 
 
     def eventos(
             self,
-            tipo_evento: str = None,
-            inicio: str = None,
-            fim: str = None,
+            tipo_evento: Optional[str] = None,
+            inicio: Union[datetime, str, None] = None,
+            fim: Union[datetime, str, None] = None,
             pagina: int = 1,
-            itens: int = None,
+            itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataHoraInicio',
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Os eventos ocorridos ou previstos em um órgão legislativo.
+        ) -> pd.DataFrame:
+        """Os eventos ocorridos ou previstos em um órgão legislativo.
 
         Retorna uma lista de informações resumidas dos eventos realizados
         (ou a realizar) pelo órgão legislativo. Por padrão, são retornados
@@ -1050,38 +1038,37 @@ class Orgao:
         e dois dias depois da requisição. Parâmetros podem ser passados para
         alterar esse período, bem como os tipos de eventos.
 
-        Parâmetros
+        Parameters
         ----------
-        tipo_evento : str (default=None)
+        tipo_evento : str, optional
             Identificador numérico do tipo de evento que se deseja obter.
-        inicio : str (default=None)
+        inicio : str, optional
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim : str (default=None)
+        fim : str, optional
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina : int (default=1)
+        pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens : int (default=None)
+        itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc : bool (default=True)
+        asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por : str (default='dataHoraInicio')
+        ordenar_por : str, default='dataHoraInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de discursos feitos por um deputado em eventos diversos.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         if tipo_evento is not None:
@@ -1104,14 +1091,13 @@ class Orgao:
 
     def membros(
             self,
-            inicio: str = None,
-            fim: str = None,
+            inicio: Union[datetime, str, None] = None,
+            fim: Union[datetime, str, None] = None,
             pagina: int = 1,
-            itens: int = None,
+            itens: Optional[int] = None,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Lista de cargos de um órgão e parlamentares que os ocupam.
+        ) -> pd.DataFrame:
+        """Lista de cargos de um órgão e parlamentares que os ocupam.
 
         Retorna uma lista de dados resumidos que identificam cada parlamentar
         e o cargo ou posição que ocupa ou ocupou no órgão parlamentar durante
@@ -1120,29 +1106,28 @@ class Orgao:
         momento da requisição. Se o órgão não existir mais ou não estiver
         instalado, é retornada uma lista vazia.
 
-        Parâmetros
+        Parameters
         ----------
-        inicio : str (default=None)
+        inicio : str, optional
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim : str (default=None)
+        fim : str, optional
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina : int (default=1)
+        pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens : int (default=None)
+        itens : int, optional
             Número máximo de itens na “página” que se deseja obter com esta
             requisição.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de cargos de um órgão e parlamentares que os ocupam.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         if inicio is not None:
@@ -1161,17 +1146,16 @@ class Orgao:
 
     def votacoes(
             self,
-            proposicao: int = None,
-            inicio: str = None,
-            fim: str = None,
+            proposicao: Optional[int] = None,
+            inicio: Union[datetime, str, None] = None,
+            fim: Union[datetime, str, None] = None,
             pagina: int = 1,
-            itens: int = None,
+            itens: Optional[int] = None,
             asc: bool = False,
             ordenar_por: str = 'dataHoraRegistro',
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Uma lista de eventos com a participação do parlamentar.
+        ) -> pd.DataFrame:
+        """Uma lista de eventos com a participação do parlamentar.
 
         Retorna uma lista de dados básicos de votações que tenham sido
         realizadas em eventos realizados no órgão. Se este for um órgão
@@ -1186,41 +1170,40 @@ class Orgao:
         Dados complementares sobre cada votação listada podem ser obtidos com
         o objeto `camara.Votacao`.
 
-        Parâmetros
+        Parameters
         ----------
-        proposicao : int (default=None)
+        proposicao : int, optional
             Código numérico da proposição, que podem ser obtidos por meio da
             função `camara.lista_proposicoes`. Se presente, listará as
             votações que tiveram a proposição como objeto de votação ou que
             afetaram as proposições listadas.
-        inicio : str (default=None)
+        inicio : str, optional
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim : str (default=None)
+        fim : str, optional
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        pagina : int (default=1)
+        pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens : int (default=None)
+        itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc : bool (default=False)
+        asc : bool, default=False
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por : str (default='dataHoraRegistro')
+        ordenar_por : str, default='dataHoraRegistro'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de discursos feitos por um deputado em eventos diversos.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         if proposicao is not None:
@@ -1243,16 +1226,15 @@ class Orgao:
 
 
 class Partido:
-    '''
-    Informações detalhadas sobre um partido.
+    """Informações detalhadas sobre um partido.
 
-    Parâmetros
+    Parameters
     ----------
     cod : int
         Código numérico do partido do qual se deseja informações.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     dados : dict
         Conjunto completo de dados.
     cod : int
@@ -1287,15 +1269,14 @@ class Partido:
         URL do website do partido.
 
 
-    Exemplos
+    Examples
     --------
     Obter o nome completo do partido #36899.
     >>> p = camara.Partido(cod=36899)
     >>> p.nome
     ... 'Movimento Democrático Brasileiro'
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     def __init__(self, cod:int):
         self.cod = cod
@@ -1316,23 +1297,26 @@ class Partido:
         self.website = self.dados['urlWebSite']
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: {self.nome}"
+
+
+    def __str__(self) -> str:
+        return self.nome
 
 
     def membros(
             self,
-            inicio: str = None,
-            fim: str = None,
-            legislatura: int = None,
+            inicio: Union[datetime, str, None] = None,
+            fim: Union[datetime, str, None] = None,
+            legislatura: Optional[int] = None,
             pagina: int = 1,
-            itens: int = None,
-            ordenar_por: str = None,
+            itens: Optional[int] = None,
+            ordenar_por: Optional[str] = None,
             asc: bool = True,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Uma lista dos parlamentares de um partido durante um período.
+        ) -> pd.DataFrame:
+        """Uma lista dos parlamentares de um partido durante um período.
 
         Retorna uma lista de deputados que estão ou estiveram em exercício
         pelo partido. Opcionalmente, pode-se usar os parâmetros `inicio`,
@@ -1341,38 +1325,37 @@ class Partido:
         `lista_deputados` com filtro por partido, mas é melhor para obter
         informações sobre membros de partidos já extintos.
 
-        Parâmetros
+        Parameters
         ----------
-        inicio : str (default=None)
+        inicio : str, optional
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        fim : str (default=None)
+        fim : str, optional
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-        legislatura : int (default=None)
+        legislatura : int, optional
             Número da legislatura, à qual os dados buscados devem corresponder.
-        pagina : int (default=1)
+        pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
-        itens : int (default=None)
+        itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
-        asc : bool (default=True)
+        asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por : str (default=None)
+        ordenar_por : str, optional
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista dos parlamentares de um partido durante um período.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         if inicio is not None:
@@ -1396,16 +1379,15 @@ class Partido:
 
 
 class Proposicao:
-    '''
-    Informações detalhadas sobre uma proposição específica.
+    """Informações detalhadas sobre uma proposição específica.
 
-    Parâmetros
+    Parameters
     ----------
     cod : int
         Código numérico da proposição da qual se deseja informações.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     dados : dict
         Conjunto completo de dados.
     cod : int
@@ -1475,15 +1457,14 @@ class Proposicao:
     justificativa : str
         Justificativa da proposição.
 
-    Exemplos
+    Examples
     --------
     Obter a ementa da proposição #15990.
     >>> prop = camara.Proposicao(cod=15990)
     >>> prop.ementa
     ... ''Cria salvaguardas para a tecnologia no campo nuclear...'
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     def __init__(self, cod:int):
         self.cod = cod
@@ -1522,13 +1503,16 @@ class Proposicao:
         self.justificativa = self.dados['justificativa']
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: Proposição {self.cod}"
 
 
-    def autores(self) -> _pd.DataFrame:
-        '''
-        Lista pessoas e/ou entidades autoras da proposição.
+    def __str__(self) -> str:
+        return f'Proposição {self.cod}'
+
+
+    def autores(self) -> pd.DataFrame:
+        """Lista pessoas e/ou entidades autoras da proposição.
 
         Retorna uma lista em que cada item identifica uma pessoa ou entidade
         que é autora da proposição. Além de deputados, também podem ser
@@ -1540,13 +1524,12 @@ class Proposicao:
         Para obter mais informações sobre cada autor, é recomendável acessar,
         se disponível, a URL que é valor do campo uri.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista pessoas e/ou entidades autoras da proposição.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['proposicoes', str(self.cod), 'autores']
         dados = _get(path=path, params=None)
@@ -1556,26 +1539,24 @@ class Proposicao:
     def relacionadas(
             self,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Uma lista de proposições relacionadas a uma em especial.
+        ) -> pd.DataFrame:
+        """Uma lista de proposições relacionadas a uma em especial.
 
         Lista de informações básicas sobre proposições que de alguma forma se
         relacionam com a proposição, como pareceres, requerimentos,
         substitutivos, etc.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de proposições relacionadas a uma em especial.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['proposicoes', str(self.cod), 'relacionadas']
         dados = _get(path=path, params=None)
@@ -1586,26 +1567,24 @@ class Proposicao:
     def temas(
             self,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Lista de áreas temáticas de uma proposição.
+        ) -> pd.DataFrame:
+        """Lista de áreas temáticas de uma proposição.
 
         Lista em que cada item traz informações sobre uma área temática à qual
         a proposição se relaciona, segundo classificação oficial do Centro de
         Documentação e Informação da Câmara.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `codTema` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de áreas temáticas de uma proposição.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['proposicoes', str(self.cod), 'temas']
         dados = _get(path=path, params=None)
@@ -1615,34 +1594,32 @@ class Proposicao:
 
     def tramitacoes(
             self,
-            inicio: str = None,
-            fim: str = None,
+            inicio: Union[datetime, str, None] = None,
+            fim: Union[datetime, str, None] = None,
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        O histórico de passos na tramitação de uma proposta.
+        ) -> pd.DataFrame:
+        """O histórico de passos na tramitação de uma proposta.
 
         Lista que traz, como cada item, um “retrato” de informações que podem
         ser alteradas a cada etapa de tramitação na vida da proposição (como
         regime de tramitação e situação) e informações sobre o que causou esse
         novo estado. Esta representação das tramitações ainda é provisória.
 
-        Parâmetros
+        Parameters
         ----------
-        inicio : str (default=None)
+        inicio : str, optional
             Data de início da tramitação, no formato 'AAAA-MM-DD'.
-        fim : str (default=None)
+        fim : str, optional
             Data de término da tramitação, no formato 'AAAA-MM-DD'.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `sequencia` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de passos na tramitação de uma proposta.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         if inicio is not None:
@@ -1661,34 +1638,32 @@ class Proposicao:
             asc: bool = False,
             ordenar_por: str = 'dataHoraRegistro',
             index: bool = False
-        ) -> _pd.DataFrame:
-        '''
-        Informações detalhadas de votações sobre a proposição.
+        ) -> pd.DataFrame:
+        """Informações detalhadas de votações sobre a proposição.
 
         Retorna uma lista de identificadores básicos sobre as votações na
         Câmara que tiveram a proposição como objeto ou como afetada pelos seus
         resultados. Dados complementares sobre cada votação listada podem ser
         obtidos pelo objeto `camara.Votacao`.
 
-        Parâmetros
+        Parameters
         ----------
-        asc : bool (default=False)
+        asc : bool, default=False
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
-        ordenar_por : str (default='dataHoraRegistro')
+        ordenar_por : str, default='dataHoraRegistro'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de votações sobre a proposição.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         params = {}
         params['ordem'] = 'asc' if asc else 'desc'
@@ -1702,21 +1677,20 @@ class Proposicao:
 
 
 class Votacao:
-    '''
-    Informações detalhadas sobre uma votação da Câmara.
+    """Informações detalhadas sobre uma votação da Câmara.
 
     Retorna um conjunto detalhado de dados sobre a votação, tais como as
     proposições que podem ter sido o objeto da votação e os efeitos de
     tramitação de outras proposições que eventualmente tenham sido cadastrados
     em consequência desta votação.
 
-    Parâmetros
+    Parameters
     ----------
     cod : str
         Código alfa-numérico da votação da qual se deseja informações.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     dados : dict
         Conjunto completo de dados.
     cod : str
@@ -1752,15 +1726,14 @@ class Votacao:
     uri_orgao : str
         Endereço para coleta de dados direta pela API do órgão.
 
-    Exemplos
+    Examples
     --------
     Obter a data da votação #2265603-43.
     >>> vot = camara.Votacao(cod='2265603-43')
     >>> vot.data
     ... '2020-12-22'
     
-    --------------------------------------------------------------------------
-    '''
+    """
 
     def __init__(self, cod:int):
         self.cod = cod
@@ -1782,13 +1755,16 @@ class Votacao:
         self.uri_orgao = self.dados['uriOrgao']
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: Votação {self.cod}"
 
 
-    def orientacoes(self, index=False) -> _pd.DataFrame:
-        '''
-        O voto recomendado pelas lideranças aos seus deputados na votação.
+    def __str__(self) -> str:
+        return f'Votação {self.cod}'
+
+
+    def orientacoes(self, index=False) -> pd.DataFrame:
+        """ O voto recomendado pelas lideranças aos seus deputados na votação.
 
         Em muitas votações, os líderes de partidos e blocos – as bancadas –
         fazem recomendações de voto para seus parlamentares. Essas orientações
@@ -1803,18 +1779,17 @@ class Votacao:
         Até o momento, só estão disponíveis dados sobre orientações dadas em
         votações no Plenário.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `codPartidoBloco` como index do DataFrame.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de recomendações pelas lideranças aos seus deputados.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['votacoes', str(self.cod), 'orientacoes']
         dados = _get(path=path, params=None)
@@ -1822,9 +1797,8 @@ class Votacao:
         return _df(dados, index_col)
 
 
-    def votos(self) -> _pd.DataFrame:
-        '''
-        Como cada parlamentar votou em uma votação nominal e aberta.
+    def votos(self) -> pd.DataFrame:
+        """Como cada parlamentar votou em uma votação nominal e aberta.
 
         Se a votação da Câmara é nominal e não foi secreta, retorna uma lista
         em que cada item contém os identificadores básicos de um deputado e o
@@ -1836,13 +1810,12 @@ class Votacao:
         seus posicionamentos fossem registrados.
         Não são listados parlamentares ausentes à votação.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Lista de parlamentares.
 
-        ----------------------------------------------------------------------
-        '''
+        """
 
         path = ['votacoes', str(self.cod), 'votos']
         dados = _get(path=path, params=None)
@@ -1851,15 +1824,14 @@ class Votacao:
 
 
 def lista_blocos(
-        legislatura: int = None,
+        legislatura: Optional[int] = None,
         pagina: int = 1,
-        itens: int = None,
+        itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'nome',
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Lista de dados sobre os blocos partidários.
+    ) -> pd.DataFrame:
+    """Lista de dados sobre os blocos partidários.
 
     Nas atividades parlamentares, partidos podem se juntar em blocos
     partidários. Quando associados, os partidos passam a trabalhar como se
@@ -1871,34 +1843,33 @@ def lista_blocos(
     `legislatura`, são listados também os blocos formados e extintos nessas
     legislaturas.
 
-    Parâmetros
+    Parameters
     ----------
-    legislatura : int (default=None)
+    legislatura : int, optional
         Número da legislatura a qual os dados buscados devem corresponder.
-    pagina : int (default=1)
+    pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens : int (default=None)
+    itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc : bool (default=True)
+    asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por : str (default='nome')
+    ordenar_por : str, default='nome'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `id` como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista de dados sobre os blocos partidários.
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     params = {}
     if legislatura is not None:
@@ -1916,73 +1887,71 @@ def lista_blocos(
 
 
 def lista_deputados(
-        nome: str = None,
-        legislatura: int = None,
-        uf: str = None,
-        partido: str = None,
-        sexo: str = None,
-        inicio: str = None,
-        fim: str = None,
+        nome: Optional[str] = None,
+        legislatura: Optional[int] = None,
+        uf: Optional[str] = None,
+        partido: Optional[str] = None,
+        sexo: Optional[str] = None,
+        inicio: Union[datetime, str, None] = None,
+        fim: Union[datetime, str, None] = None,
         pagina: int = 1,
-        itens: int = None,
+        itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'nome',
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Listagem e busca de deputados, segundo critérios.
+    ) -> pd.DataFrame:
+    """Listagem e busca de deputados, segundo critérios.
 
     Retorna uma lista de dados básicos sobre deputados que estiveram em
     exercício parlamentar em algum intervalo de tempo. Se não for passado um
     parâmetro de tempo, como `legislatura` ou `inicio`, a lista enumerará
     somente os deputados em exercício no momento da requisição.
 
-    Parâmetros
+    Parameters
     ----------
-    nome : str (default=None)
+    nome : str, optional
         Parte do nome dos parlamentares.
-    legislatura : int (default=None)
+    legislatura : int, optional
         Número da legislatura a qual os dados buscados devem corresponder.
-    uf : str (default=None)
+    uf : str, optional
         Sigla da unidade federativa (estados e Distrito Federal).
         Se None, serão retornados deputados de todos os estados.
-    partido : str (default=None)
+    partido : str, optional
         Sigla do partido ao qual sejam filiados os deputados.
         Para obter as siglas válidas, consulte a função `camara.lista_partidos`.
         Atenção: partidos diferentes podem usar a mesma sigla em diferentes
         legislaturas.
-    sexo : str (default=None)
+    sexo : {'M', 'F'}, optional
         Letra que designe o gênero dos parlamentares que se deseja buscar,
         - 'M': Masculino;
         - 'F': Feminino.
-    inicio : str (default=None)
+    inicio : str, optional
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    fim : str (default=None)
+    fim : str, optional
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    pagina : int (default=1)
+    pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens : int (default=None)
+    itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc : bool (default=True)
+    asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por : str (default='nome')
+    ordenar_por : str, default='nome'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `id` como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista de deputados.
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     params = {}
     if nome is not None:
@@ -2012,22 +1981,21 @@ def lista_deputados(
 
 
 def lista_eventos(
-        tipo_evento: int = None,
-        situacao: int = None,
-        tipo_orgao: int = None,
-        orgao: int = None,
-        inicio: str = None,
-        fim: str = None,
-        hora_inicio: str = None,
-        hora_fim: str = None,
+        tipo_evento: Optional[int] = None,
+        situacao: Optional[int] = None,
+        tipo_orgao: Optional[int] = None,
+        orgao: Optional[int] = None,
+        inicio: Union[datetime, str, None] = None,
+        fim: Union[datetime, str, None] = None,
+        hora_inicio: Optional[str] = None,
+        hora_fim: Optional[str] = None,
         pagina: int = 1,
-        itens: int = None,
+        itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'dataHoraInicio',
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Lista de eventos ocorridos ou previstos nos diversos órgãos da Câmara.
+    ) -> pd.DataFrame:
+    """Lista de eventos ocorridos ou previstos nos diversos órgãos da Câmara.
 
     Retorna uma lista cujos elementos trazem informações básicas sobre eventos
     dos órgãos legislativos da Câmara, previstos ou já ocorridos, em um certo
@@ -2036,58 +2004,57 @@ def lista_eventos(
     eventos dos cinco dias anteriores, dos cinco dias seguintes e do próprio
     dia em que é feita a requisição.
 
-    Parâmetros
+    Parameters
     ----------
-    tipo_evento : int (default=None)
+    tipo_evento : int, optional
         Identificador numérico do tipo de evento que se deseja obter.
         Os valores válidos podem ser obtidos pela função
         `camara.referencias('tiposEvento')`.
-    situacao : int (default=None)
+    situacao : int, optional
         Identificador numéricos do tipo de situação de evento.
         Valores válidos podem ser obtidos pela função
         `camara.referencias('situacoesEvento')`.
-    tipo_orgao : int (default=None)
+    tipo_orgao : int, optional
         Identificador numérico do tipo de órgão realizador dos eventos que se
         deseja obter. Os valores válidos podem ser obtidos pela função
         `camara.referencias('tiposOrgao').
-    orgao : int (default=None)
+    orgao : int, optional
         Identificador numérico do órgão. Os identificadores podem ser obtidos
         pela função `camara.lista_orgaos`.
-    inicio : str (default=None)
+    inicio : str, optional
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    fim : str (default=None)
+    fim : str, optional
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    hora_inicio : str (default=None)
+    hora_inicio : str, optional
         Hora inicial de um intervalo de tempo, no formato 'HH:MM', em horário
         de Brasília.
-    hora_fim : str (default=None)
+    hora_fim : str, optional
         Hora final de um intervalo de tempo, no formato 'HH:MM', em horário
         de Brasília.
-    pagina : int (default=1)
+    pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens : int (default=None)
+    itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc : bool (default=True)
+    asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por : str (default='dataHoraInicio')
+    ordenar_por : str, default='dataHoraInicio'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `id` como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista de eventos ocorridos ou previstos nos diversos órgãos da
         Câmara.
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     params = {}
 
@@ -2120,12 +2087,11 @@ def lista_eventos(
 
 
 def lista_frentes(
-        legislatura: int = None,
+        legislatura: Optional[int] = None,
         pagina: int = 1,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Lista de frentes parlamentares de uma ou mais legislaturas.
+    ) -> pd.DataFrame:
+    """Lista de frentes parlamentares de uma ou mais legislaturas.
 
     Retorna uma lista de informações sobre uma frente parlamentar - um
     agrupamento oficial de parlamentares em torno de um determinado tema ou
@@ -2135,24 +2101,23 @@ def lista_frentes(
     Um número de legislatura pode ser passado como parâmetro, mas se for
     omitido são retornadas todas as frentes parlamentares criadas desde 2003.
 
-    Parâmetros
+    Parameters
     ----------
-    legislatura : int (default=None)
+    legislatura : int, optional
         Número da legislatura a qual os dados buscados devem corresponder.
-    pagina : int (default=1)
+    pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `id` como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista de frentes parlamentares de uma ou mais legislaturas.
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     params = {}
 
@@ -2167,51 +2132,49 @@ def lista_frentes(
 
 
 def lista_legislaturas(
-        data: str = None,
+        data: Optional[str] = None,
         pagina: int = 1,
-        itens: int = None,
+        itens: Optional[int] = None,
         asc: bool = False,
         ordenar_por: str = 'id',
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Os períodos de mandatos e atividades parlamentares da Câmara.
+    ) -> pd.DataFrame:
+    """Os períodos de mandatos e atividades parlamentares da Câmara.
 
     Legislatura é o nome dado ao período de trabalhos parlamentares entre uma
     eleição e outra. Esta função retorna uma lista em que cada item contém as
     informações básicas sobre um desses períodos. Os números que identificam
     as legislaturas são sequenciais, desde a primeira que ocorreu.
 
-    Parâmetros
+    Parameters
     ----------
-    data : str (default=None)
+    data : str, optional
         Data no formato 'AAAA-MM-DD'. Se este parâmetro estiver presente, a
         função retornará as informações básicas sobre a legislatura que estava
         em curso na data informada.
-    pagina : int (default=1)
+    pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens : int (default=None)
+    itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc : bool (default=False)
+    asc : bool, default=False
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por : str (default='id')
+    ordenar_por : str, default='id'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `id` como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista de legislaturas da Câmara.
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     params = {}
 
@@ -2230,61 +2193,59 @@ def lista_legislaturas(
 
 
 def lista_orgaos(
-        sigla: str = None,
-        tipo: int = None,
-        inicio: str = None,
-        fim: str = None,
+        sigla: Optional[str] = None,
+        tipo: Optional[int] = None,
+        inicio: Union[datetime, str, None] = None,
+        fim: Union[datetime, str, None] = None,
         pagina: int = 1,
-        itens: int = None,
+        itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'id',
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Lista das comissões e outros órgãos legislativos da Câmara.
+    ) -> pd.DataFrame:
+    """Lista das comissões e outros órgãos legislativos da Câmara.
 
     Retorna uma lista de informações básicas sobre os órgãos legislativos e
     seus identificadores, tipos e descrições. É possível filtrar a lista por
     identificadores, tipos de órgãos, sigla, situação do órgão ou período de
     tempo em que os órgãos estiveram ativos, se aplicável.
     
-    Parâmetros
+    Parameters
     ----------
-    sigla : str (default=None)
+    sigla : str, optional
         Sigla oficialmente usadas para designar o órgão da câmara.
-    tipo : int (default=None)
+    tipo : int, optional
         Código numérico do tipo de órgãos que se deseja buscar dados. Pode ser
         obtido pela função `camara.referencias`.
-    inicio : str (default=None)
+    inicio : str, optional
         Data de início, no formato 'AAAA-MM-DD', de um intervalo de tempo no
         qual os órgãos buscados devem ter estado em atividade.
-    fim : str (default=None)
+    fim : str, optional
         Data de término, no formato 'AAAA-MM-DD', de um intervalo de tempo no
         qual os órgãos buscados devem ter estado em atividade.
-    pagina : int (default=1)
+    pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens : int (default=None)
+    itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc : bool (default=True)
+    asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por : str (default='id')
+    ordenar_por : str, default='id'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `id` como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista das comissões e outros órgãos legislativos da Câmara.
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     params = {}
 
@@ -2309,18 +2270,17 @@ def lista_orgaos(
 
 
 def lista_partidos(
-        legislatura: int = None,
-        inicio: str = None,
-        fim: str = None,
+        legislatura: Optional[int] = None,
+        inicio: Union[datetime, str, None] = None,
+        fim: Union[datetime, str, None] = None,
         pagina: int = 1,
-        itens: int = None,
+        itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'sigla',
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Os partidos políticos que têm ou já tiveram parlamentares em exercício na
-    Câmara.
+    ) -> pd.DataFrame:
+    """Os partidos políticos que têm ou já tiveram parlamentares em exercício
+    na Câmara.
 
     Retorna uma lista de dados básicos sobre os partidos políticos que têm ou
     já tiveram deputados na Câmara. Se não forem passados parâmetros, a função
@@ -2328,39 +2288,38 @@ def lista_partidos(
     requisição. É possível obter uma lista de partidos representados na Câmara
     em um certo intervalo de datas ou de legislaturas.
     
-    Parâmetros
+    Parameters
     ----------
-    legislatura : int (default=None)
+    legislatura : int, optional
         Número da legislatura a qual os dados buscados devem corresponder.
-    inicio : str (default=None)
+    inicio : str, optional
         Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    fim : str (default=None)
+    fim : str, optional
         Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
-    pagina : int (default=1)
+    pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens : int (default=None)
+    itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc : bool (default=True)
+    asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por : str (default='sigla')
+    ordenar_por : str, default='sigla'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `id` como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista de partidos políticos que têm ou já tiveram parlamentares em
         exercício na Câmara.
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     params = {}
 
@@ -2383,30 +2342,29 @@ def lista_partidos(
 
 
 def lista_proposicoes(
-        tipo: str = None,
-        numero: int = None,
-        ano: int = None,
-        autor_cod: int = None,
-        autor_nome: str = None,
-        partido_sigla: str = None,
-        partido_cod: int = None,
-        autor_uf: str = None,
-        keyword: str = None,
+        tipo: Optional[str] = None,
+        numero: Optional[int] = None,
+        ano: Optional[int] = None,
+        autor_cod: Optional[int] = None,
+        autor_nome: Optional[str] = None,
+        partido_sigla: Optional[str] = None,
+        partido_cod: Optional[int] = None,
+        autor_uf: Optional[str] = None,
+        keyword: Optional[str] = None,
         tramitacao_senado: bool = None,
-        apresentacao_inicio: str = None,
-        apresentacao_fim: str = None,
-        situacao: int = None,
-        tema: int = None,
-        inicio: str = None,
-        fim: str = None,
+        apresentacao_inicio: Union[datetime, str, None] = None,
+        apresentacao_fim: Optional[str] = None,
+        situacao: Optional[int] = None,
+        tema: Optional[int] = None,
+        inicio: Union[datetime, str, None] = None,
+        fim: Union[datetime, str, None] = None,
         pagina: int = 1,
-        itens: int = None,
+        itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'id',
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Lista de proposições na Câmara.
+    ) -> pd.DataFrame:
+    """Lista de proposições na Câmara.
 
     Lista de informações básicas sobre projetos de lei, resoluções, medidas
     provisórias, emendas, pareceres e todos os outros tipos de proposições na
@@ -2422,86 +2380,85 @@ def lista_proposicoes(
     estiverem, poderão ser listadas proposições que não tiveram tramitação
     recente (e a resposta pode demorar bastante).
     
-    Parâmetros
+    Parameters
     ----------
-    tipo : str (default=None)
+    tipo : str, optional
         Sigla do tipo das proposições que se deseja obter. A lista de tipos e
         siglas existentes pode ser obtida pela função `camara.referencias`.
-    numero : int (default=None)
+    numero : int, optional
         Número oficialmente atribuídos às proposições segundo o art. 137 do
         Regimento Interno, como “PL 1234/2016”
-    ano : int (default=None)
+    ano : int, optional
         Ano de apresentação das proposições que serão listadas no formato
         'AAAA'.
-    autor_cod : int (default=None)
+    autor_cod : int, optional
         Código numérico identificador do deputado autor das proposições que
         serão listadas.
-    autor_nome : str (default=None)
+    autor_nome : str, optional
         Nome ou parte do nome do(s) autor(es) das proposições que se deseja
         obter. Deve estar entre aspas.
-    partido_sigla : str (default=None)
+    partido_sigla : str, optional
         Sigla do partido a que pertençam os autores das proposições a serem
         listadas.
-    partido_cod : int (default=None)
+    partido_cod : int, optional
         Identificador numérico do partido a que pertençam os autores das
         proposições que serão listadas. Esses identificadores podem ser
         obtidos pela função `camara.lista_partidos` e são mais precisos do
         que as siglas, que podem ser usadas por partidos diferentes em épocas
         diferentes.
-    autor_uf : str (default=None)
+    autor_uf : str, optional
         Sigla da unidade da federação (estados e Distrito Federal) pela qual
         o(s) autor(es) das proposições selecionadas tenha(m) sido eleito(s).
-    keyword : str (default=None)
+    keyword : str, optional
         Palavra-chave sobre o tema a que a proposição se relaciona.
-    tramitacao_senado : bool (default=None)
+    tramitacao_senado : bool, optional
         Buscar proposições que já tenha tramitado no Senado.
-    inicio : str (default=None)
+    inicio : str, optional
         Data do início do intervalo de tempo em que tenha havido tramitação
         das proposições a serem listadas, no formato 'AAAA-MM-DD'. Se omitido,
         é assumido como a data de 30 dias anteriores à proposição.
-    fim : str (default=None)
+    fim : str, optional
         Data do fim do intervalo de tempo em que tenha havido tramitação das
         proposições a serem listadas. Se omitido, é considerado ser o dia em
         que é feita a requisição.
-    apresentacao_inicio : str (default=None)
+    apresentacao_inicio : str, optional
         Data do início do intervalo de tempo em que tenham sido apresentadas
         as proposições a serem listadas, no formato 'AAAA-MM-DD'.
-    apresentacao_fim : str (default=None)
+    apresentacao_fim : str, optional
         Data do fim do intervalo de tempo em que tenham sido apresentadas as
         proposições a serem listadas.
-    situacao : int (default=None)
+    situacao : int, optional
         Código numérico do tipo de situação em que se encontram as proposições
         que serão listadas. As situações possíveis podem ser obtidas pela
         função `camara.referencias`. Atenção: este parâmetro pode apresentar
         resultados inesperados, por problemas com o registro dos dados.
-    tema : int (default=None)
+    tema : int, optional
         Código numérico das áreas temáticas das proposições que serão
         listadas. Os temas possíveis podem ser obtidos pela função
         `camara.referencias`.
-    pagina : int (default=1)
+    pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens : int (default=None)
+    itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc : bool (default=True)
+    asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por : str (default='id')
+    ordenar_por : str, default='id'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `id` como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista de proposições na Câmara.
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     params = {}
 
@@ -2550,19 +2507,18 @@ def lista_proposicoes(
 
 
 def lista_votacoes(
-        proposicao: int = None,
-        evento: int = None,
-        orgao: int = None,
-        inicio: str = None,
-        fim: str = None,
+        proposicao: Optional[int] = None,
+        evento: Optional[int] = None,
+        orgao: Optional[int] = None,
+        inicio: Union[datetime, str, None] = None,
+        fim: Union[datetime, str, None] = None,
         pagina: int = 1,
-        itens: int = None,
+        itens: Optional[int] = None,
         asc: bool = False,
         ordenar_por: str = 'dataHoraRegistro',
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Lista de votações na Câmara.
+    ) -> pd.DataFrame:
+    """Lista de votações na Câmara.
 
     Retorna uma lista de informações básicas sobre as votações ocorridas em
     eventos dos diversos órgãos da Câmara. Se não forem passados parâmetros
@@ -2575,59 +2531,58 @@ def lista_votacoes(
     delas está presente, são retornadas somente as votações ocorridas no mesmo
     ano, antes de `fim` ou após `inicio`.
     
-    Parâmetros
+    Parameters
     ----------
-    proposicao : int (default=None)
+    proposicao : int, optional
         Código numérico da proposição, que podem ser obtidos pela função
         `camara.lista_proposições`. Se presente, listará as votações que
         tiveram a proposição como objeto de votação ou que afetaram as
         proposições listadas.
-    evento : int (default=None)
+    evento : int, optional
         Código numérico do evento realizado na Câmara, no qual tenham sido
         realizadas as votações a serem listadas. Os códigos podem ser obtidos
         pela função `camara.lista_eventos`. Somente os eventos deliberativos
         podem ter votações. Os eventos podem ter ocorrido fora do intervalo de
         tempo padrão ou definido por `inicio` e/ou `fim`.
-    orgao : int (default=None)
+    orgao : int, optional
         Código numérico do órgão da Câmara. Se presente, serão retornadas
         somente votações do órgão enumerado. Os códigos existentes podem ser
         obtidos pela função `camara.lista_orgaos`.
-    inicio : str (default=None)
+    inicio : str, optional
         Data em formato 'AAAA-MM-DD' para início do intervalo de tempo no qual
         tenham sido realizadas as votações a serem listadas. Se usado sozinho,
         esse parâmetro faz com que sejam retornadas votações ocorridas dessa
         data até o fim do mesmo ano. Se usado com `fim`, as duas datas devem
         ser de um mesmo ano.
-    fim : str (default=None)
+    fim : str, optional
         Data em formato 'AAAA-MM-DD' que define o fim do intervalo de tempo no
         qual tenham sido realizadas as votações a serem listadas. Se usado
         sozinho, esse parâmetro faz com que sejam retornadas todas as votações
         ocorridas desde 1º de janeiro do mesmo ano até esta data. Se usado com
         `inicio`, é preciso que as duas datas sejam de um mesmo ano.
-    pagina : int (default=1)
+    pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
-    itens : int (default=None)
+    itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
-    asc : bool (default=False)
+    asc : bool, default=False
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
-    ordenar_por : str (default='dataHoraRegistro')
+    ordenar_por : str, default='dataHoraRegistro'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `id` como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista de votações na Câmara.
 
-    --------------------------------------------------------------------------
-    '''
+    """
 
     params = {}
 
@@ -2656,11 +2611,10 @@ def lista_votacoes(
 def referencias(
         lista: str,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''
-    Listas de valores válidos para as funções deste módulo.
+    ) -> pd.DataFrame:
+    """Listas de valores válidos para as funções deste módulo.
 
-    Parâmetros
+    Parameters
     ----------
     lista : str
         Referências que serão listadas. Deve ser uma destas opções:
@@ -2675,14 +2629,15 @@ def referencias(
             - 'situacoes_eventos'
             - 'situacoes_orgaos'
             - 'situacoes_proposicoes'
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `cod` como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista das referências válidas.
-    '''
+
+    """
     
     referencia = {
         'autores': 'proposicoes/codTipoAutor',
@@ -2704,7 +2659,7 @@ def referencias(
         raise TypeError('Referência inválida. Insira um dos seguintes valores para `lista`: ' \
             + ', '.join(list(referencia.keys())))
     
-    df = _pd.DataFrame(data['dados'])
+    df = pd.DataFrame(data['dados'])
     if index:
         df.set_index('cod', inplace=True)
     

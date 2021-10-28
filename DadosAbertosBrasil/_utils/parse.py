@@ -1,11 +1,12 @@
-'''Funções para padronização de parâmetros entre os módulos.
+"""Funções para padronização de parâmetros entre os módulos.
 
 Padroniza argumentos de data, UF, localidades e moeda, gerando `Exceptions`
 especiais do módulo `_utils.errors`.
 
-'''
+"""
+
 from datetime import datetime, date
-from typing import Union
+from typing import List, Union
 
 from . import errors
 
@@ -15,26 +16,26 @@ def data(
         data: Union[datetime, date, str],
         modulo: str
     ) -> str:
-    '''Padroniza o input de datas entre módulos.
+    """Padroniza o input de datas entre módulos.
 
-    Parâmetros
+    Parameters
     ----------
-    data: datetime.datetime, datetime.date ou str
+    data: datetime.datetime or datetime.date or str
         Input a ser padronizado.
         Pode ser uma objeto date, datetime ou uma string no formato ISO-8601.
-    modulo: str
+    modulo: {'camara', 'senado', 'bacen'}
         Módulo que o parser seja aplicado para selecionar a formatação
         adequada:
             - 'camara': API da Câmara dos Deputados;
             - 'senado': API do Senado Federal;
             - 'bacen': Consultas do Banco Central do Brasil.
 
-    Atributos
-    ---------
+    Returns
+    -------
     str
         Data no formato adequado para o módulo escolhido.
 
-    '''
+    """
 
     if isinstance(data, str):
         try:
@@ -68,25 +69,25 @@ def uf(
         uf: str,
         extintos: bool = False
     ) -> str:
-    '''Converte os nomes dos estados em siglas padrões.
+    """Converte os nomes dos estados em siglas padrões.
     Suporta abreviaturas, acentuação e case sensibility.
 
     Parametros
     ----------
     uf: str
         Nome ou sigla da UF.
-    extintos: bool (default=None)
+    extintos: bool, default=False
         Verificar também as UFs extintas:
             - 20: Fernando de Noronha / FN
             - 34: Guanabara / GB
 
-    Retorna
+    Returns
     -------
     str
         String de dois caracteres maiúsculos que representam a sigla da
         Unidade Federativa desejada.
 
-    '''
+    """
 
     UFS = {
         '1': 'BR',
@@ -190,7 +191,7 @@ def localidade(
         brasil = 1,
         on_error = 'raise'
     ) -> str:
-    '''Verifica se o código da localidade é válido.
+    """Verifica se o código da localidade é válido.
 
     Parametros
     ----------
@@ -199,16 +200,16 @@ def localidade(
         Caso localidade == None, retorna o valor padrão do Brasil.
     brasil: default = 1
         Valor padrão para o Brasil.
-    on_error: str (default='raise')
+    on_error: {'raise', 'brasil'}, default='raise'
         - 'raise': Gera um erro quando o valor não for válido;
         - 'brasil': Retorna o valor Brasil quando o valor não for válido.
 
-    Retorna
+    Returns
     -------
     str ou int
         Valor da localidade validado.
 
-    '''
+    """
 
     if localidade is None:
         return brasil
@@ -233,21 +234,21 @@ def localidade(
 
 
 
-def moeda(moedas:Union[str, list]) -> list:
-    '''Verifica se o(s) código(s) da(s) moeda(s) inserida(s) está(ão) em um
+def moeda(moedas:Union[str, List[str]]) -> List[str]:
+    """Verifica se o(s) código(s) da(s) moeda(s) inserida(s) está(ão) em um
     formato válido.
 
-    Parâmetros
+    Parameters
     ----------
-    moedas: str ou list of str
+    moedas : str or list of str
         Símbolo da moeda ou lista de símbolos de moedas que se deseja validar.
 
-    Retorna
+    Returns
     -------
     list of str
         Lista de símbolos de moedas formatados.
 
-    '''
+    """
 
     if isinstance(moedas, str):
         moedas = [moedas]

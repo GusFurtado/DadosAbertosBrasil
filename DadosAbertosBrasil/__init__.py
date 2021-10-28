@@ -1,4 +1,4 @@
-'''Dados Abertos Brasil é uma iniciativa para facilitar o acesso a dados
+"""Dados Abertos Brasil é uma iniciativa para facilitar o acesso a dados
 abertos e APIs do governo brasileiro.
 
 É um pacote open-source para Python e Pandas e a forma mais simples de acessar
@@ -42,7 +42,8 @@ Próximos Passos
     - Adição constante de novas funções no módulo `favoritos`;
     - Adição constante de novos métodos à classe `UF`.
 
-'''
+"""
+
 from . import bacen
 from . import camara
 from . import ibge

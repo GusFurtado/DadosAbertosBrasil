@@ -1,11 +1,16 @@
-'''Objeto UF contendo informações das Unidades da Federação.
+"""Objeto UF contendo informações das Unidades da Federação.
 
 Este módulo é um protótipo e poderá passar por várias modificações.
 
 Serve como um consolidador por UF de diversar funções do pacote
 DadosAbertosBrasil.
 
-'''
+"""
+
+from typing import List, Optional, Union
+
+from pandas import DataFrame
+
 from ._utils.errors import DAB_UFError
 from ._utils import parse
 from ._ibge.misc import populacao, malha
@@ -27,7 +32,7 @@ _UF_INFO = {
         'lema': 'Ordem e Progresso',
         'regiao': None,
         'governador': 'Jair Bolsonaro',
-        'vice-governador': 'Hamilton Mourão' 
+        'vice_governador': 'Hamilton Mourão' 
     },
     'AC': {
         'nome': 'Acre',
@@ -39,7 +44,7 @@ _UF_INFO = {
         'lema': 'Nec Luceo Pluribus Impar',
         'regiao': 'Norte',
         'governador': 'Gladson Cameli',
-        'vice-governador': 'Major Rocha' 
+        'vice_governador': 'Major Rocha' 
     },
     'AL': {
         'nome': 'Alagoas',
@@ -51,7 +56,7 @@ _UF_INFO = {
         'lema': 'Ad Bonum Et Prosperitatem',
         'regiao': 'Nordeste',
         'governador': 'Renan Filho',
-        'vice-governador': None 
+        'vice_governador': None 
     },
     'AM': {
         'nome': 'Amazonas',
@@ -63,7 +68,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Norte',
         'governador': 'Wilson Lima',
-        'vice-governador': 'Carlos Almeida'
+        'vice_governador': 'Carlos Almeida'
     },
     'AP': {
         'nome': 'Amapá',
@@ -75,7 +80,7 @@ _UF_INFO = {
         'lema': 'Aqui começa o Brasil',
         'regiao': 'Norte',
         'governador': 'Waldez Góes',
-        'vice-governador': 'Jaime Nunes' 
+        'vice_governador': 'Jaime Nunes' 
     },
     'BA': {
         'nome': 'Bahia',
@@ -87,7 +92,7 @@ _UF_INFO = {
         'lema': 'Per Ardua Surgo',
         'regiao': 'Nordeste',
         'governador': 'Rui Costa',
-        'vice-governador': 'João Leão' 
+        'vice_governador': 'João Leão' 
     },
     'CE': {
         'nome': 'Ceará',
@@ -99,7 +104,7 @@ _UF_INFO = {
         'lema': 'Terra da Luz',
         'regiao': 'Nordeste',
         'governador': 'Camilo Santana',
-        'vice-governador': 'Izolda Cela' 
+        'vice_governador': 'Izolda Cela' 
     },
     'DF': {
         'nome': 'Distrito Federal',
@@ -111,7 +116,7 @@ _UF_INFO = {
         'lema': 'Ventvris Ventis',
         'regiao': 'Centro-Oeste',
         'governador': 'Ibaneis Rocha',
-        'vice-governador': 'Paco Britto'
+        'vice_governador': 'Paco Britto'
     },
     'ES': {
         'nome': 'Espirito Santo',
@@ -123,7 +128,7 @@ _UF_INFO = {
         'lema': 'Trabalha e Confia',
         'regiao': 'Sudeste',
         'governador': 'Renato Casagrande',
-        'vice-governador': 'Jacqueline Moraes'
+        'vice_governador': 'Jacqueline Moraes'
     },
     'FN': {
         'nome': 'Fernando de Noronha',
@@ -135,7 +140,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Nordeste',
         'governador': None,
-        'vice-governador': None
+        'vice_governador': None
     },
     'GB': {
         'nome': 'Guanabara',
@@ -147,7 +152,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Sudeste',
         'governador': None,
-        'vice-governador': None
+        'vice_governador': None
     },
     'GO': {
         'nome': 'Goiás',
@@ -159,7 +164,7 @@ _UF_INFO = {
         'lema': 'Terra Querida, Fruto da Vida',
         'regiao': 'Centro-Oeste',
         'governador': 'Ronaldo Caiado',
-        'vice-governador': 'Lincoln Tejota'
+        'vice_governador': 'Lincoln Tejota'
     },
     'MA': {
         'nome': 'Maranhão',
@@ -171,7 +176,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Nordeste',
         'governador': 'Flávio Dino',
-        'vice-governador': 'Carlos Brandão'
+        'vice_governador': 'Carlos Brandão'
     },
     'MG': {
         'nome': 'Minas Gerais',
@@ -183,7 +188,7 @@ _UF_INFO = {
         'lema': 'Libertas Quæ Sera Tamen',
         'regiao': 'Sudeste',
         'governador': 'Romeu Zema',
-        'vice-governador': 'Paulo Brant'
+        'vice_governador': 'Paulo Brant'
     },
     'MT': {
         'nome': 'Mato Grosso',
@@ -195,7 +200,7 @@ _UF_INFO = {
         'lema': 'Virtute Plusquam Auro',
         'regiao': 'Centro-Oeste',
         'governador': 'Mauro Mendes',
-        'vice-governador': 'Otaviano Pivetta'
+        'vice_governador': 'Otaviano Pivetta'
     },
     'MS': {
         'nome': 'Mato Grosso do Sul',
@@ -207,7 +212,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Centro-Oeste',
         'governador': 'Azambuja',
-        'vice-governador': 'Murilo Zauith'
+        'vice_governador': 'Murilo Zauith'
     },
     'PA': {
         'nome': 'Pará',
@@ -219,7 +224,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Norte',
         'governador': 'Helder Barbalho',
-        'vice-governador': None
+        'vice_governador': None
     },
     'PB': {
         'nome': 'Paraíba',
@@ -231,7 +236,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Nordeste',
         'governador': 'João Azevêdo',
-        'vice-governador': 'Lígia Feliciano'
+        'vice_governador': 'Lígia Feliciano'
     },
     'PE': {
         'nome': 'Pernambuco',
@@ -243,7 +248,7 @@ _UF_INFO = {
         'lema': 'Ego Sum Qui Fortissimum Et Leads',
         'regiao': 'Nordeste',
         'governador': 'Paulo Câmara',
-        'vice-governador': 'Luciana Santos'	 
+        'vice_governador': 'Luciana Santos'	 
     },
     'PI': {
         'nome': 'Piauí',
@@ -255,7 +260,7 @@ _UF_INFO = {
         'lema': 'Impavidum Ferient Ruinae',
         'regiao': 'Nordeste',
         'governador': 'Wellington Dias',
-        'vice-governador': 'Regina Sousa' 
+        'vice_governador': 'Regina Sousa' 
     },
     'PR': {
         'nome': 'Paraná',
@@ -267,7 +272,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Sul',
         'governador': 'Ratinho Júnior',
-        'vice-governador': 'Darci Piana'
+        'vice_governador': 'Darci Piana'
     },
     'RJ': {
         'nome': 'Rio de Janeiro',
@@ -279,7 +284,7 @@ _UF_INFO = {
         'lema': 'Recete Rem Pvblicam Gerere',
         'regiao': 'Sudeste',
         'governador': 'Cláudio Castro',
-        'vice-governador': None
+        'vice_governador': None
     },
     'RO': {
         'nome': 'Rondônia',
@@ -291,7 +296,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Norte',
         'governador': 'Marcos Rocha',
-        'vice-governador': 'Zé Jodan'	
+        'vice_governador': 'Zé Jodan'	
     },
     'RN': {
         'nome': 'Rio Grande do Norte',
@@ -303,7 +308,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Nordeste',
         'governador': 'Fátima Bezerra',
-        'vice-governador': 'Antenor Roberto'
+        'vice_governador': 'Antenor Roberto'
     },
     'RR': {
         'nome': 'Roraima',
@@ -315,7 +320,7 @@ _UF_INFO = {
         'lema': 'Amazônia: Patrimônio dos Brasileiros',
         'regiao': 'Norte',
         'governador': 'Antonio Denarium',
-        'vice-governador': 'Frutuoso Lins'	
+        'vice_governador': 'Frutuoso Lins'	
     },
     'RS': {
         'nome': 'Rio Grande do Sul',
@@ -327,7 +332,7 @@ _UF_INFO = {
         'lema': 'Liberdade, Igualdade, Humanidade',
         'regiao': 'Sul',
         'governador': 'Eduardo Leite',
-        'vice-governador': 'Ranolfo Vieira Júnior'
+        'vice_governador': 'Ranolfo Vieira Júnior'
     },
     'SC': {
         'nome': 'Santa Catarina',
@@ -339,7 +344,7 @@ _UF_INFO = {
         'lema': None,
         'regiao': 'Sul',
         'governador': 'Carlos Moisés',
-        'vice-governador': 'Daniela Reinehr'	
+        'vice_governador': 'Daniela Reinehr'	
     },
     'SE': {
         'nome': 'Sergipe',
@@ -351,7 +356,7 @@ _UF_INFO = {
         'lema': 'Sub Lege Libertas',
         'regiao': 'Nordeste',
         'governador': 'Belivaldo Chagas',
-        'vice-governador': 'Eliane Aquino'
+        'vice_governador': 'Eliane Aquino'
     },
     'SP': {
         'nome': 'São Paulo',
@@ -363,7 +368,7 @@ _UF_INFO = {
         'lema': 'Pro Brasilia Fiant Eximia',
         'regiao': 'Sudeste',
         'governador': 'João Doria',
-        'vice-governador': 'Rodrigo Garcia'
+        'vice_governador': 'Rodrigo Garcia'
     },
     'TO': {
         'nome': 'Tocantins',
@@ -375,24 +380,24 @@ _UF_INFO = {
         'lema': 'Co Yvy Ore Retama',
         'regiao': 'Norte',
         'governador': 'Mauro Carlesse',
-        'vice-governador': 'Wanderlei Barbosa'
+        'vice_governador': 'Wanderlei Barbosa'
     }
 }
 
 
 
 class UF:
-    '''Consolidado de informações de uma Unidade Federativa.
+    """Consolidado de informações de uma Unidade Federativa.
 
     Este objeto ainda é um protótipo e poderá passar por várias modificações.
 
-    Parâmetros
+    Parameters
     ----------
     uf : str
         Nome, sigla ou código da UF desejada.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     sigla : str
         Sigla de duas letras maiúsculas.
     cod : int
@@ -415,50 +420,67 @@ class UF:
         Nome do atual governador(a).
     vice-governador : str
         Nome do atual vice-governador(a).
-    
-    '''
+
+    Methods
+    -------
+    bandeira(tamanho=100)
+        Gera a URL da WikiMedia para a bandeira do estado.
+    brasao(tamanho=100)
+        Gera a URL da WikiMedia para o brasão do estado.
+    densidade()
+        Densidade populacional (hab/km²) da UF.
+    deputados()
+        Lista dos deputados federais em exercício.
+    galeria()
+        Gera uma galeria de fotos da UF.
+    geojson()
+        Coordenadas dos municípios brasileiros em formato GeoJSON.
+    historia()
+        Objeto contendo a história da UF.
+    malha()
+        Obtém a URL para a malha referente à UF.
+    municipios()
+        Lista de municípios.
+    populacao()
+        População projetada pelo IBGE.
+    senadores(tipo='atual', formato='dataframe')
+        Lista de senadores da república desta UF.
+
+    """
 
     def __init__(self, uf:str):
         self.sigla = parse.uf(uf=uf, extintos=True)
-        # self.cod = UF_INFO[self.sigla]['cod']
-        # self.nome = UF_INFO[self.sigla]['nome']
-        # self.area = UF_INFO[self.sigla]['area']
-        # self.capital = UF_INFO[self.sigla]['capital']
-        # self.extinto = UF_INFO[self.sigla]['extinto']
-        # self.gentilico = UF_INFO[self.sigla]['gentilico']
-        # self.lema = UF_INFO[self.sigla]['lema']
-        # self.regiao = UF_INFO[self.sigla]['regiao']
-        # self.governador = UF_INFO[self.sigla]['governador']
-        # self.vice_governador = UF_INFO[self.sigla]['vice-governador']
-
         for attr in _UF_INFO[self.sigla]:
             setattr(self, attr, _UF_INFO[self.sigla][attr])
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<DadosAbertosBrasil.UF: {self.nome}>'
 
 
-    def bandeira(self, tamanho:int=100):
-        '''Gera a URL da WikiMedia para a bandeira do estado de um tamanho
-        escolhido.
+    def __str__(self) -> str:
+        return self.nome
 
-        Parâmetros
+
+    def bandeira(self, tamanho:int=100) -> str:
+        """Gera a URL da WikiMedia para a bandeira do estado.
+
+        Parameters
         ----------
-        tamanho : int (default=100)
+        tamanho : int, default=100
             Tamanho em pixels da bandeira.
 
-        Retorna
+        Returns
         -------
         str
             URL da bandeira do estado no formato PNG.
 
-        Ver Também
-        ----------
+        See Also
+        --------
         DadosAbertosBrasil.favoritos.bandeira
             Função original.
 
-        Exemplos
+        Examples
         --------
         Gera o link para a imagem da bandeira de Santa Catarina de 200 pixels.
 
@@ -466,31 +488,30 @@ class UF:
         >>> sc.bandeira(tamanho=200)
         'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/' ...
 
-        '''
+        """
 
         return favoritos.bandeira(uf=self.sigla, tamanho=tamanho)
 
 
-    def brasao(self, tamanho:int=100):
-        '''Gera a URL da WikiMedia para o brasão do estado de um tamanho
-        escolhido.
+    def brasao(self, tamanho:int=100) -> str:
+        """Gera a URL da WikiMedia para o brasão do estado.
 
-        Parâmetros
+        Parameters
         ----------
-        tamanho : int (default=100)
+        tamanho : int, default=100
             Tamanho em pixels da bandeira.
 
-        Retorna
+        Returns
         -------
         str
             URL da bandeira do estado no formato PNG.
 
-        Ver Também
-        ----------
+        See Also
+        --------
         DadosAbertosBrasil.favoritos.brasao
             Função original.
 
-        Exemplos
+        Examples
         --------
         Gera o link para a imagem do brasão de Santa Catarina de 200 pixels.
 
@@ -498,38 +519,38 @@ class UF:
         >>> sc.brasao(tamanho=200)
         'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/' ...
 
-        '''
+        """
         return favoritos.brasao(uf=self.sigla, tamanho=tamanho)
 
 
-    def densidade(self):
-        '''Densidade populacional (hab/km²) da UF.
+    def densidade(self) -> float:
+        """Densidade populacional (hab/km²) da UF.
 
         É a razão entre a população projetada pelo IBGE (habitantes) e a área
         territorial da UF (quilómetros quadrados).
 
-        Retorna
+        Returns
         -------
         float
             Densidade populacional.
 
-        Erros
-        -----
+        Raises
+        ------
         DAB_UFError
             Caso seja uma UF extinta.
 
-        Ver Também
-        ----------
+        See Also
+        --------
         DadosAbertosBrasil.ibge.populacao
             Função utilizada para projetar a população da UF.
 
-        Exemplos
+        Examples
         --------
         >>> am = UF('AM')
         >>> am.populacao()
         2.719286132694809
         
-        '''
+        """
 
         if self.extinto:
             raise DAB_UFError('Método `densidade` indisponível para UFs extintas.')
@@ -537,53 +558,51 @@ class UF:
         return pop / self.area
 
 
-    def deputados(self):
-        '''Lista dos deputados federais em exercício.
+    def deputados(self) -> DataFrame:
+        """Lista dos deputados federais em exercício.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Tabela com informações básicas dos deputados federais.
 
-        Erros
-        -----
+        Raises
+        ------
         DAB_UFError
             Caso seja uma UF extinta.
 
-        Ver Também
-        ----------
+        See Also
+        --------
         DadosAbertosBrasil.camara.lista_deputados
             Função original.
 
-        Exemplos
+        Examples
         --------
         >>> rj = UF('RJ')
         >>> rj.deputados()
         
-        '''
+        """
 
         if self.extinto:
             raise DAB_UFError('Método `deputados` indisponível para UFs extintas.')
         return lista_deputados(uf=self.sigla)
 
 
-    def galeria(self):
-        '''Gera uma galeria de fotos da UF.
+    def galeria(self) -> Galeria:
+        """Gera uma galeria de fotos da UF.
 
-        Atributos
-        ---------
-        fotografias : lista de ibge._Fotografia
-            Lista de fotografias da localidade.
-        localidade : int
-            Código IBGE da localidade.
+        Returns
+        -------
+        DadosAbertosBrasil._ibge.cidades.Galeria
+            Objeto `Galeria` contendo uma lista de Fotografias.
 
-        Ver também
-        ----------
+        See Also
+        --------
         DadosAbertosBrasil.ibge.Galeria
             Classe original.
 
-        Exemplo
-        -------
+        Examples
+        --------
         Capturar a primeira fotografia da galeria do Espírito Santo.
 
         >>> es = dab.UF('ES')
@@ -595,37 +614,36 @@ class UF:
         >>> foto.url(altura=500)
         'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600...'
 
-        '''
+        """
 
         if self.extinto:
             raise DAB_UFError('Método `galeria` indisponível para UFs extintas.')
         return Galeria(self.cod)
 
 
-    def geojson(self):
-        '''Coordenadas dos municípios brasileiros em formato GeoJSON para
-        criação de mapas.
+    def geojson(self) -> dict:
+        """Coordenadas dos municípios brasileiros em formato GeoJSON.
 
-        Retorna
+        Returns
         -------
         dict
             Coordenadas em formato GeoJSON.
 
-        Erros
-        -----
+        Raises
+        ------
         DAB_UFError
             Caso seja uma UF extinta.
 
-        Créditos
-        --------
-        https://github.com/tbrugz
-
-        Ver Também
+        References
         ----------
+        .. [1] https://github.com/tbrugz
+
+        See Also
+        --------
         DadosAbertosBrasil.favoritos.geojson
             Função original.
 
-        Exemplos
+        Examples
         --------
         >>> sc = UF('SC')
         >>> sc.geojson()
@@ -648,43 +666,27 @@ class UF:
                         [-50.9858971419, -27.5302011257],
                         ...
 
-        '''
+        """
 
         if self.extinto:
             raise DAB_UFError('Método `geojson` indisponível para UFs extintas.')
         return favoritos.geojson(self.sigla)
 
 
-    def historia(self):
-        '''Objeto contendo a história da UF.
+    def historia(self) -> Historia:
+        """Objeto contendo a história da UF.
 
-        Atributos
-        ---------
-        ano : int
-            Ano da publicação do histórico.
-        estado : str
-            Nome do estado no formato 'Estado - UF'.
-        estado1 : str
-            Nome do estado sem a sigla.
-        formacao_administrativa : str
-            Descrição da formação administrativa da localidade.
-        gentilico : str
-            Gentílico dos naturais desta localidade.
-        historico : str
-            Texto descrevendo a história da localidade.
-        historico_fonte : str
-            Fonte do texto do atributo `historico`.
-        localidade : int
-            Código da localidade.
-        municipio : str
-            Nome do município.
+        Returns
+        -------
+        DadosAbertosBrasil._ibge.cidades.Historia
+            Objeto `Historia` da API IBGE Cidades.
 
-        Ver também
-        ----------
+        See Also
+        --------
         DadosAbertosBrasil.ibge.Historia
             Classe original.
 
-        Exemplos
+        Examples
         --------
         Capturar o texto da história de Minas Gerais.
 
@@ -693,7 +695,7 @@ class UF:
         >>> hist.historico
         "O Município de Wenceslau Braz tem sua origem praticamente desconh..."
 
-        '''
+        """
 
         if self.sigla == 'GB':
             raise DAB_UFError('Método `historia` indisponível para a UF Guanabara.')
@@ -703,57 +705,57 @@ class UF:
             return Historia(localidade=self.cod)
 
 
-    def malha(self):
-        '''Obtém a URL para a malha referente à UF.
+    def malha(self) -> str:
+        """Obtém a URL para a malha referente à UF.
 
-        Retorna
+        Returns
         -------
         str
             URL da malha da UF.
 
-        Erros
-        -----
+        Raises
+        ------
         DAB_UFError
             Caso seja uma UF extinta.
 
-        Ver Também
-        ----------
+        See Also
+        --------
         DadosAbertosBrasil.ibge.malha
             Função original.
 
-        Exemplos
+        Examples
         --------
         >>> sp = UF('SP')
         >>> sp.malha()
         https://servicodados.ibge.gov.br/api/v2/malhas/35
 
-        '''
+        """
 
         if self.extinto:
             raise DAB_UFError('Método `malha` indisponível para UFs extintas.')
         return malha(localidade=self.cod)        
 
 
-    def municipios(self):
-        '''Lista de municípios.
+    def municipios(self) -> List[str]:
+        """Lista de municípios.
 
-        Retorna
+        Returns
         -------
         list of str
             Lista de municípios.
 
-        Erros
-        -----
+        Raises
+        ------
         DAB_UFError
             Caso seja uma UF extinta.
 
-        Exemplos
+        Examples
         --------
         >>> ac = UF('AC')
         >>> ac.municipios()
         ['Acrelândia', 'Assis Brasil', 'Brasiléia', 'Bujari', ...]
         
-        '''
+        """
 
         if self.extinto:
             raise DAB_UFError('Método `municipios` indisponível para UFs extintas.')
@@ -761,31 +763,31 @@ class UF:
         return [mun['properties']['name'] for mun in js['features']]
 
 
-    def populacao(self):
-        '''População projetada pelo IBGE.
+    def populacao(self) -> int:
+        """População projetada pelo IBGE.
 
-        Retorna
+        Returns
         -------
         int
             População projetada.
 
-        Erros
-        -----
+        Raises
+        ------
         DAB_UFError
             Caso seja uma UF extinta.
 
-        Ver Também
-        ----------
+        See Also
+        --------
         DadosAbertosBrasil.ibge.populacao
             Função original.
 
-        Exemplos
+        Examples
         --------
         >>> df = UF('DF')
         >>> df.populacao()
         3092244
         
-        '''
+        """
 
         if self.extinto:
             raise DAB_UFError('Método `populacao` indisponível para UFs extintas.')
@@ -795,47 +797,49 @@ class UF:
     def senadores(
             self,
             tipo: str = 'atual',
-            sexo: str = None,
-            partido: str = None,
-            contendo: str = None,
-            excluindo: str = None,
+            sexo: Optional[str] = None,
+            partido: Optional[str] = None,
+            contendo: Optional[str] = None,
+            excluindo: Optional[str] = None,
             index: bool = False,
             formato: str = 'dataframe'
-        ):
-        '''Lista de senadores da república desta UF.
+        ) -> Union[DataFrame, dict]:
+        """Lista de senadores da república desta UF.
 
-        Parâmetros
+        Parameters
         ----------
-        tipo : str {'atual', 'titulares', 'suplentes', 'afastados'}
-            - 'atual' (default): Todos os senadores em exercício;
+        tipo : {'atual', 'titulares', 'suplentes', 'afastados'}, default='atual'
+            - 'atual': Todos os senadores em exercício;
             - 'titulares': Apenas senadores que iniciaram o mandato como titulares;
             - 'suplentes': Apenas senadores que iniciaram o mandato como suplentes;
             - 'afastados': Todos os senadores afastados.
-        sexo : str (default=None)
+        sexo : str, optional
             Filtro de sexo dos senadores.
-        partido : str (default=None)
+        partido : str, optional
             Filtro de partido dos senadores.
-        contendo : str (default=None)
+        contendo : str, optional
             Captura apenas senadores contendo esse texto no nome.
-        excluindo : str (default=None)
+        excluindo : str, optional
             Exclui da consulta senadores contendo esse texto no nome.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Obs.: Alguns filtros não serão aplicados no formato 'json'.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Tabela com informações básicas dos senadores consultados.
+        dict
+            Dados brutos em formato json.
 
-        Ver também
-        ----------
+        See Also
+        --------
         DadosAbertosBrasil.senado.lista_senadores
             Função original.
         
-        Exemplos
+        Examples
         --------
         Lista senadores do partido PL do Rio de Janeiro.
 
@@ -845,7 +849,7 @@ class UF:
         0   5936  Carlos Portinho  Carlos Francisco Portinho  Masculino
         1   5322          Romário     Romario de Souza Faria  Masculino
         
-        '''
+        """
     
         if self.extinto:
             raise DAB_UFError('Método `senadores` indisponível para UFs extintas.')

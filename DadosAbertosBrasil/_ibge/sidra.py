@@ -1,64 +1,66 @@
-'''Submódulo IBGE contendo os wrappers da API do SIDRA.
+"""Submódulo IBGE contendo os wrappers da API do SIDRA.
 
 Este submódulo é importado automaticamente com o módulo `ibge`.
 
 >>> from DadosAbertosBrasil import ibge
 
-Documentação Original
----------------------
-http://api.sidra.ibge.gov.br/
+References
+----------
+.. [1] API SIDRA
+    http://api.sidra.ibge.gov.br/
 
-'''
-from typing import Union
+"""
 
-import pandas as _pd
+from typing import Optional, Union
+
+import pandas as pd
 import requests
 
 from DadosAbertosBrasil._utils.get_data import get_data
 
 
 
-_normalize = _pd.io.json.json_normalize \
-    if _pd.__version__[0] == '0' else _pd.json_normalize
+_normalize = pd.io.json.json_normalize \
+    if pd.__version__[0] == '0' else pd.json_normalize
 
 
 
 def lista_tabelas(
-        pesquisa: str = None,
-        contendo: str = None,
-        excluindo: str = None,
+        pesquisa: Optional[str] = None,
+        contendo: Optional[str] = None,
+        excluindo: Optional[str] = None,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Lista de tabelas disponíveis no SIDRA.
+    ) -> pd.DataFrame:
+    """Lista de tabelas disponíveis no SIDRA.
 
-    Parâmetros
+    Parameters
     ----------
-    pesquisa : str (default=None)
+    pesquisa : str, optional
         Código de duas letras da pesquisa que será buscada.
         Utilize a função `ibge.lista_pesquisas` para encontrar o código.
-    contendo : str (default=None)
+    contendo : str, optional
         Buscar apenas tabelas que contenham essa sequência de caracteres.
-    excluindo : str (default=None)
+    excluindo : str, optional
         Buscar tabelas que não contenham essa sequência de caracteres.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna 'tabela_id' como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista de tabelas disponíveis no SIDRA.
 
-    Exemplos
+    Examples
     --------
     Forma mais simples da função.
 
     >>> ibge.lista_tabelas()    
-        tabela_id                                        tabela_nome  \
-    0        1732  Dados gerais das empresas por faixas de pessoa...  \
-    1        1735  Dados gerais das unidades locais por faixas de...  \
-    2        1734  Dados gerais das unidades locais por faixas de...  \
-    3        1733  Dados gerais das unidades locais por faixas de...  \
-    4        2869  Empresas e outras organizações e suas unidades...  \
+        tabela_id                                        tabela_nome  ...
+    0        1732  Dados gerais das empresas por faixas de pessoa...  ...
+    1        1735  Dados gerais das unidades locais por faixas de...  ...
+    2        1734  Dados gerais das unidades locais por faixas de...  ...
+    3        1733  Dados gerais das unidades locais por faixas de...  ...
+    4        2869  Empresas e outras organizações e suas unidades...  ...
 
     Listar tabelas do Censo Demográfico (pesquisa 'CD'), contendo o termo
     'rendimento' no título, porém não contendo 'Distribuição', definindo a
@@ -70,15 +72,15 @@ def lista_tabelas(
     ...     excluindo = 'Distribuição',
     ...     index = True
     ... )
-                                                     tabela_nome pesquisa_id  \
-    tabela_id                                                                 \
-    171        Chefes de domicílios particulares permanentes ...          CD  \
-    3534       Domicílios particulares permanentes com rendim...          CD  \
-    3525       Domicílios particulares permanentes com rendim...          CD  \
-    2428       Domicílios particulares permanentes com rendim...          CD  \
-    2427       Domicílios particulares permanentes com rendim...          CD  \
+                                                     tabela_nome pesquisa_id  ...
+    tabela_id                                                               
+    171        Chefes de domicílios particulares permanentes ...          CD  ...
+    3534       Domicílios particulares permanentes com rendim...          CD  ...
+    3525       Domicílios particulares permanentes com rendim...          CD  ...
+    2428       Domicílios particulares permanentes com rendim...          CD  ...
+    2427       Domicílios particulares permanentes com rendim...          CD  ...
 
-    '''
+    """
 
     data = get_data(
         endpoint = 'https://servicodados.ibge.gov.br/api/v3/agregados/',
@@ -91,7 +93,7 @@ def lista_tabelas(
         record_prefix = 'tabela_',
         meta_prefix = 'pesquisa_'
     )
-    df.tabela_id = _pd.to_numeric(df.tabela_id)
+    df.tabela_id = pd.to_numeric(df.tabela_id)
 
     if isinstance(pesquisa, str):
         df = df[df.pesquisa_id == pesquisa.upper()]
@@ -123,23 +125,23 @@ def lista_tabelas(
 
 def lista_pesquisas(
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Lista de pesquisas disponíveis no SIDRA.
+    ) -> pd.DataFrame:
+    """Lista de pesquisas disponíveis no SIDRA.
 
     Esta função é utilizada para identificar o código usado pela função
     `ibge.lista_tabelas`.
 
-    Parâmetros
+    Parameters
     ----------
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna 'pesquisa_id' como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Lista de pesquisas disponíveis no SIDRA.
 
-    Exemplos
+    Examples
     --------
     >>> ibge.lista_pesquisas()
        pesquisa_id                                      pesquisa_nome
@@ -150,7 +152,7 @@ def lista_pesquisas(
     4           CM                             Contagem da População 
     ..         ...                                                ...
     
-    '''
+    """
 
     data = get_data(
         endpoint = 'https://servicodados.ibge.gov.br/api/v3/agregados/',
@@ -174,15 +176,15 @@ def lista_pesquisas(
 
 
 class Metadados:
-    '''Metadados da tabela desejada.
+    """Metadados da tabela desejada.
 
-    Parâmetros
+    Parameters
     ----------
     tabela : int
         Código numérico da tabela desejada.
         Utilize a função `ibge.lista_tabelas` para encontrar o código.
 
-    Atributos
+    Attributes
     ---------
     dados : dict
         Lista completa de metadados da tabela.
@@ -201,7 +203,7 @@ class Metadados:
     classificacoes : list of dict
         Lista de classificações e categorias disponíveis para a tabela.
 
-    Exemplos
+    Examples
     --------
     1. Crie uma instância de `Metadados` utilizando o código da tabela SIDRA
     como argumento.
@@ -217,7 +219,7 @@ class Metadados:
     >>> m.periodos
     {'frequencia': 'anual', 'inicio': 2010, 'fim': 2010}
 
-    '''
+    """
 
     def __init__(self, tabela: int):
         data = get_data(
@@ -235,8 +237,12 @@ class Metadados:
         self.classificacoes = data['classificacoes']
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<DadosAbertosBrasil.ibge: Metadados da Tabela {self.cod} - {self.nome}>'
+
+
+    def __str__(self) -> str:
+        return self.nome
 
 
 
@@ -245,19 +251,19 @@ def sidra(
         periodos: Union[list, int, str] = 'last',
         variaveis: Union[list, int, str] = 'allxp',
         localidades: dict = {1: 'all'},
-        classificacoes: dict = None,
+        classificacoes: Optional[dict] = None,
         ufs_extintas: bool = False,
-        decimais: int = None,
+        decimais: Optional[int] = None,
         retorna: str = 'dataframe'
-    ) -> Union[_pd.DataFrame, dict, str]:
-    '''Função para captura de dados do SIDRA - Sistema IBGE de Recuperação
+    ) -> Union[pd.DataFrame, dict, str]:
+    """Função para captura de dados do SIDRA - Sistema IBGE de Recuperação
     Automática.
 
-    Parâmetros
+    Parameters
     ----------
     tabela : int
         Código numérico identificador da tabela.
-    periodos : list | int | str (default='last')
+    periodos : list or int or str, default='last'
         Períodos de consulta desejados:
             - 'last': Último período;
             - 'last n': Últimos n períodos;
@@ -267,13 +273,13 @@ def sidra(
             - list: Lista de períodos desejados;
             - int: Um período específico;
             - Range de períodos separados por hífen.
-    variaveis : list | int | str (default='allxp')
+    variaveis : list or int or str, default='allxp'
         Variáveis de consulta desejadas:
             - 'all': Todas as variáveis disponíveis;
             - 'allxp': Todas as variáveis, exceto as percentuais;
             - list: Lista de variáveis;
             - int: Uma variáveis específica.
-    localidades : dict (default={1:'all'})
+    localidades : dict, default={1:'all'}
         Localidades por nível territorial.
         As chaves dos dicionários devem ser o código de nível territorial:
             - 1: Brasil;
@@ -290,7 +296,7 @@ def sidra(
             - 'all': Todas as localidades do nível territorial.
             - list: Códigos dos territórios desejados.
             - int: Um território específico.
-    classificacoes : dict (default=None)
+    classificacoes : dict, optional
         Dicionário de classificações e categorias.
         As chaves do dicionário devem ser o código da classificação.
         Os valores do dicionário devem ser:
@@ -298,20 +304,20 @@ def sidra(
             - 'allxt': Todas as categorias, exceto as totais;
             - list: Lista de categorias desejadas;
             - int: Uma categoria específica.
-    ufs_extintas : bool (default=False)
+    ufs_extintas : bool, default=False
         Se True, adiciona as UFs extintas (se disponível na tabela).
             - 20: Fernando de Noronha
             - 34: Guanabara
-    decimais : int (default=None)
+    decimais : int, optional
         Número de fixo de casas decimais do resultado, entre 0 e 9.
         Se None, utiliza o padrão de cada variável. 
-    retorna : str (default='dataframe')
+    retorna : str, default='dataframe'
         Formato do dado retornado:
             - 'dataframe': Retorna um DataFrame Pandas;
             - 'json': Retorna um dicionário no formato json original;
             - 'url': Retorna a URL para consulta.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Se retorna='dataframe', retorna um DataFrame com os resultados.
@@ -320,7 +326,7 @@ def sidra(
     str
         Se retorna='url', retorna a URL para consulta.
 
-    '''
+    """
 
     path = f'http://api.sidra.ibge.gov.br/values/t/{tabela}'
 
@@ -360,7 +366,7 @@ def sidra(
     if retorna == 'json':
         return data
 
-    df = _pd.DataFrame(data[1:])
+    df = pd.DataFrame(data[1:])
     df.columns = data[0].values()
     return df
 
@@ -369,32 +375,32 @@ def sidra(
 def referencias(
         cod: str,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
+    ) -> pd.DataFrame:
+    """Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
 
-    Parâmetros
+    Parameters
     ----------
-    cod : str
+    cod : {'A', 'C', 'N', 'P', 'E', 'V'}
         - 'A': Assuntos;
         - 'C': Classificações;
         - 'N': Níveis geográficos;
         - 'P': Períodos;
         - 'E': Periodicidades;
         - 'V': Variáveis.
-    index: bool (default=False)
+    index: bool, default=False
         Defina True caso o campo 'id' deva ser o index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo todas as referências do código pesquisado.
 
-    Erros
-    -----
+    Raises
+    ------
     ValueError
         Caso o código da referência seja inválido.
 
-    Exemplos
+    Examples
     --------
     Lista assuntos.
 
@@ -420,7 +426,7 @@ def referencias(
     806                      Adubação, calagem e agrotóxicos
     ...                                                  ...
 
-    '''
+    """
 
     cod = cod.lower()
     if cod in ('a', 'assuntos'):
@@ -439,7 +445,7 @@ def referencias(
         raise ValueError("O campo 'cod' deve ser do tipo string.")
         
     data = requests.get(f'https://servicodados.ibge.gov.br/api/v3/agregados?acervo={s}').json()
-    df = _pd.DataFrame(data)
+    df = pd.DataFrame(data)
 
     if index:
         df.set_index('id', inplace=True)

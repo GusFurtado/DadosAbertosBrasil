@@ -1,44 +1,52 @@
-'''Módulo de captura de dados das APIs do Banco Central do Brasil.
+"""Módulo de captura de dados das APIs do Banco Central do Brasil.
 
-Documentação Original
----------------------
-SGS - Sistema Gerenciador de Séries Temporais
+References
+----------
+.. [1] SGS - Sistema Gerenciador de Séries Temporais
     https://www3.bcb.gov.br/sgspub/
-Cotação do Câmbio
+.. [2] Cotação do Câmbio
     https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3
-Expectativas de Mercado
+.. [3] Expectativas de Mercado
     https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/swagger-ui3#/
 
-'''
-from datetime import datetime
+"""
 
-import pandas as _pd
+from datetime import datetime
+from typing import Union, Optional
+
+import pandas as pd
 
 from ._utils import parse
 from ._utils.get_data import get_data
 
 
 
-def _df(path:str, params:dict=None) -> _pd.DataFrame:
+def _df(path:str, params:dict=None) -> pd.DataFrame:
     data = get_data(
         endpoint = 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/',
         path = path,
         params = params
     )
-    return _pd.DataFrame(data['value'])
+    return pd.DataFrame(data['value'])
 
 
 
 def moedas():
-    '''Obtém os nomes e símbolos das principais moedas internacionais.
+    """Obtém os nomes e símbolos das principais moedas internacionais.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo os nomes e símbolos das principais moedas
         internacionais.
 
-    Notas
+    See Also
+    --------
+    DadosAbertosBrasil.bacen.cambio :
+        Utilize a função `bacen.moedas` para identificar os argumentos da
+        função `bacen.cambio`.
+
+    Notes
     -----
     Moedas do tipo 'A':
         - Para calcular o valor equivalente em US$ (dólar americano), divida o
@@ -51,17 +59,12 @@ def moedas():
         - Para obter o valor em R$ (reais), multiplique o montante na moeda
           consultada pela respectiva taxa. 
 
-    Ver também
+    References
     ----------
-    DadosAbertosBrasil.bacen.cambio
-        Utilize a função `bacen.moedas` para identificar os argumentos da
-        função `bacen.cambio`.
+    .. [1] Cotação do Câmbio
+        https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3
 
-    Documentação Original
-    ---------------------
-    https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3
-
-    Exemplos
+    Examples
     --------
     >>> bacen.moedas()
       simbolo                      nome tipo
@@ -76,7 +79,7 @@ def moedas():
     8     SEK               Coroa sueca    A
     9     USD  Dólar dos Estados Unidos    A
 
-    '''
+    """
 
     df = _df('Moedas')
     df.columns = ['simbolo', 'nome', 'tipo']
@@ -86,47 +89,43 @@ def moedas():
 
 def cambio(
         moedas = 'USD',
-        inicio: str = '2000-01-01',
-        fim: str = None,
+        inicio: Union[datetime, str] = '2000-01-01',
+        fim: Union[datetime, str] = None,
         cotacao: str = 'compra',
         boletim: str = 'fechamento',
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Taxa de câmbio das principais moedas internacionais.
+    ) -> pd.DataFrame:
+    """Taxa de câmbio das principais moedas internacionais.
+
     É possível escolher várias moedas inserindo uma lista no campo `moeda`.
     Defina o período da consulta pelos campos `inicio` e `fim`.
 
-    Parâmetros
+    Parameters
     ----------
-    moedas : list ou str (default='USD')
+    moedas : str or list of str, default='USD'
         Sigla da moeda ou lista de siglas de moedas que serão pesquisadas no
         formato 'MMM' (três letras). Utilize a função `bacen.moedas` para
         obter a lista de moedas válidas.
-    inicio : str (default='2000-01-01')
+    inicio : datetime or str, default='2000-01-01'
         String no formato de data 'AAAA-MM-DD' que representa o primeiro dia
         da pesquisa.
-    fim : str (default=None)
+    fim : datetime or str, default=None
         String no formato de data 'AAAA-MM-DD' que representa o último dia da
         pesquisa. Caso este campo seja None, será considerada a data de hoje.
-    cotacao : str (default='compra')
-        Tipo de cotação. Pode ser um dos seguintes valores:
-            - 'compra';
-            - 'venda'.
-    boletim : str (default='fechamento')
-        Tipo de boletim. Pode ser um dos seguintes valores:
-            - 'abertura';
-            - 'intermediário';
-            - 'fechamento'.
-    index : bool (default=False)
+    cotacao : {'compra', 'venda'}, default='compra'
+        Tipo de cotação.
+    boletim : {'abertura', 'intermediário', 'fechamento'}, default='fechamento'
+        Tipo de boletim.
+    index : bool, default=False
         Define se a coluna 'Data' será o index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo as cotações diárias das moedas selecionadas.
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_DataError
         Caso seja inserida uma data inválida.
     DAB_MoedaError
@@ -134,17 +133,18 @@ def cambio(
     ValueError
         Caso nenhum dado seja encontrado devido a argumentos inválidos.
 
-    Ver também
-    ----------
-    DadosAbertosBrasil.bacen.moedas
+    See Also
+    --------
+    DadosAbertosBrasil.bacen.moedas :
         Utilize a função `bacen.moedas` para identificar as moedas que serão
         usadas no argumento da função `bacen.cambio`.
 
-    Documentação Original
-    ---------------------
-    https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3
+    References
+    ----------
+    .. [1] Cotação do Câmbio
+        https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3
 
-    Exemplos
+    Examples
     --------
     Retornar uma moeda usando argumentos padrões.
 
@@ -155,7 +155,7 @@ def cambio(
     2    2000-01-05  1.91121
     3    2000-01-06  1.90357
     4    2000-01-07  1.87790
-    ...         ...      ...
+    ..          ...      ...
 
     Retornar várias moedas, alterando argumentos.
 
@@ -175,7 +175,7 @@ def cambio(
     2021-01-07  5.3174  4.1833
     2021-01-08  5.3612  4.2237
 
-    '''
+    """
 
     inicio = parse.data(inicio, 'bacen')
     if fim == None:
@@ -209,9 +209,9 @@ def cambio(
                 'dataHoraCotacao': 'Data'
             }).groupby('Data').last())
 
-    cotacoes = _pd.concat(cotacao_moedas, axis=1).reset_index()
+    cotacoes = pd.concat(cotacao_moedas, axis=1).reset_index()
 
-    cotacoes.Data = _pd.to_datetime(cotacoes.Data, format='%Y-%m-%d %H:%M:%S')
+    cotacoes.Data = pd.to_datetime(cotacoes.Data, format='%Y-%m-%d %H:%M:%S')
     if index:
         cotacoes.set_index('Data', inplace=True)
     
@@ -220,58 +220,59 @@ def cambio(
 
 
 def serie(
-        serie: int,
-        ultimos: int = None,
-        inicio: str = None,
-        fim: str = None,
+        cod: int,
+        ultimos: Optional[int] = None,
+        inicio: Union[datetime, str] = None,
+        fim: Union[datetime, str] = None,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Série do Sistema Gerenciador de Série Temporais (SGS) do Banco Central.
+    ) -> pd.DataFrame:
+    """Série do Sistema Gerenciador de Série Temporais (SGS) do Banco Central.
 
-    Parâmetros
+    Parameters
     ----------
     cod : int
         Código da série temporal.
         Utilize o seguinte link para obter o número da série desejada:
         https://www3.bcb.gov.br/sgspub/
-    ultimos : int (default=None)
+    ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : str ou datetime (default='2000-01-01')
+    inicio : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o primeiro dia da pesquisa.
-    fim : str ou datetime (default=None)
+    fim : datetime or str, optional
         Valor datetime ou string no formato de data 'AAAA-MM-DD' que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
-    index : bool (default=False)
+    index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo os valores da série temporal pesquisada.
 
-    Erros
-    -----
+    Raises
+    ------
     JSONDecodeError
         Em caso de parâmetros inválidos.
 
-    Notas
+    See Also
+    --------
+    DadosAbertosBrasil.favoritos :
+        O módulo `favoritos` apresenta as principais séries temporáis do Banco
+        Central do Brasil.
+
+    Notes
     -----
     Os argumentos `inicio` e `fim` devem ser usados em conjunto para
     funcionar.
 
-    Ver também
+    References
     ----------
-    DadosAbertosBrasil.favoritos
-        O módulo `favoritos` apresenta as principais séries temporáis do Banco
-        Central do Brasil.
+    .. [1] SGS - Sistema Gerenciador de Séries Temporais
+        https://www3.bcb.gov.br/sgspub/
 
-    Documentação Original
-    ---------------------
-    https://www3.bcb.gov.br/sgspub/
-
-    Exemplos
+    Examples
     --------
     Capturar a taxa SELIC desde 2010 até 2021.
 
@@ -282,7 +283,7 @@ def serie(
     2    2010-01-03  8.75
     3    2010-01-04  8.75
     4    2010-01-05  8.75
-    ...         ...   ...
+    ..          ...   ...
 
     Capturar os últimos 5 valores da meta de inflação.
 
@@ -307,9 +308,9 @@ def serie(
     1971-04-01    1379
     ...            ...
 
-    '''
+    """
 
-    path = f'dados/serie/bcdata.sgs.{serie}/dados'
+    path = f'dados/serie/bcdata.sgs.{cod}/dados'
     if ultimos is not None:
         path += f'/ultimos/{ultimos}'
 
@@ -327,11 +328,11 @@ def serie(
         path = path
     )
 
-    df = _pd.DataFrame(data)
+    df = pd.DataFrame(data)
 
-    df.data = _pd.to_datetime(df.data, format='%d/%m/%Y')
+    df.data = pd.to_datetime(df.data, format='%d/%m/%Y')
     if 'datafim' in df.columns:
-        df.datafim = _pd.to_datetime(df.datafim, format='%d/%m/%Y')
+        df.datafim = pd.to_datetime(df.datafim, format='%d/%m/%Y')
 
     if index:
         df.set_index('data', inplace=True)
@@ -342,14 +343,14 @@ def serie(
 
 def expectativas(
         expectativa: str,
-        indicador: str = None,
-        top: int = None,
+        indicador: Optional[str] = None,
+        top: Optional[int] = None,
         ordenar_por: str = 'Data',
         asc: bool = False
-    ) -> _pd.DataFrame:
-    '''Expectativas de mercado para os principais indicadores macroeconômicos.
+    ) -> pd.DataFrame:
+    """Expectativas de mercado para os principais indicadores macroeconômicos.
 
-    Parâmetros
+    Parameters
     ----------
     expectativa : str
         Tipo ou periodicidade da expectativa.
@@ -360,7 +361,7 @@ def expectativas(
             - 'top5mensal' ou 'top5mensais',
             - 'top5anual' ou 'top5anuais',
             - 'instituicoes'.
-    indicador : str (default=None)
+    indicador : str, optional
         Capturar apenas o indicador desejado. Deve ser um dos seguintes
         indicadores, desde que esteja de acordo com a `expectativa` escolhida:
             - 'Balança Comercial';
@@ -385,40 +386,41 @@ def expectativas(
             - 'Produção industrial';
             - 'Taxa de câmbio'.
         Caso o valor seja None, retorna todos os indicadores disponíveis.
-    top : int (default=None)
+    top : int, optional
         Número máximo de registros que será retornado.
-    ordenar_por : str (default='Data')
+    ordenar_por : str, default='Data'
         Por qual coluna da tabela os registros serão ordenados.
-    asc : bool (default=False)
+    asc : bool, default=False
         - Se True, ordena os registros pela coluna selecionada no argumento
-        `ordenar_por` em ordem crescente (A-Z ou 0-9);
+          `ordenar_por` em ordem crescente (A-Z ou 0-9);
         - Se False, ordena em ordem descrescente (Z-A ou 9-0).
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Tabela contendo uma breve estatística descritiva da expectativa de
         mercado de cada indicador poe período de referência.
 
-    Erros
-    -----
+    Raises
+    ------
     ValueError
         Em caso de parâmetros inválidos.
 
-    Documentação Original
-    ---------------------
-    https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/swagger-ui3#/
+    References
+    ----------
+    .. [1] Expectativas de Mercado
+        https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/swagger-ui3#/
 
-    Exemplos
+    Examples
     --------
     >>> bacen.expectativa(expectativa='mensal', indicador='IGP-M')
-          Indicador        Data DataReferencia  Media  Mediana  DesvioPadrao  \
-    0         IGP-M  2021-06-25        07/2022   0.31     0.30          0.21  \
-    1         IGP-M  2021-06-25        07/2021   0.64     0.61          0.42  \
-    2         IGP-M  2021-06-25        06/2021   1.25     1.10          0.58  \
-    3         IGP-M  2021-06-25        11/2022   0.47     0.47          0.16  \
-    4         IGP-M  2021-06-25        11/2021   0.50     0.50          0.24  \
-    ...         ...         ...            ...    ...      ...           ...  \
+          Indicador        Data DataReferencia  Media  Mediana  DesvioPadrao  ...
+    0         IGP-M  2021-06-25        07/2022   0.31     0.30          0.21  ...
+    1         IGP-M  2021-06-25        07/2021   0.64     0.61          0.42  ...
+    2         IGP-M  2021-06-25        06/2021   1.25     1.10          0.58  ...
+    3         IGP-M  2021-06-25        11/2022   0.47     0.47          0.16  ...
+    4         IGP-M  2021-06-25        11/2021   0.50     0.50          0.24  ...
+    ..          ...         ...            ...    ...      ...           ...  ...
 
     >>> bacen.expectativa(
     ...     expectativa = 'trimestral',
@@ -427,12 +429,12 @@ def expectativas(
     ...     ordenar_por = 'Media',
     ...     asc = True
     ... )
-       Indicador        Data DataReferencia  Media  Mediana  DesvioPadrao  \
-    0  PIB Total  2020-06-02         2/2020 -14.00    -14.0          3.92  \
-    1  PIB Total  2020-06-09         2/2020 -14.00    -13.4          3.55  \
-    2  PIB Total  2020-06-01         2/2020 -13.99    -14.0          3.91  \
+       Indicador        Data DataReferencia  Media  Mediana  DesvioPadrao  ...
+    0  PIB Total  2020-06-02         2/2020 -14.00    -14.0          3.92  ...
+    1  PIB Total  2020-06-09         2/2020 -14.00    -13.4          3.55  ...
+    2  PIB Total  2020-06-01         2/2020 -13.99    -14.0          3.91  ...
 
-    '''
+    """
 
     URL = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/'
     orderby = f'&%24orderby={ordenar_por}%20{"asc" if asc else "desc"}'
@@ -557,4 +559,4 @@ def expectativas(
 
     path = f'{expec}?%24format=json{orderby}{kpi}{topn}'
     data = get_data(URL, path=path)
-    return _pd.DataFrame(data['value'])
+    return pd.DataFrame(data['value'])

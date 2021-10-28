@@ -1,4 +1,4 @@
-'''Módulo para captura dos dados abertos da Senado Brasileiro.
+"""Módulo para captura dos dados abertos da Senado Brasileiro.
 
 Mini-Tutorial
 -------------
@@ -18,14 +18,16 @@ outros tipos de informação sobre ele(a).
 >>> sen.votacoes( ... )
 >>> ... 
 
-Documentação da API original
-----------------------------
-http://legis.senado.gov.br/dadosabertos/docs/
+References
+----------
+.. [1] http://legis.senado.gov.br/dadosabertos/docs/
 
-'''
-from typing import List, Union
+"""
 
-import pandas as _pd
+from datetime import datetime
+from typing import List, Optional, Union
+
+import pandas as pd
 
 from ._utils import parse
 from ._utils.get_data import get_data
@@ -38,31 +40,31 @@ def _format_df(
         cols_to_int: List[str] = None,
         cols_to_date: List[str] = None,
         cols_to_bool: List[str] = None
-    ) -> _pd.DataFrame:
-    '''Função auxiliar para converter `json` em `dataframe`.
+    ) -> pd.DataFrame:
+    """Função auxiliar para converter `json` em `dataframe`.
 
-    Parâmetros
+    Parameters
     ----------
-    data : list[dict]
+    data : dict
         Dados obtidos pela função auxiliar `_get_request`.
     mapping : dict
         Dicionário para selecionar e corrigir nomes das colunas do DataFrame.
-    cols_to_int : list[str]
+    cols_to_int : list of str
         Colunas cujo `dtype` deve ser `int`.
-    cols_to_date : list[str]
+    cols_to_date : list of str
         Colunas cujo `dtype` deve ser `datetime.date`.
-    cols_to_bool : list[str]
+    cols_to_bool : list of str
         Colunas cujo `dtype` deve ser `bool`.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame formatado.
     
-    '''
+    """
 
-    _normalize = _pd.io.json.json_normalize \
-        if _pd.__version__[0] == '0' else _pd.json_normalize
+    _normalize = pd.io.json.json_normalize \
+        if pd.__version__[0] == '0' else pd.json_normalize
 
     df = _normalize(data)
     df = df[[col for col in mapping.keys() if col in df.columns]]
@@ -71,7 +73,7 @@ def _format_df(
     if isinstance(cols_to_int, list):
         for col in cols_to_int:
             if col in df.columns:
-                df[col] = _pd.to_numeric(
+                df[col] = pd.to_numeric(
                     df[col],
                     errors = 'coerce',
                     downcast = 'integer'
@@ -80,7 +82,7 @@ def _format_df(
     if isinstance(cols_to_date, list):
         for col in cols_to_date:
             if col in df.columns:
-                df[col] = _pd.to_datetime(df[col])
+                df[col] = pd.to_datetime(df[col])
 
     if isinstance(cols_to_bool, list):
         for col in cols_to_bool:
@@ -119,28 +121,28 @@ def _get_request(
 def lista_blocos(
         index: bool = False,
         formato: str = 'dataframe'
-    ) -> Union[_pd.DataFrame, List[dict]]:
-    '''Obtém a lista e a composição dos Blocos Parlamentares no
+    ) -> Union[pd.DataFrame, List[dict]]:
+    """Obtém a lista e a composição dos Blocos Parlamentares no
     Congresso Nacional.
     
-    Parâmetros
+    Parameters
     ----------
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : str {'dataframe', 'json'} (default='dataframe')
+    formato : {'dataframe', 'json'}, default='dataframe'
         Formato do dado que será retornado.
         Os dados no formato 'json' são mais completos, porém alguns filtros
         podem não ser aplicados.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list[dict]
+    list of dict
         Se formato = 'json', retorna os dados brutos no formato json.
 
-    '''
+    """
 
     lista = _get_request(
         path = ['blocoParlamentar', 'lista'],
@@ -171,73 +173,73 @@ def lista_blocos(
 def lista_legislatura(
         inicio: int,
         fim: int = None,
-        exercicio: str = None,
-        participacao: str = None,
-        uf: str = None,
-        sexo: str = None,
-        partido: str = None,
-        contendo: str = None,
-        excluindo: str = None,
+        exercicio: Optional[str] = None,
+        participacao: Optional[str] = None,
+        uf: Optional[str] = None,
+        sexo: Optional[str] = None,
+        partido: Optional[str] = None,
+        contendo: Optional[str] = None,
+        excluindo: Optional[str] = None,
         index: bool = False,
         formato: str = 'dataframe'
-    ) -> Union[_pd.DataFrame, List[dict]]:
-    '''Lista senadores de uma legislatura ou de um intervalo de legislaturas.
+    ) -> Union[pd.DataFrame, List[dict]]:
+    """Lista senadores de uma legislatura ou de um intervalo de legislaturas.
 
-    Parâmetros
+    Parameters
     ----------
     inicio : int
         Código da primeira legislatura da consulta.
-    fim : int (default=None)
+    fim : int, optional
         Código da última legislatura da consulta.
         Se fim=None, pesquisa apenas pela legislatura do campo `inicio`.
         Caso contrário, pesquisa todas os valores de todas as legislaturas
         entre `inicio` e `fim`. 
-    exercicio : str (default=None)
+    exercicio : str, optional
         - True: Consulta apenas os senadores que entraram em exercício.
         - False: Consulta apenas os senadores que não entratam em exercício.
-    participacao : str {None, 'titulares', 'suplentes'} (default=None)
+    participacao : {'titulares', 'suplentes'}, optional
         - None: Busca qualquer tipo de participação.
         - 'titulares': Busca apenas titulares.
         - 'suplentes': Busca apenas suplentes.
-    uf : str (default=None)
+    uf : str, optional
         Filtra uma unidade federativa.
         Se uf=None, lista senadores de todas as UFs.
-    sexo : str (default=None)
+    sexo : {'F', 'M'}, optional
         Filtro de sexo dos senadores.
-    partido : str (default=None)
+    partido : str, optional
         Filtro de partido dos senadores.
-    contendo : str (default=None)
+    contendo : str, optional
         Captura apenas senadores contendo esse texto no nome.
-    excluindo : str (default=None)
+    excluindo : str, optional
         Exclui da consulta senadores contendo esse texto no nome.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : str {'dataframe', 'json'} (default='dataframe')
+    formato : {'dataframe', 'json'}, default='dataframe'
         Formato do dado que será retornado.
         Os dados no formato 'json' são mais completos, porém alguns filtros
         podem não ser aplicados.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list[dict]
+    list of dict
         Se formato = 'json', retorna os dados brutos no formato json.
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_UFError
         Caso seja inserida uma UF inválida no argumento `uf`.
 
-    Ver também
-    ----------
+    See Also
+    --------
     DadosAbertosBrasil.senado.Senador
         Use o `codigo` para obter um detalhamento do senador.
     DadosAbertosBrasil.senado.lista_senadores
         Função de busca de senadores específica para a legislação atual.
 
-    Exemplos
+    Examples
     --------
     Lista senadores titulares em exercício na legislatura 56.
 
@@ -261,7 +263,7 @@ def lista_legislatura(
     2   5575         Marizete  Marizete Lisboa Fernandes Pereira  Feminino   
     3   5182     Regina Sousa                 Maria Regina Sousa  Feminino 
 
-    '''
+    """
 
     path = ['senador', 'lista', 'legislatura', inicio]
     if fim is not None:
@@ -340,35 +342,35 @@ def lista_partidos(
         inativos: bool = False,
         index: bool = False,
         formato: str = 'dataframe'
-    ) -> Union[_pd.DataFrame, List[dict]]:
-    '''Lista os partidos políticos.
+    ) -> Union[pd.DataFrame, List[dict]]:
+    """Lista os partidos políticos.
 
-    Parâmetros
+    Parameters
     ----------
-    inativos : bool (default=False)
+    inativos : bool, default=False
         - True para incluir partidos inativos na lista.
         - False para listar apenas os partidos ativos.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : str {'dataframe', 'json'} (default='dataframe')
+    formato : {'dataframe', 'json'}, default='dataframe'
         Formato do dado que será retornado.
         Os dados no formato 'json' são mais completos, porém alguns filtros
         podem não ser aplicados.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list[dict]
+    list of dict
         Se formato = 'json', retorna os dados brutos no formato json.
 
-    Ver também
-    ----------
+    See Also
+    --------
     DadosAbertosBrasil.camara.lista_partidos
         Função semelhante do módulo `camara`.
 
-    Exemplos
+    Examples
     --------
     Capturar todos os partidos, incluindo inativos.
     
@@ -378,7 +380,7 @@ def lista_partidos(
     1     238          ARENA   Aliança Renovadora Nacional   1965-11-24   
     2     578         AVANTE                        AVANTE   2017-09-12
 
-    '''
+    """
 
     path = ['senador', 'partidos']
     params = {'indAtivos': 'N'} if inativos else {}
@@ -411,55 +413,55 @@ def lista_partidos(
 
 def lista_senadores(
         tipo: str = 'atual',
-        uf: str = None,
-        sexo: str = None,
-        partido: str = None,
-        contendo: str = None,
-        excluindo: str = None,
+        uf: Optional[str] = None,
+        sexo: Optional[str] = None,
+        partido: Optional[str] = None,
+        contendo: Optional[str] = None,
+        excluindo: Optional[str] = None,
         index: bool = False,
         formato: str = 'dataframe'
-    ) -> Union[_pd.DataFrame, List[dict]]:
-    '''Lista de senadores da república.
+    ) -> Union[pd.DataFrame, List[dict]]:
+    """Lista de senadores da república.
 
-    Parâmetros
+    Parameters
     ----------
-    tipo : str {'atual', 'titulares', 'suplentes', 'afastados'}
-        - 'atual' (default): Todos os senadores em exercício;
+    tipo : {'atual', 'titulares', 'suplentes', 'afastados'}
+        - 'atual': Todos os senadores em exercício;
         - 'titulares': Apenas senadores que iniciaram o mandato como titulares;
         - 'suplentes': Apenas senadores que iniciaram o mandato como suplentes;
         - 'afastados': Todos os senadores afastados.
-    uf : str (default=None)
+    uf : str, optional
         Filtro de Unidade Federativa dos senadores.
-    sexo : str (default=None)
+    sexo : {'F', 'M'}, optional
         Filtro de sexo dos senadores.
-    partido : str (default=None)
+    partido : str, optional
         Filtro de partido dos senadores.
-    contendo : str (default=None)
+    contendo : str, optional
         Captura apenas senadores contendo esse texto no nome.
-    excluindo : str (default=None)
+    excluindo : str, optional
         Exclui da consulta senadores contendo esse texto no nome.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : str {'dataframe', 'json'} (default='dataframe')
+    formato : {'dataframe', 'json'}, default='dataframe'
         Formato do dado que será retornado.
         Os dados no formato 'json' são mais completos, porém alguns filtros
         podem não ser aplicados.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list[dict]
+    list of dict
         Se formato = 'json', retorna os dados brutos no formato json.
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_UFError
         Caso seja inserida uma UF inválida no argumento `uf`.
 
-    Ver também
-    ----------
+    See Also
+    --------
     DadosAbertosBrasil.senado.Senador
         Use o `codigo` para obter um detalhamento do senador.
     DadosAbertosBrasil.senado.lista_legislatura
@@ -467,7 +469,7 @@ def lista_senadores(
     DadosAbertosBrasil.camara.lista_deputados
         Função similar para o módulo `camara`.
     
-    Exemplos
+    Examples
     --------
     Lista todos os senadores ativos, colocando o código como index da tabela.
 
@@ -503,7 +505,7 @@ def lista_senadores(
     2   5997     Nailde Panta  Nailde Fernandes Panta da Silva  Feminino
     ..   ...              ...                              ...       ...
     
-    '''
+    """
 
     tipo = tipo.lower()
     TIPOS = {
@@ -604,29 +606,29 @@ def lista_uso_palavra(
         ativos: bool = False,
         index: bool = False,
         formato: str = 'dataframe'
-    ) -> Union[_pd.DataFrame, List[dict]]:
-    '''Lista os tipos de uso da palavra.
+    ) -> Union[pd.DataFrame, List[dict]]:
+    """Lista os tipos de uso da palavra.
     
-    Parâmetros
+    Parameters
     ----------
-    ativos : bool (default=False)
+    ativos : bool, default=False
         Se True, retorna apenas os tipos de uso de palavra atualmente ativos.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : str {'dataframe', 'json'} (default='dataframe')
+    formato : {'dataframe', 'json'}, default='dataframe'
         Formato do dado que será retornado.
         Os dados no formato 'json' são mais completos, porém alguns filtros
         podem não ser aplicados.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list[dict]
+    list of dict
         Se formato = 'json', retorna os dados brutos no formato json.
 
-    '''
+    """
 
     lista = _get_request(
         path = ['senador', 'lista', 'tiposUsoPalavra'],
@@ -656,37 +658,37 @@ def lista_uso_palavra(
 
 
 def orcamento(
-        autor: str = None,
-        tipo: str = None,
-        ano_execucao: int = None,
-        ano_materia: int = None,
+        autor: Optional[str] = None,
+        tipo: Optional[str] = None,
+        ano_execucao: Optional[int] = None,
+        ano_materia: Optional[int] = None,
         formato: str = 'dataframe'
-    ) -> Union[_pd.DataFrame, List[dict]]:
-    '''Obtém a lista dos lotes de emendas orçamentárias.
+    ) -> Union[pd.DataFrame, List[dict]]:
+    """Obtém a lista dos lotes de emendas orçamentárias.
 
-    Parâmetros
+    Parameters
     ----------
-    autor : str (default=None)
+    autor : str, optional
         Texto contendo nome do autor.
-    tipo : str (default=None)
+    tipo : str, optional
         Tipo de orçamento.
-    ano_execucao : int (default=None)
+    ano_execucao : int, optional
         Ano que o orçamento foi executado.
-    ano_materia : int (default)
+    ano_materia : int, optional
         Ano da matéria.
-    formato : str {'dataframe', 'json'} (default='dataframe')
+    formato : {'dataframe', 'json'}, default='dataframe'
         Formato do dado que será retornado.
         Os dados no formato 'json' são mais completos, porém alguns filtros
         podem não ser aplicados.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list[dict]
+    list of dict
         Se formato = 'json', retorna os dados brutos no formato json.
 
-    Exemplos
+    Examples
     --------
     Buscar o orçamento da Lei de Diretrizes Orçamentárias de 2020.
 
@@ -703,7 +705,7 @@ def orcamento(
             autor_nome  ativo                       autor_email  autor_codigo \
     0  Adriana Ventura   True  dep.adrianaventura@camara.leg.br          3899
 
-    '''
+    """
 
     data = _get_request(
         path = ['orcamento', 'lista'],
@@ -748,16 +750,16 @@ def orcamento(
 
 
 class Senador:
-    '''Coleta os dados dos senadores.
+    """Coleta os dados dos senadores.
 
-    Parâmetros
+    Parameters
     ----------
     cod : int
         Código de senador que se dejesa consulta.
         O código pode ser encontrado pela função `lista_senadores`.
 
-    Atributos
-    ---------
+    Attributes
+    ----------
     dados : dict
         Dicionário completo de dados do(a) parlamentar.
     email : str
@@ -789,7 +791,7 @@ class Senador:
     uf_naturalidade : str
         Unidade Federativa de nascimento do parlamentar.
 
-    '''
+    """
 
     def __init__(self, cod:int):
         self.cod = cod
@@ -826,11 +828,15 @@ class Senador:
                 self.telefones = [lista_telefones['NumeroTelefone']]
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<DadosAbertosBrasil.senado: Senador{'a' if self.sexo == 'Feminino' else ''} {self.nome}>"
 
 
-    def _set_attribute(self, attr:str, attr_dict:dict):
+    def __str__(self) -> str:
+        return self.nome_completo
+
+
+    def _set_attribute(self, attr:str, attr_dict:dict) -> None:
         x = self.dados
         try:
             for key in attr_dict[attr]:
@@ -842,20 +848,20 @@ class Senador:
 
     def apartes(
             self,
-            casa: str = None,
-            inicio: int = None,
-            fim: int = None,
-            numero_sessao: int = None,
-            tipo_pronunciamento: str = None,
-            tipo_sessao: str = None,
+            casa: Optional[str] = None,
+            inicio: Union[datetime, str] = None,
+            fim: Union[datetime, str] = None,
+            numero_sessao: Optional[int] = None,
+            tipo_pronunciamento: Optional[str] = None,
+            tipo_sessao: Optional[str] = None,
             index: bool = False,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém a relação de apartes do senador.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém a relação de apartes do senador.
 
-        Parâmetros
+        Parameters
         ----------
-        casa : str (default=None)
+        casa : {'SF', 'CD', 'CN', 'PR', 'CR', 'AC'}, optional
             Sigla da casa aonde ocorre o pronunciamento:
             - 'SF' para Senado;
             - 'CD' para Câmara;
@@ -863,32 +869,32 @@ class Senador:
             - 'PR' para Presidência;
             - 'CR' para Comissão Representativa do Congresso;
             - 'AC' para Assembléia Constituinte.
-        inicio : datetime.date ou str (default=None)
-            Data inicial do período da pesquisa no formato 'AAAA-MM-DD'
-        fim : datetime.date ou str (default=None)
-            Data final do período da pesquisa no formato 'AAAA-MM-DD'
-        numero_sessao : int (default=None)
+        inicio :  datetime or str, default=None
+            Data inicial do período da pesquisa.
+        fim :  datetime or str, default=None
+            Data final do período da pesquisa.
+        numero_sessao : int, optional
             Número da sessão plenária.
-        tipo_pronunciamento : str (default=None)
+        tipo_pronunciamento : str, optional
             Sigla do tipo de pronunciamento.
-        tipo_sessao : str (default=None)
+        tipo_sessao : str, optional
             Tipo da sessão plenária.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = f'senador/{self.cod}/apartes'
         keys = ['ApartesParlamentar', 'Parlamentar', 'Apartes', 'Aparte']
@@ -951,48 +957,48 @@ class Senador:
         
     def autorias(
             self,
-            ano: int = None,
-            numero: int = None,
-            primeiro_autor: bool = None,
-            sigla: str = None,
-            tramitando: bool = None,
+            ano: Optional[int] = None,
+            numero: Optional[int] = None,
+            primeiro_autor: Optional[bool] = None,
+            sigla: Optional[str] = None,
+            tramitando: Optional[bool] = None,
             index: bool = False,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém as matérias de autoria de um senador.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém as matérias de autoria de um senador.
 
-        Parâmetros
+        Parameters
         ----------
-        ano : int (default=None)
+        ano : int, optional
             Retorna apenas as matérias do ano informado.
-        numero : int (default=None)
+        numero : int, optional
             Retorna apenas as matérias do número informado.
-        primeiro_autor : bool (default=None)
+        primeiro_autor : bool, optional
             - True: Retorna apenas as matérias cujo senador é o primeiro autor;
             - False: Retorna apenas as que o senador é coautor;
             - None: Retorna ambas.
-        sigla : str (default=None)
+        sigla : str, optional
             Retorna apenas as matérias da sigla informada.
-        tramitando : bool (default=None)
+        tramitando : bool, optional
             - True: Retorna apenas as matérias que estão tramitando;
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'autorias']
         keys = ['MateriasAutoriaParlamentar', 'Parlamentar', 'Autorias', 'Autoria']
@@ -1042,33 +1048,33 @@ class Senador:
     
     def cargos(
             self,
-            comissao: bool = None,
-            ativos: bool = None,
+            comissao: Optional[str] = None,
+            ativos: Optional[bool] = None,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém a relação de cargos que o senador ja ocupou.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém a relação de cargos que o senador ja ocupou.
 
-        Parâmetros
+        Parameters
         ----------
-        comissao : str (default=None)
+        comissao : str, optional
             Retorna apenas os cargos da sigla de comissão informada.
-        ativos : bool (default=None)
+        ativos : bool, optional
             - True: Retorna apenas os cargos atuais;
             - False: Retorna apenas os cargos já finalizadas;
             - None: Retorna ambos.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'cargos']
         keys = ['CargoParlamentar', 'Parlamentar', 'Cargos', 'Cargo']
@@ -1103,33 +1109,33 @@ class Senador:
 
     def comissoes(
             self,
-            comissao: str = None,
-            ativos: bool = None,
+            comissao: Optional[str] = None,
+            ativos: Optional[bool] = None,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém as comissões de que um senador é membro.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém as comissões de que um senador é membro.
 
-        Parâmetros
+        Parameters
         ----------
-        comissao : str (default=None)
+        comissao : str, optional
             Retorna apenas as comissões com a sigla informada.
-        ativos : bool (default=None)
+        ativos : bool, optional
             - True: Retorna apenas as comissões atuais;
             - False: Retorna apenas as comissões já finalizadas;
             - None: Retorna ambas.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'comissoes']
         keys = ['MembroComissaoParlamentar', 'Parlamentar', 'MembroComissoes', 'Comissao']
@@ -1164,24 +1170,24 @@ class Senador:
     def cursos(
             self,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém o histórico acadêmico de um senador.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém o histórico acadêmico de um senador.
 
-        Parâmetros
+        Parameters
         ----------
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'historicoAcademico']
         keys = ['HistoricoAcademicoParlamentar', 'Parlamentar', 'HistoricoAcademico', 'Curso']
@@ -1206,23 +1212,23 @@ class Senador:
 
     def discursos(
             self,
-            casa: str = None,
-            inicio: int = None,
-            fim: int = None,
-            numero_sessao: int = None,
-            tipo_pronunciamento: str = None,
-            tipo_sessao: str = None,
+            casa: Optional[str] = None,
+            inicio: Union[datetime, str] = None,
+            fim: Union[datetime, str] = None,
+            numero_sessao: Optional[int] = None,
+            tipo_pronunciamento: Optional[str] = None,
+            tipo_sessao: Optional[str] = None,
             index: bool = False,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém a relação de discursos do senador.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém a relação de discursos do senador.
 
         Se os argumentos `inicio` e `fim` não forem informados, retorna os
         pronunciamentos dos últimos 30 dias.
 
-        Parâmetros
+        Parameters
         ----------
-        casa : str (default=None)
+        casa : {'SF', 'CD', 'CN', 'PR', 'CR', AC'}, optional
             Sigla da casa aonde ocorre o pronunciamento:
             - 'SF' para Senado;
             - 'CD' para Câmara;
@@ -1230,32 +1236,32 @@ class Senador:
             - 'PR' para Presidência;
             - 'CR' para Comissão Representativa do Congresso;
             - 'AC' para Assembléia Constituinte.
-        inicio : datetime.date ou str (default=None)
+        inicio : datetime or str, default=None
             Data inicial do período da pesquisa no formato 'AAAA-MM-DD'
-        fim : datetime.date ou str (default=None)
+        fim : datetime or str, default=None
             Data final do período da pesquisa no formato 'AAAA-MM-DD'
-        numero_sessao : int (default=None)
+        numero_sessao : int, optional
             Número da sessão plenária.
-        tipo_pronunciamento : str (default=None)
+        tipo_pronunciamento : str, optional
             Sigla do tipo de pronunciamento.
-        tipo_sessao : str (default=None)
+        tipo_sessao : str, optional
             Tipo da sessão plenária.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'discursos']
         keys = ['DiscursosParlamentar', 'Parlamentar', 'Pronunciamentos', 'Pronunciamento']
@@ -1318,27 +1324,27 @@ class Senador:
             self,
             index: bool = False,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém as filiações partidárias que o senador já teve.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém as filiações partidárias que o senador já teve.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'filiacoes']
         keys = ['FiliacaoParlamentar', 'Parlamentar', 'Filiacoes', 'Filiacao']
@@ -1368,15 +1374,15 @@ class Senador:
 
 
     def historico(self) -> dict:
-        '''Obtém todos os detalhes de um parlamentar no(s) mandato(s) como
+        """Obtém todos os detalhes de um parlamentar no(s) mandato(s) como
         senador (mandato atual e anteriores, se houver).
 
-        Retorna
+        Returns
         -------
         dict
             Dados históricos do(a) parlamentar.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'historico']
         keys = ['DetalheParlamentar', 'Parlamentar']
@@ -1387,27 +1393,27 @@ class Senador:
             self,
             index: bool = False,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém os mandatos que o senador já teve.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém os mandatos que o senador já teve.
 
-        Parâmetros
+        Parameters
         ----------
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'mandatos']
         keys = ['MandatoParlamentar', 'Parlamentar', 'Mandatos', 'Mandato']
@@ -1447,24 +1453,24 @@ class Senador:
     def liderancas(
             self,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém os cargos de liderança de um senador.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém os cargos de liderança de um senador.
 
-        Parâmetros
+        Parameters
         ----------
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'liderancas']
         keys = ['LiderancaParlamentar', 'Parlamentar', 'Liderancas', 'Lideranca']
@@ -1498,32 +1504,32 @@ class Senador:
 
     def licencas(
             self,
-            inicio: str = None,
+            inicio: Union[datetime, str] = None,
             index: bool = False,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém as licenças de um senador.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém as licenças de um senador.
 
-        Parâmetros
+        Parameters
         ----------
-        inicio : datetime.date | str (default=None)
+        inicio : datetime or str, default=None
             Retorna as licenças a partir da data especificada.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'licencas']
         keys = ['LicencaParlamentar', 'Parlamentar', 'Licencas', 'Licenca']
@@ -1559,24 +1565,24 @@ class Senador:
     def profissoes(
             self,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém a(s) profissão(ões) de um senador.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém a(s) profissão(ões) de um senador.
 
-        Parâmetros
+        Parameters
         ----------
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'profissao']
         keys = ['ProfissaoParlamentar', 'Parlamentar', 'Profissoes', 'Profissao']
@@ -1599,42 +1605,42 @@ class Senador:
 
     def relatorias(
             self,
-            ano: int = None,
-            comissao: str = None,
-            numero: int = None,
-            sigla: str = None,
-            tramitando: bool = None,
+            ano: Optional[int] = None,
+            comissao: Optional[str] = None,
+            numero: Optional[int] = None,
+            sigla: Optional[str] = None,
+            tramitando: Optional[bool] = None,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém as matérias de relatoria de um senador.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém as matérias de relatoria de um senador.
 
-        Parâmetros
+        Parameters
         ----------
-        ano : int (default=None)
+        ano : int, optional
             Retorna apenas as matérias do ano informado.
-        comissao : str (default=None)
+        comissao : str, optional
             Retorna apenas as relatorias da comissão informada.
-        numero : int (default=None)
+        numero : int, optional
             Retorna apenas as matérias do número informado. 
-        sigla : str (default=None)
+        sigla : str, optional
             Retorna apenas as matérias da sigla informada.	 
-        tramitando : bool (default=None)
+        tramitando : bool, optional
             - True: Retorna apenas as matérias que estão tramitando;
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'relatorias']
         keys = ['MateriasRelatoriaParlamentar', 'Parlamentar', 'Relatorias', 'Relatoria']
@@ -1673,43 +1679,43 @@ class Senador:
 
     def votacoes(
             self,
-            ano: int = None,
-            numero: int = None,
-            sigla: str = None,
-            tramitando: bool = None,
+            ano: Optional[int] = None,
+            numero: Optional[int] = None,
+            sigla: Optional[str] = None,
+            tramitando: Optional[bool] = None,
             index: bool = False,
             formato: str = 'dataframe'
-        ) -> Union[_pd.DataFrame, List[dict]]:
-        '''Obtém as votações de um senador.
+        ) -> Union[pd.DataFrame, List[dict]]:
+        """Obtém as votações de um senador.
 
-        Parâmetros
+        Parameters
         ----------
-        ano : int (default=None)
+        ano : int, optional
             Retorna apenas as matérias do ano informado.
-        numero : int (default=None)
+        numero : int, optional
             Retorna apenas as matérias do número informado. 	 
-        sigla : str (default=None)
+        sigla : str, optional
             Retorna apenas as matérias da sigla informada. 	 
-        tramitando : bool (default=None)
+        tramitando : bool, optional
             - True: Retorna apenas as matérias que estão tramitando;
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
-        index : bool (default=False)
+        index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : str {'dataframe', 'json'} (default='dataframe')
+        formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
             podem não ser aplicados.
 
-        Retorna
+        Returns
         -------
         pandas.core.frame.DataFrame
             Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list[dict]
+        list of dict
             Se formato = 'json', retorna os dados brutos no formato json.
 
-        '''
+        """
 
         path = ['senador', self.cod, 'votacoes']
         keys = ['VotacaoParlamentar', 'Parlamentar', 'Votacoes', 'Votacao']

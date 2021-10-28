@@ -1,4 +1,4 @@
-'''Módulo para captura dos dados abertos das APIs do IBGE.
+"""Módulo para captura dos dados abertos das APIs do IBGE.
 
 Serviços Disponíveis
 --------------------
@@ -37,24 +37,16 @@ disponíveis para consulta desta tabela.
 função `sidra`.
 >>> ibge.sidra( ... )
 
-Documentações da APIs originais
--------------------------------
-IBGE Cidades
-------------
+References
+----------
+.. [1] IBGE Cidades
     https://cidades.ibge.gov.br/
-Serviços
+.. [2] Serviços
     https://servicodados.ibge.gov.br/api/docs
-SIDRA
+.. [3] SIDRA
     http://api.sidra.ibge.gov.br/
 
-'''
-from typing import Union
-
-import pandas as _pd
-import requests
-
-from ._utils import parse
-from ._utils.get_data import get_data
+"""
 
 from ._ibge.cidades import (
     Galeria,

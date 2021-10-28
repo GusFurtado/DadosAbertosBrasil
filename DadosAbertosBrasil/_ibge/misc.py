@@ -1,13 +1,14 @@
-'''Submódulo IBGE contendo funções diversas.
+"""Submódulo IBGE contendo funções diversas.
 
 Este submódulo é importado automaticamente com o módulo `ibge`.
 
 >>> from DadosAbertosBrasil import ibge
 
-'''
-from typing import Union
+"""
 
-import pandas as _pd
+from typing import Optional, Union
+
+import pandas as pd
 import requests
 
 from DadosAbertosBrasil._utils import parse
@@ -16,44 +17,45 @@ from DadosAbertosBrasil._utils.get_data import get_data
 
 
 
-_normalize = _pd.io.json.json_normalize \
-    if _pd.__version__[0] == '0' else _pd.json_normalize
+_normalize = pd.io.json.json_normalize \
+    if pd.__version__[0] == '0' else pd.json_normalize
 
 
 
 def populacao(
-        projecao: str = None,
-        localidade: int = None
+        projecao: Optional[str] = None,
+        localidade: Optional[int] = None
     ) -> Union[dict, int]:
-    '''Obtém a projecao da população referente ao Brasil.
+    """Obtém a projecao da população referente ao Brasil.
 
-    Parâmetros
+    Parameters
     ----------
-    projecao : str (default=None)
+    projecao : {'populacao', 'nascimento', 'obito', 'incremento'}, optional
         - 'populacao' obtém o valor projetado da população total da localidade;
         - 'nascimento' obtém o valor projetado de nascimentos da localidade
         - 'obito' obtém o valor projetado de óbitos da localidade;
         - 'incremento' obtém o incremento populacional projetado.
         - None obtém um dicionário com todos os valores anteriores.
-    localidade : int (default=None)
+    localidade : int, optional
         Código da localidade desejada.
-        Por padrão, obtém os valores do Brasil.
-        Utilize a função `ibge.localidades` para identificar
-        a localidade desejada.
+        Por padrão, obtém os valores do Brasil. Utilize a função
+        `ibge.localidades` para identificar a localidade desejada.
 
-    Retorna
+    Returns
     -------
-    dict ou int:
-        Valor(es) projetado(s) para o indicador escolhido.
+    dict
+        Dicionário de projeções.
+    int
+        Valor projetado para o indicador escolhido.
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_LocalidadeError
         Caso código da localidade seja inválido.
     ValueError
         Caso o argumento `projecao` seja inválido.
 
-    Exemplos
+    Examples
     --------
     Projeção de óbito do Brasil.
 
@@ -74,7 +76,7 @@ def populacao(
         }
     }
 
-    '''
+    """
 
     localidade = parse.localidade(localidade, '')
     query = f'https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/{localidade}'
@@ -102,38 +104,38 @@ def populacao(
 
 def localidades(
         nivel: str = 'distritos',
-        divisoes: str = None,
+        divisoes: Optional[str] = None,
         localidade: Union[int, str, list] = None,
-        ordenar_por: str = None,
+        ordenar_por: Optional[str] = None,
         index: bool = False
-    ) -> _pd.DataFrame:
-    '''Obtém o conjunto de localidades do Brasil e suas intrarregiões.
+    ) -> pd.DataFrame:
+    """Obtém o conjunto de localidades do Brasil e suas intrarregiões.
 
     Parameters
     ----------
-    nivel : str (default='distritos')
+    nivel : str, default='distritos'
         Nível geográfico dos dados.
-    divisoes : str (default=None)
+    divisoes : str, optional
         Subdiviões intrarregionais do nível.
         Se None, captura todos os registros do `nivel`.
-    localidade : int | str | list (default=None)
+    localidade : int or str or list, optional
         ID (os lista de IDs) da localidade que filtrará o `nivel`.
-    ordenar_por : str (default=None)
+    ordenar_por : str, optional
         Coluna pela qual a tabela será ordenada.
-    index : bool (default=False)
+    index : bool, default=False
         Se True, defina a coluna 'id' como index do DataFrame.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame contendo os localidades desejadas.
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_LocalidadeError
         Caso o nível geográfico seja inválido.
 
-    Exemplos
+    Examples
     --------
     Captura todos os estados do Brasil
 
@@ -169,11 +171,11 @@ def localidades(
     4   3300233  Armação dos Búzios            33010                       Lagos   
     ..      ...                 ...              ...                         ...
 
-    Documentação original
-    ---------------------
-    https://servicodados.ibge.gov.br/api/docs/localidades
+    References
+    ----------
+    .. [1] https://servicodados.ibge.gov.br/api/docs/localidades
 
-    '''
+    """
 
     NIVEIS = {
         'distritos',
@@ -236,31 +238,31 @@ def localidades(
 def malha(
         localidade: int,
         nivel: str = 'estados',
-        divisoes: str = None,
+        divisoes: Optional[str] = None,
         periodo: int = 2020,
         formato: str = 'svg',
         qualidade: str = 'maxima'
-    ) -> _pd.DataFrame:
-    '''Obtém a URL para a malha referente ao identificador da localidade.
+    ) -> pd.DataFrame:
+    """Obtém a URL para a malha referente ao identificador da localidade.
 
-    Parâmetros
+    Parameters
     ----------
-    localidade : int (default=None)
+    localidade : int, optional
         Código da localidade desejada.
         Utilize a função `ibge.localidades` para identificar a localidade.
-    nivel : str (default='estados')
+    nivel : str, default='estados'
         Nível geográfico dos dados.
-    divisoes : str (default=None)
+    divisoes : str, optional
         Subdiviões intrarregionais do nível.
         Se None, apresenta a malha sem subdivisões.
-    periodo : int (default=2020)
+    periodo : int, default=2020
         Ano da revisão da malha.
-    formato : str {'svg', 'json', 'geojson'} (default='svg')
+    formato : {'svg', 'json', 'geojson'}, default='svg'
         Formato dos dados da malha.
-    qualidade : str {'minima', 'intermediaria', 'maxima'} (default='maxima')
+    qualidade : {'minima', 'intermediaria', 'maxima'}, default='maxima'
         Qualidade de imagem da malha.
 
-    Retorna
+    Returns
     -------
     str
         Se formato='svg', retorna a URL da malha da localidade desejada.
@@ -269,12 +271,12 @@ def malha(
     geojson
         Se formato='geojson', retorna a malha em formato GeoJSON.
 
-    Erros
-    -----
+    Raises
+    ------
     DAB_LocalidadeError
         Caso o nível geográfico seja inválido.
 
-    Exemplos
+    Examples
     --------
     Captura a malha do Distrito Federal (localidade=53) em formato GeoJSON.
 
@@ -312,7 +314,7 @@ def malha(
     ---------------------
     https://servicodados.ibge.gov.br/api/docs/malhas?versao=3
 
-    '''
+    """
 
     FORMATOS = {
         'svg': 'image/svg+xml',
@@ -379,29 +381,29 @@ def malha(
 
 
 
-def coordenadas() -> _pd.DataFrame:
-    '''Obtém as coordenadas de todas as localidades brasileiras, incluindo
+def coordenadas() -> pd.DataFrame:
+    """Obtém as coordenadas de todas as localidades brasileiras, incluindo
     latitude, longitude e altitude.
 
-    Retorna
+    Returns
     -------
     pandas.core.frame.DataFrame
         DataFrame das coordenadas de todas as localidade brasileiras.
 
-    Exemplos
+    Examples
     --------
     >>> ibge.coordenadas()
-           GM_PONTO     ID     CD_GEOCODIGO    TIPO   CD_GEOCODBA NM_BAIRRO  \
-    0           NaN      1  110001505000001  URBANO  1.100015e+11   Redondo  \
-    1           NaN      2  110001515000001  URBANO           NaN       NaN  \
-    2           NaN      3  110001520000001  URBANO           NaN       NaN  \
-    3           NaN      4  110001525000001  URBANO           NaN       NaN  \
-    4           NaN      5  110001530000001  URBANO           NaN       NaN  \
-    ..          ...     ..              ...     ...           ...       ...  \
+           GM_PONTO     ID     CD_GEOCODIGO    TIPO   CD_GEOCODBA NM_BAIRRO  ...
+    0           NaN      1  110001505000001  URBANO  1.100015e+11   Redondo  ...
+    1           NaN      2  110001515000001  URBANO           NaN       NaN  ...
+    2           NaN      3  110001520000001  URBANO           NaN       NaN  ...
+    3           NaN      4  110001525000001  URBANO           NaN       NaN  ...
+    4           NaN      5  110001530000001  URBANO           NaN       NaN  ...
+    ..          ...     ..              ...     ...           ...       ...  ...
 
-    '''
+    """
 
-    return _pd.read_csv(
+    return pd.read_csv(
         r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/coordenadas.csv',
         sep = ';'
     )
