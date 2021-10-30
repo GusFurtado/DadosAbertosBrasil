@@ -11,6 +11,7 @@ interesse público.
 
 from datetime import datetime
 from typing import Union, Optional
+import warnings
 
 import pandas as pd
 import requests
@@ -53,6 +54,10 @@ def catalogo() -> pd.DataFrame:
 
 def geojson(uf:str) -> dict:
     """Coordenadas dos municípios brasileiros em formato GeoJSON.
+
+    .. deprecated:: 0.3.2
+        Esta função será removida na versão 0.4.
+        Favor utilizar a função `DadosAbertosBrasil.ibge.malha`.
 
     Parameters
     ----------
@@ -97,6 +102,11 @@ def geojson(uf:str) -> dict:
 
     """
 
+    warnings.warn(
+        "Esta função será removida na versão 0.4.\nFavor utilizar a função `DadosAbertosBrasil.ibge.malha`",
+        DeprecationWarning
+    )
+    
     uf = parse.uf(uf)
     
     mapping = {
@@ -398,7 +408,7 @@ def ipca(
     """
 
     return bacen.serie(
-        serie = 433,
+        cod = 433,
         ultimos = ultimos,
         inicio = inicio,
         fim = fim,
@@ -472,7 +482,7 @@ def selic(
     """
 
     return bacen.serie(
-        serie = 432,
+        cod = 432,
         ultimos = ultimos,
         inicio = inicio,
         fim = fim,
@@ -546,7 +556,7 @@ def taxa_referencial(
     """
 
     return bacen.serie(
-        serie = 226,
+        cod = 226,
         ultimos = ultimos,
         inicio = inicio,
         fim = fim,
@@ -620,7 +630,7 @@ def rentabilidade_poupanca(
     """
 
     return bacen.serie(
-        serie = 195,
+        cod = 195,
         ultimos = ultimos,
         inicio = inicio,
         fim = fim,
@@ -703,7 +713,7 @@ def reservas_internacionais(
 
     if periodo.lower() == 'mensal':
         return bacen.serie(
-            serie = 3546,
+            cod = 3546,
             ultimos = ultimos,
             inicio = inicio,
             fim = fim,
@@ -711,7 +721,7 @@ def reservas_internacionais(
         )
     elif periodo.lower() in ['diaria', 'diario', 'diário', 'diária']:
         return bacen.serie(
-            serie = 13621,
+            cod = 13621,
             ultimos = ultimos,
             inicio = inicio,
             fim = fim,
