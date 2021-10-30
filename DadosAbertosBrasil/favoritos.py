@@ -22,189 +22,6 @@ from . import ipea
 
 
 
-def catalogo() -> pd.DataFrame:
-    """Catálogo de iniciativas oficiais de dados abertos no Brasil.
-
-    Returns
-    -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo um catálogo de iniciativas de dados abertos.
-
-    References
-    ----------
-    .. [1] https://github.com/dadosgovbr
-
-    Examples
-    --------
-    >>> favoritos.catalogo()
-                                                   Título  ...
-    0                      Alagoas em dados e informações  ...
-    1                             Fortaleza Dados Abertos  ...
-    2                              Dados abertos – TCM-CE  ...
-    3                      Dados abertos Distrito Federal  ...
-    4                       Dados abertos – Governo do ES  ...
-    ..                                                ...  ...
-
-    """
-
-    URL = 'https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv'
-    return pd.read_csv(URL)
-
-
-
-def geojson(uf:str) -> dict:
-    """Coordenadas dos municípios brasileiros em formato GeoJSON.
-
-    .. deprecated:: 0.3.2
-        Esta função será removida na versão 0.4.
-        Favor utilizar a função `DadosAbertosBrasil.ibge.malha`.
-
-    Parameters
-    ----------
-    uf : str
-        Nome ou sigla da Unidade Federativa.
-
-    Returns
-    -------
-    dict
-        Coordenadas em formato .GeoJSON da UF pesquisada.
-
-    Raises
-    -----
-    DAB_UFError
-        Caso seja inserida uma UF inválida.
-
-    References
-    ----------
-    .. [1] https://github.com/tbrugz
-
-    Examples
-    --------
-    >>> favoritos.geojson('SC')
-    {
-        'type': 'FeatureCollection',
-        'features': [{
-            'type': 'Feature',
-            'properties': {
-                'id': '4200051',
-                'name': 'Abdon Batista',
-                'description': 'Abdon Batista'
-            },
-            'geometry': {
-                'type': 'Polygon',
-                'coordinates': [[
-                    [-51.0378352721, -27.5044338231],
-                    [-51.0307859254, -27.5196681175],
-                    [-51.0175689993, -27.5309862449],
-                    [-50.9902859975, -27.5334223314],
-                    [-50.9858971419, -27.5302011257],
-                    ...
-
-    """
-
-    warnings.warn(
-        "Esta função será removida na versão 0.4.\nFavor utilizar a função `DadosAbertosBrasil.ibge.malha`",
-        DeprecationWarning
-    )
-    
-    uf = parse.uf(uf)
-    
-    mapping = {
-        'BR': 100,
-        'AC': 12,
-        'AM': 13,
-        'AP': 16,
-        'PA': 15,
-        'RO': 11,
-        'RR': 14,
-        'TO': 17,
-        'AL': 27,
-        'BA': 29,
-        'CE': 23,
-        'MA': 21,
-        'PB': 25,
-        'PE': 26,
-        'PI': 22,
-        'RN': 24,
-        'SE': 28,
-        'ES': 32,
-        'MG': 31,
-        'RJ': 33,
-        'SP': 35,
-        'PR': 41,
-        'RS': 43,
-        'SC': 42,
-        'DF': 53,
-        'GO': 52,
-        'MT': 51,
-        'MS': 50
-    }
-    
-    url = f'https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-{mapping[uf]}-mun.json'
-    return requests.get(url).json()
-
-
-
-def codigos_municipios() -> pd.DataFrame:
-    """Lista dos códigos dos municípios do IBGE e do TSE.
-
-    Utilizado para correlacionar dados das duas APIs diferentes.
-
-    Returns
-    -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo os códigos do IBGE e do TSE para todos os
-        municípios do Brasil.
-
-    References
-    ----------
-    .. [1] https://github.com/betafcc
-
-    Examples
-    --------
-    >>> favoritos.codigos_municipios()
-          codigo_tse  codigo_ibge nome_municipio  uf  capital
-    0           1120      1200013     ACRELÂNDIA  AC        0
-    1           1570      1200054   ASSIS BRASIL  AC        0
-    2           1058      1200104      BRASILÉIA  AC        0
-    3           1007      1200138         BUJARI  AC        0
-    4           1015      1200179       CAPIXABA  AC        0
-    ..           ...          ...            ...  ..      ...
-
-    """
-
-    URL = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
-    df = pd.read_json(URL)
-    return df[['codigo_tse', 'codigo_ibge', 'nome_municipio', 'uf', 'capital']]
-
-
-
-def perfil_eleitorado() -> pd.DataFrame:
-    """Tabela com perfil do eleitorado por município.
-
-    Returns
-    -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo o perfil do eleitorado em todos os municípios.
-
-    Examples
-    --------
-    >>> favoritos.perfil_eleitorado()
-          NR_ANO_ELEICAO  CD_PAIS NM_PAIS SG_REGIAO NM_REGIAO SG_UF     NM_UF  ...
-    0               2020        1  Brasil         N     Norte    AC      Acre  ...
-    1               2020        1  Brasil         N     Norte    AC      Acre  ...
-    ..               ...      ...     ...       ...       ...   ...       ...  ...
-
-    """
-
-    return pd.read_csv(
-        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.csv',
-        encoding = 'latin-1',
-        sep = ';'
-    )
-
-
-
 def bandeira(uf:str, tamanho:int=100) -> str:
     """Gera a URL da WikiMedia para a bandeira de um estado.
 
@@ -345,6 +162,163 @@ def brasao(uf:str, tamanho:int=100) -> str:
 
 
 
+def catalogo() -> pd.DataFrame:
+    """Catálogo de iniciativas oficiais de dados abertos no Brasil.
+
+    Returns
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame contendo um catálogo de iniciativas de dados abertos.
+
+    References
+    ----------
+    .. [1] https://github.com/dadosgovbr
+
+    Examples
+    --------
+    >>> favoritos.catalogo()
+                                                   Título  ...
+    0                      Alagoas em dados e informações  ...
+    1                             Fortaleza Dados Abertos  ...
+    2                              Dados abertos – TCM-CE  ...
+    3                      Dados abertos Distrito Federal  ...
+    4                       Dados abertos – Governo do ES  ...
+    ..                                                ...  ...
+
+    """
+
+    URL = 'https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv'
+    return pd.read_csv(URL)
+
+
+
+def codigos_municipios() -> pd.DataFrame:
+    """Lista dos códigos dos municípios do IBGE e do TSE.
+
+    Utilizado para correlacionar dados das duas APIs diferentes.
+
+    Returns
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame contendo os códigos do IBGE e do TSE para todos os
+        municípios do Brasil.
+
+    References
+    ----------
+    .. [1] https://github.com/betafcc
+
+    Examples
+    --------
+    >>> favoritos.codigos_municipios()
+          codigo_tse  codigo_ibge nome_municipio  uf  capital
+    0           1120      1200013     ACRELÂNDIA  AC        0
+    1           1570      1200054   ASSIS BRASIL  AC        0
+    2           1058      1200104      BRASILÉIA  AC        0
+    3           1007      1200138         BUJARI  AC        0
+    4           1015      1200179       CAPIXABA  AC        0
+    ..           ...          ...            ...  ..      ...
+
+    """
+
+    URL = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
+    df = pd.read_json(URL)
+    return df[['codigo_tse', 'codigo_ibge', 'nome_municipio', 'uf', 'capital']]
+
+
+
+def geojson(uf:str) -> dict:
+    """Coordenadas dos municípios brasileiros em formato GeoJSON.
+
+    .. deprecated:: 0.3.2
+        Esta função será removida na versão 0.4.
+        Favor utilizar a função `DadosAbertosBrasil.ibge.malha`.
+
+    Parameters
+    ----------
+    uf : str
+        Nome ou sigla da Unidade Federativa.
+
+    Returns
+    -------
+    dict
+        Coordenadas em formato .GeoJSON da UF pesquisada.
+
+    Raises
+    -----
+    DAB_UFError
+        Caso seja inserida uma UF inválida.
+
+    References
+    ----------
+    .. [1] https://github.com/tbrugz
+
+    Examples
+    --------
+    >>> favoritos.geojson('SC')
+    {
+        'type': 'FeatureCollection',
+        'features': [{
+            'type': 'Feature',
+            'properties': {
+                'id': '4200051',
+                'name': 'Abdon Batista',
+                'description': 'Abdon Batista'
+            },
+            'geometry': {
+                'type': 'Polygon',
+                'coordinates': [[
+                    [-51.0378352721, -27.5044338231],
+                    [-51.0307859254, -27.5196681175],
+                    [-51.0175689993, -27.5309862449],
+                    [-50.9902859975, -27.5334223314],
+                    [-50.9858971419, -27.5302011257],
+                    ...
+
+    """
+
+    warnings.warn(
+        "Esta função será removida na versão 0.4.\nFavor utilizar a função `DadosAbertosBrasil.ibge.malha`",
+        DeprecationWarning
+    )
+    
+    uf = parse.uf(uf)
+    
+    mapping = {
+        'BR': 100,
+        'AC': 12,
+        'AM': 13,
+        'AP': 16,
+        'PA': 15,
+        'RO': 11,
+        'RR': 14,
+        'TO': 17,
+        'AL': 27,
+        'BA': 29,
+        'CE': 23,
+        'MA': 21,
+        'PB': 25,
+        'PE': 26,
+        'PI': 22,
+        'RN': 24,
+        'SE': 28,
+        'ES': 32,
+        'MG': 31,
+        'RJ': 33,
+        'SP': 35,
+        'PR': 41,
+        'RS': 43,
+        'SC': 42,
+        'DF': 53,
+        'GO': 52,
+        'MT': 51,
+        'MS': 50
+    }
+    
+    url = f'https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-{mapping[uf]}-mun.json'
+    return requests.get(url).json()
+
+
+
 def ipca(
         ultimos: Optional[int] = None,
         inicio: Union[datetime, str] = None,
@@ -417,151 +391,90 @@ def ipca(
 
 
 
-def selic(
-        ultimos: Optional[int] = None,
-        inicio: Union[datetime, str] = None,
-        fim: Union[datetime, str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
-    """Taxa de juros - Meta Selic definida pelo COPOM.
-
-    Esta é uma função de fácil acesso à série temporal 432 do módulo `bacen`.
-
-    Parameters
-    ----------
-    ultimos : int, optional
-        Retorna os últimos N valores da série numérica.
-    inicio : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
-        representa o primeiro dia da pesquisa.
-    fim : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
-        representa o último dia da pesquisa. Caso este campo seja None, será
-        considerada a data de hoje.
-    index : bool, default=False
-        Define se a coluna 'data' será o index do DataFrame.
+def perfil_eleitorado() -> pd.DataFrame:
+    """Tabela com perfil do eleitorado por município.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        DataFrame contendo os valores da série temporal.
-
-    Raises
-    ------
-    JSONDecodeError
-        Em caso de parâmetros inválidos.
-
-    Notes
-    -----
-    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
-    funcionar.
+        DataFrame contendo o perfil do eleitorado em todos os municípios.
 
     Examples
     --------
-    Os quatro valores mais recentes.
-
-    >>> favoritos.selic(ultimos=4)
-            data valor
-    0 2021-08-01  4.25
-    1 2021-08-02  4.25
-    2 2021-08-03  4.25
-    3 2021-08-04  4.25
-
-    Os valores entre Janeiro e Abril de 2021 usando a data como índice.
-
-    >>> favoritos.selic(inicio='2021-01-01', fim='2021-04-01', index=True)
-               valor
-    data            
-    2021-01-01  2.00
-    2021-01-02  2.00
-    2021-01-03  2.00
-    2021-01-04  2.00
-    2021-01-05  2.00
-    ...          ...
+    >>> favoritos.perfil_eleitorado()
+          NR_ANO_ELEICAO  CD_PAIS NM_PAIS SG_REGIAO NM_REGIAO SG_UF     NM_UF  ...
+    0               2020        1  Brasil         N     Norte    AC      Acre  ...
+    1               2020        1  Brasil         N     Norte    AC      Acre  ...
+    ..               ...      ...     ...       ...       ...   ...       ...  ...
 
     """
 
-    return bacen.serie(
-        cod = 432,
-        ultimos = ultimos,
-        inicio = inicio,
-        fim = fim,
-        index = index
+    return pd.read_csv(
+        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.csv',
+        encoding = 'latin-1',
+        sep = ';'
     )
 
 
 
-def taxa_referencial(
-        ultimos: Optional[int] = None,
-        inicio: Union[datetime, str] = None,
-        fim: Union[datetime, str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
-    """Taxa referencial (TR).
+def pib(periodo:str='anual', index:bool=False) -> pd.DataFrame:
+    """Variação percentual do Produto Interno Bruto Real.
 
-    Esta é uma função de fácil acesso à série temporal 226 do módulo `bacen`.
+    Esta é uma função de fácil acesso às séries temporais 'PAN_PIBPMG' e
+    'PAN4_PIBPMG4' do módulo `ipea`.
 
     Parameters
     ----------
-    ultimos : int, optional
-        Retorna os últimos N valores da série numérica.
-    inicio : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
-        representa o primeiro dia da pesquisa.
-    fim : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
-        representa o último dia da pesquisa. Caso este campo seja None, será
-        considerada a data de hoje.
+    periodo : {'anual', 'trimestral'}, default='anual'
+        Granularidade dos valores.
     index : bool, default=False
-        Define se a coluna 'data' será o index do DataFrame.
+        Define a coluna `data` como index da tabela.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        DataFrame contendo os valores da série temporal.
-
-    Raises
-    ------
-    JSONDecodeError
-        Em caso de parâmetros inválidos.
-
-    Notes
-    -----
-    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
-    funcionar.
+        Tabela contendo os valores do PIB real.
 
     Examples
     --------
-    Os quatro valores mais recentes.
+    Capturar PIB trimestral.
 
-    >>> favoritos.taxa_referencial(ultimos=4)
-            data    datafim   valor
-    0 2021-07-05 2021-08-05  0.0000
-    1 2021-07-06 2021-08-06  0.0000
-    2 2021-07-07 2021-08-07  0.0000
-    3 2021-07-08 2021-08-08  0.0000
+    >>> favoritos.pib(periodo='trimestral')
+           periodo      valor
+    0   1997-01-01   3.400572
+    1   1997-04-01   4.754002
+    2   1997-07-01   1.791279
+    3   1997-10-01   3.738518
+    4   1998-01-01   1.007575
+    ..         ...     ...
 
-    Os valores entre Janeiro e Abril de 2021 usando a data como índice.
+    Capturar PIB anual, pondo o período como index da tabela.
 
-    >>> favoritos.taxa_referencial(inicio='2021-01-01', fim='2021-04-01', index=True)
-                  datafim   valor
-    data                         
-    2021-01-01 2021-02-01  0.0000
-    2021-01-02 2021-02-02  0.0000
-    2021-01-03 2021-02-03  0.0000
-    2021-01-04 2021-02-04  0.0000
-    2021-01-05 2021-02-05  0.0000
-    ...               ...     ...
+    >>> favoritos.pib(periodo='anual', index=True)
+                   valor
+    periodo             
+    1997-01-01  3.394846
+    1998-01-01  0.338098
+    1999-01-01  0.467938
+    2000-01-01  4.387949
+    2001-01-01  1.389896
+    ...              ...
 
     """
 
-    return bacen.serie(
-        cod = 226,
-        ultimos = ultimos,
-        inicio = inicio,
-        fim = fim,
-        index = index
-    )
+    # Parsing período
+    periodo = periodo.lower()[0]
+    if periodo == 'a':
+        cod = 'PAN_PIBPMG'
+    elif periodo == 't':
+        cod = 'PAN4_PIBPMG4'
+
+    df = ipea.serie(cod=cod, index=False)
+    df.drop(columns=['SERCODIGO', 'NIVNOME', 'TERCODIGO'], inplace=True)
+    df.columns = ['periodo', 'valor']
+    if index:
+        df.set_index('periodo', inplace=True)
+    return df
 
 
 
@@ -839,3 +752,151 @@ def salario_minimo(
     if index:
         df.set_index('data', inplace=True)
     return df
+
+
+
+def selic(
+        ultimos: Optional[int] = None,
+        inicio: Union[datetime, str] = None,
+        fim: Union[datetime, str] = None,
+        index: bool = False
+    ) -> pd.DataFrame:
+    """Taxa de juros - Meta Selic definida pelo COPOM.
+
+    Esta é uma função de fácil acesso à série temporal 432 do módulo `bacen`.
+
+    Parameters
+    ----------
+    ultimos : int, optional
+        Retorna os últimos N valores da série numérica.
+    inicio : datetime or str, optional
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o primeiro dia da pesquisa.
+    fim : datetime or str, optional
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o último dia da pesquisa. Caso este campo seja None, será
+        considerada a data de hoje.
+    index : bool, default=False
+        Define se a coluna 'data' será o index do DataFrame.
+
+    Returns
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame contendo os valores da série temporal.
+
+    Raises
+    ------
+    JSONDecodeError
+        Em caso de parâmetros inválidos.
+
+    Notes
+    -----
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
+    funcionar.
+
+    Examples
+    --------
+    Os quatro valores mais recentes.
+
+    >>> favoritos.selic(ultimos=4)
+            data valor
+    0 2021-08-01  4.25
+    1 2021-08-02  4.25
+    2 2021-08-03  4.25
+    3 2021-08-04  4.25
+
+    Os valores entre Janeiro e Abril de 2021 usando a data como índice.
+
+    >>> favoritos.selic(inicio='2021-01-01', fim='2021-04-01', index=True)
+               valor
+    data            
+    2021-01-01  2.00
+    2021-01-02  2.00
+    2021-01-03  2.00
+    2021-01-04  2.00
+    2021-01-05  2.00
+    ...          ...
+
+    """
+
+    return bacen.serie(
+        cod = 432,
+        ultimos = ultimos,
+        inicio = inicio,
+        fim = fim,
+        index = index
+    )
+
+
+
+def taxa_referencial(
+        ultimos: Optional[int] = None,
+        inicio: Union[datetime, str] = None,
+        fim: Union[datetime, str] = None,
+        index: bool = False
+    ) -> pd.DataFrame:
+    """Taxa referencial (TR).
+
+    Esta é uma função de fácil acesso à série temporal 226 do módulo `bacen`.
+
+    Parameters
+    ----------
+    ultimos : int, optional
+        Retorna os últimos N valores da série numérica.
+    inicio : datetime or str, optional
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o primeiro dia da pesquisa.
+    fim : datetime or str, optional
+        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        representa o último dia da pesquisa. Caso este campo seja None, será
+        considerada a data de hoje.
+    index : bool, default=False
+        Define se a coluna 'data' será o index do DataFrame.
+
+    Returns
+    -------
+    pandas.core.frame.DataFrame
+        DataFrame contendo os valores da série temporal.
+
+    Raises
+    ------
+    JSONDecodeError
+        Em caso de parâmetros inválidos.
+
+    Notes
+    -----
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
+    funcionar.
+
+    Examples
+    --------
+    Os quatro valores mais recentes.
+
+    >>> favoritos.taxa_referencial(ultimos=4)
+            data    datafim   valor
+    0 2021-07-05 2021-08-05  0.0000
+    1 2021-07-06 2021-08-06  0.0000
+    2 2021-07-07 2021-08-07  0.0000
+    3 2021-07-08 2021-08-08  0.0000
+
+    Os valores entre Janeiro e Abril de 2021 usando a data como índice.
+
+    >>> favoritos.taxa_referencial(inicio='2021-01-01', fim='2021-04-01', index=True)
+                  datafim   valor
+    data                         
+    2021-01-01 2021-02-01  0.0000
+    2021-01-02 2021-02-02  0.0000
+    2021-01-03 2021-02-03  0.0000
+    2021-01-04 2021-02-04  0.0000
+    2021-01-05 2021-02-05  0.0000
+    ...               ...     ...
+
+    """
+
+    return bacen.serie(
+        cod = 226,
+        ultimos = ultimos,
+        inicio = inicio,
+        fim = fim,
+        index = index
+    )
