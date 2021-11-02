@@ -241,8 +241,8 @@ def malha(
         divisoes: Optional[str] = None,
         periodo: int = 2020,
         formato: str = 'svg',
-        qualidade: str = 'maxima'
-    ) -> pd.DataFrame:
+        qualidade: str = 'minima'
+    ) -> Union[str, dict]:
     """Obtém a URL para a malha referente ao identificador da localidade.
 
     Parameters
@@ -259,22 +259,26 @@ def malha(
         Ano da revisão da malha.
     formato : {'svg', 'json', 'geojson'}, default='svg'
         Formato dos dados da malha.
-    qualidade : {'minima', 'intermediaria', 'maxima'}, default='maxima'
+    qualidade : {'minima', 'intermediaria', 'maxima'}, default='minima'
         Qualidade de imagem da malha.
 
     Returns
     -------
     str
         Se formato='svg', retorna a URL da malha da localidade desejada.
-    json
+    dict
         Se formato='json', retorna a malha em formato TopoJSON.
-    geojson
+    dict
         Se formato='geojson', retorna a malha em formato GeoJSON.
 
     Raises
     ------
     DAB_LocalidadeError
         Caso o nível geográfico seja inválido.
+
+    References
+    ----------
+    .. [1] https://servicodados.ibge.gov.br/api/docs/malhas?versao=3
 
     Examples
     --------
@@ -309,10 +313,6 @@ def malha(
             [[32146, 111381],
             [133, 124],
             [15, 106], ...
-
-    Documentação original
-    ---------------------
-    https://servicodados.ibge.gov.br/api/docs/malhas?versao=3
 
     """
 

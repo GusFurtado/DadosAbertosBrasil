@@ -7,14 +7,14 @@ DadosAbertosBrasil.
 
 """
 
+from datetime import datetime
 from typing import List, Optional, Union
 
 from pandas import DataFrame
 
 from ._utils.errors import DAB_UFError
 from ._utils import parse
-from ._ibge.misc import populacao, malha
-from ._ibge.cidades import Historia, Galeria
+from . import ibge
 from . import favoritos
 from .camara import lista_deputados
 from .senado import lista_senadores
@@ -554,12 +554,66 @@ class UF:
 
         if self.extinto:
             raise DAB_UFError('Método `densidade` indisponível para UFs extintas.')
-        pop = populacao(projecao='populacao', localidade=self.cod)
+        pop = ibge.populacao(projecao='populacao', localidade=self.cod)
         return pop / self.area
 
 
-    def deputados(self) -> DataFrame:
-        """Lista dos deputados federais em exercício.
+    def deputados(
+            self,
+            nome: Optional[str] = None,
+            legislatura: Optional[int] = None,
+            partido: Optional[str] = None,
+            sexo: Optional[str] = None,
+            inicio: Union[datetime, str, None] = None,
+            fim: Union[datetime, str, None] = None,
+            pagina: int = 1,
+            itens: Optional[int] = None,
+            asc: bool = True,
+            ordenar_por: str = 'nome',
+            index: bool = False
+        ) -> DataFrame:
+        """Lista dos deputados federais da UF em exercício.
+
+        Retorna uma lista de dados básicos sobre deputados que estiveram em
+        exercício parlamentar em algum intervalo de tempo. Se não for passado um
+        parâmetro de tempo, como `legislatura` ou `inicio`, a lista enumerará
+        somente os deputados em exercício no momento da requisição.
+
+        Parameters
+        ----------
+        nome : str, optional
+            Parte do nome dos parlamentares.
+        legislatura : int, optional
+            Número da legislatura a qual os dados buscados devem corresponder.
+        partido : str, optional
+            Sigla do partido ao qual sejam filiados os deputados.
+            Para obter as siglas válidas, consulte a função `camara.lista_partidos`.
+            Atenção: partidos diferentes podem usar a mesma sigla em diferentes
+            legislaturas.
+        sexo : {'M', 'F'}, optional
+            Letra que designe o gênero dos parlamentares que se deseja buscar,
+            - 'M': Masculino;
+            - 'F': Feminino.
+        inicio : str, optional
+            Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        fim : str, optional
+            Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        pagina : int, default=1
+            Número da página de resultados, a partir de 1, que se deseja
+            obter com a requisição, contendo o número de itens definido
+            pelo parâmetro `itens`. Se omitido, assume o valor 1.
+        itens : int, optional
+            Número máximo de itens na página que se deseja obter com esta
+            requisição.
+        asc : bool, default=True
+            Se os registros são ordenados no sentido ascendente:
+            - True: De A a Z ou 0 a 9 (ascendente);
+            - False: De Z a A ou 9 a 0 (descendente).
+        ordenar_por : str, default='nome'
+            Qual dos elementos da representação deverá ser usado para aplicar
+            ordenação à lista.
+        index : bool, default=False
+            Se True, define a coluna `id` como index do DataFrame.
 
         Returns
         -------
@@ -585,10 +639,23 @@ class UF:
 
         if self.extinto:
             raise DAB_UFError('Método `deputados` indisponível para UFs extintas.')
-        return lista_deputados(uf=self.sigla)
+        return lista_deputados(
+            nome = nome,
+            legislatura = legislatura,
+            uf = self.sigla,
+            partido = partido,
+            sexo = sexo,
+            inicio = inicio,
+            fim = fim,
+            pagina = pagina,
+            itens = itens,
+            asc = asc,
+            ordenar_por = ordenar_por,
+            index = index
+        )
 
 
-    def galeria(self) -> Galeria:
+    def galeria(self) -> ibge.Galeria:
         """Gera uma galeria de fotos da UF.
 
         Returns
@@ -618,7 +685,7 @@ class UF:
 
         if self.extinto:
             raise DAB_UFError('Método `galeria` indisponível para UFs extintas.')
-        return Galeria(self.cod)
+        return ibge.Galeria(self.cod)
 
 
     def geojson(self) -> dict:
@@ -673,7 +740,7 @@ class UF:
         return favoritos.geojson(self.sigla)
 
 
-    def historia(self) -> Historia:
+    def historia(self) -> ibge.Historia:
         """Objeto contendo a história da UF.
 
         Returns
@@ -700,40 +767,92 @@ class UF:
         if self.sigla == 'GB':
             raise DAB_UFError('Método `historia` indisponível para a UF Guanabara.')
         elif self.sigla == 'FN':
-            return Historia(localidade=260545)
+            return ibge.Historia(localidade=260545)
         else:
-            return Historia(localidade=self.cod)
+            return ibge.Historia(localidade=self.cod)
 
 
-    def malha(self) -> str:
-        """Obtém a URL para a malha referente à UF.
+    def malha(
+            self,
+            nivel: str = 'estados',
+            divisoes: Optional[str] = None,
+            periodo: int = 2020,
+            formato: str = 'svg',
+            qualidade: str = 'minima'
+        ) -> Union[str, dict]:
+        """Obtém a malha referente à UF.
+
+        Parameters
+        ----------
+        nivel : str, default='estados'
+            Nível geográfico dos dados.
+        divisoes : str, optional
+            Subdiviões intrarregionais do nível.
+            Se None, apresenta a malha sem subdivisões.
+        periodo : int, default=2020
+            Ano da revisão da malha.
+        formato : {'svg', 'json', 'geojson'}, default='svg'
+            Formato dos dados da malha.
+        qualidade : {'minima', 'intermediaria', 'maxima'}, default='minima'
+            Qualidade de imagem da malha.
 
         Returns
         -------
         str
-            URL da malha da UF.
+            Se formato='svg', retorna a URL da malha da localidade desejada.
+        dict
+            Se formato='json', retorna a malha em formato TopoJSON.
+        dict
+            Se formato='geojson', retorna a malha em formato GeoJSON.
 
         Raises
         ------
-        DAB_UFError
-            Caso seja uma UF extinta.
+        DAB_LocalidadeError
+            Caso o nível geográfico seja inválido.
 
-        See Also
+        References
+        ----------
+        .. [1] https://servicodados.ibge.gov.br/api/docs/malhas?versao=3
+
+        See also
         --------
         DadosAbertosBrasil.ibge.malha
-            Função original.
+            Função original
 
         Examples
         --------
-        >>> sp = UF('SP')
-        >>> sp.malha()
-        https://servicodados.ibge.gov.br/api/v2/malhas/35
+        Captura a malha do Distrito Federal (localidade=53) em formato GeoJSON.
+
+        >>> df = dab.UF('DF')
+        >>> df.malha(formato='geojson')
+        {'type': 'FeatureCollection',
+            'features': [{'type': 'Feature',
+                'geometry': {'type': 'Polygon',
+                    'coordinates': [[[-47.31, -16.0363], ...
+
+        Captura a malha de Alagoas em formato SVG com qualidade mínima com
+        subdivisões municipais.
+
+        >>> al = dab.UF('alagoas')
+        >>> al.malha(
+        ...     nivel = 'municipios',
+        ...     formato = 'svg',
+        ...     qualidade = 'minima'
+        ... )
+        'https://servicodados.ibge.gov.br/api/v3/malhas/...'
 
         """
 
         if self.extinto:
             raise DAB_UFError('Método `malha` indisponível para UFs extintas.')
-        return malha(localidade=self.cod)        
+        return ibge.malha(
+            localidade = self.cod,
+            nivel = nivel,
+            divisoes = divisoes,
+            periodo = periodo,
+            formato = formato,
+            qualidade = qualidade
+        )
 
 
     def municipios(self) -> List[str]:
@@ -791,7 +910,7 @@ class UF:
 
         if self.extinto:
             raise DAB_UFError('Método `populacao` indisponível para UFs extintas.')
-        return populacao(projecao='populacao', localidade=self.cod)
+        return ibge.populacao(projecao='populacao', localidade=self.cod)
 
 
     def senadores(

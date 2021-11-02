@@ -1949,7 +1949,7 @@ def lista_deputados(
     Returns
     -------
     pandas.core.frame.DataFrame
-        Lista de deputados.
+        Tabela com informações básicas dos deputados federais.
 
     """
 
