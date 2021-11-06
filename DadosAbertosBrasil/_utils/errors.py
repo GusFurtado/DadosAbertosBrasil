@@ -11,6 +11,13 @@ class DAB_DataError(TypeError):
 
 
 
+class DAB_InputError(ValueError):
+    """Erro gerado quando o usuário insere um valor inválido para um argumento.
+    
+    """
+
+
+
 class DAB_LocalidadeError(TypeError):
     """Erro gerado quando o usuário insere um valor inválido para a localidade.
 
@@ -18,15 +25,15 @@ class DAB_LocalidadeError(TypeError):
 
 
 
-class DAB_UFError(ValueError):
-    """Erro gerado quando o usuário insere um valor inválido para a UF.
+class DAB_MoedaError(ValueError):
+    """Erro gerado quando o usuário insere um valor inválido para uma moeda.
 
     """
 
 
 
-class DAB_MoedaError(ValueError):
-    """Erro gerado quando o usuário insere um valor inválido para uma moeda.
+class DAB_UFError(ValueError):
+    """Erro gerado quando o usuário insere um valor inválido para a UF.
 
     """
 

@@ -30,91 +30,8 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from ._utils import parse
-from ._utils.get_data import get_data
-
-
-
-def _format_df(
-        data: dict,
-        mapping: dict,
-        cols_to_int: List[str] = None,
-        cols_to_date: List[str] = None,
-        cols_to_bool: List[str] = None
-    ) -> pd.DataFrame:
-    """Função auxiliar para converter `json` em `dataframe`.
-
-    Parameters
-    ----------
-    data : dict
-        Dados obtidos pela função auxiliar `_get_request`.
-    mapping : dict
-        Dicionário para selecionar e corrigir nomes das colunas do DataFrame.
-    cols_to_int : list of str
-        Colunas cujo `dtype` deve ser `int`.
-    cols_to_date : list of str
-        Colunas cujo `dtype` deve ser `datetime.date`.
-    cols_to_bool : list of str
-        Colunas cujo `dtype` deve ser `bool`.
-
-    Returns
-    -------
-    pandas.core.frame.DataFrame
-        DataFrame formatado.
-    
-    """
-
-    _normalize = pd.io.json.json_normalize \
-        if pd.__version__[0] == '0' else pd.json_normalize
-
-    df = _normalize(data)
-    df = df[[col for col in mapping.keys() if col in df.columns]]
-    df.columns = df.columns.map(mapping)
-
-    if isinstance(cols_to_int, list):
-        for col in cols_to_int:
-            if col in df.columns:
-                df[col] = pd.to_numeric(
-                    df[col],
-                    errors = 'coerce',
-                    downcast = 'integer'
-                )
-
-    if isinstance(cols_to_date, list):
-        for col in cols_to_date:
-            if col in df.columns:
-                df[col] = pd.to_datetime(df[col])
-
-    if isinstance(cols_to_bool, list):
-        for col in cols_to_bool:
-            if col in df.columns:
-                df[col] = df[col].map({'Sim': True, 'Não': False})
-
-    return df
-
-
-
-def _get_request(
-        path: str,
-        params: dict = None,
-        keys: list = None
-    ) -> dict:
-
-    data = get_data(
-        endpoint = 'http://legis.senado.gov.br/dadosabertos/',
-        path = path,
-        params = params
-    )
-
-    if keys is not None:
-        for key in keys:
-            if data is not None:
-                if key in data:
-                    data = data[key]
-
-    if data is None:
-        raise ValueError('Nenhum dado encontrado. Verifique os parâmetros da consulta.')
-    else:
-        return data
+from ._utils.errors import DAB_InputError
+from ._utils.get_data import get_and_format
 
 
 
@@ -144,29 +61,25 @@ def lista_blocos(
 
     """
 
-    lista = _get_request(
+    cols_to_rename = {
+        'CodigoBloco': 'codigo',
+        'NomeBloco': 'nome',
+        'NomeApelido': 'apelido',
+        'SiglaBloco': 'sigla',
+        'DataCriacao': 'data_criacao'
+    }  
+
+    return get_and_format(
+        api = 'senado',
         path = ['blocoParlamentar', 'lista'],
-        keys = ['ListaBlocoParlamentar', 'Blocos', 'Bloco']
+        unpack_keys = ['ListaBlocoParlamentar', 'Blocos', 'Bloco'],
+        cols_to_rename = cols_to_rename,
+        cols_to_int = ['codigo'],
+        cols_to_date = ['data_criacao'],
+        index_col = 'codigo',
+        index = index,
+        formato = formato
     )
-
-    if formato == 'json':
-        return lista
-
-    df = _format_df(
-        data = lista,
-        mapping = {
-            'CodigoBloco': 'codigo',
-            'NomeBloco': 'nome',
-            'NomeApelido': 'apelido',
-            'SiglaBloco': 'sigla',
-            'DataCriacao': 'data_criacao'
-        }    
-    )
-
-    if index:
-        df.set_index('codigo', inplace=True)
-
-    return df
 
 
 
@@ -278,12 +191,8 @@ def lista_legislatura(
         params['uf'] = parse.uf(uf)
 
     keys = ['ListaParlamentarLegislatura', 'Parlamentares', 'Parlamentar']
-    lista = _get_request(path=path, params=params, keys=keys)
 
-    if formato == 'json':
-        return lista
-
-    col_mapping = {
+    cols_to_rename = {
         'IdentificacaoParlamentar.CodigoParlamentar': 'codigo',
         'IdentificacaoParlamentar.NomeParlamentar': 'nome_parlamentar',
         'IdentificacaoParlamentar.NomeCompletoParlamentar': 'nome_completo',
@@ -299,11 +208,18 @@ def lista_legislatura(
         'Mandato.Exercicios.Exercicio.DataFim': 'data_fim',
         'Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento': 'causa_afastamento'
     }
-    df = _format_df(
-        data = lista,
-        mapping = col_mapping,
+
+    df = get_and_format(
+        api = 'senado',
+        path = path,
+        params = params,
+        unpack_keys = keys,
+        cols_to_rename = cols_to_rename,
         cols_to_int = ['codigo'],
-        cols_to_date= ['data_inicio', 'data_fim']
+        cols_to_date= ['data_inicio', 'data_fim'],
+        index_col = 'codigo',
+        index = index,
+        formato = formato
     )
 
     if sexo is not None:
@@ -328,11 +244,6 @@ def lista_legislatura(
         nome_parlamentar = ~df.nome_parlamentar.str.contains(excluindo)
         nome_completo = ~df.nome_completo.str.contains(excluindo)
         df = df[nome_parlamentar | nome_completo]
-
-    if index:
-        df.set_index('codigo', inplace=True)
-    else:
-        df.reset_index(drop=True, inplace=True)
 
     return df
 
@@ -382,32 +293,26 @@ def lista_partidos(
 
     """
 
-    path = ['senador', 'partidos']
-    params = {'indAtivos': 'N'} if inativos else {}
-    
-    keys = ['ListaPartidos', 'Partidos', 'Partido']
-    lista = _get_request(path, params, keys)
-
-    if formato == 'json':
-        return lista
-
-    col_mapping = {
+    cols_to_rename = {
         'Codigo': 'codigo',
         'Sigla': 'sigla',
         'Nome': 'nome',
         'DataCriacao': 'data_criacao',
         'DataExtincao': 'data_extincao'
     }
-    df = _format_df(
-        data = lista,
-        mapping = col_mapping,
-        cols_to_int = ['codigo'],
-        cols_to_date = ['data_criacao', 'data_extincao']
-    )
-    if index:
-        df.set_index('codigo', inplace=True)
 
-    return df
+    return get_and_format(
+        api = 'senado',
+        path = ['senador', 'partidos'],
+        params = {'indAtivos': 'N'} if inativos else {},
+        unpack_keys = ['ListaPartidos', 'Partidos', 'Partido'],
+        cols_to_rename = cols_to_rename,
+        cols_to_int = ['codigo'],
+        cols_to_date = ['data_criacao', 'data_extincao'],
+        index_col = 'codigo',
+        index = index,
+        formato = formato
+    )
 
 
 
@@ -535,16 +440,7 @@ def lista_senadores(
     if uf is not None:
         params['uf'] = parse.uf(uf=uf)
 
-    lista = _get_request(
-        path = ['senador', 'lista', TIPOS[tipo]['path']],
-        keys = [TIPOS[tipo]['key'], 'Parlamentares', 'Parlamentar'],
-        params = params
-    )
-
-    if formato == 'json':
-        return lista
-
-    col_mapping = {
+    cols_to_rename = {
         'IdentificacaoParlamentar.CodigoParlamentar': 'codigo',
         'IdentificacaoParlamentar.NomeParlamentar': 'nome_parlamentar',
         'IdentificacaoParlamentar.NomeCompletoParlamentar': 'nome_completo',
@@ -560,11 +456,18 @@ def lista_senadores(
         'Mandato.Exercicios.Exercicio.DataFim': 'data_fim',
         'Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento': 'causa_afastamento'
     }
-    df = _format_df(
-        data = lista,
-        mapping = col_mapping,
+
+    df = get_and_format(
+        api = 'senado',
+        path = ['senador', 'lista', TIPOS[tipo]['path']],
+        params = params,
+        unpack_keys = [TIPOS[tipo]['key'], 'Parlamentares', 'Parlamentar'],
+        cols_to_rename = cols_to_rename,
         cols_to_int = ['codigo'],
-        cols_to_date= ['data_inicio', 'data_fim']
+        cols_to_date = ['data_inicio', 'data_fim'],
+        index_col = 'codigo',
+        index = index,
+        formato = formato
     )
 
     if sexo is not None:
@@ -592,11 +495,6 @@ def lista_senadores(
         nome_parlamentar = ~df.nome_parlamentar.str.contains(excluindo)
         nome_completo = ~df.nome_completo.str.contains(excluindo)
         df = df[nome_parlamentar | nome_completo]
-
-    if index:
-        df.set_index('codigo', inplace=True)
-    else:
-        df.reset_index(drop=True, inplace=True)
 
     return df
 
@@ -630,30 +528,27 @@ def lista_uso_palavra(
 
     """
 
-    lista = _get_request(
+    cols_to_rename = {
+        'Codigo': 'codigo',
+        'Sigla': 'sigla',
+        'Descricao': 'descricao',
+        'IndicadorAtivo': 'ativo'
+    }
+
+    return get_and_format(
+        api = 'senado',
         path = ['senador', 'lista', 'tiposUsoPalavra'],
-        keys = ['ListaTiposUsoPalavra', 'TiposUsoPalavra', 'TipoUsoPalavra'],
-        params = {'indAtivos': 'S' if ativos else 'N'}
+        params = {'indAtivos': 'S' if ativos else 'N'},
+        unpack_keys = ['ListaTiposUsoPalavra', 'TiposUsoPalavra', 'TipoUsoPalavra'],
+        cols_to_rename = cols_to_rename,
+        cols_to_int = ['codigo'],
+        cols_to_bool = ['ativo'],
+        true_value = 'S',
+        false_value = 'N',
+        index_col = 'codigo',
+        index = index,
+        formato = formato
     )
-
-    if formato == 'json':
-        return lista
-
-    df = _format_df(
-        data = lista,
-        mapping = {
-            'Codigo': 'codigo',
-            'Sigla': 'sigla',
-            'Descricao': 'descricao',
-            'IndicadorAtivo': 'ativo'
-        }    
-    )
-    df.ativo = df.ativo.map({'S': True, 'N': False})
-
-    if index:
-        df.set_index('codigo', inplace=True)
-
-    return df
 
 
 
@@ -707,15 +602,7 @@ def orcamento(
 
     """
 
-    data = _get_request(
-        path = ['orcamento', 'lista'],
-        keys = ['ListaLoteEmendas', 'LotesEmendasOrcamento', 'LoteEmendasOrcamento']
-    )
-
-    if formato == 'lista':
-        return data
-
-    col_mapping = {
+    cols_to_rename = {
         'NomeAutorOrcamento': 'autor_nome',
         'IndicadorAtivo': 'ativo',
         'EmailAutorOrcamento': 'autor_email',
@@ -728,13 +615,19 @@ def orcamento(
         'SiglaTipoPlOrcamento': 'tipo_sigla',
         'DescricaoTipoPlOrcamento': 'tipo_descricao'
     }
-    df = _format_df(
-        data = data,
-        mapping = col_mapping,
+
+    df = get_and_format(
+        api = 'senado',
+        path = ['orcamento', 'lista'],
+        unpack_keys = ['ListaLoteEmendas', 'LotesEmendasOrcamento', 'LoteEmendasOrcamento'],
+        cols_to_rename = cols_to_rename,
         cols_to_int = ['autor_codigo', 'quantidade_emendas', 'ano_execucao', 'materia_ano'],
-        cols_to_date = ['data_operacao']
+        cols_to_date = ['data_operacao'],
+        cols_to_bool = ['ativo'],
+        true_value = 'Sim',
+        false_value = 'Não',
+        formato = formato
     )
-    df.ativo = df.ativo == 'Sim'
 
     if autor is not None:
         df = df[df.autor_nome.str.contains(autor)]
@@ -745,7 +638,7 @@ def orcamento(
     if ano_materia is not None:
         df = df[df.ano_materia == ano_materia]
 
-    return df.reset_index(drop=True)
+    return df
 
 
 
@@ -791,15 +684,79 @@ class Senador:
     uf_naturalidade : str
         Unidade Federativa de nascimento do parlamentar.
 
+    Methods
+    -------
+    apartes()
+        Obtém a relação de apartes do senador.
+    autorias()
+        Obtém as matérias de autoria de um senador.
+    cargos()
+        Obtém a relação de cargos que o senador ja ocupou.
+    comissoes()
+        Obtém as comissões de que um senador é membro.
+    discursos()
+        Obtém a relação de discursos do senador.
+    filiacoes()
+        Obtém as filiações partidárias que o senador já teve.
+    historico()
+        Obtém todos os detalhes de um parlamentar no(s) mandato(s) como
+        senador (mandato atual e anteriores, se houver).
+    mandatos()
+        Obtém os mandatos que o senador já teve.
+    liderancas()
+        Obtém os cargos de liderança de um senador.
+    licencas()
+        Obtém os cargos de liderança de um senador.
+    profissoes()
+        Obtém a(s) profissão(ões) de um senador.
+    relatorias()
+        Obtém as matérias de relatoria de um senador.
+    votacoes()
+        Obtém as votações de um senador.
+
+    Raises
+    ------
+    DadosAbertosBrasil._utils.errors.DAB_InputError
+        Quando os dados do Senador não forem encontrado, por qualquer que seja
+        o motivo.
+    
+    References
+    ----------
+    .. [1] http://legis.senado.gov.br/dadosabertos/docs/
+
+    Examples
+    --------
+    Utilize as funções `lista` para identificar o código do Senado desejado.
+    
+    >>> senado.lista_senadores( ... )
+    >>> senado.lista_legislatura( ... )
+
+    Instancie a classe `Senador` para obter as informações do(a) parlamentar.
+
+    >>> sen = senado.Senador(cod)
+
+    Após a class `Senador` ser instanciada, utilize seus métodos e atributos
+    para buscar outros tipos de informação sobre ele(a).
+
+    >>> sen.telefones
+    >>> sen.partido
+    >>> sen.cargos( ... )
+    >>> sen.votacoes( ... )
+    >>> ...
+
     """
 
     def __init__(self, cod:int):
         self.cod = cod
-        keys = ['DetalheParlamentar', 'Parlamentar']
-        self.dados = _get_request(
+        self.dados = get_and_format(
+            api = 'senado',
             path = ['senador', cod],
-            keys = keys
+            unpack_keys = ['DetalheParlamentar', 'Parlamentar'],
+            formato = 'json'
         )
+
+        if 'IdentificacaoParlamentar' not in self.dados:
+            raise DAB_InputError('Dados não encontrados.')
 
         _ATTR = {
             'email': ['IdentificacaoParlamentar', 'EmailParlamentar'],
@@ -896,8 +853,6 @@ class Senador:
 
         """
 
-        path = f'senador/{self.cod}/apartes'
-        keys = ['ApartesParlamentar', 'Parlamentar', 'Apartes', 'Aparte']
         params = {}
         if casa is not None:
             params['casa'] = casa
@@ -911,12 +866,8 @@ class Senador:
             params['tipoPronunciamento'] = tipo_pronunciamento
         if tipo_sessao is not None:
             params['tipoSessao'] = tipo_sessao
-        lista = _get_request(path=path, params=params, keys=keys)
 
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'CodigoPronunciamento': 'codigo',
             'DataPronunciamento': 'data',
             'SiglaCasaPronunciamento': 'casa_sigla',
@@ -935,24 +886,22 @@ class Senador:
             'Publicacoes.Publicacao.UrlDiario': 'publicacao_url'
         }
 
-        df = _format_df(
-            data = lista,
-            mapping = col_mapping,
+        return get_and_format(
+            api = 'senado',
+            path = f'senador/{self.cod}/apartes',
+            params = params,
+            unpack_keys = ['ApartesParlamentar', 'Parlamentar', 'Apartes', 'Aparte'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['codigo', 'uso_palavra', 'sessao', 'orador',
+                'publicacao_primeira_pagina', 'publicacao_ultima_pagina'],
             cols_to_date = ['data', 'publicacao_data'],
             cols_to_bool = ['republicacao'],
-            cols_to_int = [
-                'codigo',
-                'uso_palavra',
-                'sessao',
-                'orador',
-                'publicacao_primeira_pagina',
-                'publicacao_ultima_pagina'
-            ]
+            true_value = 'Sim',
+            false_value = 'Não',
+            index_col = 'codigo',
+            index = index,
+            formato = formato
         )
-        if index:
-            df.set_index('codigo', inplace=True)
-
-        return df
 
         
     def autorias(
@@ -1000,8 +949,6 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'autorias']
-        keys = ['MateriasAutoriaParlamentar', 'Parlamentar', 'Autorias', 'Autoria']
         params = {}
         if ano is not None:
             params['ano'] = ano
@@ -1015,12 +962,8 @@ class Senador:
             params['sigla'] = sigla
         if tramitando is not None:
             params['tramitando'] = 'S' if tramitando else 'N'
-        lista = _get_request(path=path, params=params, keys=keys)
 
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'IndicadorAutorPrincipal': 'autor_principal',
             'Materia.Codigo': 'codigo',
             'Materia.IdentificacaoProcesso': 'processo',
@@ -1033,17 +976,21 @@ class Senador:
             'IndicadorOutrosAutores': 'outros_autores'
         }
 
-        df = _format_df(
-            data = lista,
-            mapping = col_mapping,
-            cols_to_date = ['data'],
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'autorias'],
+            params = params,
+            unpack_keys = ['MateriasAutoriaParlamentar', 'Parlamentar', 'Autorias', 'Autoria'],
+            cols_to_rename = cols_to_rename,
             cols_to_int = ['codigo', 'processo', 'ano'],
-            cols_to_bool = ['autor_principal', 'outros_autores']
+            cols_to_date = ['data'],
+            cols_to_bool = ['autor_principal', 'outros_autores'],
+            true_value = 'Sim',
+            false_value = 'Não',
+            index_col = 'codigo',
+            index = index,
+            formato = formato
         )
-        if index:
-            df.set_index('codigo', inplace=True)
-
-        return df
 
     
     def cargos(
@@ -1076,19 +1023,13 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'cargos']
-        keys = ['CargoParlamentar', 'Parlamentar', 'Cargos', 'Cargo']
         params = {}
         if comissao is not None:
             params['comissao'] = comissao
         if ativos is not None:
             params['indAtivos'] = 'S' if ativos else 'N'
-        lista = _get_request(path=path, params=params, keys=keys)
 
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'CodigoCargo': 'cargo_codigo',
             'DescricaoCargo': 'cargo_descricao',
             'DataInicio': 'data_inicio',
@@ -1099,11 +1040,15 @@ class Senador:
             'IdentificacaoComissao.SiglaCasaComissao': 'casa'
         }
 
-        return _format_df(
-            data = lista,
-            mapping = col_mapping,
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'cargos'],
+            params = params,
+            unpack_keys = ['CargoParlamentar', 'Parlamentar', 'Cargos', 'Cargo'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['cargo_codigo', 'comisao_codigo'],
             cols_to_date = ['data_inicio', 'data_fim'],
-            cols_to_int = ['cargo_codigo', 'comisao_codigo']
+            formato = formato
         )
 
 
@@ -1137,19 +1082,13 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'comissoes']
-        keys = ['MembroComissaoParlamentar', 'Parlamentar', 'MembroComissoes', 'Comissao']
         params = {}
         if comissao is not None:
             params['comissao'] = comissao
         if ativos is not None:
             params['indAtivos'] = 'S' if ativos else 'N'
-        lista = _get_request(path=path, params=params, keys=keys)
 
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'DescricaoParticipacao': 'participacao',
             'DataInicio': 'data_inicio',
             'DataFim': 'data_fim',
@@ -1159,11 +1098,15 @@ class Senador:
             'IdentificacaoComissao.SiglaCasaComissao': 'casa'
         }
 
-        return _format_df(
-            data = lista,
-            mapping = col_mapping,
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'comissoes'],
+            params = params,
+            unpack_keys = ['MembroComissaoParlamentar', 'Parlamentar', 'MembroComissoes', 'Comissao'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['comissao_codigo'],
             cols_to_date = ['data_inicio', 'data_fim'],
-            cols_to_int = ['comissao_codigo']
+            formato = formato
         )
 
 
@@ -1189,24 +1132,22 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'historicoAcademico']
-        keys = ['HistoricoAcademicoParlamentar', 'Parlamentar', 'HistoricoAcademico', 'Curso']
-        lista = _get_request(path=path, params=None, keys=keys)
-
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'NomeCurso': 'nome',
             'GrauInstrucao': 'grau_instrucao',
             'Estabelecimento': 'estabelecimento',
             'Local': 'local'
         }
 
-        return _format_df(
-            data = lista,
-            mapping = col_mapping,
-            cols_to_bool= ['atividade_principal']
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'historicoAcademico'],
+            unpack_keys = ['HistoricoAcademicoParlamentar', 'Parlamentar', 'HistoricoAcademico', 'Curso'],
+            cols_to_rename = cols_to_rename,
+            cols_to_bool = ['atividade_principal'],
+            true_value = 'Sim',
+            false_value = 'Não',
+            formato = formato
         )
 
 
@@ -1263,8 +1204,6 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'discursos']
-        keys = ['DiscursosParlamentar', 'Parlamentar', 'Pronunciamentos', 'Pronunciamento']
         params = {}
         if casa is not None:
             params['casa'] = casa
@@ -1278,12 +1217,8 @@ class Senador:
             params['tipoPronunciamento'] = tipo_pronunciamento
         if tipo_sessao is not None:
             params['tipoSessao'] = tipo_sessao
-        lista = _get_request(path=path, params=params, keys=keys)
 
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'CodigoPronunciamento': 'codigo',
             'DataPronunciamento': 'data',
             'SiglaCasaPronunciamento': 'casa_sigla',
@@ -1301,23 +1236,22 @@ class Senador:
             'Publicacoes.Publicacao.UrlDiario': 'publicacao_url'
         }
 
-        df = _format_df(
-            data = lista,
-            mapping = col_mapping,
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'discursos'],
+            params = params,
+            unpack_keys = ['DiscursosParlamentar', 'Parlamentar', 'Pronunciamentos', 'Pronunciamento'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['codigo', 'uso_palavra', 'sessao',
+                'publicacao_primeira_pagina', 'publicacao_ultima_pagina'],
             cols_to_date = ['data', 'publicacao_data'],
             cols_to_bool = ['republicacao'],
-            cols_to_int = [
-                'codigo',
-                'uso_palavra',
-                'sessao',
-                'publicacao_primeira_pagina',
-                'publicacao_ultima_pagina'
-            ]
+            true_value = 'Sim',
+            false_value = 'Não',
+            index_col = 'codigo',
+            index = index,
+            formato = formato
         )
-        if index:
-            df.set_index('codigo', inplace=True)
-
-        return df
 
 
     def filiacoes(
@@ -1346,14 +1280,7 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'filiacoes']
-        keys = ['FiliacaoParlamentar', 'Parlamentar', 'Filiacoes', 'Filiacao']
-        lista = _get_request(path=path, params=None, keys=keys)
-
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'Partido.CodigoPartido': 'codigo',
             'Partido.SiglaPartido': 'sigla',
             'Partido.NomePartido': 'nome',
@@ -1361,16 +1288,17 @@ class Senador:
             'DataDesfiliacao': 'data_desfiliacao'
         }
 
-        df = _format_df(
-            data = lista,
-            mapping = col_mapping,
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'filiacoes'],
+            unpack_keys = ['FiliacaoParlamentar', 'Parlamentar', 'Filiacoes', 'Filiacao'],
+            cols_to_rename = cols_to_rename,
             cols_to_int = ['codigo'],
-            cols_to_date = ['data_filiacao', 'data_desfiliacao']
+            cols_to_date = ['data_filiacao', 'data_desfiliacao'],
+            index_col = 'codigo',
+            index = index,
+            formato = formato
         )
-        if index:
-            df.set_index('codigo', inplace=True)
-
-        return df
 
 
     def historico(self) -> dict:
@@ -1384,9 +1312,12 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'historico']
-        keys = ['DetalheParlamentar', 'Parlamentar']
-        return _get_request(path=path, params=None, keys=keys)
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'historico'],
+            unpack_keys = ['DetalheParlamentar', 'Parlamentar'],
+            formato = 'json'
+        )
 
 
     def mandatos(
@@ -1415,14 +1346,7 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'mandatos']
-        keys = ['MandatoParlamentar', 'Parlamentar', 'Mandatos', 'Mandato']
-        lista = _get_request(path=path, params=None, keys=keys)
-
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'CodigoMandato': 'codigo',
             'UfParlamentar': 'uf',
             'DescricaoParticipacao': 'participacao',
@@ -1433,21 +1357,19 @@ class Senador:
             'SegundaLegislaturaDoMandato.DataInicio': 'segunda_legislatura_inicio',
             'SegundaLegislaturaDoMandato.DataFim': 'segunda_legislatura_fim'
         }
-        df = _format_df(
-            data = lista,
-            mapping = col_mapping,
-            cols_to_int = ['codigo'],
-            cols_to_date = [
-                'primeira_legislatura_inicio',
-                'primeira_legislatura_fim',
-                'segunda_legislatura_inicio',
-                'segunda_legislatura_fim'
-            ]
-        )
-        if index:
-            df.set_index('codigo', inplace=True)
 
-        return df
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'mandatos'],
+            unpack_keys = ['MandatoParlamentar', 'Parlamentar', 'Mandatos', 'Mandato'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['codigo'],
+            cols_to_date = ['primeira_legislatura_inicio', 'primeira_legislatura_fim',
+                'segunda_legislatura_inicio', 'segunda_legislatura_fim'],
+            index_col = 'codigo',
+            index = index,
+            formato = formato
+        )
 
 
     def liderancas(
@@ -1472,14 +1394,7 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'liderancas']
-        keys = ['LiderancaParlamentar', 'Parlamentar', 'Liderancas', 'Lideranca']
-        lista = _get_request(path=path, params=None, keys=keys)
-
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'UnidadeLideranca': 'lideranca',
             'DescricaoTipoLideranca': 'tipo',
             'SiglaCasaLideranca': 'casa_sigla',
@@ -1494,11 +1409,15 @@ class Senador:
             'Bloco.NomeBloco': 'bloco_nome',
             'Bloco.ApelidoBloco': 'bloco_apelido'
         }
-        return _format_df(
-            data = lista,
-            mapping = col_mapping,
+
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'liderancas'],
+            unpack_keys = ['LiderancaParlamentar', 'Parlamentar', 'Liderancas', 'Lideranca'],
+            cols_to_rename = cols_to_rename,
             cols_to_int = ['partido_codigo', 'bloco_codigo'],
-            cols_to_date = ['data_designacao', 'data_fim']
+            cols_to_date = ['data_designacao', 'data_fim'],
+            formato = formato
         )
 
 
@@ -1531,17 +1450,7 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'licencas']
-        keys = ['LicencaParlamentar', 'Parlamentar', 'Licencas', 'Licenca']
-        params = {}
-        if inicio is not None:
-            params['dataInicio'] = parse.data(inicio, 'senado')
-        lista = _get_request(path=path, params=params, keys=keys)
-
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'Codigo': 'codigo',
             'DataInicio': 'inicio',
             'DataInicioPrevista': 'inicio_previsto',
@@ -1550,16 +1459,19 @@ class Senador:
             'SiglaTipoAfastamento': 'afastamento_sigla',
             'DescricaoTipoAfastamento': 'afastamento_descricao',
         }
-        df = _format_df(
-            data = lista,
-            mapping = col_mapping,
-            cols_to_int = ['codigo'],
-            cols_to_date = ['inicio', 'inicio_previsto', 'fim', 'fim_previsto']
-        )
-        if index:
-            df.set_index('codigo', inplace=True)
 
-        return df
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'licencas'],
+            params = {'dataInicio': parse.data(inicio, 'senado')} if inicio is not None else {},
+            unpack_keys = ['LicencaParlamentar', 'Parlamentar', 'Licencas', 'Licenca'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['codigo'],
+            cols_to_date = ['inicio', 'inicio_previsto', 'fim', 'fim_previsto'],
+            index_col = 'codigo',
+            index = index,
+            formato = formato
+        )
 
 
     def profissoes(
@@ -1584,22 +1496,20 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'profissao']
-        keys = ['ProfissaoParlamentar', 'Parlamentar', 'Profissoes', 'Profissao']
-        lista = _get_request(path=path, params=None, keys=keys)
-
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'NomeProfissao': 'nome',
             'IndicadorAtividadePrincipal': 'atividade_principal'
         }
 
-        return _format_df(
-            data = lista,
-            mapping = col_mapping,
-            cols_to_bool= ['atividade_principal']
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'profissao'],
+            unpack_keys = ['ProfissaoParlamentar', 'Parlamentar', 'Profissoes', 'Profissao'],
+            cols_to_rename = cols_to_rename,
+            cols_to_bool = ['atividade_principal'],
+            true_value = 'Sim',
+            false_value = 'Não',
+            formato = formato
         )
 
 
@@ -1642,8 +1552,6 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'relatorias']
-        keys = ['MateriasRelatoriaParlamentar', 'Parlamentar', 'Relatorias', 'Relatoria']
         params = {}
         if ano is not None:
             params['ano'] = ano
@@ -1655,12 +1563,8 @@ class Senador:
             params['sigla'] = sigla
         if tramitando is not None:
             params['tramitando'] = 'S' if tramitando else 'N'
-        lista = _get_request(path=path, params=params, keys=keys)
 
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'Materia.Codigo': 'materia',
             'Comissao.Codigo': 'comissao',
             'CodigoTipoRelator': 'codigo',
@@ -1669,11 +1573,16 @@ class Senador:
             'DataDestituicao': 'data_destituicao',
             'DescricaoMotivoDestituicao': 'motivo_destituicao'
         }
-        return _format_df(
-            data = lista,
-            mapping = col_mapping,
+
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'relatorias'],
+            params = params,
+            unpack_keys = ['MateriasRelatoriaParlamentar', 'Parlamentar', 'Relatorias', 'Relatoria'],
+            cols_to_rename = cols_to_rename,
             cols_to_int = ['codigo', 'materia', 'comissao'],
-            cols_to_date = ['data_designacao', 'data_destituicao']    
+            cols_to_date = ['data_designacao', 'data_destituicao'],
+            formato = formato
         )
 
 
@@ -1717,8 +1626,6 @@ class Senador:
 
         """
 
-        path = ['senador', self.cod, 'votacoes']
-        keys = ['VotacaoParlamentar', 'Parlamentar', 'Votacoes', 'Votacao']
         params = {}
         if ano is not None:
             params['ano'] = ano
@@ -1728,12 +1635,8 @@ class Senador:
             params['sigla'] = sigla
         if tramitando is not None:
             params['tramitando'] = 'S' if tramitando else 'N'
-        lista = _get_request(path=path, params=params, keys=keys)
 
-        if formato == 'json':
-            return lista
-
-        col_mapping = {
+        cols_to_rename = {
             'CodigoSessaoVotacao': 'codigo',
             'SessaoPlenaria.CodigoSessao': 'sessao',
             'Materia.Codigo': 'materia',
@@ -1744,13 +1647,18 @@ class Senador:
             'SiglaDescricaoVoto': 'voto',
             'DescricaoResultado': 'resultado'
         }
-        df = _format_df(
-            data = lista,
-            mapping = col_mapping,
-            cols_to_int = ['sequencial', 'votacao', 'sessao', 'materia', 'tramitacao'],
-            cols_to_bool = ['votacao_secreta']
-        )
-        if index:
-            df.set_index('codigo', inplace=True)
 
-        return df
+        return get_and_format(
+            api = 'senado',
+            path = ['senador', self.cod, 'votacoes'],
+            params = params,
+            unpack_keys = ['VotacaoParlamentar', 'Parlamentar', 'Votacoes', 'Votacao'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['sequencial', 'votacao', 'sessao', 'materia', 'tramitacao'],
+            cols_to_bool = ['votacao_secreta'],
+            true_value = 'Sim',
+            false_value = 'Não',
+            index_col = 'codigo',
+            index = index,
+            formato = formato
+        )
