@@ -30,8 +30,7 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from ._utils import parse
-from ._utils.errors import DAB_InputError
-from ._utils.get_data import get_and_format
+from ._utils.get_data import DAB_Base, get_and_format
 
 
 
@@ -642,7 +641,7 @@ def orcamento(
 
 
 
-class Senador:
+class Senador(DAB_Base):
     """Coleta os dados dos senadores.
 
     Parameters
@@ -747,18 +746,9 @@ class Senador:
     """
 
     def __init__(self, cod:int):
+        
         self.cod = cod
-        self.dados = get_and_format(
-            api = 'senado',
-            path = ['senador', cod],
-            unpack_keys = ['DetalheParlamentar', 'Parlamentar'],
-            formato = 'json'
-        )
-
-        if 'IdentificacaoParlamentar' not in self.dados:
-            raise DAB_InputError('Dados não encontrados.')
-
-        _ATTR = {
+        atributos = {
             'email': ['IdentificacaoParlamentar', 'EmailParlamentar'],
             'endereco': ['DadosBasicosParlamentar', 'EnderecoParlamentar'],
             'foto': ['IdentificacaoParlamentar', 'UrlFotoParlamentar'],
@@ -773,8 +763,14 @@ class Senador:
             'uf': ['IdentificacaoParlamentar', 'UfParlamentar'],
             'uf_naturalidade': ['DadosBasicosParlamentar', 'UfNaturalidade'],
         }
-        for attr in _ATTR:
-            self._set_attribute(attr, _ATTR)
+
+        super().__init__(
+            api = 'senado',
+            path = ['senador', cod],
+            unpack_keys = ['DetalheParlamentar', 'Parlamentar'],
+            error_key = 'IdentificacaoParlamentar',
+            atributos = atributos
+        )
 
         if 'Telefones' in self.dados:
             lista_telefones = self.dados['Telefones']['Telefone']
@@ -791,16 +787,6 @@ class Senador:
 
     def __str__(self) -> str:
         return self.nome_completo
-
-
-    def _set_attribute(self, attr:str, attr_dict:dict) -> None:
-        x = self.dados
-        try:
-            for key in attr_dict[attr]:
-                x = x[key]
-            setattr(self, attr, x)
-        except (KeyError, TypeError):
-            return
 
 
     def apartes(

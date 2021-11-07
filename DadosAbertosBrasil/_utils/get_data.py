@@ -54,23 +54,7 @@ def get_data(
         params = params
     ).json()
 
-"""
-        return get_and_format(
-            api = 'senado',
-            path = ,
-            params = params,
-            unpack_keys = ,
-            cols_to_rename = cols_to_rename,
-            cols_to_int = ,
-            cols_to_date = ,
-            cols_to_bool = ,
-            true_value = 'Sim',
-            false_value = 'Não',
-            index_col = 'codigo',
-            index = index,
-            formato = formato
-        )
-"""
+
 
 def get_and_format(
         api: str,
@@ -142,3 +126,66 @@ def get_and_format(
         df.set_index(index_col, inplace=True)
 
     return df
+
+
+
+class DAB_Base:
+    """Base para os objetos DadosAbertosBrasil.
+
+    Parameters
+    ----------
+    api : {'camara', 'senado'}
+        Referência da API que será consultada.
+    path : str or list of str
+        Argumentos da consulta via URL.
+    unpack_keys : str or list of str
+        Lista de keys do arquivo JSON onde estão os dados.
+    error_key : str
+        Key que deve estar contida no arquivo JSON.
+    atributos : dict[str, str]
+        Dicionário de atributos e respectivos unpack_keys.
+
+    Attributes
+    ----------
+    dados : dict
+        Arquivo JSON em seu formato bruto.
+
+    Raises
+    ------
+    DadosAbertosBrasil._utils.errors.DAB_InputError
+        Quando os dados do Senador não forem encontrado, por qualquer que seja
+        o motivo.
+
+    """
+
+    def __init__(
+            self,
+            api: str,
+            path: Union[str, List[str]],
+            unpack_keys: Union[str, List[str]],
+            error_key: str,
+            atributos: dict
+        ):
+
+        self.dados = get_and_format(
+            api = api,
+            path = path,
+            unpack_keys = unpack_keys,
+            formato = 'json'
+        )
+
+        if error_key not in self.dados:
+            raise errors.DAB_InputError('Dados não encontrados.')
+
+        for attr in atributos:
+            self._set_attribute(attr, atributos)
+
+
+    def _set_attribute(self, attr:str, attr_dict:dict) -> None:
+        x = self.dados
+        try:
+            for key in attr_dict[attr]:
+                x = x[key]
+            setattr(self, attr, x)
+        except (KeyError, TypeError):
+            return

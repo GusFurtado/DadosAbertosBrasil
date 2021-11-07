@@ -29,7 +29,7 @@ from typing import Optional, Union
 import pandas as pd
 
 from ._utils import parse
-from ._utils.get_data import get_data
+from ._utils.get_data import DAB_Base, get_data
 
 
 
@@ -73,7 +73,7 @@ def _df(
 
 
 
-class Bloco:
+class Bloco(DAB_Base):
     """Informações sobre um bloco partidário específico.
 
     Parameters
@@ -104,11 +104,21 @@ class Bloco:
     """
 
     def __init__(self, cod:int):
+
         self.cod = cod
-        self.dados = _get(['blocos', str(cod)])['dados']
-        self.legislatura = self.dados['idLegislatura']
-        self.nome = self.dados['nome']
-        self.uri = self.dados['uri']
+        atributos = {
+            'legislatura': ['idLegislatura'],
+            'nome': ['nome'],
+            'uri': ['uri']
+        }
+
+        super().__init__(
+            api = 'camara',
+            path = ['blocos', str(cod)],
+            unpack_keys = ['dados'],
+            error_key = 'nome',
+            atributos = atributos
+        )
 
 
     def __repr__(self) -> str:
@@ -120,7 +130,7 @@ class Bloco:
 
 
 
-class Deputado:
+class Deputado(DAB_Base):
     """Retorna os dados cadastrais de um parlamentar que, em algum momento
     da história e por qualquer período, entrou em exercício na Câmara.
 
@@ -195,31 +205,41 @@ class Deputado:
     """
 
     def __init__(self, cod:int):
+
         self.cod = cod
-        self.dados = _get(['deputados', str(cod)])['dados']
-        self.condicao_eleitoral = self.dados['ultimoStatus']['condicaoEleitoral']
-        self.cpf = self.dados['cpf']
-        self.descricao_status = self.dados['ultimoStatus']['descricaoStatus']
-        self.email = self.dados['ultimoStatus']['email']
-        self.escolaridade = self.dados['escolaridade']
-        self.falecimento = self.dados['dataFalecimento']
-        self.foto = self.dados['ultimoStatus']['urlFoto']
-        self.gabinete = self.dados['ultimoStatus']['gabinete']
-        self.legislatura = self.dados['ultimoStatus']['idLegislatura']
-        self.municipio_nascimento = self.dados['municipioNascimento']
-        self.nascimento = self.dados['dataNascimento']
-        self.nome = self.dados['ultimoStatus']['nome']
-        self.nome_completo = self.dados['nomeCivil']
-        self.nome_eleitoral = self.dados['ultimoStatus']['nomeEleitoral']
-        self.partido = self.dados['ultimoStatus']['siglaPartido']
-        self.rede_social = self.dados['redeSocial']
-        self.sexo = self.dados['sexo']
-        self.situacao = self.dados['ultimoStatus']['situacao']
-        self.uf = self.dados['ultimoStatus']['siglaUf']
-        self.uf_nascimento = self.dados['ufNascimento']
-        self.ultima_atualizacao = self.dados['ultimoStatus']['data']
-        self.uri = self.dados['uri']
-        self.website = self.dados['urlWebsite']
+        atributos = {
+            'condicao_eleitoral': ['ultimoStatus', 'condicaoEleitoral'],
+            'cpf': ['cpf'],
+            'descricao_status': ['ultimoStatus', 'descricaoStatus'],
+            'email': ['ultimoStatus', 'email'],
+            'escolaridade': ['escolaridade'],
+            'falecimento': ['dataFalecimento'],
+            'foto': ['ultimoStatus', 'urlFoto'],
+            'gabinete': ['ultimoStatus', 'gabinete'],
+            'legislatura': ['ultimoStatus', 'idLegislatura'],
+            'municipio_nascimento': ['municipioNascimento'],
+            'nascimento': ['dataNascimento'],
+            'nome': ['ultimoStatus', 'nome'],
+            'nome_completo': ['nomeCivil'],
+            'nome_eleitoral': ['ultimoStatus', 'nomeEleitoral'],
+            'partido': ['ultimoStatus', 'siglaPartido'],
+            'rede_social': ['redeSocial'],
+            'sexo': ['sexo'],
+            'situacao': ['ultimoStatus', 'situacao'],
+            'uf': ['ultimoStatus', 'siglaUf'],
+            'uf_nascimento': ['ufNascimento'],
+            'ultima_atualizacao': ['ultimoStatus', 'data'],
+            'uri': ['uri'],
+            'website': ['urlWebsite']
+        }
+
+        super().__init__(
+            api = 'camara',
+            path = ['deputados', str(cod)],
+            unpack_keys = ['dados'],
+            error_key = 'ultimoStatus',
+            atributos = atributos
+        )
 
 
     def __repr__(self) -> str:
@@ -538,7 +558,7 @@ class Deputado:
 
 
 
-class Evento:
+class Evento(DAB_Base):
     """Retorna um conjunto detalhado de informações sobre o evento da Câmara.
 
     Parameters
@@ -599,26 +619,36 @@ class Evento:
     """
 
     def __init__(self, cod:int):
+
         self.cod = cod
-        self.dados = _get(['eventos', str(cod)])['dados']
-        self.andar = self.dados['localCamara']['andar']
-        self.descricao = self.dados['descricao']
-        self.descricao_tipo = self.dados['descricaoTipo']
-        self.fases = self.dados['fases']
-        self.fim = self.dados['dataHoraFim']
-        self.inicio = self.dados['dataHoraInicio']
-        self.local = self.dados['localCamara']['nome']
-        self.local_externo = self.dados['localExterno']
-        self.lista_orgaos = self.dados['orgaos']
-        self.predio = self.dados['localCamara']['predio']
-        self.requerimentos = self.dados['requerimentos']
-        self.sala = self.dados['localCamara']['sala']
-        self.situacao = self.dados['situacao']
-        self.uri = self.dados['uri']
-        self.uri_convidados = self.dados['uriConvidados']
-        self.uri_deputados = self.dados['uriDeputados']
-        self.url_documento_pauta = self.dados['urlDocumentoPauta']
-        self.url_registro = self.dados['urlRegistro']
+        atributos = {
+            'andar': ['localCamara', 'andar'],
+            'descricao': ['descricao'],
+            'descricao_tipo': ['descricaoTipo'],
+            'fases': ['fases'],
+            'fim': ['dataHoraFim'],
+            'inicio': ['dataHoraInicio'],
+            'local': ['localCamara', 'nome'],
+            'local_externo': ['localExterno'],
+            'lista_orgaos': ['orgaos'],
+            'predio': ['localCamara', 'predio'],
+            'requerimentos': ['requerimentos'],
+            'sala': ['localCamara', 'sala'],
+            'situacao': ['situacao'],
+            'uri': ['uri'],
+            'uri_convidados': ['uriConvidados'],
+            'uri_deputados': ['uriDeputados'],
+            'url_documento_pauta': ['urlDocumentoPauta'],
+            'url_registro': ['urlRegistro']
+        }
+
+        super().__init__(
+            api = 'camara',
+            path = ['eventos', str(cod)],
+            unpack_keys = ['dados'],
+            error_key = 'localCamara',
+            atributos = atributos
+        )
 
 
     def __repr__(self) -> str:
@@ -749,7 +779,7 @@ class Evento:
 
 
 
-class Frente:
+class Frente(DAB_Base):
     """Informações detalhadas sobre uma frente parlamentar.
 
     Parameters
@@ -796,19 +826,29 @@ class Frente:
     """
 
     def __init__(self, cod:int):
+
         self.cod = cod
-        self.dados = _get(['frentes', str(cod)])['dados']
-        self.coordenador = self.dados['coordenador']
-        self.documento = self.dados['urlDocumento']
-        self.email = self.dados['email']
-        self.id_sitacao = self.dados['idSituacao']
-        self.keywords = self.dados['keywords']
-        self.legislatura = self.dados['idLegislatura']
-        self.situacao = self.dados['situacao']
-        self.telefone = self.dados['telefone']
-        self.titulo = self.dados['titulo']
-        self.uri = self.dados['uri']
-        self.website = self.dados['urlWebsite']
+        atributos = {
+            'coordenador': ['coordenador'],
+            'documento': ['urlDocumento'],
+            'email': ['email'],
+            'id_sitacao': ['idSituacao'],
+            'keywords': ['keywords'],
+            'legislatura': ['idLegislatura'],
+            'situacao': ['situacao'],
+            'telefone': ['telefone'],
+            'titulo': ['titulo'],
+            'uri': ['uri'],
+            'website': ['urlWebsite']
+        }
+
+        super().__init__(
+            api = 'camara',
+            path = ['frentes', str(cod)],
+            unpack_keys = ['dados'],
+            error_key = 'titulo',
+            atributos = atributos
+        )
 
 
     def __repr__(self) -> str:
@@ -850,7 +890,7 @@ class Frente:
 
 
 
-class Legislatura:
+class Legislatura(DAB_Base):
     """Informações extras sobre uma determinada legislatura da Câmara.
 
     Parameters
@@ -883,11 +923,21 @@ class Legislatura:
     """
 
     def __init__(self, cod:int):
+
         self.cod = cod
-        self.dados = _get(['legislaturas', str(cod)])['dados']
-        self.fim = self.dados['dataFim']
-        self.inicio = self.dados['dataInicio']
-        self.uri = self.dados['uri']
+        atributos = {
+            'fim': ['dataFim'],
+            'inicio': ['dataInicio'],
+            'uri': ['uri']
+        }
+
+        super().__init__(
+            api = 'camara',
+            path = ['legislaturas', str(cod)],
+            unpack_keys = ['dados'],
+            error_key = 'dataInicio',
+            atributos = atributos
+        )
 
 
     def __repr__(self) -> str:
@@ -943,7 +993,7 @@ class Legislatura:
 
 
 
-class Orgao:
+class Orgao(DAB_Base):
     """Informações detalhadas sobre um órgão da Câmara.
 
     Parameters
@@ -994,21 +1044,31 @@ class Orgao:
     """
 
     def __init__(self, cod:int):
+
         self.cod = cod
-        self.dados = _get(['orgaos', str(cod)])['dados']
-        self.apelido = self.dados['apelido']
-        self.casa = self.dados['casa']
-        self.cod_tipo = self.dados['codTipoOrgao']
-        self.fim = self.dados['dataFim']
-        self.inicio = self.dados['dataInicio']
-        self.instalacao = self.dados['dataInstalacao']
-        self.nome = self.dados['nome']
-        self.nome_publicacao = self.dados['nomePublicacao']
-        self.sala = self.dados['sala']
-        self.sigla = self.dados['sigla']
-        self.tipo = self.dados['tipoOrgao']
-        self.uri = self.dados['uri']
-        self.urlWebsite = self.dados['urlWebsite']
+        atributos = {
+            'apelido': ['apelido'],
+            'casa': ['casa'],
+            'cod_tipo': ['codTipoOrgao'],
+            'fim': ['dataFim'],
+            'inicio': ['dataInicio'],
+            'instalacao': ['dataInstalacao'],
+            'nome': ['nome'],
+            'nome_publicacao': ['nomePublicacao'],
+            'sala': ['sala'],
+            'sigla': ['sigla'],
+            'tipo': ['tipoOrgao'],
+            'uri': ['uri'],
+            'urlWebsite': ['urlWebsite']
+        }
+
+        super().__init__(
+            api = 'camara',
+            path = ['orgaos', str(cod)],
+            unpack_keys = ['dados'],
+            error_key = 'nome',
+            atributos = atributos
+        )
 
 
     def __repr__(self) -> str:
@@ -1225,7 +1285,7 @@ class Orgao:
 
 
 
-class Partido:
+class Partido(DAB_Base):
     """Informações detalhadas sobre um partido.
 
     Parameters
@@ -1279,22 +1339,32 @@ class Partido:
     """
 
     def __init__(self, cod:int):
+
         self.cod = cod
-        self.dados = _get(['partidos', str(cod)])['dados']
-        self.facebook = self.dados['urlFacebook']
-        self.legislatura = self.dados['status']['idLegislatura']
-        self.lider = self.dados['status']['lider']
-        self.logo = self.dados['urlLogo']
-        self.nome = self.dados['nome']
-        self.numero = self.dados['numeroEleitoral']
-        self.sigla = self.dados['sigla']
-        self.situacao = self.dados['status']['situacao']
-        self.total_membros = self.dados['status']['totalMembros']
-        self.total_posse = self.dados['status']['totalPosse']
-        self.ultima_atualizacao = self.dados['status']['data']
-        self.uri = self.dados['uri']
-        self.uri_membros = self.dados['status']['uriMembros']
-        self.website = self.dados['urlWebSite']
+        atributos = {
+            'facebook': ['urlFacebook'],
+            'legislatura': ['status', 'idLegislatura'],
+            'lider': ['status', 'lider'],
+            'logo': ['urlLogo'],
+            'nome': ['nome'],
+            'numero': ['numeroEleitoral'],
+            'sigla': ['sigla'],
+            'situacao': ['status', 'situacao'],
+            'total_membros': ['status', 'totalMembros'],
+            'total_posse': ['status', 'totalPosse'],
+            'ultima_atualizacao': ['status', 'data'],
+            'uri': ['uri'],
+            'uri_membros': ['status', 'uriMembros'],
+            'website': ['urlWebSite']
+        }
+
+        super().__init__(
+            api = 'camara',
+            path = ['partidos', str(cod)],
+            unpack_keys = ['dados'],
+            error_key = 'status',
+            atributos = atributos
+        )
 
 
     def __repr__(self) -> str:
@@ -1378,7 +1448,7 @@ class Partido:
 
 
 
-class Proposicao:
+class Proposicao(DAB_Base):
     """Informações detalhadas sobre uma proposição específica.
 
     Parameters
@@ -1467,40 +1537,50 @@ class Proposicao:
     """
 
     def __init__(self, cod:int):
+
         self.cod = cod
-        self.dados = _get(['proposicoes', str(cod)])['dados']
-        self.uri = self.dados['uri']
-        self.tipo_sigla = self.dados['siglaTipo']
-        self.tipo_codigo = self.dados['codTipo']
-        self.numero = self.dados['numero']
-        self.ano = self.dados['ano']
-        self.ementa = self.dados['ementa']
-        self.apresentacao = self.dados['dataApresentacao']
-        self.uri_orgao_numerador = self.dados['uriOrgaoNumerador']
-        self.ultima_atualizacao = self.dados['statusProposicao']['dataHora']
-        self.sequencia = self.dados['statusProposicao']['sequencia']
-        self.sigla_orgao = self.dados['statusProposicao']['siglaOrgao']
-        self.uri_orgao = self.dados['statusProposicao']['uriOrgao']
-        self.uri_ultimo_relator = self.dados['statusProposicao']['uriUltimoRelator']
-        self.regime = self.dados['statusProposicao']['regime']
-        self.descricao_tramitacao = self.dados['statusProposicao']['descricaoTramitacao']
-        self.cod_tipo_tramitacao = self.dados['statusProposicao']['codTipoTramitacao']
-        self.descricao_situacao = self.dados['statusProposicao']['descricaoSituacao']
-        self.cod_situacao = self.dados['statusProposicao']['codSituacao']
-        self.despacho = self.dados['statusProposicao']['despacho']
-        self.url = self.dados['statusProposicao']['url']
-        self.ambito = self.dados['statusProposicao']['ambito']
-        self.uri_autores = self.dados['uriAutores']
-        self.descricao_tipo = self.dados['descricaoTipo']
-        self.ementa_detalhada = self.dados['ementaDetalhada']
-        self.keywords = self.dados['keywords']
-        self.uri_proposicao_principal = self.dados['uriPropPrincipal']
-        self.uri_proposicao_anterior = self.dados['uriPropAnterior']
-        self.uri_proposicao_posterior = self.dados['uriPropPosterior']
-        self.url_inteiro_teor = self.dados['urlInteiroTeor']
-        self.urn_final = self.dados['urnFinal']
-        self.texto = self.dados['texto']
-        self.justificativa = self.dados['justificativa']
+        atributos = {
+            'uri': ['uri'],
+            'tipo_sigla': ['siglaTipo'],
+            'tipo_codigo': ['codTipo'],
+            'numero': ['numero'],
+            'ano': ['ano'],
+            'ementa': ['ementa'],
+            'apresentacao': ['dataApresentacao'],
+            'uri_orgao_numerador': ['uriOrgaoNumerador'],
+            'ultima_atualizacao': ['statusProposicao', 'dataHora'],
+            'sequencia': ['statusProposicao', 'sequencia'],
+            'sigla_orgao': ['statusProposicao', 'siglaOrgao'],
+            'uri_orgao': ['statusProposicao', 'uriOrgao'],
+            'uri_ultimo_relator': ['statusProposicao', 'uriUltimoRelator'],
+            'regime': ['statusProposicao', 'regime'],
+            'descricao_tramitacao': ['statusProposicao', 'descricaoTramitacao'],
+            'cod_tipo_tramitacao': ['statusProposicao', 'codTipoTramitacao'],
+            'descricao_situacao': ['statusProposicao', 'descricaoSituacao'],
+            'cod_situacao': ['statusProposicao', 'codSituacao'],
+            'despacho': ['statusProposicao', 'despacho'],
+            'url': ['statusProposicao', 'url'],
+            'ambito': ['statusProposicao', 'ambito'],
+            'uri_autores': ['uriAutores'],
+            'descricao_tipo': ['descricaoTipo'],
+            'ementa_detalhada': ['ementaDetalhada'],
+            'keywords': ['keywords'],
+            'uri_proposicao_principal': ['uriPropPrincipal'],
+            'uri_proposicao_anterior': ['uriPropAnterior'],
+            'uri_proposicao_posterior': ['uriPropPosterior'],
+            'url_inteiro_teor': ['urlInteiroTeor'],
+            'urn_final': ['urnFinal'],
+            'texto': ['texto'],
+            'justificativa': ['justificativa']
+        }
+
+        super().__init__(
+            api = 'camara',
+            path = ['proposicoes', str(cod)],
+            unpack_keys = ['dados'],
+            error_key = 'statusProposicao',
+            atributos = atributos
+        )
 
 
     def __repr__(self) -> str:
@@ -1676,7 +1756,7 @@ class Proposicao:
 
 
 
-class Votacao:
+class Votacao(DAB_Base):
     """Informações detalhadas sobre uma votação da Câmara.
 
     Retorna um conjunto detalhado de dados sobre a votação, tais como as
@@ -1736,23 +1816,33 @@ class Votacao:
     """
 
     def __init__(self, cod:int):
+
         self.cod = cod
-        self.dados = _get(['votacoes', str(cod)])['dados']
-        self.aprovacao = self.dados['aprovacao']
-        self.data = self.dados['data']
-        self.data_regitro = self.dados['dataHoraRegistro']
-        self.data_ultima_abertura = self.dados['dataHoraUltimaAberturaVotacao']
-        self.descricao = self.dados['descricao']
-        self.efeitos_registrados = self.dados['efeitosRegistrados']
-        self.evento = self.dados['idEvento']
-        self.orgao = self.dados['idOrgao']
-        self.objetos_possiveis = self.dados['objetosPossiveis']
-        self.proposicoes_afetadas = self.dados['proposicoesAfetadas']
-        self.sigla_orgao = self.dados['siglaOrgao']
-        self.ultima_apresentacao_proposicao = self.dados['ultimaApresentacaoProposicao']
-        self.uri = self.dados['uri']
-        self.uri_evento = self.dados['uriEvento']
-        self.uri_orgao = self.dados['uriOrgao']
+        atributos = {
+            'aprovacao': ['aprovacao'],
+            'data': ['data'],
+            'data_regitro': ['dataHoraRegistro'],
+            'data_ultima_abertura': ['dataHoraUltimaAberturaVotacao'],
+            'descricao': ['descricao'],
+            'efeitos_registrados': ['efeitosRegistrados'],
+            'evento': ['idEvento'],
+            'orgao': ['idOrgao'],
+            'objetos_possiveis': ['objetosPossiveis'],
+            'proposicoes_afetadas': ['proposicoesAfetadas'],
+            'sigla_orgao': ['siglaOrgao'],
+            'ultima_apresentacao_proposicao': ['ultimaApresentacaoProposicao'],
+            'uri': ['uri'],
+            'uri_evento': ['uriEvento'],
+            'uri_orgao': ['uriOrgao']
+        }
+
+        super().__init__(
+            api = 'camara',
+            path = ['votacoes', str(cod)],
+            unpack_keys = ['dados'],
+            error_key = 'descricao',
+            atributos = atributos
+        )
 
 
     def __repr__(self) -> str:
