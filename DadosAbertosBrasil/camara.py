@@ -29,47 +29,7 @@ from typing import Optional, Union
 import pandas as pd
 
 from ._utils import parse
-from ._utils.get_data import DAB_Base, get_data
-
-
-
-def _get(
-        path: str,
-        params: dict = None
-    ) -> dict:
-    return get_data(
-        endpoint = 'https://dadosabertos.camara.leg.br/api/v2/',
-        path = path,
-        params = params
-    )
-
-
-
-def _df(
-        dados: dict,
-        index_col: Optional[str] = None
-    ) -> pd.DataFrame:
-    """Converte dados brutos da API em um DataFrame.
-
-    Parameters
-    ----------
-    dados : dict
-        Dados brutos da API.
-    index_col : str, optional
-        Nome da coluna que será usada como index do DataFrame.
-
-    Returns
-    -------
-    pandas.core.frame.DataFrame
-        Dados convertidos em DataFrame.
-
-    """
-
-    df = pd.DataFrame(dados['dados'])
-    if (index_col is not None) and (not df.empty):
-        df.set_index(index_col, inplace=True)
-
-    return df
+from ._utils.get_data import DAB_Base, get_and_format
 
 
 
@@ -194,6 +154,23 @@ class Deputado(DAB_Base):
     website : str
         Website.
 
+    Methods
+    -------
+    despesas()
+        As despesas com exercício parlamentar do deputado.
+    discursos()
+        Os discursos feitos por um deputado em eventos diversos.
+    eventos()
+        Uma lista de eventos com a participação do parlamentar.
+    frentes()
+        As frentes parlamentares das quais um deputado é integrante.
+    ocupacoes()
+        Os empregos e atividades que o(a) deputado(a) já teve.
+    orgaos()
+        Os órgãos dos quais um deputado é integrante.
+    profissoes()
+        As frentes parlamentares das quais um deputado é integrante.
+
     Examples
     --------
     Coletar partido mais recente do deputado Rodrigo Maia.
@@ -259,8 +236,10 @@ class Deputado(DAB_Base):
             pagina: int = 1,
             itens: Optional[int] = None,
             asc: bool = True,
-            ordenar_por: str = 'ano'
-        ) -> pd.DataFrame:
+            ordenar_por: str = 'ano',
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """As despesas com exercício parlamentar do deputado.
 
         Dá acesso aos registros de pagamentos e reembolsos feitos pela Câmara
@@ -294,11 +273,20 @@ class Deputado(DAB_Base):
         ordenar_por : str, default='ano'
             Nome do campo pelo qual a lista deverá ser ordenada:
             qualquer um dos campos do retorno, e também idLegislatura.
+        index : bool, default=False
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de despesas com exercício parlamentar do deputado.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
@@ -317,9 +305,36 @@ class Deputado(DAB_Base):
         params['ordem'] = 'asc' if asc else 'desc'
         params['ordenarPor'] = ordenar_por
 
-        path = ['deputados', str(self.cod), 'despesas']
-        dados = _get(path=path, params=params)
-        return _df(dados)
+        cols_to_rename = {
+            'ano': 'ano',
+            'mes': 'mes',
+            'tipoDespesa': 'despesa',
+            'codDocumento': 'codigo',
+            'tipoDocumento': 'tipo',
+            'codTipoDocumento': 'tipo_codigo',
+            'dataDocumento': 'data',
+            'numDocumento': 'numero',
+            'valorDocumento': 'valor',
+            'urlDocumento': 'url',
+            'nomeFornecedor': 'fornecedor_nome',
+            'cnpjCpfFornecedor': 'fornecedor_cnpj',
+            'valorLiquido': 'valor_liquido',
+            'valorGlosa': 'valor_glosa',
+            'numRessarcimento': 'ressarcimento',
+            'codLote': 'lote',
+            'parcela': 'parcela'
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['deputados', self.cod, 'despesas'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data'],
+            index = index,
+            formato = formato
+        )
 
 
     def discursos(
@@ -330,8 +345,9 @@ class Deputado(DAB_Base):
             pagina: int = 1,
             itens: Optional[int] = None,
             asc: bool = True,
-            ordenar_por: str = 'dataHoraInicio'
-        ) -> pd.DataFrame:
+            ordenar_por: str = 'dataHoraInicio',
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Os discursos feitos por um deputado em eventos diversos.
 
         Retorna uma lista de informações sobre os pronunciamentos feitos
@@ -363,30 +379,57 @@ class Deputado(DAB_Base):
         ordenar_por : str, default='dataHoraInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de discursos feitos por um deputado em eventos diversos.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        params = {}
+        params = {
+            'pagina': pagina,
+            'ordem': 'asc' if asc else 'desc',
+            'ordenarPor': ordenar_por
+        }
         if legislatura is not None:
             params['idLegislatura'] = legislatura
         if inicio is not None:
             params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
             params['dataFim'] = parse.data(fim, 'camara')
-        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        params['ordem'] = 'asc' if asc else 'desc'
-        params['ordenarPor'] = ordenar_por
 
-        path = ['deputados', str(self.cod), 'discursos']
-        dados = _get(path=path, params=params)
-        return _df(dados)
+        cols_to_rename = {
+            'dataHoraInicio': 'data_inicio',
+            'dataHoraFim': 'data_fim',
+            'uriEvento': 'evento_uri',
+            'faseEvento': 'evento_fase',
+            'tipoDiscurso': 'tipo',
+            'urlTexto': 'texto_uri',
+            'urlAudio': 'audio_url',
+            'urlVideo': 'video_url',
+            'keywords': 'keywords',
+            'sumario': 'sumario',
+            'transcricao': 'transcricao'
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['deputados', self.cod, 'discursos'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data_inicio', 'data_fim'],
+            formato = formato
+        )
 
 
     def eventos(
@@ -398,8 +441,9 @@ class Deputado(DAB_Base):
             itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataHoraInicio',
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Uma lista de eventos com a participação do parlamentar.
 
         Retorna uma lista de objetos evento nos quais a participação do
@@ -431,12 +475,19 @@ class Deputado(DAB_Base):
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de discursos feitos por um deputado em eventos diversos.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
@@ -453,16 +504,50 @@ class Deputado(DAB_Base):
         params['ordem'] = 'asc' if asc else 'desc'
         params['ordenarPor'] = ordenar_por
 
-        path = ['deputados', str(self.cod), 'eventos']
-        dados = _get(path=path, params=params)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',	
+            'uri': 'uri',
+            'dataHoraInicio': 'data_inicio',
+            'dataHoraFim': 'data_fim',
+            'situacao': 'situacao',
+            'descricaoTipo': 'descricao_tipo',
+            'descricao': 'descricao',
+            'localExterno': 'local_externo',
+            'orgaos': 'orgaos',
+            'localCamara.nome': 'local',
+            'localCamara.predio': 'local_predio',
+            'localCamara.sala': 'local_sala',
+            'localCamara.andar': 'local_andar',
+            'urlRegistro': 'url'
+        }
+
+        df = get_and_format(
+            api = 'camara',
+            path = ['deputados', self.cod, 'eventos'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data_inicio', 'data_fim'],
+            index = index,
+            formato = formato
+        )
+
+        if formato == 'dataframe':
+            def get_orgaos(orgaos):
+                cod = [orgao['id'] for orgao in orgaos]
+                if len(cod) < 2:
+                    return cod[0]
+                return cod
+            df.orgaos = df.orgaos.apply(get_orgaos)
+
+        return df
 
 
     def frentes(
             self,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """As frentes parlamentares das quais um deputado é integrante.
 
         Retorna uma lista de informações básicas sobre as frentes
@@ -473,19 +558,80 @@ class Deputado(DAB_Base):
         Parameters
         ----------
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de frentes parlamentares das quais um deputado é integrante.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['deputados', str(self.cod), 'frentes']
-        dados = _get(path=path, params=None)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'uri': 'uri',
+            'titulo': 'titulo',
+            'idLegislatura': 'legislatura',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['deputados', self.cod, 'frentes'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            index = index,
+            formato = formato
+        )
+
+
+    def ocupacoes(
+            self,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
+        """Os empregos e atividades que o(a) deputado(a) já teve.
+
+        Enumera as atividades profissionais ou ocupacionais que o deputado
+        já teve em sua carreira e declarou à Câmara dos Deputados.
+
+        Parameters
+        ----------
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
+
+        """
+
+        cols_to_rename = {
+            'anoInicio': 'ano_inicio',
+            'anoFim': 'ano_fim',
+            'entidade': 'entidade',
+            'entidadePais': 'pais',
+            'entidadeUF': 'uf',
+            'titulo': 'titulo',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['deputados', self.cod, 'ocupacoes'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            formato = formato
+        )
 
 
     def orgaos(
@@ -496,8 +642,9 @@ class Deputado(DAB_Base):
             itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataInicio',
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Os órgãos dos quais um deputado é integrante.
 
         Retorna uma lista de órgãos, como as comissões e procuradorias,
@@ -531,12 +678,19 @@ class Deputado(DAB_Base):
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
         index : bool, default=False
-            Se True, define a coluna `idOrgao` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista dos órgãos dos quais um deputado é integrante.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
@@ -551,10 +705,79 @@ class Deputado(DAB_Base):
         params['ordem'] = 'asc' if asc else 'desc'
         params['ordenarPor'] = ordenar_por
 
-        path = ['deputados', str(self.cod), 'orgaos']
-        dados = _get(path=path, params=params)
-        index_col = 'idOrgao' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'idOrgao': 'codigo',
+            'uriOrgao': 'uri',
+            'siglaOrgao': 'sigla',
+            'nomeOrgao': 'nome',
+            'nomePublicacao': 'publicacao',
+            'titulo': 'titulo',
+            'codTitulo': 'titulo_codigo',
+            'dataInicio': 'data_inicio',
+            'dataFim': 'data_fim',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['deputados', self.cod, 'orgaos'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['titulo_codigo'],
+            cols_to_date = ['data_inicio', 'data_fim'],
+            index = index,
+            formato = formato
+        )
+
+
+    def profissoes(
+            self,
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
+        """As frentes parlamentares das quais um deputado é integrante.
+
+        Retorna uma lista de dados sobre profissões que o parlamentar declarou
+        à Câmara que já exerceu ou que pode exercer pela sua formação e/ou
+        experiência.
+
+        Parameters
+        ----------
+        index : bool, default=False
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
+
+        """
+
+        cols_to_rename = {
+	        'id': 'codigo',
+	        'idLegislatura': 'legislatura',
+	        'titulo': 'titulo',
+	        'uri': 'uri',
+            'dataHora': 'data',
+            'codTipoProfissao': 'tipo'
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['deputados', self.cod, 'profissoes'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data'],
+            index = index,
+            formato = formato
+        )
 
 
 
@@ -609,6 +832,17 @@ class Evento(DAB_Base):
     url_registro : str
         Endereço URL onde o evento foi registrado.
 
+    Methods
+    -------
+    deputados()
+        Os deputados participantes do evento.
+    orgaos()
+        Lista de órgãos organizadores do evento.
+    pauta()
+        Lista de proposições que foram ou deverão ser avaliadas.
+    votacoes()
+        Informações detalhadas de votações sobre o evento.
+
     Examples
     --------
     Obter a URL para assistir ao evento #59265.
@@ -661,9 +895,10 @@ class Evento(DAB_Base):
 
     def deputados(
             self,
-            index: bool = False
-        ) -> pd.DataFrame:
-        """Os deputados participantes de um evento específico.
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
+        """Os deputados participantes do evento.
 
         Retorna uma lista de dados resumidos sobre deputados participantes do
         evento. Se o evento já ocorreu, a lista identifica os deputados que
@@ -675,25 +910,49 @@ class Evento(DAB_Base):
         Parameters
         ----------
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista dos deputados participantes de um evento específico.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['eventos', str(self.cod), 'deputados']
-        dados = _get(path=path, params=None)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'uri': 'uri',
+            'nome': 'nome',
+            'siglaPartido': 'partido',
+            'uriPartido': 'partido_uri',
+            'siglaUf': 'uf',
+            'idLegislatura': 'legislatura',
+            'urlFoto': 'foto',
+            'email': 'email',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['eventos', self.cod, 'deputados'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            index = index,
+            formato = formato
+        )
 
 
     def orgaos(
             self,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Lista de órgãos organizadores do evento.
 
         Retorna uma lista em que cada item é um conjunto mínimo de dados sobre
@@ -702,25 +961,49 @@ class Evento(DAB_Base):
         Parameters
         ----------
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de órgãos organizadores do evento.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['eventos', str(self.cod), 'orgaos']
-        dados = _get(path=path, params=None)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'uri': 'uri',
+            'nome': 'nome',
+            'siglaPartido': 'partido',
+            'uriPartido': 'partido_uri',
+            'siglaUf': 'uf',
+            'idLegislatura': 'legislatura',
+            'urlFoto': 'foto',
+            'email': 'email',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['eventos', self.cod, 'orgaos'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            index = index,
+            formato = formato
+        )
 
 
     def pauta(
             self,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Lista de proposições que foram ou deverão ser avaliadas em um evento
         de caráter deliberativo.
 
@@ -735,24 +1018,51 @@ class Evento(DAB_Base):
         ----------
         index : bool, default=False
             Se True, define a coluna `ordem` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de proposições do evento.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['eventos', str(self.cod), 'pauta']
-        dados = _get(path=path, params=None)
-        index_col = 'ordem' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'ordem': 'ordem',
+            'topico': 'topico',
+            'regime': 'regime',
+            'codRegime': 'regime_codigo',
+            'titulo': 'titulo',
+            'proposicao_': 'proposicao',
+            'relator': 'relator',
+            'textoParecer': 'parecer',
+            'proposicaoRelacionada_': 'proposicao_relacionada',
+            'uriVotacao': 'uri',
+            'situacaoItem': 'situacao',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['eventos', self.cod, 'pauta'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            index_col = 'ordem',
+            index = index,
+            formato = formato
+        )
 
 
     def votacoes(
             self,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Informações detalhadas de votações sobre o evento.
 
         Retorna uma lista de dados básicos sobre votações que tenham sido
@@ -763,19 +1073,45 @@ class Evento(DAB_Base):
         Parameters
         ----------
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de de votações sobre o evento.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['eventos', str(self.cod), 'votacoes']
-        dados = _get(path=path, params=None)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'uri': 'uri',
+            'data': 'data',
+            'dataHoraRegistro': 'data_registro',
+            'siglaOrgao': 'orgao_sigla',
+            'uriOrgao': 'orgao_uri',
+            'uriEvento': 'uri_evento',
+            'proposicaoObjeto': 'proposicao',
+            'uriProposicaoObjeto': 'proposicao_uri',
+            'descricao': 'descricao',
+            'aprovacao': 'aprovacao'
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['eventos', self.cod, 'votacoes'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data', 'data_registro'],
+            index = index,
+            formato = formato
+        )
 
 
 
@@ -815,6 +1151,11 @@ class Frente(DAB_Base):
         Endereço para coleta de dados direta pela API da frente parlamentar.
     website : str
         URL do website da frente parlamentar.
+
+    Methods
+    -------
+    membros()
+        Os deputados que participam da frente parlamentar.
 
     Examples
     --------
@@ -861,8 +1202,9 @@ class Frente(DAB_Base):
 
     def membros(
             self,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Os deputados que participam da frente parlamentar.
 
         Uma lista dos deputados participantes da frente parlamentar e os
@@ -874,19 +1216,47 @@ class Frente(DAB_Base):
         Parameters
         ----------
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista dos deputados que participam da frente parlamentar.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['frentes', str(self.cod), 'membros']
-        dados = _get(path=path, params=None)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'uri': 'uri',
+            'nome': 'nome',
+            'siglaPartido': 'partido',
+            'uriPartido': 'partido_uri',
+            'siglaUf': 'uf',
+            'idLegislatura': 'legislatura',
+            'urlFoto': 'foto',
+            'email': 'email',
+            'titulo': 'titulo',
+            'codTitulo': 'titulo_codigo',
+            'dataInicio': 'data_inicio',
+            'dataFim': 'data_fim'
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['frentes', self.cod, 'membros'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data_inicio', 'data_fim'],
+            index = index,
+            formato = formato
+        )
 
 
 
@@ -952,8 +1322,9 @@ class Legislatura(DAB_Base):
             self,
             inicio: Union[datetime, str, None] = None,
             fim: Union[datetime, str, None] = None,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
 
         Retorna uma lista com dados básicos sobre todos os deputados que
@@ -971,12 +1342,19 @@ class Legislatura(DAB_Base):
             Data de término do intervalo de tempo do qual se deseja saber a
             composição da Mesa, no formato 'AAAA-MM-DD'.
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista dos deputados que participam da frente parlamentar.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
@@ -986,10 +1364,33 @@ class Legislatura(DAB_Base):
         if fim is not None:
             params['dataFim'] = parse.data(fim, 'camara')
 
-        path = ['legislaturas', str(self.cod), 'mesa']
-        dados = _get(path=path, params=params)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'uri': 'uri',
+            'nome': 'nome',
+            'siglaPartido': 'partido',
+            'uriPartido': 'partido_uri',
+            'siglaUf': 'uf',
+            'idLegislatura': 'legislatura',
+            'urlFoto': 'foto',
+            'email': 'email',
+            'dataInicio': 'data_inicio',
+            'dataFim': 'data_fim',
+            'titulo': 'titulo',
+            'codTitulo': 'titulo_codigo',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['legislaturas', self.cod, 'mesa'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['titulo_codigo'],
+            cols_to_date = ['data_inicio', 'data_fim'],
+            index = index,
+            formato = formato
+        )
 
 
 
@@ -1088,8 +1489,9 @@ class Orgao(DAB_Base):
             itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataHoraInicio',
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Os eventos ocorridos ou previstos em um órgão legislativo.
 
         Retorna uma lista de informações resumidas dos eventos realizados
@@ -1130,23 +1532,44 @@ class Orgao(DAB_Base):
 
         """
 
-        params = {}
+        params = {
+            'pagina': pagina,
+            'ordem': 'asc' if asc else 'desc',
+            'ordenarPor': ordenar_por
+        }
         if tipo_evento is not None:
             params['idTipoEvento'] = tipo_evento
         if inicio is not None:
             params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
             params['dataFim'] = parse.data(fim, 'camara')
-        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        params['ordem'] = 'asc' if asc else 'desc'
-        params['ordenarPor'] = ordenar_por
 
-        path = ['orgaos', str(self.cod), 'eventos']
-        dados = _get(path=path, params=params)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'uri': 'uri',
+            'dataHoraInicio': 'data_inicio',
+            'dataHoraFim': 'data_fim',
+            'situacao': 'situacao',
+            'descricaoTipo': 'descricao_tipo',
+            'descricao': 'descricao',
+            'localExterno': 'local_externo',
+            'orgaos': 'orgaos',
+            'localCamara': 'local_camara',
+            'urlRegistro': 'uri',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['orgaos', self.cod, 'eventos'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data_inicio', 'data_fim'],
+            index = index,
+            formato = formato
+        )
 
 
     def membros(
@@ -1155,8 +1578,9 @@ class Orgao(DAB_Base):
             fim: Union[datetime, str, None] = None,
             pagina: int = 1,
             itens: Optional[int] = None,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Lista de cargos de um órgão e parlamentares que os ocupam.
 
         Retorna uma lista de dados resumidos que identificam cada parlamentar
@@ -1180,28 +1604,57 @@ class Orgao(DAB_Base):
             Número máximo de itens na “página” que se deseja obter com esta
             requisição.
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de cargos de um órgão e parlamentares que os ocupam.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        params = {}
+        params = {'pagina': pagina}
         if inicio is not None:
             params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
             params['dataFim'] = parse.data(fim, 'camara')
-        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
 
-        path = ['orgaos', str(self.cod), 'membros']
-        dados = _get(path=path, params=params)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'uri': 'uri',
+            'nome': 'nome',
+            'siglaPartido': 'partido',
+            'uriPartido': 'partido_uri',
+            'siglaUf': 'uf',
+            'idLegislatura': 'legislatura',
+            'urlFoto': 'foto',
+            'email': 'email',
+            'dataInicio': 'data_inicio',
+            'dataFim': 'data_fim',
+            'titulo': 'titulo',
+            'codTitulo': 'titulo_codigo',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['orgaos', self.cod, 'membros'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['titulo_codigo'],
+            cols_to_date = ['data_inicio', 'data_fim'],
+            index = index,
+            formato = formato
+        )
 
 
     def votacoes(
@@ -1213,8 +1666,9 @@ class Orgao(DAB_Base):
             itens: Optional[int] = None,
             asc: bool = False,
             ordenar_por: str = 'dataHoraRegistro',
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Uma lista de eventos com a participação do parlamentar.
 
         Retorna uma lista de dados básicos de votações que tenham sido
@@ -1256,32 +1710,60 @@ class Orgao(DAB_Base):
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de discursos feitos por um deputado em eventos diversos.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        params = {}
+        params = {
+            'pagina': pagina,
+            'ordem': 'asc' if asc else 'desc',
+            'ordenarPor': ordenar_por
+        }
         if proposicao is not None:
             params['idProposicao'] = proposicao
         if inicio is not None:
             params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
             params['dataFim'] = parse.data(fim, 'camara')
-        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        params['ordem'] = 'asc' if asc else 'desc'
-        params['ordenarPor'] = ordenar_por
 
-        path = ['orgaos', str(self.cod), 'votacoes']
-        dados = _get(path=path, params=params)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+	        'aprovacao': 'aprovacao',
+	        'data': 'data',
+	        'dataHoraRegistro': 'data_registro',
+	        'descricao': 'descricao',
+	        'id': 'codigo',
+	        'proposicaoObjeto': 'proposicao',
+	        'siglaOrgao': 'orgao',
+	        'uri': 'uri',
+	        'uriEvento': 'evento_uri',
+	        'uriOrgao': 'orgao_uri',
+	        'uriProposicaoObjeto': 'proposicao_uri'
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['orgaos', self.cod, 'votacoes'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data', 'data_registro'],
+            index = index,
+            formato = formato
+        )
 
 
 
@@ -1384,8 +1866,9 @@ class Partido(DAB_Base):
             itens: Optional[int] = None,
             ordenar_por: Optional[str] = None,
             asc: bool = True,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Uma lista dos parlamentares de um partido durante um período.
 
         Retorna uma lista de deputados que estão ou estiveram em exercício
@@ -1418,33 +1901,58 @@ class Partido(DAB_Base):
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista dos parlamentares de um partido durante um período.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        params = {}
+        params = {
+            'pagina': pagina,
+            'ordem': 'asc' if asc else 'desc'
+        }
         if inicio is not None:
             params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
             params['dataFim'] = parse.data(fim, 'camara')
         if legislatura is not None:
             params['idLegislatura'] = legislatura
-        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        params['ordem'] = 'asc' if asc else 'desc'
         if ordenar_por is not None:
             params['ordenarPor'] = ordenar_por
 
-        path = ['partidos', str(self.cod), 'membros']
-        dados = _get(path=path, params=params)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'uri': 'uri',
+            'nome': 'nome',
+            'siglaPartido': 'partido',
+            'uriPartido': 'partido_uri',
+            'siglaUf': 'uf',
+            'idLegislatura': 'legislatura',
+            'urlFoto': 'foto',
+            'email': 'email'
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['partidos', self.cod, 'membros'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            index = index,
+            formato = formato
+        )
 
 
 
@@ -1591,7 +2099,10 @@ class Proposicao(DAB_Base):
         return f'Proposição {self.cod}'
 
 
-    def autores(self) -> pd.DataFrame:
+    def autores(
+            self,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Lista pessoas e/ou entidades autoras da proposição.
 
         Retorna uma lista em que cada item identifica uma pessoa ou entidade
@@ -1604,22 +2115,45 @@ class Proposicao(DAB_Base):
         Para obter mais informações sobre cada autor, é recomendável acessar,
         se disponível, a URL que é valor do campo uri.
 
+        Parameters
+        ----------
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista pessoas e/ou entidades autoras da proposição.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['proposicoes', str(self.cod), 'autores']
-        dados = _get(path=path, params=None)
-        return _df(dados, None)
+        cols_to_rename = {
+            'uri': 'uri',
+            'nome': 'nome',
+            'codTipo': 'tipo_codigo',
+            'tipo': 'tipo',
+            'ordemAssinatura': 'ordem_assinatura',
+            'proponente': 'proponente',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['proposicoes', self.cod, 'autores'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            formato = formato
+        )
 
 
     def relacionadas(
             self,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Uma lista de proposições relacionadas a uma em especial.
 
         Lista de informações básicas sobre proposições que de alguma forma se
@@ -1629,25 +2163,48 @@ class Proposicao(DAB_Base):
         Parameters
         ----------
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de proposições relacionadas a uma em especial.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['proposicoes', str(self.cod), 'relacionadas']
-        dados = _get(path=path, params=None)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'uri': 'uri',
+            'siglaTipo': 'tipo_sigla',
+            'codTipo': 'tipo_codigo',
+            'numero': 'numero',
+            'ano': 'ano',
+            'ementa': 'ementa',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['proposicoes', self.cod, 'relacionadas'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_int = ['tipo_codigo', 'numero', 'ano'],
+            index = index,
+            formato = formato
+        )
 
 
     def temas(
             self,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Lista de áreas temáticas de uma proposição.
 
         Lista em que cada item traz informações sobre uma área temática à qual
@@ -1657,27 +2214,45 @@ class Proposicao(DAB_Base):
         Parameters
         ----------
         index : bool, default=False
-            Se True, define a coluna `codTema` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de áreas temáticas de uma proposição.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['proposicoes', str(self.cod), 'temas']
-        dados = _get(path=path, params=None)
-        index_col = 'codTema' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'codTema': 'codigo',
+            'tema': 'tema',
+            'relevancia': 'relevancia',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['proposicoes', self.cod, 'temas'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            index = index,
+            formato = formato
+        )
 
 
     def tramitacoes(
             self,
             inicio: Union[datetime, str, None] = None,
             fim: Union[datetime, str, None] = None,
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """O histórico de passos na tramitação de uma proposta.
 
         Lista que traz, como cada item, um “retrato” de informações que podem
@@ -1687,17 +2262,24 @@ class Proposicao(DAB_Base):
 
         Parameters
         ----------
-        inicio : str, optional
+        inicio : datetime.datetime or str, optional
             Data de início da tramitação, no formato 'AAAA-MM-DD'.
-        fim : str, optional
+        fim : datetime.datetime or str, optional
             Data de término da tramitação, no formato 'AAAA-MM-DD'.
         index : bool, default=False
             Se True, define a coluna `sequencia` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de passos na tramitação de uma proposta.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
@@ -1707,18 +2289,43 @@ class Proposicao(DAB_Base):
         if fim is not None:
             params['dataFim'] = parse.data(fim, 'camara')
 
-        path = ['proposicoes', str(self.cod), 'tramitacoes']
-        dados = _get(path=path, params=params)
-        index_col = 'sequencia' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'dataHora': 'data',
+            'sequencia': 'sequencia',
+            'siglaOrgao': 'orgao',
+            'uriOrgao': 'orgao_uri',
+            'uriUltimoRelator': 'ultimo_relator_uri',
+            'regime': 'regime',
+            'descricaoTramitacao': 'tramitacao',
+            'codTipoTramitacao': 'tramitacao_codigo',
+            'descricaoSituacao': 'situacao',
+            'codSituacao': 'situacao_codigo',
+            'despacho': 'despacho',
+            'url': 'url',
+            'ambito': 'ambito',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['proposicoes', self.cod, 'tramitacoes'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data'],
+            cols_to_int = ['tramitacao_codigo', 'situacao_codigo'],
+            index_col = 'sequencia',
+            index = index,
+            formato = formato
+        )
 
 
     def votacoes(
             self,
             asc: bool = False,
             ordenar_por: str = 'dataHoraRegistro',
-            index: bool = False
-        ) -> pd.DataFrame:
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Informações detalhadas de votações sobre a proposição.
 
         Retorna uma lista de identificadores básicos sobre as votações na
@@ -1736,23 +2343,52 @@ class Proposicao(DAB_Base):
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
         index : bool, default=False
-            Se True, define a coluna `id` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de votações sobre a proposição.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        params = {}
-        params['ordem'] = 'asc' if asc else 'desc'
-        params['ordenarPor'] = ordenar_por
+        params = {
+            'ordem': 'asc' if asc else 'desc',
+            'ordenarPor': ordenar_por
+        }
 
-        path = ['proposicoes', str(self.cod), 'votacoes']
-        dados = _get(path=path, params=params)
-        index_col = 'id' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'id': 'codigo',
+            'aprovacao': 'aprovacao',
+            'data': 'data',
+            'dataHoraRegistro': 'data_registro',
+            'descricao': 'descricao',
+            'proposicaoObjeto': 'proposicao',
+            'siglaOrgao': 'orgao',
+            'uri': 'uri',
+            'uriEvento': 'evento_uri',
+            'uriOrgao': 'orgao_uri',
+            'uriProposicaoObjeto': 'proposicao_uri'
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['proposicoes', self.cod, 'votacoes'],
+            params = params,
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data'],
+            cols_to_int = ['tramitacao_codigo', 'situacao_codigo'],
+            index = index,
+            formato = formato
+        )
 
 
 
@@ -1853,7 +2489,11 @@ class Votacao(DAB_Base):
         return f'Votação {self.cod}'
 
 
-    def orientacoes(self, index=False) -> pd.DataFrame:
+    def orientacoes(
+            self,
+            index: bool = False,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """ O voto recomendado pelas lideranças aos seus deputados na votação.
 
         Em muitas votações, os líderes de partidos e blocos – as bancadas –
@@ -1872,22 +2512,45 @@ class Votacao(DAB_Base):
         Parameters
         ----------
         index : bool, default=False
-            Se True, define a coluna `codPartidoBloco` como index do DataFrame.
+            Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
 
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de recomendações pelas lideranças aos seus deputados.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['votacoes', str(self.cod), 'orientacoes']
-        dados = _get(path=path, params=None)
-        index_col = 'codPartidoBloco' if index else None
-        return _df(dados, index_col)
+        cols_to_rename = {
+            'orientacaoVoto': 'orientacao',
+            'codTipoLideranca': 'lideranca',
+            'siglaPartidoBloco': 'bloco',
+            'codPartidoBloco': 'bloco_codigo',
+            'uriPartidoBloco': 'bloco_uri',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['votacoes', self.cod, 'orientacoes'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            index_col = 'bloco_codigo',
+            index = index,
+            formato = formato
+        )
 
 
-    def votos(self) -> pd.DataFrame:
+    def votos(
+            self,
+            formato: str = 'dataframe'
+        ) -> Union[dict, pd.DataFrame]:
         """Como cada parlamentar votou em uma votação nominal e aberta.
 
         Se a votação da Câmara é nominal e não foi secreta, retorna uma lista
@@ -1900,16 +2563,44 @@ class Votacao(DAB_Base):
         seus posicionamentos fossem registrados.
         Não são listados parlamentares ausentes à votação.
 
+        Parameters
+        ----------
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
         Returns
         -------
         pandas.core.frame.DataFrame
-            Lista de parlamentares.
+            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+        list of dict
+            Se formato = 'json', retorna os dados brutos no formato json.
 
         """
 
-        path = ['votacoes', str(self.cod), 'votos']
-        dados = _get(path=path, params=None)
-        return _df(dados, None)
+        cols_to_rename = {
+            'tipoVoto': 'voto',
+            'dataRegistroVoto': 'data',
+            'deputado_.id': 'deputado_codigo',
+            'deputado_.uri': 'deputado_uri',
+            'deputado_.nome': 'deputado_nome',
+            'deputado_.siglaPartido': 'deputado_partido',
+            'deputado_.uriPartido': 'deputado_partido_uri',
+            'deputado_.siglaUf': 'deputado_uf',
+            'deputado_.idLegislatura': 'deputado_legislatura',
+            'deputado_.urlFoto': 'deputado_foto',
+            'deputado_.email': 'deputado_email',
+        }
+
+        return get_and_format(
+            api = 'camara',
+            path = ['votacoes', self.cod, 'votos'],
+            unpack_keys = ['dados'],
+            cols_to_rename = cols_to_rename,
+            cols_to_date = ['data'],
+            formato = formato
+        )
 
 
 
@@ -1919,8 +2610,9 @@ def lista_blocos(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'nome',
-        index: bool = False
-    ) -> pd.DataFrame:
+        index: bool = False,
+        formato: str = 'dataframe'
+    ) -> Union[dict, pd.DataFrame]:
     """Lista de dados sobre os blocos partidários.
 
     Nas atividades parlamentares, partidos podem se juntar em blocos
@@ -1952,27 +2644,49 @@ def lista_blocos(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index : bool, default=False
-        Se True, define a coluna `id` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        Lista de dados sobre os blocos partidários.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     """
 
-    params = {}
+    params = {
+        'pagina': pagina,
+        'ordem': 'asc' if asc else 'desc',
+        'ordenarPor': ordenar_por
+    }
     if legislatura is not None:
         params['idLegislatura'] = legislatura
-    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    params['ordem'] = 'asc' if asc else 'desc'
-    params['ordenarPor'] = ordenar_por
 
-    dados = _get(path='blocos', params=params)
-    index_col = 'id' if index else None
-    return _df(dados, index_col)
+    cols_to_rename = {
+        'id': 'codigo',
+        'uri': 'uri',
+        'nome': 'nome',
+        'idLegislatura': 'legislatura'
+    }
+
+    return get_and_format(
+        api = 'camara',
+        path = 'blocos',
+        params = params,
+        unpack_keys = ['dados'],
+        cols_to_rename = cols_to_rename,
+        cols_to_int = ['codigo', 'legislatura'],
+        index = index,
+        formato = formato
+    )
 
 
 
@@ -1988,8 +2702,9 @@ def lista_deputados(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'nome',
-        index: bool = False
-    ) -> pd.DataFrame:
+        index: bool = False,
+        formato: str = 'dataframe'
+    ) -> Union[dict, pd.DataFrame]:
     """Listagem e busca de deputados, segundo critérios.
 
     Retorna uma lista de dados básicos sobre deputados que estiveram em
@@ -2034,16 +2749,27 @@ def lista_deputados(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index : bool, default=False
-        Se True, define a coluna `id` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        Tabela com informações básicas dos deputados federais.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     """
 
-    params = {}
+    params = {
+        'pagina': pagina,
+        'ordem': 'asc' if asc else 'desc',
+        'ordenarPor': ordenar_por
+    }
     if nome is not None:
         params['nome'] = nome
     if legislatura is not None:
@@ -2058,15 +2784,31 @@ def lista_deputados(
         params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
         params['dataFim'] = parse.data(fim, 'camara')
-    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    params['ordem'] = 'asc' if asc else 'desc'
-    params['ordenarPor'] = ordenar_por
 
-    dados = _get(path='deputados', params=params)
-    index_col = 'id' if index else None
-    return _df(dados, index_col)
+    cols_to_rename = {
+        'id': 'codigo',
+        'uri': 'uri',
+        'nome': 'nome',
+        'siglaPartido': 'partido',
+        'uriPartido': 'partido_uri',
+        'siglaUf': 'uf',
+        'idLegislatura': 'legislatura',
+        'urlFoto': 'foto',
+        'email': 'email'
+    }
+
+    return get_and_format(
+        api = 'camara',
+        path = 'deputados',
+        params = params,
+        unpack_keys = ['dados'],
+        cols_to_rename = cols_to_rename,
+        cols_to_int = ['codigo', 'legislatura'],
+        index = index,
+        formato = formato
+    )
 
 
 
@@ -2083,8 +2825,9 @@ def lista_eventos(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'dataHoraInicio',
-        index: bool = False
-    ) -> pd.DataFrame:
+        index: bool = False,
+        formato: str = 'dataframe'
+    ) -> Union[dict, pd.DataFrame]:
     """Lista de eventos ocorridos ou previstos nos diversos órgãos da Câmara.
 
     Retorna uma lista cujos elementos trazem informações básicas sobre eventos
@@ -2136,17 +2879,27 @@ def lista_eventos(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index : bool, default=False
-        Se True, define a coluna `id` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        Lista de eventos ocorridos ou previstos nos diversos órgãos da
-        Câmara.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     """
 
-    params = {}
+    params = {
+        'pagina': pagina,
+        'ordem': 'asc' if asc else 'desc',
+        'ordenarPor': ordenar_por
+    }
 
     if tipo_evento is not None:
         params['codTipoEvento'] = tipo_evento
@@ -2164,23 +2917,55 @@ def lista_eventos(
         params['horaInicio'] = hora_inicio
     if hora_fim is not None:
         params['horaFim'] = hora_fim
-    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    params['ordem'] = 'asc' if asc else 'desc'
-    params['ordenarPor'] = ordenar_por
 
-    dados = _get(path='eventos', params=params)
-    index_col = 'id' if index else None
-    return _df(dados, index_col)
+    cols_to_rename = {
+        'id': 'codigo',
+        'uri': 'url',
+        'dataHoraInicio': 'data_inicio',
+        'dataHoraFim': 'data_fim',
+        'situacao': 'situacao',
+        'descricaoTipo': 'descricao_tipo',
+        'descricao': 'descricao',
+        'orgaos': 'orgaos',
+        'urlRegistro': 'registro',
+        'localExterno': 'local_externo',
+        'localCamara.nome': 'local_nome',
+        'localCamara.predio': 'local_predio',
+        'localCamara.sala': 'local_sala',
+        'localCamara.andar': 'local_andar'
+    }
+
+    df = get_and_format(
+        api = 'camara',
+        path = 'eventos',
+        params = params,
+        unpack_keys = ['dados'],
+        cols_to_rename = cols_to_rename,
+        cols_to_date = ['data_inicio', 'data_fim'],
+        index = index,
+        formato = formato
+    )
+
+    if formato == 'dataframe':
+        def get_orgaos(orgaos):
+            cod = [orgao['id'] for orgao in orgaos]
+            if len(cod) < 2:
+                return cod[0]
+            return cod
+        df.orgaos = df.orgaos.apply(get_orgaos)
+
+    return df
 
 
 
 def lista_frentes(
         legislatura: Optional[int] = None,
         pagina: int = 1,
-        index: bool = False
-    ) -> pd.DataFrame:
+        index: bool = False,
+        formato: str = 'dataframe'
+    ) -> Union[dict, pd.DataFrame]:
     """Lista de frentes parlamentares de uma ou mais legislaturas.
 
     Retorna uma lista de informações sobre uma frente parlamentar - um
@@ -2200,24 +2985,43 @@ def lista_frentes(
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
     index : bool, default=False
-        Se True, define a coluna `id` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        Lista de frentes parlamentares de uma ou mais legislaturas.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     """
 
-    params = {}
-
+    params = {'pagina': pagina}
     if legislatura is not None:
         params['idLegislatura'] = legislatura
-    params['pagina'] = pagina
 
-    dados = _get(path='frentes', params=params)
-    index_col = 'id' if index else None
-    return _df(dados, index_col)
+    cols_to_rename = {
+        'id': 'codigo',
+        'uri': 'uri',
+        'titulo': 'titulo',
+        'idLegislatura': 'legislatura'
+    }
+
+    return get_and_format(
+        api = 'camara',
+        path = 'frentes',
+        params = params,
+        unpack_keys = ['dados'],
+        cols_to_rename = cols_to_rename,
+        cols_to_date = ['data_inicio', 'date_fim'],
+        index = index,
+        formato = formato
+    )
 
 
 
@@ -2227,8 +3031,9 @@ def lista_legislaturas(
         itens: Optional[int] = None,
         asc: bool = False,
         ordenar_por: str = 'id',
-        index: bool = False
-    ) -> pd.DataFrame:
+        index: bool = False,
+        formato: str = 'dataframe'
+    ) -> Union[dict, pd.DataFrame]:
     """Os períodos de mandatos e atividades parlamentares da Câmara.
 
     Legislatura é o nome dado ao período de trabalhos parlamentares entre uma
@@ -2257,28 +3062,49 @@ def lista_legislaturas(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index : bool, default=False
-        Se True, define a coluna `id` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        Lista de legislaturas da Câmara.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     """
 
-    params = {}
-
+    params = {
+        'pagina': pagina,
+        'ordem': 'asc' if asc else 'desc',
+        'ordenarPor': ordenar_por
+    }
     if data is not None:
         params['data'] = data
-    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    params['ordem'] = 'asc' if asc else 'desc'
-    params['ordenarPor'] = ordenar_por
 
-    dados = _get(path='legislaturas', params=params)
-    index_col = 'id' if index else None
-    return _df(dados, index_col)
+    cols_to_rename = {
+        'id': 'codigo',
+        'uri': 'uri',
+        'dataInicio': 'data_inicio',
+        'dataFim': 'data_fim'
+    }
+
+    return get_and_format(
+        api = 'camara',
+        path = 'legislaturas',
+        params = params,
+        unpack_keys = ['dados'],
+        cols_to_rename = cols_to_rename,
+        cols_to_date = ['data_inicio', 'data_fim'],
+        index = index,
+        formato = formato
+    )
 
 
 
@@ -2291,8 +3117,9 @@ def lista_orgaos(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'id',
-        index: bool = False
-    ) -> pd.DataFrame:
+        index: bool = False,
+        formato: str = 'dataframe'
+    ) -> Union[dict, pd.DataFrame]:
     """Lista das comissões e outros órgãos legislativos da Câmara.
 
     Retorna uma lista de informações básicas sobre os órgãos legislativos e
@@ -2328,17 +3155,27 @@ def lista_orgaos(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index : bool, default=False
-        Se True, define a coluna `id` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        Lista das comissões e outros órgãos legislativos da Câmara.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     """
 
-    params = {}
-
+    params = {
+        'pagina': pagina,
+        'ordem': 'asc' if asc else 'desc',
+        'ordenarPor': ordenar_por
+    }
     if sigla is not None:
         params['sigla'] = sigla
     if tipo is not None:
@@ -2347,15 +3184,29 @@ def lista_orgaos(
         params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
         params['dataFim'] = parse.data(fim, 'camara')
-    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    params['ordem'] = 'asc' if asc else 'desc'
-    params['ordenarPor'] = ordenar_por
 
-    dados = _get(path='orgaos', params=params)
-    index_col = 'id' if index else None
-    return _df(dados, index_col)
+    cols_to_rename = {
+        'id': 'codigo',
+        'uri': 'uri',
+        'sigla': 'sigla',
+        'nome': 'nome',
+        'apelido': 'apelido',
+        'codTipoOrgao': 'orgao_tipo_codigo',
+        'tipoOrgao': 'orgao_tipo',
+        'nomePublicacao': 'nome_publicacao'
+    }
+
+    return get_and_format(
+        api = 'camara',
+        path = 'orgaos',
+        params = params,
+        unpack_keys = ['dados'],
+        cols_to_rename = cols_to_rename,
+        index = index,
+        formato = formato
+    )
 
 
 
@@ -2367,8 +3218,9 @@ def lista_partidos(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'sigla',
-        index: bool = False
-    ) -> pd.DataFrame:
+        index: bool = False,
+        formato: str = 'dataframe'
+    ) -> Union[dict, pd.DataFrame]:
     """Os partidos políticos que têm ou já tiveram parlamentares em exercício
     na Câmara.
 
@@ -2401,33 +3253,52 @@ def lista_partidos(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index : bool, default=False
-        Se True, define a coluna `id` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        Lista de partidos políticos que têm ou já tiveram parlamentares em
-        exercício na Câmara.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     """
 
-    params = {}
-
+    params = {
+        'pagina': pagina,
+        'ordem': 'asc' if asc else 'desc',
+        'ordenarPor': ordenar_por
+    }
     if legislatura is not None:
         params['idLegislatura'] = legislatura
     if inicio is not None:
         params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
         params['dataFim'] = parse.data(fim, 'camara')
-    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    params['ordem'] = 'asc' if asc else 'desc'
-    params['ordenarPor'] = ordenar_por
+ 
+    cols_to_rename = {
+        'id': 'codigo',
+        'sigla': 'sigla',
+        'nome': 'nome',
+        'uri': 'uri'
+    }
 
-    dados = _get(path='partidos', params=params)
-    index_col = 'id' if index else None
-    return _df(dados, index_col)
+    return get_and_format(
+        api = 'camara',
+        path = 'partidos',
+        params = params,
+        unpack_keys = ['dados'],
+        cols_to_rename = cols_to_rename,
+        index = index,
+        formato = formato
+    )
 
 
 
@@ -2452,8 +3323,9 @@ def lista_proposicoes(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'id',
-        index: bool = False
-    ) -> pd.DataFrame:
+        index: bool = False,
+        formato: str = 'dataframe'
+    ) -> Union[dict, pd.DataFrame]:
     """Lista de proposições na Câmara.
 
     Lista de informações básicas sobre projetos de lei, resoluções, medidas
@@ -2541,17 +3413,27 @@ def lista_proposicoes(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index : bool, default=False
-        Se True, define a coluna `id` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        Lista de proposições na Câmara.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     """
 
-    params = {}
-
+    params = {
+        'pagina': pagina,
+        'ordem': 'asc' if asc else 'desc',
+        'ordenarPor': ordenar_por
+    }
     if tipo is not None:
         params['siglaTipo'] = tipo
     if numero is not None:
@@ -2584,15 +3466,28 @@ def lista_proposicoes(
         params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
         params['dataFim'] = parse.data(fim, 'camara')
-    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    params['ordem'] = 'asc' if asc else 'desc'
-    params['ordenarPor'] = ordenar_por
 
-    dados = _get(path='proposicoes', params=params)
-    index_col = 'id' if index else None
-    return _df(dados, index_col)
+    cols_to_rename = {
+        'id': 'codigo',
+        'uri': 'uri',
+        'siglaTipo': 'tipo',
+        'codTipo': 'tipo_codigo',
+        'numero': 'numero',
+        'ano': 'ano',
+        'ementa': 'ementa'
+    }
+
+    return get_and_format(
+        api = 'camara',
+        path = 'proposicoes',
+        params = params,
+        unpack_keys = ['dados'],
+        cols_to_rename = cols_to_rename,
+        index = index,
+        formato = formato
+    )
 
 
 
@@ -2606,8 +3501,9 @@ def lista_votacoes(
         itens: Optional[int] = None,
         asc: bool = False,
         ordenar_por: str = 'dataHoraRegistro',
-        index: bool = False
-    ) -> pd.DataFrame:
+        index: bool = False,
+        formato: str = 'dataframe'
+    ) -> Union[dict, pd.DataFrame]:
     """Lista de votações na Câmara.
 
     Retorna uma lista de informações básicas sobre as votações ocorridas em
@@ -2665,17 +3561,27 @@ def lista_votacoes(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
     index : bool, default=False
-        Se True, define a coluna `id` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        Lista de votações na Câmara.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     """
 
-    params = {}
-
+    params = {
+        'pagina': pagina,
+        'ordem': 'asc' if asc else 'desc',
+        'ordenarPor': ordenar_por
+    }
     if proposicao is not None:
         params['idProposicao'] = proposicao
     if evento is not None:
@@ -2686,22 +3592,41 @@ def lista_votacoes(
         params['dataInicio'] = parse.data(inicio, 'camara')
     if fim is not None:
         params['dataFim'] = parse.data(fim, 'camara')
-    params['pagina'] = pagina
     if itens is not None:
         params['itens'] = itens
-    params['ordem'] = 'asc' if asc else 'desc'
-    params['ordenarPor'] = ordenar_por
 
-    dados = _get(path='votacoes', params=params)
-    index_col = 'id' if index else None
-    return _df(dados, index_col)
+    cols_to_rename = {
+        'id': 'codigo',
+        'uri': 'uri',
+        'data': 'data',
+        'dataHoraRegistro': 'data_registro',
+        'siglaOrgao': 'orgao',
+        'uriOrgao': 'orgao_uri',
+        'uriEvento': 'evento_uri',
+        'proposicaoObjeto': 'proposicao',
+        'uriProposicaoObjeto': 'proposicao_uri',
+        'descricao': 'descricao',
+        'aprovacao': 'aprovacao'
+    }
+
+    return get_and_format(
+        api = 'camara',
+        path = 'votacoes',
+        params = params,
+        unpack_keys = ['dados'],
+        cols_to_rename = cols_to_rename,
+        cols_to_date = ['data', 'data_registro'],
+        index = index,
+        formato = formato
+    )
 
 
 
 def referencias(
         lista: str,
-        index: bool = False
-    ) -> pd.DataFrame:
+        index: bool = False,
+        formato: str = 'dataframe'
+    ) -> Union[dict, pd.DataFrame]:
     """Listas de valores válidos para as funções deste módulo.
 
     Parameters
@@ -2720,12 +3645,19 @@ def referencias(
             - 'situacoes_orgaos'
             - 'situacoes_proposicoes'
     index : bool, default=False
-        Se True, define a coluna `cod` como index do DataFrame.
+        Se True, define a coluna `codigo` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
 
     Returns
     -------
     pandas.core.frame.DataFrame
-        Lista das referências válidas.
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
 
     """
     
@@ -2743,14 +3675,22 @@ def referencias(
         'situacoes_proposicoes': 'situacoesProposicao'
     }
     
-    if lista in referencia.keys():
-        data = _get(f'referencias/{referencia[lista]}')
-    else:
+    if lista not in referencia.keys():
         raise TypeError('Referência inválida. Insira um dos seguintes valores para `lista`: ' \
             + ', '.join(list(referencia.keys())))
     
-    df = pd.DataFrame(data['dados'])
-    if index:
-        df.set_index('cod', inplace=True)
-    
-    return df
+    cols_to_rename = {
+        'cod': 'codigo',
+        'sigla': 'sigla',
+        'nome': 'nome',
+        'descricao': 'descricao'
+    }
+
+    return get_and_format(
+        api = 'camara',
+        path = ['referencias', referencia[lista]],
+        unpack_keys = ['dados'],
+        cols_to_rename = cols_to_rename,
+        index = index,
+        formato = formato
+    )

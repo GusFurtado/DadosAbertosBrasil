@@ -75,7 +75,6 @@ def lista_blocos(
         cols_to_rename = cols_to_rename,
         cols_to_int = ['codigo'],
         cols_to_date = ['data_criacao'],
-        index_col = 'codigo',
         index = index,
         formato = formato
     )
@@ -216,7 +215,6 @@ def lista_legislatura(
         cols_to_rename = cols_to_rename,
         cols_to_int = ['codigo'],
         cols_to_date= ['data_inicio', 'data_fim'],
-        index_col = 'codigo',
         index = index,
         formato = formato
     )
@@ -308,7 +306,6 @@ def lista_partidos(
         cols_to_rename = cols_to_rename,
         cols_to_int = ['codigo'],
         cols_to_date = ['data_criacao', 'data_extincao'],
-        index_col = 'codigo',
         index = index,
         formato = formato
     )
@@ -464,7 +461,6 @@ def lista_senadores(
         cols_to_rename = cols_to_rename,
         cols_to_int = ['codigo'],
         cols_to_date = ['data_inicio', 'data_fim'],
-        index_col = 'codigo',
         index = index,
         formato = formato
     )
@@ -544,7 +540,6 @@ def lista_uso_palavra(
         cols_to_bool = ['ativo'],
         true_value = 'S',
         false_value = 'N',
-        index_col = 'codigo',
         index = index,
         formato = formato
     )
@@ -884,7 +879,6 @@ class Senador(DAB_Base):
             cols_to_bool = ['republicacao'],
             true_value = 'Sim',
             false_value = 'Não',
-            index_col = 'codigo',
             index = index,
             formato = formato
         )
@@ -973,7 +967,6 @@ class Senador(DAB_Base):
             cols_to_bool = ['autor_principal', 'outros_autores'],
             true_value = 'Sim',
             false_value = 'Não',
-            index_col = 'codigo',
             index = index,
             formato = formato
         )
@@ -1234,7 +1227,6 @@ class Senador(DAB_Base):
             cols_to_bool = ['republicacao'],
             true_value = 'Sim',
             false_value = 'Não',
-            index_col = 'codigo',
             index = index,
             formato = formato
         )
@@ -1281,7 +1273,6 @@ class Senador(DAB_Base):
             cols_to_rename = cols_to_rename,
             cols_to_int = ['codigo'],
             cols_to_date = ['data_filiacao', 'data_desfiliacao'],
-            index_col = 'codigo',
             index = index,
             formato = formato
         )
@@ -1352,7 +1343,6 @@ class Senador(DAB_Base):
             cols_to_int = ['codigo'],
             cols_to_date = ['primeira_legislatura_inicio', 'primeira_legislatura_fim',
                 'segunda_legislatura_inicio', 'segunda_legislatura_fim'],
-            index_col = 'codigo',
             index = index,
             formato = formato
         )
@@ -1454,7 +1444,6 @@ class Senador(DAB_Base):
             cols_to_rename = cols_to_rename,
             cols_to_int = ['codigo'],
             cols_to_date = ['inicio', 'inicio_previsto', 'fim', 'fim_previsto'],
-            index_col = 'codigo',
             index = index,
             formato = formato
         )
@@ -1644,7 +1633,6 @@ class Senador(DAB_Base):
             cols_to_bool = ['votacao_secreta'],
             true_value = 'Sim',
             false_value = 'Não',
-            index_col = 'codigo',
             index = index,
             formato = formato
         )

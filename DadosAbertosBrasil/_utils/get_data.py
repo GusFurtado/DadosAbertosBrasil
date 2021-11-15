@@ -67,7 +67,7 @@ def get_and_format(
         cols_to_bool: Optional[List[str]] = None,
         true_value: Optional[str] = None,
         false_value: Optional[str] = None,
-        index_col: Optional[str] = None,
+        index_col: str = 'codigo',
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
@@ -122,7 +122,7 @@ def get_and_format(
                     false_value: False
                 })
 
-    if index and (index_col is not None) and (not df.empty):
+    if index and (not df.empty):
         df.set_index(index_col, inplace=True)
 
     return df
