@@ -67,10 +67,66 @@ def get_and_format(
         cols_to_bool: Optional[List[str]] = None,
         true_value: Optional[str] = None,
         false_value: Optional[str] = None,
+        url_cols: Optional[List[str]] = None,
+        url: bool = True,
         index_col: str = 'codigo',
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
+    """Função padrão para coleta e formatação de dados JSON.
+
+    Parameters
+    ----------
+    api : {'camara', 'senado'}
+        Seleciona o endpoint da API desejada.
+    path : str or list of str
+        Diretório dos dados a partir do endpoint.
+    params : dict, optional
+        Parâmetros do request HTTP.
+    unpack_keys : list of str, optional
+        Lista de chaves do arquivo JSON para acessar os dados relevantes.
+    cols_to_rename : dict, optional
+        Colunas que serão renomeadas.
+    cols_to_int : list of str, optional
+        Lista de colunas que serão convertidas em `int`.
+    cols_to_date : list of str, optional
+        Lista de colunas que serão convertidas em `datetime`.
+    cols_to_bool : list of str, optional
+        Lista de colunas que serão convertidas em `bool`.
+    true_value : str, optional
+        Valor que será convertido para `True` nas colunas listadas pelo
+        argumento `cols_to_bool`.
+    false_value : str, optional
+        Valor que será convertido para `False` nas colunas listadas pelo
+        argumento `cols_to_bool`.
+    url_cols : list of str, optional
+        Lista das colunas que serão removidas ou não pelo argumento `url`.
+    url : bool, default=True
+        Retorna ou não as colunas contendo URI, URL ou e-mails.
+    index_col : str, default='codigo'
+        Nome da coluna que será o index do DataFrame, caso o argumento `index`
+        seja igual a `True`.
+    index : bool, default=False
+        Se True, define a coluna de `index_col` como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
+    formato : {'dataframe', 'json'}, default='dataframe'
+        Formato do dado que será retornado.
+        Os dados no formato 'json' são mais completos, porém alguns filtros
+        podem não ser aplicados.
+
+    Returns
+    -------
+    pandas.core.frame.DataFrame
+        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
+    list of dict
+        Se formato = 'json', retorna os dados brutos no formato json.
+
+    Raises
+    ------
+    DadosAbertosBrasil._utils.errors.DAB_InputError
+        Caso nenhum dado seja encontrado.
+    
+    """
 
     ENDPOINTS = {
         'camara': 'https://dadosabertos.camara.leg.br/api/v2/',
@@ -121,6 +177,9 @@ def get_and_format(
                     true_value: True,
                     false_value: False
                 })
+
+    if not url:
+        df.drop(columns=url_cols, inplace=True)
 
     if index and (not df.empty):
         df.set_index(index_col, inplace=True)
@@ -182,6 +241,17 @@ class DAB_Base:
 
 
     def _set_attribute(self, attr:str, attr_dict:dict) -> None:
+        """Converte os dados JSON em atributos para o objeto.
+
+        Parameters
+        ----------
+        attr : str
+            Nome do atributo.
+        attr_dict : dict
+            Dicionário de atributos (JSON).
+        
+        """
+
         x = self.dados
         try:
             for key in attr_dict[attr]:

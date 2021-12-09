@@ -237,6 +237,7 @@ class Deputado(DAB_Base):
             itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'ano',
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -273,6 +274,9 @@ class Deputado(DAB_Base):
         ordenar_por : str, default='ano'
             Nome do campo pelo qual a lista deverá ser ordenada:
             qualquer um dos campos do retorno, e também idLegislatura.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -290,7 +294,11 @@ class Deputado(DAB_Base):
 
         """
 
-        params = {}
+        params = {
+            'pagina': pagina,
+            'ordem': 'asc' if asc else 'desc',
+            'ordenarPor': ordenar_por
+        }
         if legislatura is not None:
             params['idLegislatura'] = legislatura
         if ano is not None:
@@ -299,17 +307,14 @@ class Deputado(DAB_Base):
             params['mes'] = mes
         if fornecedor is not None:
             params['cnpjCpfFornecedor'] = fornecedor
-        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        params['ordem'] = 'asc' if asc else 'desc'
-        params['ordenarPor'] = ordenar_por
 
         cols_to_rename = {
+            'codDocumento': 'codigo',
             'ano': 'ano',
             'mes': 'mes',
             'tipoDespesa': 'despesa',
-            'codDocumento': 'codigo',
             'tipoDocumento': 'tipo',
             'codTipoDocumento': 'tipo_codigo',
             'dataDocumento': 'data',
@@ -332,6 +337,8 @@ class Deputado(DAB_Base):
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data'],
+            url_cols = ['url'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -346,6 +353,7 @@ class Deputado(DAB_Base):
             itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataHoraInicio',
+            url: bool = True,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
         """Os discursos feitos por um deputado em eventos diversos.
@@ -379,6 +387,9 @@ class Deputado(DAB_Base):
         ordenar_por : str, default='dataHoraInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
@@ -428,6 +439,8 @@ class Deputado(DAB_Base):
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data_inicio', 'data_fim'],
+            url_cols = ['evento_uri', 'texto_uri', 'audio_url', 'video_url'],
+            url = url,
             formato = formato
         )
 
@@ -441,6 +454,7 @@ class Deputado(DAB_Base):
             itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataHoraInicio',
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -474,6 +488,9 @@ class Deputado(DAB_Base):
         ordenar_por : str, default='dataHoraInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -491,18 +508,19 @@ class Deputado(DAB_Base):
 
         """
 
-        params = {}
+        params = {
+            'pagina': pagina,
+            'ordem': 'asc' if asc else 'desc',
+            'ordenarPor': ordenar_por
+        }
         if legislatura is not None:
             params['idLegislatura'] = legislatura
         if inicio is not None:
             params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
             params['dataFim'] = parse.data(fim, 'camara')
-        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        params['ordem'] = 'asc' if asc else 'desc'
-        params['ordenarPor'] = ordenar_por
 
         cols_to_rename = {
             'id': 'codigo',	
@@ -528,6 +546,8 @@ class Deputado(DAB_Base):
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data_inicio', 'data_fim'],
+            url_cols = ['uri', 'url'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -545,6 +565,7 @@ class Deputado(DAB_Base):
 
     def frentes(
             self,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -557,6 +578,9 @@ class Deputado(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -586,6 +610,8 @@ class Deputado(DAB_Base):
             path = ['deputados', self.cod, 'frentes'],
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
+            url_cols = ['uri'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -642,6 +668,7 @@ class Deputado(DAB_Base):
             itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataInicio',
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -677,6 +704,9 @@ class Deputado(DAB_Base):
         ordenar_por : str, default='dataInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -694,16 +724,17 @@ class Deputado(DAB_Base):
 
         """
 
-        params = {}
+        params = {
+            'pagina': pagina,
+            'ordem': 'asc' if asc else 'desc',
+            'ordenarPor': ordenar_por
+        }
         if inicio is not None:
             params['dataInicio'] = parse.data(inicio, 'camara')
         if fim is not None:
             params['dataFim'] = parse.data(fim, 'camara')
-        params['pagina'] = pagina
         if itens is not None:
             params['itens'] = itens
-        params['ordem'] = 'asc' if asc else 'desc'
-        params['ordenarPor'] = ordenar_por
 
         cols_to_rename = {
             'idOrgao': 'codigo',
@@ -725,6 +756,8 @@ class Deputado(DAB_Base):
             cols_to_rename = cols_to_rename,
             cols_to_int = ['titulo_codigo'],
             cols_to_date = ['data_inicio', 'data_fim'],
+            url_cols = ['uri'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -732,6 +765,7 @@ class Deputado(DAB_Base):
 
     def profissoes(
             self,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -743,6 +777,9 @@ class Deputado(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -775,6 +812,8 @@ class Deputado(DAB_Base):
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data'],
+            url_cols = ['uri'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -895,6 +934,7 @@ class Evento(DAB_Base):
 
     def deputados(
             self,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -909,6 +949,9 @@ class Evento(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -943,6 +986,8 @@ class Evento(DAB_Base):
             path = ['eventos', self.cod, 'deputados'],
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
+            url_cols = ['uri', 'partido_uri', 'foto', 'email'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -950,6 +995,7 @@ class Evento(DAB_Base):
 
     def orgaos(
             self,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -960,6 +1006,9 @@ class Evento(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -994,6 +1043,8 @@ class Evento(DAB_Base):
             path = ['eventos', self.cod, 'orgaos'],
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
+            url_cols = ['uri', 'partido_uri', 'foto', 'email'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -1001,6 +1052,7 @@ class Evento(DAB_Base):
 
     def pauta(
             self,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -1016,6 +1068,9 @@ class Evento(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `ordem` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -1052,6 +1107,8 @@ class Evento(DAB_Base):
             path = ['eventos', self.cod, 'pauta'],
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
+            url_cols = ['uri'],
+            url = url,
             index_col = 'ordem',
             index = index,
             formato = formato
@@ -1060,6 +1117,7 @@ class Evento(DAB_Base):
 
     def votacoes(
             self,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -1072,6 +1130,9 @@ class Evento(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -1096,7 +1157,7 @@ class Evento(DAB_Base):
             'dataHoraRegistro': 'data_registro',
             'siglaOrgao': 'orgao_sigla',
             'uriOrgao': 'orgao_uri',
-            'uriEvento': 'uri_evento',
+            'uriEvento': 'evento_uri',
             'proposicaoObjeto': 'proposicao',
             'uriProposicaoObjeto': 'proposicao_uri',
             'descricao': 'descricao',
@@ -1109,6 +1170,8 @@ class Evento(DAB_Base):
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data', 'data_registro'],
+            url_cols = ['uri', 'orgao_uri', 'evento_uri', 'proposicao_uri'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -1202,6 +1265,7 @@ class Frente(DAB_Base):
 
     def membros(
             self,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -1215,6 +1279,9 @@ class Frente(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -1254,6 +1321,8 @@ class Frente(DAB_Base):
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data_inicio', 'data_fim'],
+            url_cols = ['uri', 'partido_uri', 'foto', 'email'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -1322,6 +1391,7 @@ class Legislatura(DAB_Base):
             self,
             inicio: Union[datetime, str, None] = None,
             fim: Union[datetime, str, None] = None,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -1341,6 +1411,9 @@ class Legislatura(DAB_Base):
         fim : str, optional
             Data de término do intervalo de tempo do qual se deseja saber a
             composição da Mesa, no formato 'AAAA-MM-DD'.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -1388,6 +1461,8 @@ class Legislatura(DAB_Base):
             cols_to_rename = cols_to_rename,
             cols_to_int = ['titulo_codigo'],
             cols_to_date = ['data_inicio', 'data_fim'],
+            url_cols = ['uri', 'partido_uri', 'foto', 'email'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -1489,6 +1564,7 @@ class Orgao(DAB_Base):
             itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'dataHoraInicio',
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -1522,8 +1598,16 @@ class Orgao(DAB_Base):
         ordenar_por : str, default='dataHoraInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Os dados no formato 'json' são mais completos, porém alguns filtros
+            podem não ser aplicados.
+
 
         Returns
         -------
@@ -1557,7 +1641,7 @@ class Orgao(DAB_Base):
             'localExterno': 'local_externo',
             'orgaos': 'orgaos',
             'localCamara': 'local_camara',
-            'urlRegistro': 'uri',
+            'urlRegistro': 'url',
         }
 
         return get_and_format(
@@ -1567,6 +1651,8 @@ class Orgao(DAB_Base):
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data_inicio', 'data_fim'],
+            url_cols = ['uri', 'url'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -1578,6 +1664,7 @@ class Orgao(DAB_Base):
             fim: Union[datetime, str, None] = None,
             pagina: int = 1,
             itens: Optional[int] = None,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -1603,6 +1690,9 @@ class Orgao(DAB_Base):
         itens : int, optional
             Número máximo de itens na “página” que se deseja obter com esta
             requisição.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -1652,6 +1742,8 @@ class Orgao(DAB_Base):
             cols_to_rename = cols_to_rename,
             cols_to_int = ['titulo_codigo'],
             cols_to_date = ['data_inicio', 'data_fim'],
+            url_cols = ['uri', 'partido_uri', 'foto', 'email'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -1666,6 +1758,7 @@ class Orgao(DAB_Base):
             itens: Optional[int] = None,
             asc: bool = False,
             ordenar_por: str = 'dataHoraRegistro',
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -1709,6 +1802,9 @@ class Orgao(DAB_Base):
         ordenar_por : str, default='dataHoraRegistro'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -1761,6 +1857,8 @@ class Orgao(DAB_Base):
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data', 'data_registro'],
+            url_cols = ['uri', 'evento_uri', 'orgao_uri', 'proposicao_uri'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -1866,6 +1964,7 @@ class Partido(DAB_Base):
             itens: Optional[int] = None,
             ordenar_por: Optional[str] = None,
             asc: bool = True,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -1900,6 +1999,9 @@ class Partido(DAB_Base):
         ordenar_por : str, optional
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -1950,6 +2052,8 @@ class Partido(DAB_Base):
             params = params,
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
+            url_cols = ['uri', 'partido_uri', 'foto', 'email'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -2101,6 +2205,7 @@ class Proposicao(DAB_Base):
 
     def autores(
             self,
+            url: bool = True,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
         """Lista pessoas e/ou entidades autoras da proposição.
@@ -2117,6 +2222,9 @@ class Proposicao(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
@@ -2132,8 +2240,8 @@ class Proposicao(DAB_Base):
         """
 
         cols_to_rename = {
-            'uri': 'uri',
             'nome': 'nome',
+            'uri': 'uri',
             'codTipo': 'tipo_codigo',
             'tipo': 'tipo',
             'ordemAssinatura': 'ordem_assinatura',
@@ -2145,12 +2253,15 @@ class Proposicao(DAB_Base):
             path = ['proposicoes', self.cod, 'autores'],
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
+            url_cols = ['uri'],
+            url = url,
             formato = formato
         )
 
 
     def relacionadas(
             self,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -2162,6 +2273,9 @@ class Proposicao(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -2195,6 +2309,8 @@ class Proposicao(DAB_Base):
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
             cols_to_int = ['tipo_codigo', 'numero', 'ano'],
+            url_cols = ['uri'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -2250,6 +2366,7 @@ class Proposicao(DAB_Base):
             self,
             inicio: Union[datetime, str, None] = None,
             fim: Union[datetime, str, None] = None,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -2266,6 +2383,9 @@ class Proposicao(DAB_Base):
             Data de início da tramitação, no formato 'AAAA-MM-DD'.
         fim : datetime.datetime or str, optional
             Data de término da tramitação, no formato 'AAAA-MM-DD'.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `sequencia` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -2313,6 +2433,8 @@ class Proposicao(DAB_Base):
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data'],
             cols_to_int = ['tramitacao_codigo', 'situacao_codigo'],
+            url_cols = ['orgao_uri', 'ultimo_relator_uri', 'url'],
+            url = url,
             index_col = 'sequencia',
             index = index,
             formato = formato
@@ -2323,6 +2445,7 @@ class Proposicao(DAB_Base):
             self,
             asc: bool = False,
             ordenar_por: str = 'dataHoraRegistro',
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -2342,6 +2465,9 @@ class Proposicao(DAB_Base):
         ordenar_por : str, default='dataHoraRegistro'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -2386,6 +2512,8 @@ class Proposicao(DAB_Base):
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data'],
             cols_to_int = ['tramitacao_codigo', 'situacao_codigo'],
+            url_cols = ['uri', 'evento_uri', 'orgao_uri', 'proposicao_uri'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -2491,6 +2619,7 @@ class Votacao(DAB_Base):
 
     def orientacoes(
             self,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
@@ -2511,6 +2640,9 @@ class Votacao(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -2541,6 +2673,8 @@ class Votacao(DAB_Base):
             path = ['votacoes', self.cod, 'orientacoes'],
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
+            url_cols = ['bloco_uri'],
+            url = url,
             index_col = 'bloco_codigo',
             index = index,
             formato = formato
@@ -2549,6 +2683,7 @@ class Votacao(DAB_Base):
 
     def votos(
             self,
+            url: bool = True,
             formato: str = 'dataframe'
         ) -> Union[dict, pd.DataFrame]:
         """Como cada parlamentar votou em uma votação nominal e aberta.
@@ -2565,6 +2700,9 @@ class Votacao(DAB_Base):
 
         Parameters
         ----------
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         formato : {'dataframe', 'json'}, default='dataframe'
             Formato do dado que será retornado.
             Os dados no formato 'json' são mais completos, porém alguns filtros
@@ -2599,6 +2737,8 @@ class Votacao(DAB_Base):
             unpack_keys = ['dados'],
             cols_to_rename = cols_to_rename,
             cols_to_date = ['data'],
+            url_cols = ['deputado_uri', 'deputado_partido_uri', 'deputado_foto', 'deputado_email'],
+            url = url,
             formato = formato
         )
 
@@ -2610,6 +2750,7 @@ def lista_blocos(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'nome',
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
@@ -2643,6 +2784,9 @@ def lista_blocos(
     ordenar_por : str, default='nome'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -2684,6 +2828,8 @@ def lista_blocos(
         unpack_keys = ['dados'],
         cols_to_rename = cols_to_rename,
         cols_to_int = ['codigo', 'legislatura'],
+        url_cols = ['uri'],
+        url = url,
         index = index,
         formato = formato
     )
@@ -2702,6 +2848,7 @@ def lista_deputados(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'nome',
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
@@ -2748,6 +2895,9 @@ def lista_deputados(
     ordenar_por : str, default='nome'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -2806,6 +2956,8 @@ def lista_deputados(
         unpack_keys = ['dados'],
         cols_to_rename = cols_to_rename,
         cols_to_int = ['codigo', 'legislatura'],
+        url_cols = ['uri', 'partido_uri', 'foto', 'email'],
+        url = url,
         index = index,
         formato = formato
     )
@@ -2825,6 +2977,7 @@ def lista_eventos(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'dataHoraInicio',
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
@@ -2878,6 +3031,9 @@ def lista_eventos(
     ordenar_por : str, default='dataHoraInicio'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -2922,7 +3078,7 @@ def lista_eventos(
 
     cols_to_rename = {
         'id': 'codigo',
-        'uri': 'url',
+        'uri': 'uri',
         'dataHoraInicio': 'data_inicio',
         'dataHoraFim': 'data_fim',
         'situacao': 'situacao',
@@ -2944,6 +3100,8 @@ def lista_eventos(
         unpack_keys = ['dados'],
         cols_to_rename = cols_to_rename,
         cols_to_date = ['data_inicio', 'data_fim'],
+        url_cols = ['uri'],
+        url = url,
         index = index,
         formato = formato
     )
@@ -2963,6 +3121,7 @@ def lista_eventos(
 def lista_frentes(
         legislatura: Optional[int] = None,
         pagina: int = 1,
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
@@ -2984,6 +3143,9 @@ def lista_frentes(
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -3019,6 +3181,8 @@ def lista_frentes(
         unpack_keys = ['dados'],
         cols_to_rename = cols_to_rename,
         cols_to_date = ['data_inicio', 'date_fim'],
+        url_cols = ['uri'],
+        url = url,
         index = index,
         formato = formato
     )
@@ -3031,6 +3195,7 @@ def lista_legislaturas(
         itens: Optional[int] = None,
         asc: bool = False,
         ordenar_por: str = 'id',
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
@@ -3061,6 +3226,9 @@ def lista_legislaturas(
     ordenar_por : str, default='id'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -3102,6 +3270,8 @@ def lista_legislaturas(
         unpack_keys = ['dados'],
         cols_to_rename = cols_to_rename,
         cols_to_date = ['data_inicio', 'data_fim'],
+        url_cols = ['uri'],
+        url = url,
         index = index,
         formato = formato
     )
@@ -3117,6 +3287,7 @@ def lista_orgaos(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'id',
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
@@ -3154,6 +3325,9 @@ def lista_orgaos(
     ordenar_por : str, default='id'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -3204,6 +3378,8 @@ def lista_orgaos(
         params = params,
         unpack_keys = ['dados'],
         cols_to_rename = cols_to_rename,
+        url_cols = ['uri'],
+        url = url,
         index = index,
         formato = formato
     )
@@ -3218,6 +3394,7 @@ def lista_partidos(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'sigla',
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
@@ -3252,6 +3429,9 @@ def lista_partidos(
     ordenar_por : str, default='sigla'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -3296,6 +3476,8 @@ def lista_partidos(
         params = params,
         unpack_keys = ['dados'],
         cols_to_rename = cols_to_rename,
+        url_cols = ['uri'],
+        url = url,
         index = index,
         formato = formato
     )
@@ -3323,6 +3505,7 @@ def lista_proposicoes(
         itens: Optional[int] = None,
         asc: bool = True,
         ordenar_por: str = 'id',
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
@@ -3412,6 +3595,9 @@ def lista_proposicoes(
     ordenar_por : str, default='id'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -3485,6 +3671,8 @@ def lista_proposicoes(
         params = params,
         unpack_keys = ['dados'],
         cols_to_rename = cols_to_rename,
+        url_cols = ['uri'],
+        url = url,
         index = index,
         formato = formato
     )
@@ -3501,6 +3689,7 @@ def lista_votacoes(
         itens: Optional[int] = None,
         asc: bool = False,
         ordenar_por: str = 'dataHoraRegistro',
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[dict, pd.DataFrame]:
@@ -3560,6 +3749,9 @@ def lista_votacoes(
     ordenar_por : str, default='dataHoraRegistro'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -3616,6 +3808,8 @@ def lista_votacoes(
         unpack_keys = ['dados'],
         cols_to_rename = cols_to_rename,
         cols_to_date = ['data', 'data_registro'],
+        url_cols = ['uri', 'orgao_uri', 'evento_uri', 'proposicao_uri'],
+        url = url,
         index = index,
         formato = formato
     )

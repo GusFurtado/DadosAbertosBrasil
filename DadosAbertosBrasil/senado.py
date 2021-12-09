@@ -91,6 +91,7 @@ def lista_legislatura(
         partido: Optional[str] = None,
         contendo: Optional[str] = None,
         excluindo: Optional[str] = None,
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[pd.DataFrame, List[dict]]:
@@ -123,6 +124,9 @@ def lista_legislatura(
         Captura apenas senadores contendo esse texto no nome.
     excluindo : str, optional
         Exclui da consulta senadores contendo esse texto no nome.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -215,6 +219,8 @@ def lista_legislatura(
         cols_to_rename = cols_to_rename,
         cols_to_int = ['codigo'],
         cols_to_date= ['data_inicio', 'data_fim'],
+        url_cols = ['foto', 'pagina_parlamentar', 'pagina_particular', 'email'],
+        url = url,
         index = index,
         formato = formato
     )
@@ -319,6 +325,7 @@ def lista_senadores(
         partido: Optional[str] = None,
         contendo: Optional[str] = None,
         excluindo: Optional[str] = None,
+        url: bool = True,
         index: bool = False,
         formato: str = 'dataframe'
     ) -> Union[pd.DataFrame, List[dict]]:
@@ -341,6 +348,9 @@ def lista_senadores(
         Captura apenas senadores contendo esse texto no nome.
     excluindo : str, optional
         Exclui da consulta senadores contendo esse texto no nome.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -461,6 +471,8 @@ def lista_senadores(
         cols_to_rename = cols_to_rename,
         cols_to_int = ['codigo'],
         cols_to_date = ['data_inicio', 'data_fim'],
+        url_cols = ['foto', 'pagina_parlamentar', 'pagina_particular', 'email'],
+        url = url,
         index = index,
         formato = formato
     )
@@ -551,6 +563,7 @@ def orcamento(
         tipo: Optional[str] = None,
         ano_execucao: Optional[int] = None,
         ano_materia: Optional[int] = None,
+        url: bool = True,
         formato: str = 'dataframe'
     ) -> Union[pd.DataFrame, List[dict]]:
     """Obtém a lista dos lotes de emendas orçamentárias.
@@ -565,6 +578,9 @@ def orcamento(
         Ano que o orçamento foi executado.
     ano_materia : int, optional
         Ano da matéria.
+    url : bool, default=False
+        Se False, remove as colunas contendo URI, URL e e-mails.
+        Esse argumento é ignorado se `formato` for igual a 'json'.
     formato : {'dataframe', 'json'}, default='dataframe'
         Formato do dado que será retornado.
         Os dados no formato 'json' são mais completos, porém alguns filtros
@@ -620,6 +636,8 @@ def orcamento(
         cols_to_bool = ['ativo'],
         true_value = 'Sim',
         false_value = 'Não',
+        url_cols = ['autor_email'],
+        url = url,
         formato = formato
     )
 
@@ -792,6 +810,7 @@ class Senador(DAB_Base):
             numero_sessao: Optional[int] = None,
             tipo_pronunciamento: Optional[str] = None,
             tipo_sessao: Optional[str] = None,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[pd.DataFrame, List[dict]]:
@@ -817,6 +836,9 @@ class Senador(DAB_Base):
             Sigla do tipo de pronunciamento.
         tipo_sessao : str, optional
             Tipo da sessão plenária.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -879,6 +901,8 @@ class Senador(DAB_Base):
             cols_to_bool = ['republicacao'],
             true_value = 'Sim',
             false_value = 'Não',
+            url_cols = ['url', 'publicacao_url'],
+            url = url,
             index = index,
             formato = formato
         )
@@ -1138,6 +1162,7 @@ class Senador(DAB_Base):
             numero_sessao: Optional[int] = None,
             tipo_pronunciamento: Optional[str] = None,
             tipo_sessao: Optional[str] = None,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[pd.DataFrame, List[dict]]:
@@ -1166,6 +1191,9 @@ class Senador(DAB_Base):
             Sigla do tipo de pronunciamento.
         tipo_sessao : str, optional
             Tipo da sessão plenária.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
@@ -1227,6 +1255,8 @@ class Senador(DAB_Base):
             cols_to_bool = ['republicacao'],
             true_value = 'Sim',
             false_value = 'Não',
+            url_cols = ['url', 'publicacao_url'],
+            url = url,
             index = index,
             formato = formato
         )
