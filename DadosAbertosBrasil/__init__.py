@@ -33,15 +33,6 @@ Licença
 -------
     - MIT
 
-Próximos Passos
----------------
-    - Conclusão do módulo `senado`;
-    - Desenvolvimento do módulo `transparencia` para coleta de dados do
-      Portal da Transparência do Governo Federal;
-    - Expansão do módulo `ibge`;
-    - Adição constante de novas funções no módulo `favoritos`;
-    - Adição constante de novos métodos à classe `UF`.
-
 """
 
 from . import bacen
@@ -55,5 +46,5 @@ from ._utils.errors import *
 
 
 
-__version__ = '0.3.1'
+__version__ = '0.4.0'
 __author__ = 'Gustavo Furtado da Silva'

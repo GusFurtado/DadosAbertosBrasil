@@ -570,7 +570,9 @@ class UF:
             itens: Optional[int] = None,
             asc: bool = True,
             ordenar_por: str = 'nome',
-            index: bool = False
+            url: bool = True,
+            index: bool = False,
+            formato: str = 'dataframe'
         ) -> DataFrame:
         """Lista dos deputados federais da UF em exercício.
 
@@ -612,8 +614,14 @@ class UF:
         ordenar_por : str, default='nome'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
+        formato : {'dataframe', 'json'}, default='dataframe'
+            Formato do dado que será retornado.
+            Obs.: Alguns filtros não serão aplicados no formato 'json'.
 
         Returns
         -------
@@ -651,7 +659,9 @@ class UF:
             itens = itens,
             asc = asc,
             ordenar_por = ordenar_por,
-            index = index
+            url = url,
+            index = index,
+            formato = formato
         )
 
 
@@ -920,6 +930,7 @@ class UF:
             partido: Optional[str] = None,
             contendo: Optional[str] = None,
             excluindo: Optional[str] = None,
+            url: bool = True,
             index: bool = False,
             formato: str = 'dataframe'
         ) -> Union[DataFrame, dict]:
@@ -940,6 +951,9 @@ class UF:
             Captura apenas senadores contendo esse texto no nome.
         excluindo : str, optional
             Exclui da consulta senadores contendo esse texto no nome.
+        url : bool, default=False
+            Se False, remove as colunas contendo URI, URL e e-mails.
+            Esse argumento é ignorado se `formato` for igual a 'json'.
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
         formato : {'dataframe', 'json'}, default='dataframe'
@@ -980,6 +994,7 @@ class UF:
             partido = partido,
             contendo = contendo,
             excluindo = excluindo,
+            url = url,
             index = index,
             formato = formato
         )
