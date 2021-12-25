@@ -10,7 +10,7 @@ References
 
 """
 
-from typing import Optional, Union
+from typing import Iterator, Optional, Union
 
 from DadosAbertosBrasil._utils import parse
 from DadosAbertosBrasil._utils.get_data import get_data
@@ -35,16 +35,28 @@ class _Fotografia:
     titulo : str
         Título da fotografia.
 
+    Methods
+    -------
+    __call__(altura:int=None, largura:int=None) -> str
+        Gera a URL da fotografia.
+
     Examples
     --------
-    Capturar a primeira fotografia da galeria de Fortaleza.
+    Instanciar a galeria de fotos de Fortaleza.
 
     >>> fortaleza = ibge.Galeria(2304400)
-    >>> foto = fortaleza.fotografias[0]
+
+    Visualizar lista de fotografias dentro da galeria.
+
+    >>> fortaleza.fotografias
+
+    Selecionar primeira fotografia da galeria.
+
+    >>> foto = fortaleza[0]
     
     Gerar uma URL da fotografia com altura máxima de 500 pixels.
 
-    >>> foto.url(altura=500)
+    >>> foto(altura=500)
     'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600&max...'
 
     References
@@ -65,8 +77,8 @@ class _Fotografia:
     def __str__(self) -> str:
         return f'Fotografia {self.id}'
 
-
-    def url(
+    
+    def __call__(
             self,
             altura: Optional[int] = None,
             largura: Optional[int] = None
@@ -84,18 +96,6 @@ class _Fotografia:
         -------
         str
             URL da fotografia.
-
-        Examples
-        --------
-        Capturar a primeira fotografia da galeria de Fortaleza.
-
-        >>> fortaleza = ibge.Galeria(2304400)
-        >>> foto = fortaleza.fotografias[0]
-        
-        Gerar uma URL da fotografia com altura máxima de 500 pixels.
-
-        >>> foto.url(altura=500)
-        'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600...'
 
         """
         
@@ -127,14 +127,21 @@ class Galeria:
     
     Examples
     --------
-    Capturar a primeira fotografia da galeria de Fortaleza.
+    Instanciar a galeria de fotos de Fortaleza.
 
     >>> fortaleza = ibge.Galeria(2304400)
-    >>> foto = fortaleza.fotografias[0]
+
+    Visualizar lista de fotografias dentro da galeria.
+
+    >>> fortaleza.fotografias
+
+    Selecionar primeira fotografia da galeria.
+
+    >>> foto = fortaleza[0]
     
     Gerar uma URL da fotografia com altura máxima de 500 pixels.
 
-    >>> foto.url(altura=500)
+    >>> foto(altura=500)
     'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600&max...'
 
     References
@@ -149,8 +156,24 @@ class Galeria:
         self.fotografias = [_Fotografia(galeria[foto]) for foto in galeria]
 
 
+    def __iter__(self) -> Iterator:
+        return iter(self.fotografias)
+
+
+    def __len__(self) -> int:
+        return len(self.fotografias)
+
+
+    def __getitem__(self, slice):
+        return self.fotografias[slice]
+
+
     def __repr__(self) -> str:
         return f'<DadosAbertosBrasil.ibge: Galeria de fotos da localidade {self.localidade}>'
+
+
+    def __reversed__(self) -> list:
+        return reversed(self.fotografias)
 
 
     def __str__(self) -> str:
