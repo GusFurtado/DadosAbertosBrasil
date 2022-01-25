@@ -353,38 +353,56 @@ def expectativas(
     Parameters
     ----------
     expectativa : str
-        Tipo ou periodicidade da expectativa.
-            - 'mensal' ou 'mensais';
-            - 'trimestral' ou 'trimestrais';
-            - 'anual' ou 'anuais';
-            - 'inflacao' ou 'inflacao12meses';
-            - 'top5mensal' ou 'top5mensais',
-            - 'top5anual' ou 'top5anuais',
-            - 'instituicoes'.
+        'mensal' ou 'mensais'
+            Expectativas de Mercado Mensal
+        'trimestral' ou 'trimestrais'
+            Expectativas de Mercado Trimestral
+        'anual' ou 'anuais'
+            Expectativas de Mercado com referência anual
+        'inflacao' ou 'inflacao12meses'
+            Expectativas de mercado para inflação nos próximos 12 meses
+        'top5mensal' ou 'top5mensais'
+            Expectativas mensais de mercado para os indicadores do Top 5
+        'top5anual' ou 'top5anuais'
+            Expectativas de mercado anuais para os indicadores do Top 5
+        'instituicoes'.
+            Expectativas de mercado informadas pelas instituições credenciadas
     indicador : str, optional
         Capturar apenas o indicador desejado. Deve ser um dos seguintes
         indicadores, desde que esteja de acordo com a `expectativa` escolhida:
-            - 'Balança Comercial';
-            - 'Balanço de Pagamentos';
-            - 'Fiscal';
-            - 'IGP-DI';
-            - 'IGP-M';
-            - 'INPC';
-            - 'IPA-DI';
-            - 'IPA-M';
-            - 'IPC-FIPE';
-            - 'IPC-FIPEPreços administrados por contrato e monitorados';
-            - 'IPCA';
-            - 'IPCA-15';
-            - 'Meta para taxa over-selic';
-            - 'PIB Agropecuária';
-            - 'PIB Industrial';
-            - 'PIB Serviços';
-            - 'PIB Total';
-            - 'PIB TotalMeta para taxa over-selic';
-            - 'Preços administrados por contrato e monitorados';
-            - 'Produção industrial';
-            - 'Taxa de câmbio'.
+            'Balança Comercial',
+            'Câmbio',
+            'Conta corrente',
+            'Dívida bruta do governo geral',
+            'Dívida líquida do setor público',
+            'IGP-DI',
+            'IGP-M',
+            'INPC',
+            'Investimento direto no país',
+            'IPA-DI',
+            'IPA-M',
+            'IPCA',
+            'IPCA Administrados',
+            'IPCA Alimentação no domicílio',
+            'IPCA Bens industrializados',
+            'IPCA Livres',
+            'IPCA Serviços',
+            'IPCA-15',
+            'IPC-FIPE',
+            'PIB Agropecuária',
+            'PIB Despesa de consumo da administração pública',
+            'PIB despesa de consumo das famílias',
+            'PIB Exportação de bens e serviços',
+            'PIB Formação Bruta de Capital Fixo',
+            'PIB Importação de bens e serviços',
+            'PIB Indústria',
+            'PIB Serviços',
+            'PIB Total',
+            'Produção industrial',
+            'Resultado nominal',
+            'Resultado primário',
+            'Selic',
+            'Taxa de desocupação'
         Caso o valor seja None, retorna todos os indicadores disponíveis.
     top : int, optional
         Número máximo de registros que será retornado.
@@ -405,6 +423,17 @@ def expectativas(
     ------
     ValueError
         Em caso de parâmetros inválidos.
+
+    Notes
+    -----
+    Base de Cálculo 0:
+        Uso das expectativas mais recentes informadas pelas instituições
+        participantes a partir do 30º dia anterior à data de cálculo das
+        estatísticas.
+    Base de Cálculo 1:
+        Uso das expectativas mais recentes informadas pelas instituições
+        participantes a partir do 4º dia útil anterior à data de cálculo
+        das estatísticas.
 
     References
     ----------
@@ -437,6 +466,7 @@ def expectativas(
     """
 
     URL = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/'
+
     orderby = f'&%24orderby={ordenar_por}%20{"asc" if asc else "desc"}'
     topn = '' if top is None else f'&%24top={top}'
 
@@ -444,48 +474,76 @@ def expectativas(
     if expectativa in ('mensal', 'mensais'):
         expec = 'ExpectativaMercadoMensais'
         KPIS = (
+            'Câmbio',
             'IGP-DI',
             'IGP-M',
             'INPC',
             'IPA-DI',
             'IPA-M',
             'IPCA',
+            'IPCA Administrados',
+            'IPCA Alimentação no domicílio',
+            'IPCA Bens industrializados',
+            'IPCA Livres',
+            'IPCA Serviços',
             'IPCA-15',
-            'IPC-FIPE',
+            'IPC-Fipe',
             'Produção industrial',
-            'Meta para taxa over-selic',
-            'Taxa de câmbio'
+            'Selic',
+            'Taxa de desocupação'
         )
     elif expectativa in ('trimestral', 'trimestrais'):
         expec = 'ExpectativasMercadoTrimestrais'
         KPIS = (
+            'Câmbio',
+            'IPCA',
+            'IPCA Administrados',
+            'IPCA Alimentação no domicílio',
+            'IPCA Bens industrializados',
+            'IPCA Livres',
+            'IPCA Serviços',
             'PIB Agropecuária',
-            'PIB Industrial',
+            'PIB Indústria',
             'PIB Serviços',
-            'PIB Total'
+            'PIB Total',
+            'Taxa de desocupação'
         )
     elif expectativa in ('anual', 'anuais'):
         expec = 'ExpectativasMercadoAnuais'
         KPIS = (
             'Balança Comercial',
-            'Balanço de Pagamentos',
-            'Fiscal',
+            'Câmbio',
+            'Conta corrente', 
+            'Dívida bruta do governo geral', 
+            'Dívida líquida do setor público',
             'IGP-DI',
             'IGP-M',
             'INPC',
+            'Investimento direto no país',
             'IPA-DI',
             'IPA-M',
             'IPCA',
+            'IPCA Administrados',
+            'IPCA Alimentação no domicílio',
+            'IPCA Bens industrializados',
+            'IPCA Livres',
+            'IPCA Serviços',
             'IPCA-15',
             'IPC-FIPE',
-            'Preços administrados por contrato e monitorados',
-            'Produção industrial',
             'PIB Agropecuária',
-            'PIB Industrial',
+            'PIB Despesa de consumo da administração pública',
+            'PIB despesa de consumo das famílias',
+            'PIB Exportação de bens e serviços',
+            'PIB Formação Bruta de Capital Fixo',
+            'PIB Importação de bens e serviços',
+            'PIB Indústria',
             'PIB Serviços',
             'PIB Total',
-            'Meta para taxa over-selic',
-            'Taxa de câmbio'
+            'Produção industrial',
+            'Resultado nominal',
+            'Resultado primário',
+            'Selic',
+            'Taxa de desocupação'
         )
     elif expectativa in ('inflacao', 'inflacao12meses'):
         expec = 'ExpectativasMercadoInflacao12Meses'
@@ -496,48 +554,68 @@ def expectativas(
             'IPA-DI',
             'IPA-M',
             'IPCA',
+            'IPCA Administrados',
+            'IPCA Alimentação no domicílio',
+            'IPCA Bens industrializados',
+            'IPCA Livres',
+            'IPCA Serviços',
             'IPCA-15',
             'IPC-FIPE'
         )
     elif expectativa in ('top5mensal', 'top5mensais'):
         expec = 'ExpectativasMercadoTop5Mensais'
         KPIS = (
+            'Câmbio',
             'IGP-DI',
             'IGP-M',
             'IPCA',
-            'Meta para taxa over-selic',
-            'Taxa de câmbio'
+            'Selic'
         )
     elif expectativa in ('top5anual', 'top5anuais'):
         expec = 'ExpectativasMercadoTop5Anuais'
         KPIS = (
+            'Câmbio',
             'IGP-DI',
             'IGP-M',
             'IPCA',
-            'Meta para taxa over-selic',
-            'Taxa de câmbio'
+            'Selic'
         )
     elif expectativa == 'instituicoes':
         expec = 'ExpectativasMercadoInstituicoes'
         KPIS = (
             'Balança Comercial',
-            'Balanço de Pagamentos',
-            'Fiscal',
+            'Câmbio',
+            'Conta corrente',
+            'Dívida bruta do governo geral',
+            'Dívida líquida do setor público',
             'IGP-DI',
             'IGP-M',
             'INPC',
+            'Investimento direto no país',
             'IPA-DI',
             'IPA-M',
             'IPCA',
+            'IPCA Administrados',
+            'IPCA Alimentação no domicílio',
+            'IPCA Bens industrializados',
+            'IPCA Livres',
+            'IPCA Serviços',
             'IPCA-15',
             'IPC-FIPE',
-            'Preços administrados por contrato e monitorados',
-            'Produção industrial',
             'PIB Agropecuária',
-            'PIB Industrial', 'PIB Serviços',
+            'PIB Despesa de consumo da administração pública',
+            'PIB despesa de consumo das famílias',
+            'PIB Exportação de bens e serviços',
+            'PIB Formação Bruta de Capital Fixo',
+            'PIB Importação de bens e serviços',
+            'PIB Indústria',
+            'PIB Serviços',
             'PIB Total',
-            'Meta para taxa over-selic',
-            'Taxa de câmbio'
+            'Produção industrial',
+            'Resultado nominal',
+            'Resultado primário',
+            'Selic',
+            'Taxa de desocupação'
         )
     else:
         raise ValueError('''Valor inválido para o argumento `expectativa`. Insira um dos seguintes valores:
