@@ -756,6 +756,8 @@ def salario_minimo(
 
 
 def selic(
+        periodo: str = 'meta',
+        anualizado: bool = True,
         ultimos: Optional[int] = None,
         inicio: Union[datetime, str] = None,
         fim: Union[datetime, str] = None,
@@ -767,6 +769,14 @@ def selic(
 
     Parameters
     ----------
+    periodo : {'meta', 'diario', 'dia', 'mensal', 'mes'}, default='meta'
+        Tipo da série que será retornada.
+        - 'meta': Meta anual do COPOM;
+        - 'diario' ou 'dia': Intervalo de dados por dia.
+        - 'mensal' ou 'mes': Intervalo de dados por mês.
+    anualizado : bool, default=True
+        Se True, anualiza a série mantendo o período.
+        Esse argumento é ignorado quando `periodo == 'meta'`.
     ultimos : int, optional
         Retorna os últimos N valores da série numérica.
     inicio : datetime or str, optional
@@ -788,6 +798,8 @@ def selic(
     ------
     JSONDecodeError
         Em caso de parâmetros inválidos.
+    ValueError
+        Caso seja passado um período inválido.
 
     Notes
     -----
@@ -796,31 +808,62 @@ def selic(
 
     Examples
     --------
-    Os quatro valores mais recentes.
+    Busca a taxa mensal anualizada dos quatro meses mais recentes.
 
-    >>> favoritos.selic(ultimos=4)
-            data valor
-    0 2021-08-01  4.25
-    1 2021-08-02  4.25
-    2 2021-08-03  4.25
-    3 2021-08-04  4.25
+    >>> import DadosAbertosBrasil as dab
+    >>> dab.selic(
+    ...     periodo = 'mensal',
+    ...     anualizado = True,
+    ...     ultimos = 4
+    ... )
+            data  valor
+    0 2021-11-01   7.65
+    1 2021-12-01   8.76
+    2 2022-01-01   9.15
+    3 2022-02-01  10.47
 
-    Os valores entre Janeiro e Abril de 2021 usando a data como índice.
+    Captura a meta SELIC corrente.
 
-    >>> favoritos.selic(inicio='2021-01-01', fim='2021-04-01', index=True)
-               valor
-    data            
-    2021-01-01  2.00
-    2021-01-02  2.00
-    2021-01-03  2.00
-    2021-01-04  2.00
-    2021-01-05  2.00
-    ...          ...
+    >>> dab.selic(periodo='meta', ultimos=1)
+            data  valor
+    0 2022-03-16  10.75
+
+    Captura os valores não anualizados da primeira semada de Janeiro/2022,
+    utilizando a data como índice.
+
+    >>> dab.selic(
+    ...     periodo = 'diario',
+    ...     anualizado = False,
+    ...     inicio = '2022-01-03',
+    ...     fim = '2022-01-07',
+    ...     index = True
+    ... )
+                   valor
+    data                
+    2022-01-03  0.034749
+    2022-01-04  0.034749
+    2022-01-05  0.034749
+    2022-01-06  0.034749
+    2022-01-07  0.034749
 
     """
 
+    periodo = periodo.lower()
+
+    if periodo == 'meta':
+        cod = 432
+
+    elif periodo.startswith('dia'):
+        cod = 1178 if anualizado else 11
+
+    elif periodo in ('mensal', 'mes'):
+        cod = 4189 if anualizado else 4390
+
+    else:
+        raise ValueError("Período inválido.\nEscolha entre 'meta', 'diario' ou 'mensal'.")
+
     return bacen.serie(
-        cod = 432,
+        cod = cod,
         ultimos = ultimos,
         inicio = inicio,
         fim = fim,
