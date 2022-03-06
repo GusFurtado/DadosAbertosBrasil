@@ -72,9 +72,9 @@ class Serie:
     cod : str
         Código da série que se deseja obter os dados.
         Utilize a função `ipea.lista_series` para identificar a série desejada.
-        O código desejado estará na coluna 'SERCODIGO'.
+        O código desejado estará na coluna 'codigo'.
     index : bool, default=False
-        Se True, define a coluna 'SERCODIGO' como index do atributo 'valores'.
+        Se True, define a coluna 'codigo' como index do atributo 'valores'.
 
     Attributes
     ---------
@@ -425,7 +425,7 @@ def lista_paises(
         Sigla de três letras do país, caso queira ver os dados deste
         país exclusivamente.
     index : bool, default=False
-        Se True, define a coluna 'PAICODIGO' como index do DataFrame.
+        Se True, define a coluna 'codigo' como index do DataFrame.
 
     Returns
     -------
@@ -504,7 +504,7 @@ def lista_territorios(
         território exclusivamente.
     nivel : str, optional
         Nome do nível territorial.
-        Utilize a função ipea.niveis_territoriais() para verificar
+        Utilize a função `ipea.niveis_territoriais` para verificar
         as opções disponíveis.
     
     Returns
@@ -621,7 +621,7 @@ def serie(
     cod : str
         Código da série que se deseja obter os dados.
         Utilize a função `ipea.lista_series` para identificar a série desejada.
-        O código desejado estará na coluna 'SERCODIGO'.
+        O código desejado estará na coluna 'codigo'.
     index : bool, default=False
         Se True, define a coluna 'data' como index do DataFrame.
 
