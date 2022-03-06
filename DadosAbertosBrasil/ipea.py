@@ -33,7 +33,7 @@ References
 
 """
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 
@@ -206,13 +206,35 @@ class Serie:
 
 
 
-def lista_series(index=False) -> pd.DataFrame:
+def lista_series(
+        contendo: Optional[str] = None,
+        excluindo: Optional[Union[str, List[str]]] = None,
+        fonte: Optional[str] = None,
+        ativo: Optional[bool] = None,
+        numerica: Optional[bool] = None,
+        index: bool = False
+    ) -> pd.DataFrame:
     """Registros de metadados de todas as séries do IPEA.
 
     Parameters
     ----------
+    contendo : str, optional
+        Termo que deve estar contido no nome ou no comentário da série.
+    excluindo : str | list[str], optional
+        Termo ou lista de termos que não pode aparecer no nome da série.
+        Sobrepõe o argumento `contendo`.
+    fonte : str, optional
+        Retorna apenas as séries desta fonte.
+    ativo : bool, optional
+        Se True, retorna apenas séries ativas.
+        Se False, retorna apenas séries inativas.
+        Se None, retorna todas as séries.
+    numerica : bool, optional
+        Se True, retorna apenas séries numéricas.
+        Se False, não retorna as séries numéricas.
+        Se None, retorna todas as séries.
     index : bool, default=False
-        Se True, define a coluna 'SERCODIGO' como index do DataFrame.
+        Se True, define a coluna 'codigo' como index do DataFrame.
 
     Returns
     -------
@@ -225,7 +247,7 @@ def lista_series(index=False) -> pd.DataFrame:
     Forma mais simples da função.
 
     >>> ipea.lista_series()
-               SERCODIGO                                SERNOME  ...
+                  codigo                                   nome  ...
     0       ABATE_ABPEAV       Abate - aves - peso das carcaças  ...
     1       ABATE_ABPEBV    Abate - bovinos - peso das carcaças  ...
     2       ABATE_ABPESU     Abate - suínos - peso das carcaças  ...
@@ -237,7 +259,7 @@ def lista_series(index=False) -> pd.DataFrame:
     como index do DataFrame.
 
     >>> ipea.lista_series(index=True)
-                                                SERNOME  ...
+                                                   nome  ...
     SERCODIGO                                            ...
     ABATE_ABPEAV       Abate - aves - peso das carcaças  ...
     ABATE_ABPEBV    Abate - bovinos - peso das carcaças  ...
@@ -248,7 +270,54 @@ def lista_series(index=False) -> pd.DataFrame:
 
     """
 
-    return _get('Metadados', index)
+    df = _get('Metadados', index)
+
+    if isinstance(contendo, str):
+        contendo = contendo.upper()
+        f1 = df.SERNOME.str.upper().str.contains(contendo)
+        f2 = df.SERCOMENTARIO.str.upper().str.contains(contendo)
+        df = df[f1 | f2]
+
+    if excluindo is not None:
+        if isinstance(excluindo, str):
+            excluindo = [excluindo]
+        for termo in excluindo:
+            df = df[~df.SERNOME.str.upper().str.contains(termo.upper())]
+
+    if isinstance(fonte, str):
+        fonte = fonte.upper()
+        f1 = df.FNTSIGLA.str.upper().str.contains(fonte)
+        f2 = df.FNTNOME.str.upper().str.contains(fonte)
+        df = df[f1 | f2]
+
+    if isinstance(ativo, bool):
+        status = 'A' if ativo else 'I'
+        df = df[df.SERSTATUS == status]
+
+    if isinstance(numerica, bool):
+        df = df[df.SERNUMERICA == numerica]
+
+    df.rename(columns={
+        'SERCODIGO': 'codigo',
+        'SERNOME': 'nome',
+        'SERCOMENTARIO': 'comentario',
+        'SERATUALIZACAO': 'ultima_atualizacao',
+        'BASNOME': 'base',
+        'FNTSIGLA': 'fonte_sigla',
+        'FNTNOME': 'fonte_nome',
+        'FNTURL': 'fonte_url',
+        'PERNOME': 'periodo',
+        'UNINOME': 'unidade',
+        'MULNOME': 'multiplicador',
+        'SERSTATUS': 'ativo',
+        'TEMCODIGO': 'tema',
+        'PAICODIGO': 'codigo_pai',
+        'SERNUMERICA': 'numerica'
+    }, inplace=True)
+
+    df.ativo = df.ativo.map({'A': True, 'I': False})
+
+    return df
 
 
 
@@ -457,7 +526,7 @@ def serie(
         Utilize a função `ipea.lista_series` para identificar a série desejada.
         O código desejado estará na coluna 'SERCODIGO'.
     index : bool, default=False
-        Se True, define a coluna 'VALDATA' como index do atributo 'valores'.
+        Se True, define a coluna 'data' como index do DataFrame.
 
     Returns
     -------
@@ -473,7 +542,7 @@ def serie(
     2. Utilize o código encontrado como argumento da função `serie`.
     
     >>> ipea.serie('PAN4_PIBPMV4')
-           SERCODIGO                    VALDATA      VALVALOR  \
+              codigo                       data         valor  \
     0   PAN4_PIBPMV4  1996-01-01T00:00:00-02:00  1.893233e+05  \
     1   PAN4_PIBPMV4  1996-04-01T00:00:00-03:00  2.046107e+05  \
     2   PAN4_PIBPMV4  1996-07-01T00:00:00-03:00  2.215132e+05  \
@@ -490,7 +559,18 @@ def serie(
     """
 
     df = _get(f"Metadados(SERCODIGO='{cod}')/Valores", index=False)
-    df.VALDATA = pd.to_datetime(df.VALDATA, utc=True).dt.date
-    if index:
-        df.set_index('VALDATA', inplace=True)
+
+    df.rename(columns={
+        'SERCODIGO': 'codigo',
+        'VALDATA': 'data',
+        'VALVALOR': 'valor',
+        'NIVNOME': 'nivel',
+        'TERCODIGO': 'territorio'
+    }, inplace=True)
+
+    if 'data' in df.columns:
+        df.data = pd.to_datetime(df.data, utc=True).dt.date
+        if index:
+            df.set_index('data', inplace=True)
+
     return df
