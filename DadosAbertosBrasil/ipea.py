@@ -41,18 +41,13 @@ from ._utils.get_data import get_data
 
 
 
-def _get(
-        path: str,
-        index: bool = False
-    ) -> pd.DataFrame:
+def _get(path:str) -> pd.DataFrame:
     """Captura e formata dados deste módulo.
     
     Parameters
     ----------
     path : str
         Parâmetros da coleta.
-    index : bool, default=False
-        Se True, define a coluna chave como index do DataFrame
 
     Returns
     -------
@@ -65,10 +60,7 @@ def _get(
         path = path
     )['value']
 
-    df = pd.DataFrame(values)
-    if index:
-        df.set_index(df.columns[0], inplace=True)
-    return df
+    return pd.DataFrame(values)
 
 
 
@@ -154,12 +146,12 @@ class Serie:
 
     >>> s.dados
            SERCODIGO                    VALDATA      VALVALOR  \
-    0   PAN4_PIBPMV4  1996-01-01T00:00:00-02:00  1.893233e+05  \
-    1   PAN4_PIBPMV4  1996-04-01T00:00:00-03:00  2.046107e+05  \
-    2   PAN4_PIBPMV4  1996-07-01T00:00:00-03:00  2.215132e+05  \
-    3   PAN4_PIBPMV4  1996-10-01T00:00:00-03:00  2.393163e+05  \
-    4   PAN4_PIBPMV4  1997-01-01T00:00:00-02:00  2.191170e+05  \
-    ..           ...                        ...           ...  \
+    0   PAN4_PIBPMV4  1996-01-01T00:00:00-02:00  1.893233e+05
+    1   PAN4_PIBPMV4  1996-04-01T00:00:00-03:00  2.046107e+05
+    2   PAN4_PIBPMV4  1996-07-01T00:00:00-03:00  2.215132e+05
+    3   PAN4_PIBPMV4  1996-10-01T00:00:00-03:00  2.393163e+05
+    4   PAN4_PIBPMV4  1997-01-01T00:00:00-02:00  2.191170e+05
+    ..           ...                        ...           ...
 
     4. Para ver os metadados, basta chamar o atributo correspondente.
 
@@ -176,22 +168,37 @@ class Serie:
             index: bool = False
         ):
 
-        self.cod = cod
-        self.valores = _get(f"Metadados(SERCODIGO='{cod}')/Valores", index)
-        self.valores.VALDATA = pd.to_datetime(self.valores.VALDATA)
+        # DataFrame
+        self.valores = _get(f"Metadados(SERCODIGO='{cod}')/Valores")
+        self.valores.rename(columns={
+            'SERCODIGO': 'codigo',
+            'VALDATA': 'data',
+            'VALVALOR': 'valor',
+            'NIVNOME': 'nivel',
+            'TERCODIGO': 'territorio'
+        }, inplace=True)
+
+        if 'data' in self.valores.columns:
+            self.valores.data = pd.to_datetime(self.valores.data, utc=True).dt.date
+            if index:
+                self.valores.set_index('data', inplace=True)
+
         self.dados = self.valores
+
+        # Atributos
+        self.cod = cod
         self.metadados = _get(f"Metadados('{cod}')")
         self.base = self.metadados.loc[0, 'BASNOME']
         self.fonte_nome = self.metadados.loc[0, 'FNTNOME']
         self.fonte_sigla = self.metadados.loc[0, 'FNTSIGLA']
         self.fonte_url = self.metadados.loc[0, 'FNTURL']
         self.multiplicador = self.metadados.loc[0, 'MULNOME']
-        self.periodicidade = self.metadados.loc[0, 'PERNOME']
-        self.atualizacao = self.metadados.loc[0, 'SERATUALIZACAO']
+        self.periodo = self.metadados.loc[0, 'PERNOME']
+        self.ultima_atualizacao = self.metadados.loc[0, 'SERATUALIZACAO']
         self.comentario = self.metadados.loc[0, 'SERCOMENTARIO']
         self.nome = self.metadados.loc[0, 'SERNOME']
         self.unidade = self.metadados.loc[0, 'UNINOME']
-        self.status = self.metadados.loc[0, 'SERSTATUS']
+        self.ativo = self.metadados.loc[0, 'SERSTATUS']
         self.tema = self.metadados.loc[0, 'TEMCODIGO']
         self.pais = self.metadados.loc[0, 'PAICODIGO']
         self.numerica = self.metadados.loc[0, 'SERNUMERICA']
@@ -270,7 +277,7 @@ def lista_series(
 
     """
 
-    df = _get('Metadados', index)
+    df = _get('Metadados')
 
     if isinstance(contendo, str):
         contendo = contendo.upper()
@@ -316,6 +323,9 @@ def lista_series(
     }, inplace=True)
 
     df.ativo = df.ativo.map({'A': True, 'I': False})
+
+    if index:
+        df.set_index('codigo', inplace=True)
 
     return df
 
@@ -381,20 +391,25 @@ def lista_temas(
     """
     
     if cod is None:
-        df = _get('Temas', index)
+        df = _get('Temas')
     elif isinstance(cod, int):
-        df = _get(f'Temas({cod})', index)
+        df = _get(f'Temas({cod})')
     else:
         raise TypeError('Código do tema deve ser um número inteiro.')
 
     if pai is not None:
         df = df[df.TEMCODIGO_PAI == pai]
 
-    return df.rename(columns={
+    df.rename(columns={
         'TEMCODIGO': 'codigo',
         'TEMCODIGO_PAI': 'pai',
         'TEMNOME': 'nome',
-    })
+    }, inplace=True)
+
+    if index:
+        df.set_index('codigo', inplace=True)
+
+    return df
 
 
 
@@ -446,13 +461,23 @@ def lista_paises(
     """
 
     if cod is None:
-        return _get('Paises', index)
+        df = _get('Paises')
     elif isinstance(cod, str):
-        return _get(f"Paises('{cod.upper()}')", index)
+        df = _get(f"Paises('{cod.upper()}')")
     else:
         raise TypeError(
             'Código do país deve ser um string de três letras maísculas.'
         )
+
+    df.rename(columns={
+        'PAICODIGO': 'codigo',
+        'PAINOME': 'nome'
+    }, inplace=True)
+
+    if index:
+        df.set_index('codigo', inplace=True)
+
+    return df
 
 
 
@@ -630,7 +655,7 @@ def serie(
 
     """
 
-    df = _get(f"Metadados(SERCODIGO='{cod}')/Valores", index=False)
+    df = _get(f"Metadados(SERCODIGO='{cod}')/Valores")
 
     df.rename(columns={
         'SERCODIGO': 'codigo',
