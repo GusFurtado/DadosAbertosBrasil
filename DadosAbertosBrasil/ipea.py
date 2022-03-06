@@ -323,6 +323,7 @@ def lista_series(
 
 def lista_temas(
         cod: Optional[int] = None,
+        pai: Optional[int] = None,
         index: bool = False
     ) -> pd.DataFrame:
     """Registros de todos os temas cadastrados.
@@ -331,8 +332,10 @@ def lista_temas(
     ----------
     cod : int, optional
         Código do tema, caso queira ver os dados deste tema exclusivamente.
+    pai : int, optional
+        Filtrar temas por código pai.
     index : bool, default=False
-        Se True, define a coluna 'TEMCODIGO' como index do DataFrame.
+        Se True, define a coluna 'codigo' como index do DataFrame.
 
     Returns
     -------
@@ -341,7 +344,7 @@ def lista_temas(
 
     Examples
     --------
-    Forma mais simples da função.
+    Busca todos os temas.
 
     >>> ipea.lista_temas()
         TEMCODIGO  TEMCODIGO_PAI                  TEMNOME
@@ -352,7 +355,17 @@ def lista_temas(
     4           5            NaN        Comércio exterior
     ..        ...            ...                      ...
 
-    Utilize o argumento `index=True` para colocar a coluna 'TEMCODIGO'
+    Busca todos os subtemas do código 18.
+
+    >>> ipea.lista_temas(pai=18)
+        TEMCODIGO  TEMCODIGO_PAI            TEMNOME
+    11         54           18.0  Deputado Estadual
+    12         55           18.0   Deputado Federal
+    16         63           18.0         Eleitorado
+    22         56           18.0         Governador
+    ..        ...            ...                ...
+
+    Utilize o argumento `index=True` para colocar a coluna 'codigo'
     como index do DataFrame.
 
     >>> ipea.lista_temas(index=True)
@@ -368,11 +381,20 @@ def lista_temas(
     """
     
     if cod is None:
-        return _get('Temas', index)
+        df = _get('Temas', index)
     elif isinstance(cod, int):
-        return _get(f'Temas({cod})', index)
+        df = _get(f'Temas({cod})', index)
     else:
         raise TypeError('Código do tema deve ser um número inteiro.')
+
+    if pai is not None:
+        df = df[df.TEMCODIGO_PAI == pai]
+
+    return df.rename(columns={
+        'TEMCODIGO': 'codigo',
+        'TEMCODIGO_PAI': 'pai',
+        'TEMNOME': 'nome',
+    })
 
 
 
@@ -497,6 +519,7 @@ def lista_territorios(
     109    Municípios  1200401      Rio Branco      RIO BRANCO    True  ...   
     263    Municípios  1302603          Manaus          MANAUS    True  ...   
     360    Municípios  1400100       Boa Vista       BOA VISTA    True  ...
+    ...           ...      ...             ...             ...     ...  ...
 
     """
 
