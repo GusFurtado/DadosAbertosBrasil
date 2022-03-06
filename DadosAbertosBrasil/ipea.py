@@ -435,6 +435,8 @@ def lista_paises(
 
 
 def lista_territorios(
+        capital: Optional[bool] = None,
+        amc: Optional[bool] = None,
         cod: Optional[int] = None,
         nivel: Optional[str] = None
     ) -> pd.DataFrame:
@@ -442,6 +444,14 @@ def lista_territorios(
 
     Parameters
     ----------
+    capital : bool, optional
+        Se True, retorna apenas territórios que são capitais.
+        Se False, retorna apenas territórios que não são capitais.
+        Se None, retorna todos os territórios.
+    amc : bool, optional
+        Se True, retorna apenas territórios que são AMC.
+        Se False, retorna apenas territórios que não são AMC.
+        Se None, retorna todos os territórios.
     cod : int, optional
         Código do território, caso queira ver os dados deste
         território exclusivamente.
@@ -456,24 +466,63 @@ def lista_territorios(
         DataFrame contendo o registro de todos os territórios
         das séries do IPEA.
 
+    Notes
+    -----
+    O número de municípios brasileiros aumentou de 3.951 em 1970 para 5.507
+    em 2000. As mudanças nos contornos e áreas geográficas dos municípios
+    devidas à criação de novos municípios impedem comparações intertemporais
+    consistentes de variáveis demográficas, econômicas e sociais em nível
+    municipal. Para isso, é necessário agregar municípios em "Áreas Mínimas
+    Comparáveis" (AMC). Acesse o "Dicionário de Conceitos" do IPEA para mais
+    informações.
+
     Examples
     --------
+    Buscar todos os territórios.
+
     >>> ipea.lista_territorios()
-           NIVNOME  TERCODIGO                TERNOME  \
-    0                                 (não definido)  \
-    1       Brasil          0                 Brasil  \
-    2      Regiões          1           Região Norte  \
-    3      Estados         11               Rondônia  \
-    4   Municípios    1100015  Alta Floresta D'Oeste  \
-    ..         ...        ...                    ...  \
+             nivel     codigo                   nome  ...  \
+    0                                 (não definido)  ...
+    1       Brasil          0                 Brasil  ...
+    2      Regiões          1           Região Norte  ...
+    3      Estados         11               Rondônia  ...
+    4   Municípios    1100015  Alta Floresta D'Oeste  ...
+    ..         ...        ...                    ...  ...
+
+    Buscar apenas capitais.
+
+    >>> ipea.lista_territorios(capital=True)
+                nivel   codigo            nome     nome_padrao capital  ...  \
+    26     Municípios  1100205     Porto Velho     PORTO VELHO    True  ...   
+    109    Municípios  1200401      Rio Branco      RIO BRANCO    True  ...   
+    263    Municípios  1302603          Manaus          MANAUS    True  ...   
+    360    Municípios  1400100       Boa Vista       BOA VISTA    True  ...
 
     """
 
     if (cod is None) or (nivel is None):
-        return _get('Territorios')
+        df = _get('Territorios')
     else:
         n = 'Municipios' if nivel == 'Municípios' else nivel        
-        return _get(f"Territorios(TERCODIGO='{cod}',NIVNOME='{n}')")
+        df = _get(f"Territorios(TERCODIGO='{cod}',NIVNOME='{n}')")
+
+    df.rename(columns={
+        'NIVNOME': 'nivel',
+        'TERCODIGO': 'codigo',
+        'TERNOME': 'nome',
+        'TERNOMEPADRAO': 'nome_padrao',
+        'TERCAPITAL': 'capital',
+        'TERAREA': 'area',
+        'NIVAMC': 'amc',
+    }, inplace=True)
+
+    if isinstance(capital, bool):
+        df = df[df.capital == capital]
+
+    if isinstance(amc, bool):
+        df = df[df.amc == amc]
+
+    return df
 
     
 
