@@ -20,7 +20,7 @@ Atualmente o pacote Dados Abertos Brasil possui seis módulos, além da classe *
 
 ### Sobre
 - **[Página Oficial](https://www.gustavofurtado.com/dab.html)**
-- **[Documentação](https://www.gustavofurtado.com/DadosAbertosBrasil/index.html)**
+- **[Documentação](https://www.gustavofurtado.com/DadosAbertosBrasil.html)**
 
 ### Instalação
 ```
