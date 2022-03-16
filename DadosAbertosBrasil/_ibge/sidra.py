@@ -26,22 +26,43 @@ _normalize = pd.io.json.json_normalize \
 
 
 def lista_tabelas(
-        pesquisa: Optional[str] = None,
         contendo: Optional[str] = None,
         excluindo: Optional[str] = None,
+        assunto: Optional[Union[int, str]] = None,
+        classificacao: Optional[Union[int, str]] = None,
+        periodo: Optional[str] = None,
+        periodicidade: Optional[Union[int, str]] = None,
+        nivel: Optional[Union[int, str]] = None,
+        pesquisa: Optional[str] = None,
         index: bool = False
     ) -> pd.DataFrame:
     """Lista de tabelas disponíveis no SIDRA.
 
     Parameters
     ----------
+    contendo : str, optional
+        Termo que deve estar contido no nome ou no comentário da série.
+    excluindo : str | list[str], optional
+        Termo ou lista de termos que não pode aparecer no nome da série.
+        Sobrepõe o argumento `contendo`.
+    assunto : str | int, optional
+        Filtrar por código do assunto. 
+        Utilize a função `ibge.referencias('a')` para encontrar o código.
+    classificacao : str | int, optional
+        Filtrar por código do classificacao.
+        Utilize a função `ibge.referencias('c')` para encontrar o código. 
+    periodo : str, optional
+        Filtrar por código do periodo. 
+        Utilize a função `ibge.referencias('p')` para encontrar o código.
+    periodicidade : str | int, optional
+        Filtrar por código do periodicidade. 
+        Utilize a função `ibge.referencias('e')` para encontrar o código.
+    nivel : str | int, optional
+        Filtrar por código do nivel.
+        Utilize a função `ibge.referencias('n')` para encontrar o código. 
     pesquisa : str, optional
         Código de duas letras da pesquisa que será buscada.
         Utilize a função `ibge.lista_pesquisas` para encontrar o código.
-    contendo : str, optional
-        Buscar apenas tabelas que contenham essa sequência de caracteres.
-    excluindo : str, optional
-        Buscar tabelas que não contenham essa sequência de caracteres.
     index : bool, default=False
         Se True, define a coluna 'tabela_id' como index do DataFrame.
 
@@ -82,9 +103,31 @@ def lista_tabelas(
 
     """
 
+    params = {}
+
+    if assunto is not None:
+        params['assunto'] = assunto
+
+    if classificacao is not None:
+        params['classificacao'] = classificacao
+
+    if periodo is not None:
+        params['periodo'] = periodo
+
+    if periodicidade is not None:
+        if isinstance(periodicidade, int):
+            periodicidade = f'P{periodicidade}'
+        params['periodicidade'] = periodicidade.upper()
+
+    if nivel is not None:
+        if isinstance(nivel, int):
+            nivel = f'N{nivel}'
+        params['nivel'] = nivel.upper()
+
     data = get_data(
         endpoint = 'https://servicodados.ibge.gov.br/api/v3/agregados/',
-        path = ''
+        path = '',
+        params = params
     )
     df = _normalize(
         data,
@@ -95,26 +138,17 @@ def lista_tabelas(
     )
     df.tabela_id = pd.to_numeric(df.tabela_id)
 
-    if isinstance(pesquisa, str):
-        df = df[df.pesquisa_id == pesquisa.upper()]
-    elif pesquisa == None:
-        pass
-    else:
-        raise TypeError("O argumento 'pesquisa' deve ser tipo string com duas letras.")
-        
     if isinstance(contendo, str):
-        df = df[df.tabela_nome.str.contains(contendo)]
-    elif contendo == None:
-        pass
-    else:
-        raise TypeError('O texto procurado deve ser tipo string.')
-        
-    if isinstance(excluindo, str):
-        df = df[~df.tabela_nome.str.contains(excluindo)]
-    elif excluindo == None:
-        pass
-    else:
-        raise TypeError('O texto procurado deve ser tipo string.')
+        df = df[df.tabela_nome.str.upper().str.contains(contendo.upper())]
+
+    if excluindo is not None:
+        if isinstance(excluindo, str):
+            excluindo = [excluindo]
+        for termo in excluindo:
+            df = df[~df.SERNOME.str.upper().str.contains(termo.upper())]
+
+    if isinstance(pesquisa, str):
+        df = df[df.pesquisa_id.str.upper() == pesquisa.upper()]
 
     if index:
         df.set_index('tabela_id', inplace=True)
@@ -433,7 +467,7 @@ def referencias(
         s = 'A'
     elif cod in ('c', 'classificacoes'):
         s = 'C'
-    elif cod in ('n', 't', 'niveis_geograficos', 'territorios'):
+    elif cod in ('n', 't', 'niveis', 'territorios'):
         s = 'N'
     elif cod in ('p', 'periodos'):
         s = 'P'
