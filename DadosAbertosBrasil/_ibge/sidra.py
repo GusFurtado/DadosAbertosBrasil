@@ -30,7 +30,7 @@ def lista_tabelas(
         excluindo: Optional[str] = None,
         assunto: Optional[Union[int, str]] = None,
         classificacao: Optional[Union[int, str]] = None,
-        periodo: Optional[str] = None,
+        periodo: Optional[Union[dict, str]] = None,
         periodicidade: Optional[Union[int, str]] = None,
         nivel: Optional[Union[int, str]] = None,
         pesquisa: Optional[str] = None,
@@ -46,20 +46,40 @@ def lista_tabelas(
         Termo ou lista de termos que não pode aparecer no nome da série.
         Sobrepõe o argumento `contendo`.
     assunto : str | int, optional
-        Filtrar por código do assunto. 
-        Utilize a função `ibge.referencias('a')` para encontrar o código.
+        Busque apenas as tabelas referentes ao assunto desejado.
+        Os assuntos são identificados por um código numérico e podem ser
+        obtidos com auxílio da função `ibge.referencias('a')`.
+        Exemplo: O assunto "Abate de Animais" possui o código 70, portanto
+        pesquise por tabelas deste assunto pelo argumento `assunto=70`.
     classificacao : str | int, optional
-        Filtrar por código do classificacao.
-        Utilize a função `ibge.referencias('c')` para encontrar o código. 
-    periodo : str, optional
-        Filtrar por código do periodo. 
-        Utilize a função `ibge.referencias('p')` para encontrar o código.
+        Busque apenas as tabelas referentes à classificação desejada.
+        As classificações são identificadas por um código numérico e podem ser
+        obtidas com auxílio da função `ibge.referencias('c')`.
+        Exemplo: A classificação "Agricultura familiar" possui o código 12896,
+        portanto pesquise por tabelas contendo essa classificação através do
+        argumento `classificacao=12896`. 
+    periodo : dict | str, optional
+        Busque apenas as tabelas referentes ao período desejado.
+        Os períodos devem ser um dicionário no formato `{periodicidade:periodo}`
+        ou um string no formato `'Px[xxxxxx]'`.
+        Exemplo: `{5: 202001}` ou `'P5[202001]'`. Obtém as pesquisas cujos
+        agregados disponibilizam resultados para o mês (P5) de janeiro de
+        2020 (202001). Observe que é necessário informar a periodicidade (P5),
+        devido a períodos que compartilham o mesmo identificador - 202001 pode
+        significar o mês de Janeiro de 2020, o primeiro trimestre de 2020 ou
+        ainda o primeiro semestre de 2020.
+        A função `ibge.referencias('p')` retorna todos os períodos disponíveis.
     periodicidade : str | int, optional
-        Filtrar por código do periodicidade. 
+        Busque apenas as tabelas que contém essa periodicidade de divulgação.
         Utilize a função `ibge.referencias('e')` para encontrar o código.
+        Exemplo: A periodicidade "mensal" possui o código 5, portanto pesquise
+        por tabelas de periodicidade mensal através do argumento
+        `periodicidade=5`.
     nivel : str | int, optional
-        Filtrar por código do nivel.
-        Utilize a função `ibge.referencias('n')` para encontrar o código. 
+        Busque apenas as tabelas disponíveis neste nível geográfico.
+        Utilize a função `ibge.referencias('n')` para encontrar o código.
+        Exemplo: O nível "Município" possui o código 6, portanto pesquise por
+        tabelas contendo esse nível geográfico através do argumento `nivel=6`.
     pesquisa : str, optional
         Código de duas letras da pesquisa que será buscada.
         Utilize a função `ibge.lista_pesquisas` para encontrar o código.
@@ -73,15 +93,20 @@ def lista_tabelas(
 
     Examples
     --------
-    Forma mais simples da função.
+    Forma mais simples da função. Retorna todas as tabelas.
 
     >>> ibge.lista_tabelas()    
-        tabela_id                                        tabela_nome  ...
-    0        1732  Dados gerais das empresas por faixas de pessoa...  ...
-    1        1735  Dados gerais das unidades locais por faixas de...  ...
-    2        1734  Dados gerais das unidades locais por faixas de...  ...
-    3        1733  Dados gerais das unidades locais por faixas de...  ...
-    4        2869  Empresas e outras organizações e suas unidades...  ...
+
+    Listas tabelas cujo assunto é "Trabalho" (17), com periodicidade
+    trimestral (9) a um nível geográfico municipal (6) contendo classificação
+    por grupo de idade (58).
+
+    >>> ibge.lista_tabelas(
+    ...     assunto = 17,
+    ...     periodicidade = 9,
+    ...     nivel = 6,
+    ...     classificacao = 58
+    ... )
 
     Listar tabelas do Censo Demográfico (pesquisa 'CD'), contendo o termo
     'rendimento' no título, porém não contendo 'Distribuição', definindo a
@@ -90,20 +115,25 @@ def lista_tabelas(
     >>> ibge.lista_tabelas(
     ...     pesquisa = 'CD',
     ...     contendo = 'rendimento',
-    ...     excluindo = 'Distribuição',
+    ...     excluindo = 'distribuição',
     ...     index = True
     ... )
-                                                     tabela_nome pesquisa_id  ...
-    tabela_id                                                               
-    171        Chefes de domicílios particulares permanentes ...          CD  ...
-    3534       Domicílios particulares permanentes com rendim...          CD  ...
-    3525       Domicílios particulares permanentes com rendim...          CD  ...
-    2428       Domicílios particulares permanentes com rendim...          CD  ...
-    2427       Domicílios particulares permanentes com rendim...          CD  ...
+
+    Buscar por tabelas que contenham o IPCA de Dezembro de 2019 (P5[201912]).
+
+    >>> ibge.lista_tabelas(
+    ...     contendo = 'ipca',
+    ...     periodo = {5: 201912}
+    ... )
 
     """
 
     params = {}
+
+    def parse_periodicidade(p):
+        if isinstance(p, int) or isinstance(p, float):
+            p = f'P{int(p)}'
+        return p.upper()
 
     if assunto is not None:
         params['assunto'] = assunto
@@ -112,12 +142,13 @@ def lista_tabelas(
         params['classificacao'] = classificacao
 
     if periodo is not None:
+        if isinstance(periodo, dict):
+            for p in periodo:
+                periodo = f'{parse_periodicidade(p)}[{[periodo[p]]}]'
         params['periodo'] = periodo
 
     if periodicidade is not None:
-        if isinstance(periodicidade, int):
-            periodicidade = f'P{periodicidade}'
-        params['periodicidade'] = periodicidade.upper()
+        params['periodicidade'] = parse_periodicidade(periodicidade)
 
     if nivel is not None:
         if isinstance(nivel, int):
@@ -390,8 +421,7 @@ def sidra(
             path += f'/c{c}/{valor}'
 
     u = 'y' if ufs_extintas else 'n'
-    d = 's' if decimais is None else decimais
-    path += f'/u/{u}/d/{d}'
+    path += f'/u/{u}/d/{decimais or "s"}'
 
     if retorna == 'url':
         return path
