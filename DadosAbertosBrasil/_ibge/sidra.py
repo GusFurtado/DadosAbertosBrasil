@@ -20,6 +20,7 @@ from DadosAbertosBrasil._utils.get_data import get_data
 
 
 
+# Retrocompatibilidade com pandas v0.x
 _normalize = pd.io.json.json_normalize \
     if pd.__version__[0] == '0' else pd.json_normalize
 
@@ -156,8 +157,8 @@ def lista_tabelas(
         params['nivel'] = nivel.upper()
 
     data = get_data(
-        endpoint = 'https://servicodados.ibge.gov.br/api/v3/agregados/',
-        path = '',
+        endpoint = 'https://servicodados.ibge.gov.br/api/v3/',
+        path = ['agregados'],
         params = params
     )
     df = _normalize(
@@ -220,8 +221,8 @@ def lista_pesquisas(
     """
 
     data = get_data(
-        endpoint = 'https://servicodados.ibge.gov.br/api/v3/agregados/',
-        path = ''
+        endpoint = 'https://servicodados.ibge.gov.br/api/v3/',
+        path = ['agregados']
     )
     df = _normalize(
         data,
@@ -288,8 +289,8 @@ class Metadados:
 
     def __init__(self, tabela: int):
         data = get_data(
-            endpoint = 'https://servicodados.ibge.gov.br/api/v3/agregados/',
-            path = f'/{tabela}/metadados'
+            endpoint = 'https://servicodados.ibge.gov.br/api/v3/',
+            path = ['agregados', tabela, 'metadados']
         )
 
         self.dados = data
@@ -452,7 +453,7 @@ def referencias(
         - 'E': Periodicidades;
         - 'V': Variáveis.
     index: bool, default=False
-        Defina True caso o campo 'id' deva ser o index do DataFrame.
+        Defina True caso o campo 'cod' deva ser o index do DataFrame.
 
     Returns
     -------
@@ -469,7 +470,7 @@ def referencias(
     Lista assuntos.
 
     >>> ibge.referencias('a')
-          id                                       literal
+         cod                                    referencia
     0    148                         Abastecimento de água
     1     70                              Abate de animais
     2    110                Acesso a esgotamento sanitário
@@ -477,12 +478,12 @@ def referencias(
     4    107  Acesso a serviço de coleta de lixo doméstico
     ..    ..                                            ..
 
-    Lista classificações usando o `ìd` da classificação como index
+    Lista classificações usando o `cod` da classificação como index
     do DataFrame.
     
     >>> ibge.referencias('c', index=True)
-                                                     literal
-    id                                                      
+                                                  referencia
+    cod                                                      
     588    Acessibilidade possível na maior parte das via...
     957    Acesso à Internet por telefone móvel celular p...
     681                    Acesso a televisão por assinatura
@@ -492,26 +493,45 @@ def referencias(
 
     """
 
-    cod = cod.lower()
-    if cod in ('a', 'assuntos'):
-        s = 'A'
-    elif cod in ('c', 'classificacoes'):
-        s = 'C'
-    elif cod in ('n', 't', 'niveis', 'territorios'):
-        s = 'N'
-    elif cod in ('p', 'periodos'):
-        s = 'P'
-    elif cod in ('e', 'periodicidades'):
-        s = 'E'
-    elif cod in ('v', 'variaveis'):
-        s = 'V'
-    else:
-        raise ValueError("O campo 'cod' deve ser do tipo string.")
+    try:
+        s = cod.lower()
+        if s.endswith('s'):
+            s = s[:-1]
+        s = {
+            'a': 'A',
+            'assunto': 'A',
+            'c': 'C',
+            'classificacao': 'C',
+            'classificacoe': 'C',
+            'n': 'N',
+            'nivel': 'N',
+            'nivei': 'N',
+            't': 'T',
+            'territorio': 'T',
+            'p': 'P',
+            'periodo': 'P',
+            'e': 'E',
+            'periodicidade': 'E',
+            'v': 'V',
+            'variavel': 'V',
+            'variavei': 'V'
+        }[s]
+
+    except AttributeError:
+        raise TypeError('Código da referência `cod` deve ser do tipo `str`.')
+
+    except KeyError:
+        raise KeyError(f"Código de referência '{cod}' inválido.")
         
-    data = requests.get(f'https://servicodados.ibge.gov.br/api/v3/agregados?acervo={s}').json()
+    data = get_data(
+        endpoint = r'https://servicodados.ibge.gov.br/api/v3/',
+        path = ['agregados'],
+        params = {'acervo': s}
+    )
     df = pd.DataFrame(data)
+    df.columns = ['cod', 'referencia']
 
     if index:
-        df.set_index('id', inplace=True)
+        df.set_index('cod', inplace=True)
     
     return df
