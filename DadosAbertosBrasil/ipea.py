@@ -145,7 +145,7 @@ class Serie:
     3. Utilize o atributo `dados` para ver a série histórica.
 
     >>> s.dados
-           SERCODIGO                    VALDATA      VALVALOR  \
+              codigo                       data         valor  \
     0   PAN4_PIBPMV4  1996-01-01T00:00:00-02:00  1.893233e+05
     1   PAN4_PIBPMV4  1996-04-01T00:00:00-03:00  2.046107e+05
     2   PAN4_PIBPMV4  1996-07-01T00:00:00-03:00  2.215132e+05
@@ -262,12 +262,12 @@ def lista_series(
     4       ABATE_ABQUBV                 Abate - bovinos - qde.  ...
     ...              ...                                    ...  ...
 
-    Utilize o argumento `index=True` para colocar a coluna 'SERCODIGO'
+    Utilize o argumento `index=True` para colocar a coluna `codigo`
     como index do DataFrame.
 
     >>> ipea.lista_series(index=True)
                                                    nome  ...
-    SERCODIGO                                            ...
+    codigo                                               ...
     ABATE_ABPEAV       Abate - aves - peso das carcaças  ...
     ABATE_ABPEBV    Abate - bovinos - peso das carcaças  ...
     ABATE_ABPESU     Abate - suínos - peso das carcaças  ...
@@ -357,7 +357,7 @@ def lista_temas(
     Busca todos os temas.
 
     >>> ipea.lista_temas()
-        TEMCODIGO  TEMCODIGO_PAI                  TEMNOME
+           codigo            pai                     nome
     0          28            NaN             Agropecuária
     1          23            NaN       Assistência social
     2          10            NaN    Balanço de pagamentos
@@ -368,7 +368,7 @@ def lista_temas(
     Busca todos os subtemas do código 18.
 
     >>> ipea.lista_temas(pai=18)
-        TEMCODIGO  TEMCODIGO_PAI            TEMNOME
+           codigo            pai               nome
     11         54           18.0  Deputado Estadual
     12         55           18.0   Deputado Federal
     16         63           18.0         Eleitorado
@@ -379,8 +379,8 @@ def lista_temas(
     como index do DataFrame.
 
     >>> ipea.lista_temas(index=True)
-               TEMCODIGO_PAI                  TEMNOME
-    TEMCODIGO                                        
+                         pai                     nome
+    codigo                                        
     28                   NaN             Agropecuária
     23                   NaN       Assistência social
     10                   NaN    Balanço de pagamentos
@@ -437,7 +437,7 @@ def lista_paises(
     Forma mais simples da função.
 
     >>> ipea.lista_paises()
-       PAICODIGO          PAINOME
+          codigo             nome
     0        AFG      Afeganistão
     1        ZAF    África do Sul
     2        DEU         Alemanha
@@ -445,12 +445,12 @@ def lista_paises(
     4        AGO           Angola
     ..       ...              ...
 
-    Utilize o argumento `index=True` para colocar a coluna 'PAICODIGO'
+    Utilize o argumento `index=True` para colocar a coluna `codigo`
     como index do DataFrame.
 
     >>> ipea.lista_paises(index=True)
-                      PAINOME
-    PAICODIGO                             
+                          nome
+    codigo                             
     AFG            Afeganistão
     ZAF          África do Sul
     DEU               Alemanha
