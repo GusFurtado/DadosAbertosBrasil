@@ -43,7 +43,8 @@ def apply_periodo(texto:str) -> str:
     texto = texto.split(' de ')
     dia = f'0{texto[0]}'[-2:]
     mes = MESES[texto[1].lower()]
-    return f'{texto[2]}-{mes}-{dia}'
+    ano = texto[2][:4]
+    return f'{ano}-{mes}-{dia}'
 
 def apply_vice(x:str) -> str:
     if x.startswith('—'):
@@ -70,14 +71,14 @@ df = df[list(COLS.keys())]
 df.rename(columns=COLS, inplace=True)
 df = df.groupby('uf').last()
 
-df['nome_eleitoral'] = df.nome.apply(lambda x: x.split('(')[0])
 df['nome_completo'] = df.nome.apply(lambda x: x.split('(')[-1].split(')')[0])
+df.nome = df.nome.apply(lambda x: x.split('(')[0].strip())
 
-df['inicio'] = df.periodo.apply(lambda x: apply_periodo(x.split('–')[0]))
-df['fim'] = df.periodo.apply(lambda x: apply_periodo(x.split('–')[1]))
+df['mandato_inicio'] = df.periodo.apply(lambda x: apply_periodo(x.split('–')[0]))
+df['mandato_fim'] = df.periodo.apply(lambda x: apply_periodo(x.split('–')[1]))
 
-df['partido_nome'] = df.partido.apply(lambda x: x.split('(')[0].strip())
 df['partido_sigla'] = df.partido.apply(lambda x: x.split('(')[-1].split(')')[0])
+df.partido = df.partido.apply(lambda x: x.split('(')[0].strip())
 
 df.ano_eleicao = df.ano_eleicao.apply(lambda x: x.split('(')[-1].split(')')[0])
 df.ano_eleicao = df.ano_eleicao.apply(lambda x: None if x=='1' else int(x))
@@ -87,12 +88,12 @@ df.vice_governador = df.vice_governador.apply(apply_vice)
 df.cargo_anterior = df.cargo_anterior.str.replace('(', ' (')
 
 df = df[[
-    'nome_eleitoral',
+    'nome',
     'nome_completo',
     'ano_eleicao',
-    'inicio',
-    'fim',
-    'partido_nome',
+    'mandato_inicio',
+    'mandato_fim',
+    'partido',
     'partido_sigla',
     'cargo_anterior',
     'vice_governador'
