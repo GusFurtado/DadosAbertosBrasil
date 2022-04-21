@@ -8,16 +8,18 @@ DadosAbertosBrasil.
 """
 
 from datetime import datetime
+import json
 from typing import List, Optional, Union
 
 from pandas import DataFrame
+import requests
 
-from ._utils.errors import DAB_UFError
-from ._utils import parse
 from . import ibge
 from . import favoritos
 from .camara import lista_deputados
 from .senado import lista_senadores
+from ._utils.errors import DAB_UFError
+from ._utils import parse
 
 
 
@@ -31,8 +33,6 @@ _UF_INFO = {
         'gentilico': {'brasileiro', 'brasileira'},
         'lema': 'Ordem e Progresso',
         'regiao': None,
-        'governador': 'Jair Bolsonaro',
-        'vice_governador': 'Hamilton Mourão' 
     },
     'AC': {
         'nome': 'Acre',
@@ -43,8 +43,6 @@ _UF_INFO = {
         'gentilico': {'acriano', 'acriana', 'acreano', 'acreana'},
         'lema': 'Nec Luceo Pluribus Impar',
         'regiao': 'Norte',
-        'governador': 'Gladson Cameli',
-        'vice_governador': 'Major Rocha' 
     },
     'AL': {
         'nome': 'Alagoas',
@@ -55,8 +53,6 @@ _UF_INFO = {
         'gentilico': {'alagoano', 'alagoana'},
         'lema': 'Ad Bonum Et Prosperitatem',
         'regiao': 'Nordeste',
-        'governador': 'Renan Filho',
-        'vice_governador': None 
     },
     'AM': {
         'nome': 'Amazonas',
@@ -67,8 +63,6 @@ _UF_INFO = {
         'gentilico': {'amazonense'},
         'lema': None,
         'regiao': 'Norte',
-        'governador': 'Wilson Lima',
-        'vice_governador': 'Carlos Almeida'
     },
     'AP': {
         'nome': 'Amapá',
@@ -79,8 +73,6 @@ _UF_INFO = {
         'gentilico': {'amapaense'},
         'lema': 'Aqui começa o Brasil',
         'regiao': 'Norte',
-        'governador': 'Waldez Góes',
-        'vice_governador': 'Jaime Nunes' 
     },
     'BA': {
         'nome': 'Bahia',
@@ -91,8 +83,6 @@ _UF_INFO = {
         'gentilico': {'baiano, baiana'},
         'lema': 'Per Ardua Surgo',
         'regiao': 'Nordeste',
-        'governador': 'Rui Costa',
-        'vice_governador': 'João Leão' 
     },
     'CE': {
         'nome': 'Ceará',
@@ -103,8 +93,6 @@ _UF_INFO = {
         'gentilico': {'cearense'},
         'lema': 'Terra da Luz',
         'regiao': 'Nordeste',
-        'governador': 'Camilo Santana',
-        'vice_governador': 'Izolda Cela' 
     },
     'DF': {
         'nome': 'Distrito Federal',
@@ -115,8 +103,6 @@ _UF_INFO = {
         'gentilico': {'brasiliense', 'candango'},
         'lema': 'Ventvris Ventis',
         'regiao': 'Centro-Oeste',
-        'governador': 'Ibaneis Rocha',
-        'vice_governador': 'Paco Britto'
     },
     'ES': {
         'nome': 'Espirito Santo',
@@ -127,8 +113,6 @@ _UF_INFO = {
         'gentilico': {'capixaba', 'espírito-santense'},
         'lema': 'Trabalha e Confia',
         'regiao': 'Sudeste',
-        'governador': 'Renato Casagrande',
-        'vice_governador': 'Jacqueline Moraes'
     },
     'FN': {
         'nome': 'Fernando de Noronha',
@@ -139,8 +123,6 @@ _UF_INFO = {
         'gentilico': {'noronhense'},
         'lema': None,
         'regiao': 'Nordeste',
-        'governador': None,
-        'vice_governador': None
     },
     'GB': {
         'nome': 'Guanabara',
@@ -151,8 +133,6 @@ _UF_INFO = {
         'gentilico': None,
         'lema': None,
         'regiao': 'Sudeste',
-        'governador': None,
-        'vice_governador': None
     },
     'GO': {
         'nome': 'Goiás',
@@ -163,8 +143,6 @@ _UF_INFO = {
         'gentilico': {'goiano', 'goiana'},
         'lema': 'Terra Querida, Fruto da Vida',
         'regiao': 'Centro-Oeste',
-        'governador': 'Ronaldo Caiado',
-        'vice_governador': 'Lincoln Tejota'
     },
     'MA': {
         'nome': 'Maranhão',
@@ -175,8 +153,6 @@ _UF_INFO = {
         'gentilico': {'maranhense'},
         'lema': None,
         'regiao': 'Nordeste',
-        'governador': 'Flávio Dino',
-        'vice_governador': 'Carlos Brandão'
     },
     'MG': {
         'nome': 'Minas Gerais',
@@ -187,8 +163,6 @@ _UF_INFO = {
         'gentilico': {'mineiro', 'mineira'},
         'lema': 'Libertas Quæ Sera Tamen',
         'regiao': 'Sudeste',
-        'governador': 'Romeu Zema',
-        'vice_governador': 'Paulo Brant'
     },
     'MT': {
         'nome': 'Mato Grosso',
@@ -199,8 +173,6 @@ _UF_INFO = {
         'gentilico': {'mato-grossense'},
         'lema': 'Virtute Plusquam Auro',
         'regiao': 'Centro-Oeste',
-        'governador': 'Mauro Mendes',
-        'vice_governador': 'Otaviano Pivetta'
     },
     'MS': {
         'nome': 'Mato Grosso do Sul',
@@ -211,8 +183,6 @@ _UF_INFO = {
         'gentilico': {'sul-mato-grossense', 'mato-grossense-do-sul'},
         'lema': None,
         'regiao': 'Centro-Oeste',
-        'governador': 'Azambuja',
-        'vice_governador': 'Murilo Zauith'
     },
     'PA': {
         'nome': 'Pará',
@@ -223,8 +193,6 @@ _UF_INFO = {
         'gentilico': {'paraense'},
         'lema': None,
         'regiao': 'Norte',
-        'governador': 'Helder Barbalho',
-        'vice_governador': None
     },
     'PB': {
         'nome': 'Paraíba',
@@ -235,8 +203,6 @@ _UF_INFO = {
         'gentilico': {'paraibano', 'paraibana'},
         'lema': None,
         'regiao': 'Nordeste',
-        'governador': 'João Azevêdo',
-        'vice_governador': 'Lígia Feliciano'
     },
     'PE': {
         'nome': 'Pernambuco',
@@ -247,8 +213,6 @@ _UF_INFO = {
         'gentilico': {'pernambucano', 'pernambucana'},
         'lema': 'Ego Sum Qui Fortissimum Et Leads',
         'regiao': 'Nordeste',
-        'governador': 'Paulo Câmara',
-        'vice_governador': 'Luciana Santos'	 
     },
     'PI': {
         'nome': 'Piauí',
@@ -259,8 +223,6 @@ _UF_INFO = {
         'gentilico': {'piauiense'},
         'lema': 'Impavidum Ferient Ruinae',
         'regiao': 'Nordeste',
-        'governador': 'Wellington Dias',
-        'vice_governador': 'Regina Sousa' 
     },
     'PR': {
         'nome': 'Paraná',
@@ -271,8 +233,6 @@ _UF_INFO = {
         'gentilico': {'paranaense'},
         'lema': None,
         'regiao': 'Sul',
-        'governador': 'Ratinho Júnior',
-        'vice_governador': 'Darci Piana'
     },
     'RJ': {
         'nome': 'Rio de Janeiro',
@@ -283,8 +243,6 @@ _UF_INFO = {
         'gentilico': {'fluminense'},
         'lema': 'Recete Rem Pvblicam Gerere',
         'regiao': 'Sudeste',
-        'governador': 'Cláudio Castro',
-        'vice_governador': None
     },
     'RO': {
         'nome': 'Rondônia',
@@ -295,8 +253,6 @@ _UF_INFO = {
         'gentilico': {'rondoniense', 'rondoniano', 'rondoniana'},
         'lema': None,
         'regiao': 'Norte',
-        'governador': 'Marcos Rocha',
-        'vice_governador': 'Zé Jodan'	
     },
     'RN': {
         'nome': 'Rio Grande do Norte',
@@ -307,8 +263,6 @@ _UF_INFO = {
         'gentilico': {'potiguar', 'norte-rio-grandense', 'rio-grandense-do-norte'},
         'lema': None,
         'regiao': 'Nordeste',
-        'governador': 'Fátima Bezerra',
-        'vice_governador': 'Antenor Roberto'
     },
     'RR': {
         'nome': 'Roraima',
@@ -319,8 +273,6 @@ _UF_INFO = {
         'gentilico': {'roraimense'},
         'lema': 'Amazônia: Patrimônio dos Brasileiros',
         'regiao': 'Norte',
-        'governador': 'Antonio Denarium',
-        'vice_governador': 'Frutuoso Lins'	
     },
     'RS': {
         'nome': 'Rio Grande do Sul',
@@ -331,8 +283,6 @@ _UF_INFO = {
         'gentilico': {'gaúcho', 'gaúcha', 'sul-rio-grandense', 'rio-grandense-do-sul'},
         'lema': 'Liberdade, Igualdade, Humanidade',
         'regiao': 'Sul',
-        'governador': 'Eduardo Leite',
-        'vice_governador': 'Ranolfo Vieira Júnior'
     },
     'SC': {
         'nome': 'Santa Catarina',
@@ -343,8 +293,6 @@ _UF_INFO = {
         'gentilico': {'catarinense', 'barriga-verde'},
         'lema': None,
         'regiao': 'Sul',
-        'governador': 'Carlos Moisés',
-        'vice_governador': 'Daniela Reinehr'	
     },
     'SE': {
         'nome': 'Sergipe',
@@ -355,8 +303,6 @@ _UF_INFO = {
         'gentilico': {'sergipano', 'sergipana', 'sergipense', 'serigy', 'aperipê'},
         'lema': 'Sub Lege Libertas',
         'regiao': 'Nordeste',
-        'governador': 'Belivaldo Chagas',
-        'vice_governador': 'Eliane Aquino'
     },
     'SP': {
         'nome': 'São Paulo',
@@ -367,8 +313,6 @@ _UF_INFO = {
         'gentilico': {'paulista'},
         'lema': 'Pro Brasilia Fiant Eximia',
         'regiao': 'Sudeste',
-        'governador': 'João Doria',
-        'vice_governador': 'Rodrigo Garcia'
     },
     'TO': {
         'nome': 'Tocantins',
@@ -379,17 +323,53 @@ _UF_INFO = {
         'gentilico': {'tocantinense'},
         'lema': 'Co Yvy Ore Retama',
         'regiao': 'Norte',
-        'governador': 'Mauro Carlesse',
-        'vice_governador': 'Wanderlei Barbosa'
     }
 }
 
 
 
+class _Governador:
+    """Informações básicas do governador da UF.
+
+    Attributes
+    ----------
+    uf : str
+    nome : str
+    nome_completo : str
+    ano_eleicao : int
+    mandato_inicio : datetime.date
+    mandato_fim : datetime.date
+    partido : str
+    partido_sigla : str
+    cargo_anterior : str
+    vice_governador : str
+    
+    """
+
+    def __init__(self, uf_nome:str, uf_sigla:str):
+
+        # Baixar dados
+        self._uf = uf_sigla
+        URL = r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/governadores.json'
+        r = requests.get(URL)
+        data = json.loads(r.json())[uf_nome]
+
+        # Criar atributos
+        for key in data:
+            setattr(self, key, data[key])
+        self.mandato_inicio = datetime.strptime(self.mandato_inicio, '%Y-%m-%d').date()
+        self.mandato_fim = datetime.strptime(self.mandato_fim, '%Y-%m-%d').date()
+
+    def __str__(self) -> str:
+        return self.nome
+
+    def __repr__(self) -> str:
+        return f'<DadosAbertosBrasil.uf._Governador: {self.nome} ({self._uf})>'
+
+
+
 class UF:
     """Consolidado de informações de uma Unidade Federativa.
-
-    Este objeto ainda é um protótipo e poderá passar por várias modificações.
 
     Parameters
     ----------
@@ -416,10 +396,23 @@ class UF:
         Lema da UF.
     regiao : str
         Grande região (Norte, Nordeste, Sudeste, Sul ou Centro-Oeste).
-    governador : str
-        Nome do atual governador(a).
-    vice-governador : str
-        Nome do atual vice-governador(a).
+
+    Properties
+    ----------
+    densidade : float
+        Densidade populacional (hab/km²) da UF.
+    galeria : DadosAbertosBrasil.ibge.Galeria
+        Gera uma galeria de fotos da UF.
+    geojson : dict
+        Coordenadas dos municípios brasileiros em formato GeoJSON.
+    governador : DadosAbertosBrasil.uf._Governador
+        Informações básico do governador da UF.
+    historia : DadosAbertosBrasil.ibge.Historia
+        Objeto contendo a história da UF.
+    municipios : list[str]
+        Lista de municípios.
+    populacao : int
+        População projetada pelo IBGE.
 
     Methods
     -------
@@ -427,23 +420,11 @@ class UF:
         Gera a URL da WikiMedia para a bandeira do estado.
     brasao(tamanho=100)
         Gera a URL da WikiMedia para o brasão do estado.
-    densidade()
-        Densidade populacional (hab/km²) da UF.
-    deputados()
+    deputados(nome, legislatura, partido, sexo, inicio, fim, pagina, itens...)
         Lista dos deputados federais em exercício.
-    galeria()
-        Gera uma galeria de fotos da UF.
-    geojson()
-        Coordenadas dos municípios brasileiros em formato GeoJSON.
-    historia()
-        Objeto contendo a história da UF.
-    malha()
+    malha(nivel, divisoes, periodo, formato, qualidade)
         Obtém a URL para a malha referente à UF.
-    municipios()
-        Lista de municípios.
-    populacao()
-        População projetada pelo IBGE.
-    senadores(tipo='atual', formato='dataframe')
+    senadores(tipo, sexo, partido, contendo, excluindo, url, index, formato)
         Lista de senadores da república desta UF.
 
     """
@@ -523,6 +504,7 @@ class UF:
         return favoritos.brasao(uf=self.sigla, tamanho=tamanho)
 
 
+    @property
     def densidade(self) -> float:
         """Densidade populacional (hab/km²) da UF.
 
@@ -665,6 +647,7 @@ class UF:
         )
 
 
+    @property
     def galeria(self) -> ibge.Galeria:
         """Gera uma galeria de fotos da UF.
 
@@ -698,6 +681,7 @@ class UF:
         return ibge.Galeria(self.cod)
 
 
+    @property
     def geojson(self) -> dict:
         """Coordenadas dos municípios brasileiros em formato GeoJSON.
 
@@ -750,6 +734,39 @@ class UF:
         return favoritos.geojson(self.sigla)
 
 
+    @property
+    def governador(self) -> _Governador:
+        """Informações básicas do governador da UF.
+
+        Attributes
+        ----------
+        uf : str
+        nome : str
+        nome_completo : str
+        ano_eleicao : int
+        mandato_inicio : datetime.date
+        mandato_fim : datetime.date
+        partido : str
+        partido_sigla : str
+        cargo_anterior : str
+        vice_governador : str
+        
+        Raises
+        ------
+        DAB_UFError
+            Caso seja uma UF extinta.
+
+        """
+
+        if self.cod == 1:
+            raise DAB_UFError("Propriedade `governador` indisponível para 'Brasil'.")
+        if self.extinto:
+            raise DAB_UFError('Propriedade `governador` indisponível para UFs extintas.')
+
+        return _Governador(self.nome, self.sigla)
+
+
+    @property
     def historia(self) -> ibge.Historia:
         """Objeto contendo a história da UF.
 
@@ -865,6 +882,7 @@ class UF:
         )
 
 
+    @property
     def municipios(self) -> List[str]:
         """Lista de municípios.
 
@@ -892,6 +910,7 @@ class UF:
         return [mun['properties']['name'] for mun in js['features']]
 
 
+    @property
     def populacao(self) -> int:
         """População projetada pelo IBGE.
 
