@@ -404,6 +404,6 @@ def coordenadas() -> pd.DataFrame:
     """
 
     return pd.read_csv(
-        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/coordenadas.csv',
+        r'https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/coordenadas.csv',
         sep = ';'
     )

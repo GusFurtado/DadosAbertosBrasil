@@ -410,7 +410,7 @@ def perfil_eleitorado() -> pd.DataFrame:
     """
 
     return pd.read_csv(
-        r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/Eleitorado.csv',
+        r'https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/eleitorado.csv',
         encoding = 'latin-1',
         sep = ';'
     )

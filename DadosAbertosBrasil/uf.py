@@ -350,7 +350,7 @@ class _Governador:
 
         # Baixar dados
         self._uf = uf_sigla
-        URL = r'https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/data/governadores.json'
+        URL = r'https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/governadores.json'
         r = requests.get(URL)
         data = json.loads(r.json())[uf_nome]
 
