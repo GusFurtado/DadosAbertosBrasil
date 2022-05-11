@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil/master/assets/logo.png"><br>
+  <img src="https://raw.githubusercontent.com/GusFurtado/dab_assets/main/images/logo.png"><br>
 </div>
 
 ---

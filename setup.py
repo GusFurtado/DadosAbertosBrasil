@@ -12,7 +12,7 @@ setup(
     'DadosAbertosBrasil._utils',
     'DadosAbertosBrasil._ibge'
   ],
-  version = '0.4.3',
+  version = '0.4.4',
   license = 'MIT',
   description = 'Pacote Python para acesso a dados abertos e APIs do governo brasileiro.',
   long_description = long_description,
@@ -20,7 +20,7 @@ setup(
   author = 'Gustavo Furtado',
   author_email = 'gustavofurtado2@gmail.com',
   url = 'https://github.com/GusFurtado/DadosAbertosBrasil',
-  download_url = 'https://github.com/GusFurtado/DadosAbertosBrasil/archive/0.4.3.tar.gz',
+  download_url = 'https://github.com/GusFurtado/DadosAbertosBrasil/archive/0.4.4.tar.gz',
 
   keywords = [
     'brasil',

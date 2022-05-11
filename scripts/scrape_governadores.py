@@ -106,3 +106,5 @@ df = df[[
 data = df.to_json(orient='index')
 with open('data/governadores.json', 'w') as f:
     json.dump(data, f)
+
+print('Feito!')
