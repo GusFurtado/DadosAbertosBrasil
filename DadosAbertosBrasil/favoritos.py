@@ -21,8 +21,7 @@ from . import bacen
 from . import ipea
 
 
-
-def bandeira(uf:str, tamanho:int=100) -> str:
+def bandeira(uf: str, tamanho: int = 100) -> str:
     """Gera a URL da WikiMedia para a bandeira de um estado.
 
     Parameters
@@ -50,49 +49,47 @@ def bandeira(uf:str, tamanho:int=100) -> str:
     'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/' ...
 
     """
-    
-    URL = r'https://upload.wikimedia.org/wikipedia/commons/thumb/'
-    
-    bandeira = {
-        'BR': f'0/05/Flag_of_Brazil.svg/{tamanho}px-Flag_of_Brazil.svg.png',
-        'AC': f'4/4c/Bandeira_do_Acre.svg/{tamanho}px-Bandeira_do_Acre.svg.png',
-        'AM': f'6/6b/Bandeira_do_Amazonas.svg/{tamanho}px-Bandeira_do_Amazonas.svg.png',
-        'AL': f'8/88/Bandeira_de_Alagoas.svg/{tamanho}px-Bandeira_de_Alagoas.svg.png',
-        'AP': f'0/0c/Bandeira_do_Amap%C3%A1.svg/{tamanho}px-Bandeira_do_Amap%C3%A1.svg.png',
-        'BA': f'2/28/Bandeira_da_Bahia.svg/{tamanho}px-Bandeira_da_Bahia.svg.png',
-        'CE': f'2/2e/Bandeira_do_Cear%C3%A1.svg/{tamanho}px-Bandeira_do_Cear%C3%A1.svg.png',
-        'DF': f'3/3c/Bandeira_do_Distrito_Federal_%28Brasil%29.svg/{tamanho}px-Bandeira_do_Distrito_Federal_%28Brasil%29.svg.png',
-        'ES': f'4/43/Bandeira_do_Esp%C3%ADrito_Santo.svg/{tamanho}px-Bandeira_do_Esp%C3%ADrito_Santo.svg.png',
-        'GO': f'b/be/Flag_of_Goi%C3%A1s.svg/{tamanho}px-Flag_of_Goi%C3%A1s.svg.png',
-        'MA': f'4/45/Bandeira_do_Maranh%C3%A3o.svg/{tamanho}px-Bandeira_do_Maranh%C3%A3o.svg.png',
-        'MG': f'f/f4/Bandeira_de_Minas_Gerais.svg/{tamanho}px-Bandeira_de_Minas_Gerais.svg.png',
-        'MT': f'0/0b/Bandeira_de_Mato_Grosso.svg/{tamanho}px-Bandeira_de_Mato_Grosso.svg.png',
-        'MS': f'6/64/Bandeira_de_Mato_Grosso_do_Sul.svg/{tamanho}px-Bandeira_de_Mato_Grosso_do_Sul.svg.png',
-        'PA': f'0/02/Bandeira_do_Par%C3%A1.svg/{tamanho}px-Bandeira_do_Par%C3%A1.svg.png',
-        'PB': f'b/bb/Bandeira_da_Para%C3%ADba.svg/{tamanho}px-Bandeira_da_Para%C3%ADba.svg.png',
-        'PE': f'5/59/Bandeira_de_Pernambuco.svg/{tamanho}px-Bandeira_de_Pernambuco.svg.png',
-        'PI': f'3/33/Bandeira_do_Piau%C3%AD.svg/{tamanho}px-Bandeira_do_Piau%C3%AD.svg.png',
-        'PR': f'9/93/Bandeira_do_Paran%C3%A1.svg/{tamanho}px-Bandeira_do_Paran%C3%A1.svg.png',
-        'RJ': f'7/73/Bandeira_do_estado_do_Rio_de_Janeiro.svg/{tamanho}px-Bandeira_do_estado_do_Rio_de_Janeiro.svg.png',
-        'RO': f'f/fa/Bandeira_de_Rond%C3%B4nia.svg/{tamanho}px-Bandeira_de_Rond%C3%B4nia.svg.png',
-        'RN': f'3/30/Bandeira_do_Rio_Grande_do_Norte.svg/{tamanho}px-Bandeira_do_Rio_Grande_do_Norte.svg.png',        
-        'RR': f'9/98/Bandeira_de_Roraima.svg/{tamanho}px-Bandeira_de_Roraima.svg.png',
-        'RS': f'6/63/Bandeira_do_Rio_Grande_do_Sul.svg/{tamanho}px-Bandeira_do_Rio_Grande_do_Sul.svg.png',
-        'SC': f'1/1a/Bandeira_de_Santa_Catarina.svg/{tamanho}px-Bandeira_de_Santa_Catarina.svg.png',
-        'SE': f'b/be/Bandeira_de_Sergipe.svg/{tamanho}px-Bandeira_de_Sergipe.svg.png',
-        'SP': f'2/2b/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/{tamanho}px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png',
-        'TO': f'f/ff/Bandeira_do_Tocantins.svg/{tamanho}px-Bandeira_do_Tocantins.svg.png',
 
+    URL = r"https://upload.wikimedia.org/wikipedia/commons/thumb/"
+
+    bandeira = {
+        "BR": f"0/05/Flag_of_Brazil.svg/{tamanho}px-Flag_of_Brazil.svg.png",
+        "AC": f"4/4c/Bandeira_do_Acre.svg/{tamanho}px-Bandeira_do_Acre.svg.png",
+        "AM": f"6/6b/Bandeira_do_Amazonas.svg/{tamanho}px-Bandeira_do_Amazonas.svg.png",
+        "AL": f"8/88/Bandeira_de_Alagoas.svg/{tamanho}px-Bandeira_de_Alagoas.svg.png",
+        "AP": f"0/0c/Bandeira_do_Amap%C3%A1.svg/{tamanho}px-Bandeira_do_Amap%C3%A1.svg.png",
+        "BA": f"2/28/Bandeira_da_Bahia.svg/{tamanho}px-Bandeira_da_Bahia.svg.png",
+        "CE": f"2/2e/Bandeira_do_Cear%C3%A1.svg/{tamanho}px-Bandeira_do_Cear%C3%A1.svg.png",
+        "DF": f"3/3c/Bandeira_do_Distrito_Federal_%28Brasil%29.svg/{tamanho}px-Bandeira_do_Distrito_Federal_%28Brasil%29.svg.png",
+        "ES": f"4/43/Bandeira_do_Esp%C3%ADrito_Santo.svg/{tamanho}px-Bandeira_do_Esp%C3%ADrito_Santo.svg.png",
+        "GO": f"b/be/Flag_of_Goi%C3%A1s.svg/{tamanho}px-Flag_of_Goi%C3%A1s.svg.png",
+        "MA": f"4/45/Bandeira_do_Maranh%C3%A3o.svg/{tamanho}px-Bandeira_do_Maranh%C3%A3o.svg.png",
+        "MG": f"f/f4/Bandeira_de_Minas_Gerais.svg/{tamanho}px-Bandeira_de_Minas_Gerais.svg.png",
+        "MT": f"0/0b/Bandeira_de_Mato_Grosso.svg/{tamanho}px-Bandeira_de_Mato_Grosso.svg.png",
+        "MS": f"6/64/Bandeira_de_Mato_Grosso_do_Sul.svg/{tamanho}px-Bandeira_de_Mato_Grosso_do_Sul.svg.png",
+        "PA": f"0/02/Bandeira_do_Par%C3%A1.svg/{tamanho}px-Bandeira_do_Par%C3%A1.svg.png",
+        "PB": f"b/bb/Bandeira_da_Para%C3%ADba.svg/{tamanho}px-Bandeira_da_Para%C3%ADba.svg.png",
+        "PE": f"5/59/Bandeira_de_Pernambuco.svg/{tamanho}px-Bandeira_de_Pernambuco.svg.png",
+        "PI": f"3/33/Bandeira_do_Piau%C3%AD.svg/{tamanho}px-Bandeira_do_Piau%C3%AD.svg.png",
+        "PR": f"9/93/Bandeira_do_Paran%C3%A1.svg/{tamanho}px-Bandeira_do_Paran%C3%A1.svg.png",
+        "RJ": f"7/73/Bandeira_do_estado_do_Rio_de_Janeiro.svg/{tamanho}px-Bandeira_do_estado_do_Rio_de_Janeiro.svg.png",
+        "RO": f"f/fa/Bandeira_de_Rond%C3%B4nia.svg/{tamanho}px-Bandeira_de_Rond%C3%B4nia.svg.png",
+        "RN": f"3/30/Bandeira_do_Rio_Grande_do_Norte.svg/{tamanho}px-Bandeira_do_Rio_Grande_do_Norte.svg.png",
+        "RR": f"9/98/Bandeira_de_Roraima.svg/{tamanho}px-Bandeira_de_Roraima.svg.png",
+        "RS": f"6/63/Bandeira_do_Rio_Grande_do_Sul.svg/{tamanho}px-Bandeira_do_Rio_Grande_do_Sul.svg.png",
+        "SC": f"1/1a/Bandeira_de_Santa_Catarina.svg/{tamanho}px-Bandeira_de_Santa_Catarina.svg.png",
+        "SE": f"b/be/Bandeira_de_Sergipe.svg/{tamanho}px-Bandeira_de_Sergipe.svg.png",
+        "SP": f"2/2b/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/{tamanho}px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png",
+        "TO": f"f/ff/Bandeira_do_Tocantins.svg/{tamanho}px-Bandeira_do_Tocantins.svg.png",
         # Extintos
-        'FN': f'3/3b/Fernando_de_Noronha%2C_PE_-_Bandeira.svg/{tamanho}px-Fernando_de_Noronha%2C_PE_-_Bandeira.svg.png',
-        'GB': f'c/c3/Bandeira_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png/{tamanho}px-Bandeira_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png'
+        "FN": f"3/3b/Fernando_de_Noronha%2C_PE_-_Bandeira.svg/{tamanho}px-Fernando_de_Noronha%2C_PE_-_Bandeira.svg.png",
+        "GB": f"c/c3/Bandeira_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png/{tamanho}px-Bandeira_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png",
     }
-    
+
     return URL + bandeira[parse.uf(uf, extintos=True)]
 
 
-
-def brasao(uf:str, tamanho:int=100) -> str:
+def brasao(uf: str, tamanho: int = 100) -> str:
     """Gera a URL da WikiMedia para o brasão de um estado.
 
     Parameters
@@ -120,46 +117,44 @@ def brasao(uf:str, tamanho:int=100) -> str:
     'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/' ...
 
     """
-    
-    URL = r'https://upload.wikimedia.org/wikipedia/commons/thumb/'
-    
+
+    URL = r"https://upload.wikimedia.org/wikipedia/commons/thumb/"
+
     brasao = {
-        'BR': f'b/bf/Coat_of_arms_of_Brazil.svg/{tamanho}px-Coat_of_arms_of_Brazil.svg.png',
-        'AC': f'5/52/Brasão_do_Acre.svg/{tamanho}px-Brasão_do_Acre.svg.png',
-        'AM': f'2/2c/Bras%C3%A3o_do_Amazonas.svg/{tamanho}px-Bras%C3%A3o_do_Amazonas.svg.png',
-        'AL': f'5/5c/Bras%C3%A3o_do_Estado_de_Alagoas.svg/{tamanho}px-Bras%C3%A3o_do_Estado_de_Alagoas.svg.png',
-        'AP': f'6/63/Bras%C3%A3o_do_Amap%C3%A1.svg/{tamanho}px-Bras%C3%A3o_do_Amap%C3%A1.svg.png',
-        'BA': f'1/12/Bras%C3%A3o_do_estado_da_Bahia.svg/{tamanho}px-Bras%C3%A3o_do_estado_da_Bahia.svg.png',
-        'CE': f'f/fe/Bras%C3%A3o_do_Cear%C3%A1.svg/{tamanho}px-Bras%C3%A3o_do_Cear%C3%A1.svg.png',
-        'DF': f'e/e0/Bras%C3%A3o_do_Distrito_Federal_%28Brasil%29.svg/{tamanho}px-Bras%C3%A3o_do_Distrito_Federal_%28Brasil%29.svg.png',
-        'ES': f'a/a0/Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg/{tamanho}px-Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg.png',
-        'GO': f'b/bf/Bras%C3%A3o_de_Goi%C3%A1s.svg/{tamanho}px-Bras%C3%A3o_de_Goi%C3%A1s.svg.png',
-        'MA': f'a/ab/Brasão_do_Maranhão.svg/{tamanho}px-Brasão_do_Maranhão.svg.png',
-        'MG': f'd/d2/Brasão_de_Minas_Gerais.svg/{tamanho}px-Brasão_de_Minas_Gerais.svg.png',
-        'MT': f'0/04/Brasão_de_Mato_Grosso.png/{tamanho}px-Brasão_de_Mato_Grosso.png',
-        'MS': f'f/fa/Brasão_de_Mato_Grosso_do_Sul.svg/{tamanho}px-Brasão_de_Mato_Grosso_do_Sul.svg.png',
-        'PA': f'b/bc/Brasão_do_Pará.svg/{tamanho}px-Brasão_do_Pará.svg.png',
-        'PB': f'f/fd/Brasão_da_Paraíba.svg/{tamanho}px-Brasão_da_Paraíba.svg.png',
-        'PE': f'0/04/Brasão_do_estado_de_Pernambuco.svg/{tamanho}px-Brasão_do_estado_de_Pernambuco.svg.png',
-        'PI': f'a/ad/Brasão_do_Piauí.svg/{tamanho}px-Brasão_do_Piauí.svg.png',
-        'PR': f'4/49/Brasão_do_Paraná.svg/{tamanho}px-Brasão_do_Paraná.svg.png',
-        'RJ': f'5/5b/Brasão_do_estado_do_Rio_de_Janeiro.svg/{tamanho}px-Brasão_do_estado_do_Rio_de_Janeiro.svg.png',
-        'RO': f'f/f1/Brasão_de_Rondônia.svg/{tamanho}px-Brasão_de_Rondônia.svg.png',
-        'RN': f'2/26/Brasão_do_Rio_Grande_do_Norte.svg/{tamanho}px-Brasão_do_Rio_Grande_do_Norte.svg.png',        
-        'RR': f'e/ed/Brasão_de_Roraima.svg/{tamanho}px-Brasão_de_Roraima.svg.png',
-        'RS': f'3/38/Brasão_do_Rio_Grande_do_Sul.svg/{tamanho}px-Brasão_do_Rio_Grande_do_Sul.svg.png',
-        'SC': f'6/65/Brasão_de_Santa_Catarina.svg/{tamanho}px-Brasão_de_Santa_Catarina.svg.png',
-        'SE': f'5/52/Brasão_de_Sergipe.svg/{tamanho}px-Brasão_de_Sergipe.svg.png',
-        'SP': f'1/1a/Brasão_do_estado_de_São_Paulo.svg/{tamanho}px-Brasão_do_estado_de_São_Paulo.svg.png',
-        'TO': f'c/cc/Brasão_do_Tocantins.svg/{tamanho}px-Brasão_do_Tocantins.svg.png',
-
+        "BR": f"b/bf/Coat_of_arms_of_Brazil.svg/{tamanho}px-Coat_of_arms_of_Brazil.svg.png",
+        "AC": f"5/52/Brasão_do_Acre.svg/{tamanho}px-Brasão_do_Acre.svg.png",
+        "AM": f"2/2c/Bras%C3%A3o_do_Amazonas.svg/{tamanho}px-Bras%C3%A3o_do_Amazonas.svg.png",
+        "AL": f"5/5c/Bras%C3%A3o_do_Estado_de_Alagoas.svg/{tamanho}px-Bras%C3%A3o_do_Estado_de_Alagoas.svg.png",
+        "AP": f"6/63/Bras%C3%A3o_do_Amap%C3%A1.svg/{tamanho}px-Bras%C3%A3o_do_Amap%C3%A1.svg.png",
+        "BA": f"1/12/Bras%C3%A3o_do_estado_da_Bahia.svg/{tamanho}px-Bras%C3%A3o_do_estado_da_Bahia.svg.png",
+        "CE": f"f/fe/Bras%C3%A3o_do_Cear%C3%A1.svg/{tamanho}px-Bras%C3%A3o_do_Cear%C3%A1.svg.png",
+        "DF": f"e/e0/Bras%C3%A3o_do_Distrito_Federal_%28Brasil%29.svg/{tamanho}px-Bras%C3%A3o_do_Distrito_Federal_%28Brasil%29.svg.png",
+        "ES": f"a/a0/Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg/{tamanho}px-Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg.png",
+        "GO": f"b/bf/Bras%C3%A3o_de_Goi%C3%A1s.svg/{tamanho}px-Bras%C3%A3o_de_Goi%C3%A1s.svg.png",
+        "MA": f"a/ab/Brasão_do_Maranhão.svg/{tamanho}px-Brasão_do_Maranhão.svg.png",
+        "MG": f"d/d2/Brasão_de_Minas_Gerais.svg/{tamanho}px-Brasão_de_Minas_Gerais.svg.png",
+        "MT": f"0/04/Brasão_de_Mato_Grosso.png/{tamanho}px-Brasão_de_Mato_Grosso.png",
+        "MS": f"f/fa/Brasão_de_Mato_Grosso_do_Sul.svg/{tamanho}px-Brasão_de_Mato_Grosso_do_Sul.svg.png",
+        "PA": f"b/bc/Brasão_do_Pará.svg/{tamanho}px-Brasão_do_Pará.svg.png",
+        "PB": f"f/fd/Brasão_da_Paraíba.svg/{tamanho}px-Brasão_da_Paraíba.svg.png",
+        "PE": f"0/04/Brasão_do_estado_de_Pernambuco.svg/{tamanho}px-Brasão_do_estado_de_Pernambuco.svg.png",
+        "PI": f"a/ad/Brasão_do_Piauí.svg/{tamanho}px-Brasão_do_Piauí.svg.png",
+        "PR": f"4/49/Brasão_do_Paraná.svg/{tamanho}px-Brasão_do_Paraná.svg.png",
+        "RJ": f"5/5b/Brasão_do_estado_do_Rio_de_Janeiro.svg/{tamanho}px-Brasão_do_estado_do_Rio_de_Janeiro.svg.png",
+        "RO": f"f/f1/Brasão_de_Rondônia.svg/{tamanho}px-Brasão_de_Rondônia.svg.png",
+        "RN": f"2/26/Brasão_do_Rio_Grande_do_Norte.svg/{tamanho}px-Brasão_do_Rio_Grande_do_Norte.svg.png",
+        "RR": f"e/ed/Brasão_de_Roraima.svg/{tamanho}px-Brasão_de_Roraima.svg.png",
+        "RS": f"3/38/Brasão_do_Rio_Grande_do_Sul.svg/{tamanho}px-Brasão_do_Rio_Grande_do_Sul.svg.png",
+        "SC": f"6/65/Brasão_de_Santa_Catarina.svg/{tamanho}px-Brasão_de_Santa_Catarina.svg.png",
+        "SE": f"5/52/Brasão_de_Sergipe.svg/{tamanho}px-Brasão_de_Sergipe.svg.png",
+        "SP": f"1/1a/Brasão_do_estado_de_São_Paulo.svg/{tamanho}px-Brasão_do_estado_de_São_Paulo.svg.png",
+        "TO": f"c/cc/Brasão_do_Tocantins.svg/{tamanho}px-Brasão_do_Tocantins.svg.png",
         # Extintos
-        'FN': f'5/5a/Fernando_de_Noronha%2C_PE_-_Bras%C3%A3o.svg/{tamanho}px-Fernando_de_Noronha%2C_PE_-_Bras%C3%A3o.svg.png',
-        'GB': f'c/cf/Bras%C3%A3o_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png/{tamanho}px-Bras%C3%A3o_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png'
+        "FN": f"5/5a/Fernando_de_Noronha%2C_PE_-_Bras%C3%A3o.svg/{tamanho}px-Fernando_de_Noronha%2C_PE_-_Bras%C3%A3o.svg.png",
+        "GB": f"c/cf/Bras%C3%A3o_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png/{tamanho}px-Bras%C3%A3o_do_Estado_da_Guanabara_%281960%E2%80%931975%29.png",
     }
-    
-    return URL + brasao[parse.uf(uf, extintos=True)]
 
+    return URL + brasao[parse.uf(uf, extintos=True)]
 
 
 def catalogo() -> pd.DataFrame:
@@ -187,9 +182,8 @@ def catalogo() -> pd.DataFrame:
 
     """
 
-    URL = 'https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv'
+    URL = "https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv"
     return pd.read_csv(URL)
-
 
 
 def codigos_municipios() -> pd.DataFrame:
@@ -220,13 +214,12 @@ def codigos_municipios() -> pd.DataFrame:
 
     """
 
-    URL = r'https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json'
+    URL = r"https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json"
     df = pd.read_json(URL)
-    return df[['codigo_tse', 'codigo_ibge', 'nome_municipio', 'uf', 'capital']]
+    return df[["codigo_tse", "codigo_ibge", "nome_municipio", "uf", "capital"]]
 
 
-
-def geojson(uf:str) -> dict:
+def geojson(uf: str) -> dict:
     """Coordenadas dos municípios brasileiros em formato GeoJSON.
 
     .. deprecated:: 0.3.2
@@ -278,53 +271,52 @@ def geojson(uf:str) -> dict:
 
     warnings.warn(
         "Esta função será removida na versão 0.4.\nFavor utilizar a função `DadosAbertosBrasil.ibge.malha`",
-        DeprecationWarning
+        DeprecationWarning,
     )
-    
+
     uf = parse.uf(uf)
-    
+
     mapping = {
-        'BR': 100,
-        'AC': 12,
-        'AM': 13,
-        'AP': 16,
-        'PA': 15,
-        'RO': 11,
-        'RR': 14,
-        'TO': 17,
-        'AL': 27,
-        'BA': 29,
-        'CE': 23,
-        'MA': 21,
-        'PB': 25,
-        'PE': 26,
-        'PI': 22,
-        'RN': 24,
-        'SE': 28,
-        'ES': 32,
-        'MG': 31,
-        'RJ': 33,
-        'SP': 35,
-        'PR': 41,
-        'RS': 43,
-        'SC': 42,
-        'DF': 53,
-        'GO': 52,
-        'MT': 51,
-        'MS': 50
+        "BR": 100,
+        "AC": 12,
+        "AM": 13,
+        "AP": 16,
+        "PA": 15,
+        "RO": 11,
+        "RR": 14,
+        "TO": 17,
+        "AL": 27,
+        "BA": 29,
+        "CE": 23,
+        "MA": 21,
+        "PB": 25,
+        "PE": 26,
+        "PI": 22,
+        "RN": 24,
+        "SE": 28,
+        "ES": 32,
+        "MG": 31,
+        "RJ": 33,
+        "SP": 35,
+        "PR": 41,
+        "RS": 43,
+        "SC": 42,
+        "DF": 53,
+        "GO": 52,
+        "MT": 51,
+        "MS": 50,
     }
-    
-    url = f'https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-{mapping[uf]}-mun.json'
+
+    url = f"https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-{mapping[uf]}-mun.json"
     return requests.get(url).json()
 
 
-
 def ipca(
-        ultimos: Optional[int] = None,
-        inicio: Union[datetime, str] = None,
-        fim: Union[datetime, str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
+    ultimos: Optional[int] = None,
+    inicio: Union[datetime, str] = None,
+    fim: Union[datetime, str] = None,
+    index: bool = False,
+) -> pd.DataFrame:
     """Índice nacional de preços ao consumidor-amplo (IPCA).
 
     Esta é uma função de fácil acesso à série temporal 433 do módulo `bacen`.
@@ -373,7 +365,7 @@ def ipca(
 
     >>> favoritos.ipca(inicio='2021-01-01', fim='2021-04-01', index=True)
                valor
-    data            
+    data
     2021-01-01  0.25
     2021-02-01  0.86
     2021-03-01  0.93
@@ -381,14 +373,7 @@ def ipca(
 
     """
 
-    return bacen.serie(
-        cod = 433,
-        ultimos = ultimos,
-        inicio = inicio,
-        fim = fim,
-        index = index
-    )
-
+    return bacen.serie(cod=433, ultimos=ultimos, inicio=inicio, fim=fim, index=index)
 
 
 def perfil_eleitorado() -> pd.DataFrame:
@@ -410,14 +395,13 @@ def perfil_eleitorado() -> pd.DataFrame:
     """
 
     return pd.read_csv(
-        r'https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/eleitorado.csv',
-        encoding = 'latin-1',
-        sep = ';'
+        r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/eleitorado.csv",
+        encoding="latin-1",
+        sep=";",
     )
 
 
-
-def pib(periodo:str='anual', index:bool=False) -> pd.DataFrame:
+def pib(periodo: str = "anual", index: bool = False) -> pd.DataFrame:
     """Variação percentual do Produto Interno Bruto Real.
 
     Esta é uma função de fácil acesso às séries temporais 'PAN_PIBPMG' e
@@ -440,19 +424,19 @@ def pib(periodo:str='anual', index:bool=False) -> pd.DataFrame:
     Capturar PIB trimestral.
 
     >>> favoritos.pib(periodo='trimestral')
-           periodo      valor
+              data      valor
     0   1997-01-01   3.400572
     1   1997-04-01   4.754002
     2   1997-07-01   1.791279
     3   1997-10-01   3.738518
     4   1998-01-01   1.007575
-    ..         ...     ...
+    ..         ...        ...
 
     Capturar PIB anual, pondo o período como index da tabela.
 
     >>> favoritos.pib(periodo='anual', index=True)
                    valor
-    periodo             
+    data
     1997-01-01  3.394846
     1998-01-01  0.338098
     1999-01-01  0.467938
@@ -464,27 +448,25 @@ def pib(periodo:str='anual', index:bool=False) -> pd.DataFrame:
 
     # Parsing período
     periodo = periodo.lower()[0]
-    if periodo == 'a':
-        cod = 'PAN_PIBPMG'
-    elif periodo == 't':
-        cod = 'PAN4_PIBPMG4'
+    if periodo == "a":
+        cod = "PAN_PIBPMG"
+    elif periodo == "t":
+        cod = "PAN4_PIBPMG4"
 
     df = ipea.serie(cod=cod, index=False)
-    df.drop(columns=['SERCODIGO', 'NIVNOME', 'TERCODIGO'], inplace=True)
-    df.columns = ['periodo', 'valor']
+    df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
     if index:
-        df.set_index('periodo', inplace=True)
+        df.set_index("data", inplace=True)
     return df
 
 
-
 def rentabilidade_poupanca(
-        ultimos: Optional[int] = None,
-        inicio: Union[datetime, str] = None,
-        fim: Union[datetime, str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
-    """Rentailidade dos depósitos de poupança a partir de Maio de 2012. 
+    ultimos: Optional[int] = None,
+    inicio: Union[datetime, str] = None,
+    fim: Union[datetime, str] = None,
+    index: bool = False,
+) -> pd.DataFrame:
+    """Rentailidade dos depósitos de poupança a partir de Maio de 2012.
 
     Esta é uma função de fácil acesso à série temporal 195 do módulo `bacen`.
 
@@ -532,7 +514,7 @@ def rentabilidade_poupanca(
 
     >>> favoritos.rentabilidade_poupanca(inicio='2021-01-01', fim='2021-04-01', index=True)
                   datafim   valor
-    data                         
+    data
     2021-01-01 2021-02-01  0.1159
     2021-01-02 2021-02-02  0.1159
     2021-01-03 2021-02-03  0.1159
@@ -542,23 +524,16 @@ def rentabilidade_poupanca(
 
     """
 
-    return bacen.serie(
-        cod = 195,
-        ultimos = ultimos,
-        inicio = inicio,
-        fim = fim,
-        index = index
-    )
-
+    return bacen.serie(cod=195, ultimos=ultimos, inicio=inicio, fim=fim, index=index)
 
 
 def reservas_internacionais(
-        periodo: str = 'mensal',
-        ultimos: Optional[int] = None,
-        inicio: Union[datetime, str] = None,
-        fim: Union[datetime, str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
+    periodo: str = "mensal",
+    ultimos: Optional[int] = None,
+    inicio: Union[datetime, str] = None,
+    fim: Union[datetime, str] = None,
+    index: bool = False,
+) -> pd.DataFrame:
     """Reservar internacionais mensais ou diárias.
 
     Esta é uma função de fácil acesso às séries temporais 3546 e 13621
@@ -616,7 +591,7 @@ def reservas_internacionais(
     ...     index = True
     ... )
                  valor
-    data              
+    data
     2021-01-01  355416
     2021-02-01  356070
     2021-03-01  347413
@@ -624,21 +599,13 @@ def reservas_internacionais(
 
     """
 
-    if periodo.lower() == 'mensal':
+    if periodo.lower() == "mensal":
         return bacen.serie(
-            cod = 3546,
-            ultimos = ultimos,
-            inicio = inicio,
-            fim = fim,
-            index = index
+            cod=3546, ultimos=ultimos, inicio=inicio, fim=fim, index=index
         )
-    elif periodo.lower() in ['diaria', 'diario', 'diário', 'diária']:
+    elif periodo.lower() in ["diaria", "diario", "diário", "diária"]:
         return bacen.serie(
-            cod = 13621,
-            ultimos = ultimos,
-            inicio = inicio,
-            fim = fim,
-            index = index
+            cod=13621, ultimos=ultimos, inicio=inicio, fim=fim, index=index
         )
     else:
         raise ValueError(
@@ -646,8 +613,7 @@ def reservas_internacionais(
         )
 
 
-
-def risco_brasil(index:bool=False) -> pd.DataFrame:
+def risco_brasil(index: bool = False) -> pd.DataFrame:
     """Valores diários do Risco-Brasil, disponibilizados pela J.P. Morgan
     desde 1994.
 
@@ -677,19 +643,14 @@ def risco_brasil(index:bool=False) -> pd.DataFrame:
 
     """
 
-    df = ipea.serie(cod='JPM366_EMBI366', index=False)
-    df.drop(columns=['SERCODIGO', 'NIVNOME', 'TERCODIGO'], inplace=True)
-    df.columns = ['data', 'valor']
+    df = ipea.serie(cod="JPM366_EMBI366", index=False)
+    df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
     if index:
-        df.set_index('data', inplace=True)
+        df.set_index("data", inplace=True)
     return df
 
 
-
-def salario_minimo(
-        tipo: str = 'nominal',
-        index: bool = False
-    ) -> pd.DataFrame:
+def salario_minimo(tipo: str = "nominal", index: bool = False) -> pd.DataFrame:
     """Valores do salário-mínimo mensal brasileiro desde 1940.
 
     Esta é uma função de fácil acesso às série temporais do módulo `ipea`.
@@ -726,7 +687,7 @@ def salario_minimo(
 
     >>> favoritos.salario_minimo(tipo='real', index=True)
                       valor
-    data                   
+    data
     1940-07-01   962.321161
     1940-08-01   959.634185
     1940-09-01   958.771291
@@ -736,33 +697,31 @@ def salario_minimo(
 
     """
 
-    if tipo.lower() == 'nominal':
-        df = ipea.serie(cod='MTE12_SALMIN12', index=False)
-    elif tipo.lower() == 'real':
-        df = ipea.serie(cod='GAC12_SALMINRE12', index=False)
-    elif tipo.lower() == 'ppc':
-        df = ipea.serie(cod='GAC12_SALMINDOL12', index=False)
+    if tipo.lower() == "nominal":
+        df = ipea.serie(cod="MTE12_SALMIN12", index=False)
+    elif tipo.lower() == "real":
+        df = ipea.serie(cod="GAC12_SALMINRE12", index=False)
+    elif tipo.lower() == "ppc":
+        df = ipea.serie(cod="GAC12_SALMINDOL12", index=False)
     else:
         raise ValueError(
             "Tipo inválido. Escolha um dos seguintes valores: 'nominal', 'real' ou 'ppc'."
         )
 
-    df.drop(columns=['SERCODIGO', 'NIVNOME', 'TERCODIGO'], inplace=True)
-    df.columns = ['data', 'valor']
+    df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
     if index:
-        df.set_index('data', inplace=True)
+        df.set_index("data", inplace=True)
     return df
 
 
-
 def selic(
-        periodo: str = 'meta',
-        anualizado: bool = True,
-        ultimos: Optional[int] = None,
-        inicio: Union[datetime, str] = None,
-        fim: Union[datetime, str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
+    periodo: str = "meta",
+    anualizado: bool = True,
+    ultimos: Optional[int] = None,
+    inicio: Union[datetime, str] = None,
+    fim: Union[datetime, str] = None,
+    index: bool = False,
+) -> pd.DataFrame:
     """Taxa de juros - Meta Selic definida pelo COPOM.
 
     Esta é uma função de fácil acesso à série temporal 432 do módulo `bacen`.
@@ -839,7 +798,7 @@ def selic(
     ...     index = True
     ... )
                    valor
-    data                
+    data
     2022-01-03  0.034749
     2022-01-04  0.034749
     2022-01-05  0.034749
@@ -850,34 +809,29 @@ def selic(
 
     periodo = periodo.lower()
 
-    if periodo == 'meta':
+    if periodo == "meta":
         cod = 432
 
-    elif periodo.startswith('dia'):
+    elif periodo.startswith("dia"):
         cod = 1178 if anualizado else 11
 
-    elif periodo in ('mensal', 'mes'):
+    elif periodo in ("mensal", "mes"):
         cod = 4189 if anualizado else 4390
 
     else:
-        raise ValueError("Período inválido.\nEscolha entre 'meta', 'diario' ou 'mensal'.")
+        raise ValueError(
+            "Período inválido.\nEscolha entre 'meta', 'diario' ou 'mensal'."
+        )
 
-    return bacen.serie(
-        cod = cod,
-        ultimos = ultimos,
-        inicio = inicio,
-        fim = fim,
-        index = index
-    )
-
+    return bacen.serie(cod=cod, ultimos=ultimos, inicio=inicio, fim=fim, index=index)
 
 
 def taxa_referencial(
-        ultimos: Optional[int] = None,
-        inicio: Union[datetime, str] = None,
-        fim: Union[datetime, str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
+    ultimos: Optional[int] = None,
+    inicio: Union[datetime, str] = None,
+    fim: Union[datetime, str] = None,
+    index: bool = False,
+) -> pd.DataFrame:
     """Taxa referencial (TR).
 
     Esta é uma função de fácil acesso à série temporal 226 do módulo `bacen`.
@@ -926,7 +880,7 @@ def taxa_referencial(
 
     >>> favoritos.taxa_referencial(inicio='2021-01-01', fim='2021-04-01', index=True)
                   datafim   valor
-    data                         
+    data
     2021-01-01 2021-02-01  0.0000
     2021-01-02 2021-02-02  0.0000
     2021-01-03 2021-02-03  0.0000
@@ -936,10 +890,4 @@ def taxa_referencial(
 
     """
 
-    return bacen.serie(
-        cod = 226,
-        ultimos = ultimos,
-        inicio = inicio,
-        fim = fim,
-        index = index
-    )
+    return bacen.serie(cod=226, ultimos=ultimos, inicio=inicio, fim=fim, index=index)
