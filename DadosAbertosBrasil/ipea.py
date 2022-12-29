@@ -40,10 +40,9 @@ import pandas as pd
 from ._utils.get_data import get_data
 
 
-
-def _get(path:str) -> pd.DataFrame:
+def _get(path: str) -> pd.DataFrame:
     """Captura e formata dados deste módulo.
-    
+
     Parameters
     ----------
     path : str
@@ -55,13 +54,8 @@ def _get(path:str) -> pd.DataFrame:
 
     """
 
-    values = get_data(
-        endpoint = 'http://www.ipeadata.gov.br/api/odata4/',
-        path = path
-    )['value']
-
-    return pd.DataFrame(values)
-
+    values = get_data(endpoint="http://www.ipeadata.gov.br/api/odata4/", path=path)
+    return pd.DataFrame(values["value"])
 
 
 class Serie:
@@ -162,65 +156,61 @@ class Serie:
 
     """
 
-    def __init__(
-            self,
-            cod: str,
-            index: bool = False
-        ):
+    def __init__(self, cod: str, index: bool = False):
 
         # DataFrame
         self.valores = _get(f"Metadados(SERCODIGO='{cod}')/Valores")
-        self.valores.rename(columns={
-            'SERCODIGO': 'codigo',
-            'VALDATA': 'data',
-            'VALVALOR': 'valor',
-            'NIVNOME': 'nivel',
-            'TERCODIGO': 'territorio'
-        }, inplace=True)
+        self.valores.rename(
+            columns={
+                "SERCODIGO": "codigo",
+                "VALDATA": "data",
+                "VALVALOR": "valor",
+                "NIVNOME": "nivel",
+                "TERCODIGO": "territorio",
+            },
+            inplace=True,
+        )
 
-        if 'data' in self.valores.columns:
+        if "data" in self.valores.columns:
             self.valores.data = pd.to_datetime(self.valores.data, utc=True).dt.date
             if index:
-                self.valores.set_index('data', inplace=True)
+                self.valores.set_index("data", inplace=True)
 
         self.dados = self.valores
 
         # Atributos
         self.cod = cod
         self.metadados = _get(f"Metadados('{cod}')")
-        self.base = self.metadados.loc[0, 'BASNOME']
-        self.fonte_nome = self.metadados.loc[0, 'FNTNOME']
-        self.fonte_sigla = self.metadados.loc[0, 'FNTSIGLA']
-        self.fonte_url = self.metadados.loc[0, 'FNTURL']
-        self.multiplicador = self.metadados.loc[0, 'MULNOME']
-        self.periodo = self.metadados.loc[0, 'PERNOME']
-        self.ultima_atualizacao = self.metadados.loc[0, 'SERATUALIZACAO']
-        self.comentario = self.metadados.loc[0, 'SERCOMENTARIO']
-        self.nome = self.metadados.loc[0, 'SERNOME']
-        self.unidade = self.metadados.loc[0, 'UNINOME']
-        self.ativo = self.metadados.loc[0, 'SERSTATUS']
-        self.tema = self.metadados.loc[0, 'TEMCODIGO']
-        self.pais = self.metadados.loc[0, 'PAICODIGO']
-        self.numerica = self.metadados.loc[0, 'SERNUMERICA']
-
+        self.base = self.metadados.loc[0, "BASNOME"]
+        self.fonte_nome = self.metadados.loc[0, "FNTNOME"]
+        self.fonte_sigla = self.metadados.loc[0, "FNTSIGLA"]
+        self.fonte_url = self.metadados.loc[0, "FNTURL"]
+        self.multiplicador = self.metadados.loc[0, "MULNOME"]
+        self.periodo = self.metadados.loc[0, "PERNOME"]
+        self.ultima_atualizacao = self.metadados.loc[0, "SERATUALIZACAO"]
+        self.comentario = self.metadados.loc[0, "SERCOMENTARIO"]
+        self.nome = self.metadados.loc[0, "SERNOME"]
+        self.unidade = self.metadados.loc[0, "UNINOME"]
+        self.ativo = self.metadados.loc[0, "SERSTATUS"]
+        self.tema = self.metadados.loc[0, "TEMCODIGO"]
+        self.pais = self.metadados.loc[0, "PAICODIGO"]
+        self.numerica = self.metadados.loc[0, "SERNUMERICA"]
 
     def __repr__(self) -> str:
         return f"<DadosAbertosBrasil.ipea: Dados da série '{self.cod}'>"
-
 
     def __str__(self) -> str:
         return self.nome
 
 
-
 def lista_series(
-        contendo: Optional[str] = None,
-        excluindo: Optional[Union[str, List[str]]] = None,
-        fonte: Optional[str] = None,
-        ativo: Optional[bool] = None,
-        numerica: Optional[bool] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
+    contendo: Optional[str] = None,
+    excluindo: Optional[Union[str, List[str]]] = None,
+    fonte: Optional[str] = None,
+    ativo: Optional[bool] = None,
+    numerica: Optional[bool] = None,
+    index: bool = False,
+) -> pd.DataFrame:
     """Registros de metadados de todas as séries do IPEA.
 
     Parameters
@@ -277,7 +267,7 @@ def lista_series(
 
     """
 
-    df = _get('Metadados')
+    df = _get("Metadados")
 
     if isinstance(contendo, str):
         contendo = contendo.upper()
@@ -298,44 +288,44 @@ def lista_series(
         df = df[f1 | f2]
 
     if isinstance(ativo, bool):
-        status = 'A' if ativo else 'I'
+        status = "A" if ativo else "I"
         df = df[df.SERSTATUS == status]
 
     if isinstance(numerica, bool):
         df = df[df.SERNUMERICA == numerica]
 
-    df.rename(columns={
-        'SERCODIGO': 'codigo',
-        'SERNOME': 'nome',
-        'SERCOMENTARIO': 'comentario',
-        'SERATUALIZACAO': 'ultima_atualizacao',
-        'BASNOME': 'base',
-        'FNTSIGLA': 'fonte_sigla',
-        'FNTNOME': 'fonte_nome',
-        'FNTURL': 'fonte_url',
-        'PERNOME': 'periodo',
-        'UNINOME': 'unidade',
-        'MULNOME': 'multiplicador',
-        'SERSTATUS': 'ativo',
-        'TEMCODIGO': 'tema',
-        'PAICODIGO': 'codigo_pai',
-        'SERNUMERICA': 'numerica'
-    }, inplace=True)
+    df.rename(
+        columns={
+            "SERCODIGO": "codigo",
+            "SERNOME": "nome",
+            "SERCOMENTARIO": "comentario",
+            "SERATUALIZACAO": "ultima_atualizacao",
+            "BASNOME": "base",
+            "FNTSIGLA": "fonte_sigla",
+            "FNTNOME": "fonte_nome",
+            "FNTURL": "fonte_url",
+            "PERNOME": "periodo",
+            "UNINOME": "unidade",
+            "MULNOME": "multiplicador",
+            "SERSTATUS": "ativo",
+            "TEMCODIGO": "tema",
+            "PAICODIGO": "codigo_pai",
+            "SERNUMERICA": "numerica",
+        },
+        inplace=True,
+    )
 
-    df.ativo = df.ativo.map({'A': True, 'I': False})
+    df.ativo = df.ativo.map({"A": True, "I": False})
 
     if index:
-        df.set_index('codigo', inplace=True)
+        df.set_index("codigo", inplace=True)
 
     return df
 
 
-
 def lista_temas(
-        cod: Optional[int] = None,
-        pai: Optional[int] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
+    cod: Optional[int] = None, pai: Optional[int] = None, index: bool = False
+) -> pd.DataFrame:
     """Registros de todos os temas cadastrados.
 
     Parameters
@@ -380,7 +370,7 @@ def lista_temas(
 
     >>> ipea.lista_temas(index=True)
                          pai                     nome
-    codigo                                        
+    codigo
     28                   NaN             Agropecuária
     23                   NaN       Assistência social
     10                   NaN    Balanço de pagamentos
@@ -389,34 +379,33 @@ def lista_temas(
     ...                  ...                      ...
 
     """
-    
+
     if cod is None:
-        df = _get('Temas')
+        df = _get("Temas")
     elif isinstance(cod, int):
-        df = _get(f'Temas({cod})')
+        df = _get(f"Temas({cod})")
     else:
-        raise TypeError('Código do tema deve ser um número inteiro.')
+        raise TypeError("Código do tema deve ser um número inteiro.")
 
     if pai is not None:
         df = df[df.TEMCODIGO_PAI == pai]
 
-    df.rename(columns={
-        'TEMCODIGO': 'codigo',
-        'TEMCODIGO_PAI': 'pai',
-        'TEMNOME': 'nome',
-    }, inplace=True)
+    df.rename(
+        columns={
+            "TEMCODIGO": "codigo",
+            "TEMCODIGO_PAI": "pai",
+            "TEMNOME": "nome",
+        },
+        inplace=True,
+    )
 
     if index:
-        df.set_index('codigo', inplace=True)
+        df.set_index("codigo", inplace=True)
 
     return df
 
 
-
-def lista_paises(
-        cod: Optional[str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
+def lista_paises(cod: Optional[str] = None, index: bool = False) -> pd.DataFrame:
     """Registros de todos os países cadastrados.
 
     Parameters
@@ -450,7 +439,7 @@ def lista_paises(
 
     >>> ipea.lista_paises(index=True)
                           nome
-    codigo                             
+    codigo
     AFG            Afeganistão
     ZAF          África do Sul
     DEU               Alemanha
@@ -461,32 +450,26 @@ def lista_paises(
     """
 
     if cod is None:
-        df = _get('Paises')
+        df = _get("Paises")
     elif isinstance(cod, str):
         df = _get(f"Paises('{cod.upper()}')")
     else:
-        raise TypeError(
-            'Código do país deve ser um string de três letras maísculas.'
-        )
+        raise TypeError("Código do país deve ser um string de três letras maísculas.")
 
-    df.rename(columns={
-        'PAICODIGO': 'codigo',
-        'PAINOME': 'nome'
-    }, inplace=True)
+    df.rename(columns={"PAICODIGO": "codigo", "PAINOME": "nome"}, inplace=True)
 
     if index:
-        df.set_index('codigo', inplace=True)
+        df.set_index("codigo", inplace=True)
 
     return df
 
 
-
 def lista_territorios(
-        capital: Optional[bool] = None,
-        amc: Optional[bool] = None,
-        cod: Optional[int] = None,
-        nivel: Optional[str] = None
-    ) -> pd.DataFrame:
+    capital: Optional[bool] = None,
+    amc: Optional[bool] = None,
+    cod: Optional[int] = None,
+    nivel: Optional[str] = None,
+) -> pd.DataFrame:
     """Registros de todos os territórios brasileiros cadastrados.
 
     Parameters
@@ -549,20 +532,23 @@ def lista_territorios(
     """
 
     if (cod is None) or (nivel is None):
-        df = _get('Territorios')
+        df = _get("Territorios")
     else:
-        n = 'Municipios' if nivel == 'Municípios' else nivel        
+        n = "Municipios" if nivel == "Municípios" else nivel
         df = _get(f"Territorios(TERCODIGO='{cod}',NIVNOME='{n}')")
 
-    df.rename(columns={
-        'NIVNOME': 'nivel',
-        'TERCODIGO': 'codigo',
-        'TERNOME': 'nome',
-        'TERNOMEPADRAO': 'nome_padrao',
-        'TERCAPITAL': 'capital',
-        'TERAREA': 'area',
-        'NIVAMC': 'amc',
-    }, inplace=True)
+    df.rename(
+        columns={
+            "NIVNOME": "nivel",
+            "TERCODIGO": "codigo",
+            "TERNOME": "nome",
+            "TERNOMEPADRAO": "nome_padrao",
+            "TERCAPITAL": "capital",
+            "TERAREA": "area",
+            "NIVAMC": "amc",
+        },
+        inplace=True,
+    )
 
     if isinstance(capital, bool):
         df = df[df.capital == capital]
@@ -572,7 +558,6 @@ def lista_territorios(
 
     return df
 
-    
 
 def lista_niveis() -> List[str]:
     """Lista dos possíveis níveis territoriais.
@@ -590,30 +575,26 @@ def lista_niveis() -> List[str]:
     """
 
     return [
-        'Brasil',
-        'Regiões',
-        'Estados',
-        'Microrregiões',
-        'Mesorregiões',
-        'Municípios',
-        'Municípios por bacia',
-        'Área metropolitana',
-        'Estado/RM',
-        'AMC 20-00',
-        'AMC 40-00',
-        'AMC 60-00',
-        'AMC 1872-00',
-        'AMC 91-00',
-        'AMC 70-00',
-        'Outros Países'
+        "Brasil",
+        "Regiões",
+        "Estados",
+        "Microrregiões",
+        "Mesorregiões",
+        "Municípios",
+        "Municípios por bacia",
+        "Área metropolitana",
+        "Estado/RM",
+        "AMC 20-00",
+        "AMC 40-00",
+        "AMC 60-00",
+        "AMC 1872-00",
+        "AMC 91-00",
+        "AMC 70-00",
+        "Outros Países",
     ]
 
 
-
-def serie(
-        cod: str,
-        index: bool = False
-    ) -> pd.DataFrame:
+def serie(cod: str, index: bool = False) -> pd.DataFrame:
     """Valores de uma série IPEA.
 
     Parameters
@@ -657,17 +638,20 @@ def serie(
 
     df = _get(f"Metadados(SERCODIGO='{cod}')/Valores")
 
-    df.rename(columns={
-        'SERCODIGO': 'codigo',
-        'VALDATA': 'data',
-        'VALVALOR': 'valor',
-        'NIVNOME': 'nivel',
-        'TERCODIGO': 'territorio'
-    }, inplace=True)
+    df.rename(
+        columns={
+            "SERCODIGO": "codigo",
+            "VALDATA": "data",
+            "VALVALOR": "valor",
+            "NIVNOME": "nivel",
+            "TERCODIGO": "territorio",
+        },
+        inplace=True,
+    )
 
-    if 'data' in df.columns:
+    if "data" in df.columns:
         df.data = pd.to_datetime(df.data, utc=True).dt.date
         if index:
-            df.set_index('data', inplace=True)
+            df.set_index("data", inplace=True)
 
     return df

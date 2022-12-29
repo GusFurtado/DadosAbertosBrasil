@@ -48,28 +48,7 @@ References
 
 """
 
-from ._ibge.cidades import (
-    Galeria,
-    Historia
-)
-
-from ._ibge.misc import (
-    coordenadas,
-    localidades,
-    malha,
-    populacao
-)
-
-from ._ibge.nomes import (
-    nomes,
-    nomes_ranking,
-    nomes_uf
-)
-
-from ._ibge.sidra import (
-    Metadados,
-    lista_pesquisas,
-    lista_tabelas,
-    referencias,
-    sidra
-)
+from ._ibge.cidades import Galeria, Historia
+from ._ibge.misc import coordenadas, localidades, malha, populacao
+from ._ibge.nomes import nomes, nomes_ranking, nomes_uf
+from ._ibge.sidra import Metadados, lista_pesquisas, lista_tabelas, referencias, sidra

@@ -20,18 +20,16 @@ from ._utils import parse
 from ._utils.get_data import get_data
 
 
-
-def _df(path:str, params:dict=None) -> pd.DataFrame:
+def _df(path: str, params: dict = None) -> pd.DataFrame:
     data = get_data(
-        endpoint = 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/',
-        path = path,
-        params = params
+        endpoint="https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/",
+        path=path,
+        params=params,
     )
-    return pd.DataFrame(data['value'])
+    return pd.DataFrame(data["value"])
 
 
-
-def moedas():
+def moedas() -> pd.DataFrame:
     """Obtém os nomes e símbolos das principais moedas internacionais.
 
     Returns
@@ -57,7 +55,7 @@ def moedas():
         - Para calcular o valor equivalente em US$ (dólar americano),
           multiplique o montante na moeda consultada pela respectiva paridade.
         - Para obter o valor em R$ (reais), multiplique o montante na moeda
-          consultada pela respectiva taxa. 
+          consultada pela respectiva taxa.
 
     References
     ----------
@@ -81,20 +79,19 @@ def moedas():
 
     """
 
-    df = _df('Moedas')
-    df.columns = ['simbolo', 'nome', 'tipo']
+    df = _df("Moedas")
+    df.columns = ["simbolo", "nome", "tipo"]
     return df
 
 
-
 def cambio(
-        moedas = 'USD',
-        inicio: Union[datetime, str] = '2000-01-01',
-        fim: Union[datetime, str] = None,
-        cotacao: str = 'compra',
-        boletim: str = 'fechamento',
-        index: bool = False
-    ) -> pd.DataFrame:
+    moedas="USD",
+    inicio: Union[datetime, str] = "2000-01-01",
+    fim: Union[datetime, str] = None,
+    cotacao: str = "compra",
+    boletim: str = "fechamento",
+    index: bool = False,
+) -> pd.DataFrame:
     """Taxa de câmbio das principais moedas internacionais.
 
     É possível escolher várias moedas inserindo uma lista no campo `moeda`.
@@ -168,7 +165,7 @@ def cambio(
     ...     index = True
     ... )
                     USD     CAD
-    Data                      
+    Data
     2021-01-04  5.1402  4.0500
     2021-01-05  5.3405  4.1890
     2021-01-06  5.3013  4.1798
@@ -177,55 +174,59 @@ def cambio(
 
     """
 
-    inicio = parse.data(inicio, 'bacen')
-    if fim == None:
-        fim = datetime.today().strftime('%m-%d-%Y')
+    inicio = parse.data(inicio, "bacen")
+    if fim is None:
+        fim = datetime.today().strftime("%m-%d-%Y")
     else:
-        fim = parse.data(fim, 'bacen')
-    
+        fim = parse.data(fim, "bacen")
+
     moedas = parse.moeda(moedas)
-    
+
     cotacao_moedas = []
     for moeda in moedas:
         cotacao_moeda = _df(
-            "CotacaoMoedaPeriodo(" \
-            + "moeda=@moeda," \
-            + "dataInicial=@dataInicial," \
-            + "dataFinalCotacao=@dataFinalCotacao)" \
-            + f"?@moeda='{moeda}'" \
-            + f"&@dataInicial='{inicio}'" \
-            + f"&@dataFinalCotacao='{fim}'" \
-            + f"&$filter=contains(tipoBoletim%2C'{boletim.title()}')" \
+            "CotacaoMoedaPeriodo("
+            + "moeda=@moeda,"
+            + "dataInicial=@dataInicial,"
+            + "dataFinalCotacao=@dataFinalCotacao)"
+            + f"?@moeda='{moeda}'"
+            + f"&@dataInicial='{inicio}'"
+            + f"&@dataFinalCotacao='{fim}'"
+            + f"&$filter=contains(tipoBoletim%2C'{boletim.title()}')"
             + f"&$select=cotacao{cotacao.title()},dataHoraCotacao"
         )
         if cotacao_moeda.empty:
-            raise ValueError('Nenhum dado encontrado. Verifique os argumentos da função.')
-        cotacao_moeda.dataHoraCotacao = cotacao_moeda.dataHoraCotacao \
-            .apply(lambda x: datetime.strptime(x[:10], '%Y-%m-%d'))
+            raise ValueError(
+                "Nenhum dado encontrado. Verifique os argumentos da função."
+            )
+        cotacao_moeda.dataHoraCotacao = cotacao_moeda.dataHoraCotacao.apply(
+            lambda x: datetime.strptime(x[:10], "%Y-%m-%d")
+        )
 
         cotacao_moedas.append(
-            cotacao_moeda.rename(columns = {
-                f'cotacao{cotacao.title()}': moeda,
-                'dataHoraCotacao': 'Data'
-            }).groupby('Data').last())
+            cotacao_moeda.rename(
+                columns={f"cotacao{cotacao.title()}": moeda, "dataHoraCotacao": "Data"}
+            )
+            .groupby("Data")
+            .last()
+        )
 
     cotacoes = pd.concat(cotacao_moedas, axis=1).reset_index()
 
-    cotacoes.Data = pd.to_datetime(cotacoes.Data, format='%Y-%m-%d %H:%M:%S')
+    cotacoes.Data = pd.to_datetime(cotacoes.Data, format="%Y-%m-%d %H:%M:%S")
     if index:
-        cotacoes.set_index('Data', inplace=True)
-    
+        cotacoes.set_index("Data", inplace=True)
+
     return cotacoes
 
 
-
 def serie(
-        cod: int,
-        ultimos: Optional[int] = None,
-        inicio: Union[datetime, str] = None,
-        fim: Union[datetime, str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
+    cod: int,
+    ultimos: Optional[int] = None,
+    inicio: Union[datetime, str] = None,
+    fim: Union[datetime, str] = None,
+    index: bool = False,
+) -> pd.DataFrame:
     """Série do Sistema Gerenciador de Série Temporais (SGS) do Banco Central.
 
     Parameters
@@ -300,7 +301,7 @@ def serie(
 
     >>> bacen.serie(cod=3546, index=True)
                  valor
-    data              
+    data
     1970-12-01    1187
     1971-01-01    1229
     1971-02-01    1280
@@ -310,9 +311,9 @@ def serie(
 
     """
 
-    path = f'dados/serie/bcdata.sgs.{cod}/dados'
+    path = f"dados/serie/bcdata.sgs.{cod}/dados"
     if ultimos is not None:
-        path += f'/ultimos/{ultimos}'
+        path += f"/ultimos/{ultimos}"
 
     params = []
     if inicio is not None:
@@ -323,31 +324,27 @@ def serie(
     if len(params) > 0:
         path += f'?{"&".join(params)}'
 
-    data = get_data(
-        endpoint = 'https://api.bcb.gov.br/',
-        path = path
-    )
+    data = get_data(endpoint="https://api.bcb.gov.br/", path=path)
 
     df = pd.DataFrame(data)
 
-    df.data = pd.to_datetime(df.data, format='%d/%m/%Y')
-    if 'datafim' in df.columns:
-        df.datafim = pd.to_datetime(df.datafim, format='%d/%m/%Y')
+    df.data = pd.to_datetime(df.data, format="%d/%m/%Y")
+    if "datafim" in df.columns:
+        df.datafim = pd.to_datetime(df.datafim, format="%d/%m/%Y")
 
     if index:
-        df.set_index('data', inplace=True)
+        df.set_index("data", inplace=True)
 
     return df
 
 
-
 def expectativas(
-        expectativa: str,
-        indicador: Optional[str] = None,
-        top: Optional[int] = None,
-        ordenar_por: str = 'Data',
-        asc: bool = False
-    ) -> pd.DataFrame:
+    expectativa: str,
+    indicador: Optional[str] = None,
+    top: Optional[int] = None,
+    ordenar_por: str = "Data",
+    asc: bool = False,
+) -> pd.DataFrame:
     """Expectativas de mercado para os principais indicadores macroeconômicos.
 
     Parameters
@@ -465,176 +462,168 @@ def expectativas(
 
     """
 
-    URL = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/'
+    URL = "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/"
 
     orderby = f'&%24orderby={ordenar_por}%20{"asc" if asc else "desc"}'
-    topn = '' if top is None else f'&%24top={top}'
+    topn = "" if top is None else f"&%24top={top}"
 
     expectativa = expectativa.lower()
-    if expectativa in ('mensal', 'mensais'):
-        expec = 'ExpectativaMercadoMensais'
+    if expectativa in ("mensal", "mensais"):
+        expec = "ExpectativaMercadoMensais"
         KPIS = (
-            'Câmbio',
-            'IGP-DI',
-            'IGP-M',
-            'INPC',
-            'IPA-DI',
-            'IPA-M',
-            'IPCA',
-            'IPCA Administrados',
-            'IPCA Alimentação no domicílio',
-            'IPCA Bens industrializados',
-            'IPCA Livres',
-            'IPCA Serviços',
-            'IPCA-15',
-            'IPC-Fipe',
-            'Produção industrial',
-            'Selic',
-            'Taxa de desocupação'
+            "Câmbio",
+            "IGP-DI",
+            "IGP-M",
+            "INPC",
+            "IPA-DI",
+            "IPA-M",
+            "IPCA",
+            "IPCA Administrados",
+            "IPCA Alimentação no domicílio",
+            "IPCA Bens industrializados",
+            "IPCA Livres",
+            "IPCA Serviços",
+            "IPCA-15",
+            "IPC-Fipe",
+            "Produção industrial",
+            "Selic",
+            "Taxa de desocupação",
         )
-    elif expectativa in ('trimestral', 'trimestrais'):
-        expec = 'ExpectativasMercadoTrimestrais'
+    elif expectativa in ("trimestral", "trimestrais"):
+        expec = "ExpectativasMercadoTrimestrais"
         KPIS = (
-            'Câmbio',
-            'IPCA',
-            'IPCA Administrados',
-            'IPCA Alimentação no domicílio',
-            'IPCA Bens industrializados',
-            'IPCA Livres',
-            'IPCA Serviços',
-            'PIB Agropecuária',
-            'PIB Indústria',
-            'PIB Serviços',
-            'PIB Total',
-            'Taxa de desocupação'
+            "Câmbio",
+            "IPCA",
+            "IPCA Administrados",
+            "IPCA Alimentação no domicílio",
+            "IPCA Bens industrializados",
+            "IPCA Livres",
+            "IPCA Serviços",
+            "PIB Agropecuária",
+            "PIB Indústria",
+            "PIB Serviços",
+            "PIB Total",
+            "Taxa de desocupação",
         )
-    elif expectativa in ('anual', 'anuais'):
-        expec = 'ExpectativasMercadoAnuais'
+    elif expectativa in ("anual", "anuais"):
+        expec = "ExpectativasMercadoAnuais"
         KPIS = (
-            'Balança Comercial',
-            'Câmbio',
-            'Conta corrente', 
-            'Dívida bruta do governo geral', 
-            'Dívida líquida do setor público',
-            'IGP-DI',
-            'IGP-M',
-            'INPC',
-            'Investimento direto no país',
-            'IPA-DI',
-            'IPA-M',
-            'IPCA',
-            'IPCA Administrados',
-            'IPCA Alimentação no domicílio',
-            'IPCA Bens industrializados',
-            'IPCA Livres',
-            'IPCA Serviços',
-            'IPCA-15',
-            'IPC-FIPE',
-            'PIB Agropecuária',
-            'PIB Despesa de consumo da administração pública',
-            'PIB despesa de consumo das famílias',
-            'PIB Exportação de bens e serviços',
-            'PIB Formação Bruta de Capital Fixo',
-            'PIB Importação de bens e serviços',
-            'PIB Indústria',
-            'PIB Serviços',
-            'PIB Total',
-            'Produção industrial',
-            'Resultado nominal',
-            'Resultado primário',
-            'Selic',
-            'Taxa de desocupação'
+            "Balança Comercial",
+            "Câmbio",
+            "Conta corrente",
+            "Dívida bruta do governo geral",
+            "Dívida líquida do setor público",
+            "IGP-DI",
+            "IGP-M",
+            "INPC",
+            "Investimento direto no país",
+            "IPA-DI",
+            "IPA-M",
+            "IPCA",
+            "IPCA Administrados",
+            "IPCA Alimentação no domicílio",
+            "IPCA Bens industrializados",
+            "IPCA Livres",
+            "IPCA Serviços",
+            "IPCA-15",
+            "IPC-FIPE",
+            "PIB Agropecuária",
+            "PIB Despesa de consumo da administração pública",
+            "PIB despesa de consumo das famílias",
+            "PIB Exportação de bens e serviços",
+            "PIB Formação Bruta de Capital Fixo",
+            "PIB Importação de bens e serviços",
+            "PIB Indústria",
+            "PIB Serviços",
+            "PIB Total",
+            "Produção industrial",
+            "Resultado nominal",
+            "Resultado primário",
+            "Selic",
+            "Taxa de desocupação",
         )
-    elif expectativa in ('inflacao', 'inflacao12meses'):
-        expec = 'ExpectativasMercadoInflacao12Meses'
+    elif expectativa in ("inflacao", "inflacao12meses"):
+        expec = "ExpectativasMercadoInflacao12Meses"
         KPIS = (
-            'IGP-DI',
-            'IGP-M',
-            'INPC',
-            'IPA-DI',
-            'IPA-M',
-            'IPCA',
-            'IPCA Administrados',
-            'IPCA Alimentação no domicílio',
-            'IPCA Bens industrializados',
-            'IPCA Livres',
-            'IPCA Serviços',
-            'IPCA-15',
-            'IPC-FIPE'
+            "IGP-DI",
+            "IGP-M",
+            "INPC",
+            "IPA-DI",
+            "IPA-M",
+            "IPCA",
+            "IPCA Administrados",
+            "IPCA Alimentação no domicílio",
+            "IPCA Bens industrializados",
+            "IPCA Livres",
+            "IPCA Serviços",
+            "IPCA-15",
+            "IPC-FIPE",
         )
-    elif expectativa in ('top5mensal', 'top5mensais'):
-        expec = 'ExpectativasMercadoTop5Mensais'
+    elif expectativa in ("top5mensal", "top5mensais"):
+        expec = "ExpectativasMercadoTop5Mensais"
+        KPIS = ("Câmbio", "IGP-DI", "IGP-M", "IPCA", "Selic")
+    elif expectativa in ("top5anual", "top5anuais"):
+        expec = "ExpectativasMercadoTop5Anuais"
+        KPIS = ("Câmbio", "IGP-DI", "IGP-M", "IPCA", "Selic")
+    elif expectativa == "instituicoes":
+        expec = "ExpectativasMercadoInstituicoes"
         KPIS = (
-            'Câmbio',
-            'IGP-DI',
-            'IGP-M',
-            'IPCA',
-            'Selic'
-        )
-    elif expectativa in ('top5anual', 'top5anuais'):
-        expec = 'ExpectativasMercadoTop5Anuais'
-        KPIS = (
-            'Câmbio',
-            'IGP-DI',
-            'IGP-M',
-            'IPCA',
-            'Selic'
-        )
-    elif expectativa == 'instituicoes':
-        expec = 'ExpectativasMercadoInstituicoes'
-        KPIS = (
-            'Balança Comercial',
-            'Câmbio',
-            'Conta corrente',
-            'Dívida bruta do governo geral',
-            'Dívida líquida do setor público',
-            'IGP-DI',
-            'IGP-M',
-            'INPC',
-            'Investimento direto no país',
-            'IPA-DI',
-            'IPA-M',
-            'IPCA',
-            'IPCA Administrados',
-            'IPCA Alimentação no domicílio',
-            'IPCA Bens industrializados',
-            'IPCA Livres',
-            'IPCA Serviços',
-            'IPCA-15',
-            'IPC-FIPE',
-            'PIB Agropecuária',
-            'PIB Despesa de consumo da administração pública',
-            'PIB despesa de consumo das famílias',
-            'PIB Exportação de bens e serviços',
-            'PIB Formação Bruta de Capital Fixo',
-            'PIB Importação de bens e serviços',
-            'PIB Indústria',
-            'PIB Serviços',
-            'PIB Total',
-            'Produção industrial',
-            'Resultado nominal',
-            'Resultado primário',
-            'Selic',
-            'Taxa de desocupação'
+            "Balança Comercial",
+            "Câmbio",
+            "Conta corrente",
+            "Dívida bruta do governo geral",
+            "Dívida líquida do setor público",
+            "IGP-DI",
+            "IGP-M",
+            "INPC",
+            "Investimento direto no país",
+            "IPA-DI",
+            "IPA-M",
+            "IPCA",
+            "IPCA Administrados",
+            "IPCA Alimentação no domicílio",
+            "IPCA Bens industrializados",
+            "IPCA Livres",
+            "IPCA Serviços",
+            "IPCA-15",
+            "IPC-FIPE",
+            "PIB Agropecuária",
+            "PIB Despesa de consumo da administração pública",
+            "PIB despesa de consumo das famílias",
+            "PIB Exportação de bens e serviços",
+            "PIB Formação Bruta de Capital Fixo",
+            "PIB Importação de bens e serviços",
+            "PIB Indústria",
+            "PIB Serviços",
+            "PIB Total",
+            "Produção industrial",
+            "Resultado nominal",
+            "Resultado primário",
+            "Selic",
+            "Taxa de desocupação",
         )
     else:
-        raise ValueError('''Valor inválido para o argumento `expectativa`. Insira um dos seguintes valores:
+        raise ValueError(
+            """Valor inválido para o argumento `expectativa`. Insira um dos seguintes valores:
             - 'mensal' ou 'mensais';
             - 'trimestral' ou 'trimestrais';
             - 'anual' ou 'anuais';
             - 'inflacao' ou 'inflacao12meses';
             - 'top5mensal' ou 'top5mensais',
             - 'top5anual' ou 'top5anuais',
-            - 'instituicoes'.''')
+            - 'instituicoes'."""
+        )
 
     if indicador is None:
-        kpi = ''
+        kpi = ""
     elif indicador in KPIS:
         kpi = f"&%24filter=Indicador%20eq%20'{indicador}'"
     else:
-        raise ValueError(f''''{indicador}' é um indicador inválido para expectativa '{expectativa.title()}'. Insira um dos seguintes valores:
-        - {", ".join(KPIS)}.''')
+        raise ValueError(
+            f"""'{indicador}' é um indicador inválido para expectativa '{expectativa.title()}'. Insira um dos seguintes valores:
+        - {", ".join(KPIS)}."""
+        )
 
-    path = f'{expec}?%24format=json{orderby}{kpi}{topn}'
+    path = f"{expec}?%24format=json{orderby}{kpi}{topn}"
     data = get_data(URL, path=path)
-    return pd.DataFrame(data['value'])
+    return pd.DataFrame(data["value"])

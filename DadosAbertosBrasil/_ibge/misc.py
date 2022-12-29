@@ -16,16 +16,15 @@ from DadosAbertosBrasil._utils.errors import DAB_LocalidadeError
 from DadosAbertosBrasil._utils.get_data import get_data
 
 
-
-_normalize = pd.io.json.json_normalize \
-    if pd.__version__[0] == '0' else pd.json_normalize
-
+_normalize = (
+    pd.io.json.json_normalize if pd.__version__[0] == "0" else pd.json_normalize
+)
 
 
 def populacao(
-        projecao: Optional[str] = None,
-        localidade: Optional[int] = None
-    ) -> Union[dict, int]:
+    projecao: Optional[str] = None,
+    localidade: Optional[int] = None,
+) -> Union[dict, int]:
     """Obtém a projecao da população referente ao Brasil.
 
     Parameters
@@ -78,37 +77,38 @@ def populacao(
 
     """
 
-    localidade = parse.localidade(localidade, '')
-    query = f'https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/{localidade}'
-            
+    localidade = parse.localidade(localidade, "")
+    query = f"https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/{localidade}"
+
     r = requests.get(query).json()
-    
-    if projecao == None:
+
+    if projecao is None:
         return r
-    elif projecao == 'populacao':
-        return r['projecao']['populacao']
-    elif projecao == 'nascimento':
-        return r['projecao']['periodoMedio']['nascimento']
-    elif projecao == 'obito':
-        return r['projecao']['periodoMedio']['obito']
-    elif projecao == 'incremento':
-        return r['projecao']['periodoMedio']['incrementoPopulacional']
+    elif projecao == "populacao":
+        return r["projecao"]["populacao"]
+    elif projecao == "nascimento":
+        return r["projecao"]["periodoMedio"]["nascimento"]
+    elif projecao == "obito":
+        return r["projecao"]["periodoMedio"]["obito"]
+    elif projecao == "incremento":
+        return r["projecao"]["periodoMedio"]["incrementoPopulacional"]
     else:
-        raise ValueError('''O argumento 'projecao' deve ser um dos seguintes valores tipo string:
+        raise ValueError(
+            """O argumento 'projecao' deve ser um dos seguintes valores tipo string:
             - 'populacao';
             - 'nascimento';
             - 'obito';
-            - 'incremento'.''')
-
+            - 'incremento'."""
+        )
 
 
 def localidades(
-        nivel: str = 'distritos',
-        divisoes: Optional[str] = None,
-        localidade: Union[int, str, list] = None,
-        ordenar_por: Optional[str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
+    nivel: str = "distritos",
+    divisoes: Optional[str] = None,
+    localidade: Union[int, str, list] = None,
+    ordenar_por: Optional[str] = None,
+    index: bool = False,
+) -> pd.DataFrame:
     """Obtém o conjunto de localidades do Brasil e suas intrarregiões.
 
     Parameters
@@ -178,71 +178,73 @@ def localidades(
     """
 
     NIVEIS = {
-        'distritos',
-        'estados',
-        'mesorregioes',
-        'microrregioes',
-        'municipios',
-        'regioes-imediatas',
-        'regioes-intermediarias',
-        'regioes',
-        'paises'
+        "distritos",
+        "estados",
+        "mesorregioes",
+        "microrregioes",
+        "municipios",
+        "regioes-imediatas",
+        "regioes-intermediarias",
+        "regioes",
+        "paises",
     }
 
     nivel = nivel.lower()
     if nivel not in NIVEIS:
-        raise DAB_LocalidadeError(f'''Nível inválido:
+        raise DAB_LocalidadeError(
+            f"""Nível inválido:
         Preencha o argumento `nivel` com um dos seguintes valores:
-        {NIVEIS}''')
+        {NIVEIS}"""
+        )
 
-    path = ['localidades', nivel]
+    path = ["localidades", nivel]
     params = {}
 
     if localidade is not None:
         if isinstance(localidade, list):
-            localidade = '|'.join([str(loc) for loc in localidade])
+            localidade = "|".join([str(loc) for loc in localidade])
         path.append(localidade)
 
     if divisoes is not None:
         divisoes = divisoes.lower()
         if divisoes not in NIVEIS:
-            raise DAB_LocalidadeError(f'''Subdivisões inválida:
+            raise DAB_LocalidadeError(
+                f"""Subdivisões inválida:
             Preencha o argumento `divisoes` com um dos seguintes valores:
-            {NIVEIS}''')
+            {NIVEIS}"""
+            )
         if nivel != divisoes:
             path.append(divisoes)
-        
+
     if ordenar_por is not None:
-        params['orderBy'] = ordenar_por
-    
+        params["orderBy"] = ordenar_por
+
     data = get_data(
-        endpoint = 'https://servicodados.ibge.gov.br/api/v1/',
-        path = path,
-        params = params
+        endpoint="https://servicodados.ibge.gov.br/api/v1/", path=path, params=params
     )
 
     df = _normalize(data)
 
     def _loc_columns(x: str) -> str:
-        y = x.replace('-', '_').split('.')
-        return f'{y[-2]}_{y[-1]}' if len(y)>1 else y[0]
+        y = x.replace("-", "_").split(".")
+        return f"{y[-2]}_{y[-1]}" if len(y) > 1 else y[0]
+
     df.columns = df.columns.map(_loc_columns)
 
     if index:
-        df.set_index('id', inplace=True)
-        
+        df.set_index("id", inplace=True)
+
     return df
 
 
-
 def malha(
-        localidade: int,
-        nivel: str = 'estados',
-        divisoes: Optional[str] = None,
-        periodo: int = 2020,
-        formato: str = 'svg',
-        qualidade: str = 'minima'
-    ) -> Union[str, dict]:
+    localidade: int,
+    nivel: str = "estados",
+    divisoes: Optional[str] = None,
+    periodo: int = 2020,
+    formato: str = "svg",
+    qualidade: str = "minima",
+) -> Union[str, dict]:
     """Obtém a URL para a malha referente ao identificador da localidade.
 
     Parameters
@@ -317,68 +319,68 @@ def malha(
     """
 
     FORMATOS = {
-        'svg': 'image/svg+xml',
-        'geojson': 'application/vnd.geo+json',
-        'json': 'application/json'
+        "svg": "image/svg+xml",
+        "geojson": "application/vnd.geo+json",
+        "json": "application/json",
     }
 
     NIVEIS = {
-        'estados',
-        'mesorregioes',
-        'microrregioes',
-        'municipios',
-        'regioes-imediatas',
-        'regioes-intermediarias',
-        'regioes',
-        'paises'    
+        "estados",
+        "mesorregioes",
+        "microrregioes",
+        "municipios",
+        "regioes-imediatas",
+        "regioes-intermediarias",
+        "regioes",
+        "paises",
     }
 
     DIVISOES = {
-        'uf',
-        'mesorregiao',
-        'microrregiao',
-        'municipio',
-        'regiao-imediata',
-        'regiao-intermediaria',
-        'regiao'
+        "uf",
+        "mesorregiao",
+        "microrregiao",
+        "municipio",
+        "regiao-imediata",
+        "regiao-intermediaria",
+        "regiao",
     }
 
     nivel = nivel.lower()
     if nivel not in NIVEIS:
-        raise DAB_LocalidadeError(f'''Nível inválido:
+        raise DAB_LocalidadeError(
+            f"""Nível inválido:
         Preencha o argumento `nivel` com um dos seguintes valores:
-        {NIVEIS}''')
+        {NIVEIS}"""
+        )
 
-    path = ['malhas', nivel, localidade]
+    path = ["malhas", nivel, localidade]
 
     params = {
-        'periodo': periodo,
-        'qualidade': qualidade.lower(),
-        'formato': FORMATOS[formato.lower()]
+        "periodo": periodo,
+        "qualidade": qualidade.lower(),
+        "formato": FORMATOS[formato.lower()],
     }
 
     if divisoes is not None:
         divisoes = divisoes.lower()
         if divisoes not in DIVISOES:
-            raise DAB_LocalidadeError(f'''Subdivisões inválida:
+            raise DAB_LocalidadeError(
+                f"""Subdivisões inválida:
             Preencha o argumento `divisoes` com um dos seguintes valores:
-            {DIVISOES}''')
+            {DIVISOES}"""
+            )
         if nivel != divisoes:
-            params['intrarregiao'] = divisoes
+            params["intrarregiao"] = divisoes
 
-    url = 'https://servicodados.ibge.gov.br/api/v3/'
-    url += '/'.join([str(p) for p in path])
+    url = "https://servicodados.ibge.gov.br/api/v3/"
+    url += "/".join([str(p) for p in path])
 
-    data = requests.get(
-        url = url,
-        params = params
-    )
-    
-    if formato.lower().endswith('json'):
+    data = requests.get(url=url, params=params)
+
+    if formato.lower().endswith("json"):
         return data.json()
     else:
         return data.url
-
 
 
 def coordenadas() -> pd.DataFrame:
@@ -404,6 +406,6 @@ def coordenadas() -> pd.DataFrame:
     """
 
     return pd.read_csv(
-        r'https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/coordenadas.csv',
-        sep = ';'
+        r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/coordenadas.csv",
+        sep=";",
     )

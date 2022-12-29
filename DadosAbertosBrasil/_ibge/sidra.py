@@ -19,24 +19,23 @@ import requests
 from DadosAbertosBrasil._utils.get_data import get_data
 
 
-
 # Retrocompatibilidade com pandas v0.x
-_normalize = pd.io.json.json_normalize \
-    if pd.__version__[0] == '0' else pd.json_normalize
-
+_normalize = (
+    pd.io.json.json_normalize if pd.__version__[0] == "0" else pd.json_normalize
+)
 
 
 def lista_tabelas(
-        contendo: Optional[str] = None,
-        excluindo: Optional[str] = None,
-        assunto: Optional[Union[int, str]] = None,
-        classificacao: Optional[Union[int, str]] = None,
-        periodo: Optional[Union[dict, str]] = None,
-        periodicidade: Optional[Union[int, str]] = None,
-        nivel: Optional[Union[int, str]] = None,
-        pesquisa: Optional[str] = None,
-        index: bool = False
-    ) -> pd.DataFrame:
+    contendo: Optional[str] = None,
+    excluindo: Optional[str] = None,
+    assunto: Optional[Union[int, str]] = None,
+    classificacao: Optional[Union[int, str]] = None,
+    periodo: Optional[Union[dict, str]] = None,
+    periodicidade: Optional[Union[int, str]] = None,
+    nivel: Optional[Union[int, str]] = None,
+    pesquisa: Optional[str] = None,
+    index: bool = False,
+) -> pd.DataFrame:
     """Lista de tabelas disponíveis no SIDRA.
 
     Parameters
@@ -58,7 +57,7 @@ def lista_tabelas(
         obtidas com auxílio da função `ibge.referencias('c')`.
         Exemplo: A classificação "Agricultura familiar" possui o código 12896,
         portanto pesquise por tabelas contendo essa classificação através do
-        argumento `classificacao=12896`. 
+        argumento `classificacao=12896`.
     periodo : dict | str, optional
         Busque apenas as tabelas referentes ao período desejado.
         Os períodos devem ser um dicionário no formato `{periodicidade:periodo}`
@@ -96,7 +95,7 @@ def lista_tabelas(
     --------
     Forma mais simples da função. Retorna todas as tabelas.
 
-    >>> ibge.lista_tabelas()    
+    >>> ibge.lista_tabelas()
 
     Listas tabelas cujo assunto é "Trabalho" (17), com periodicidade
     trimestral (9) a um nível geográfico municipal (6) contendo classificação
@@ -133,40 +132,40 @@ def lista_tabelas(
 
     def parse_periodicidade(p):
         if isinstance(p, int) or isinstance(p, float):
-            p = f'P{int(p)}'
+            p = f"P{int(p)}"
         return p.upper()
 
     if assunto is not None:
-        params['assunto'] = assunto
+        params["assunto"] = assunto
 
     if classificacao is not None:
-        params['classificacao'] = classificacao
+        params["classificacao"] = classificacao
 
     if periodo is not None:
         if isinstance(periodo, dict):
             for p in periodo:
-                periodo = f'{parse_periodicidade(p)}[{[periodo[p]]}]'
-        params['periodo'] = periodo
+                periodo = f"{parse_periodicidade(p)}[{[periodo[p]]}]"
+        params["periodo"] = periodo
 
     if periodicidade is not None:
-        params['periodicidade'] = parse_periodicidade(periodicidade)
+        params["periodicidade"] = parse_periodicidade(periodicidade)
 
     if nivel is not None:
         if isinstance(nivel, int):
-            nivel = f'N{nivel}'
-        params['nivel'] = nivel.upper()
+            nivel = f"N{nivel}"
+        params["nivel"] = nivel.upper()
 
     data = get_data(
-        endpoint = 'https://servicodados.ibge.gov.br/api/v3/',
-        path = ['agregados'],
-        params = params
+        endpoint="https://servicodados.ibge.gov.br/api/v3/",
+        path=["agregados"],
+        params=params,
     )
     df = _normalize(
         data,
-        'agregados',
-        ['id', 'nome'],
-        record_prefix = 'tabela_',
-        meta_prefix = 'pesquisa_'
+        "agregados",
+        ["id", "nome"],
+        record_prefix="tabela_",
+        meta_prefix="pesquisa_",
     )
     df.tabela_id = pd.to_numeric(df.tabela_id)
 
@@ -183,15 +182,12 @@ def lista_tabelas(
         df = df[df.pesquisa_id.str.upper() == pesquisa.upper()]
 
     if index:
-        df.set_index('tabela_id', inplace=True)
+        df.set_index("tabela_id", inplace=True)
 
     return df
 
 
-
-def lista_pesquisas(
-        index: bool = False
-    ) -> pd.DataFrame:
+def lista_pesquisas(index: bool = False) -> pd.DataFrame:
     """Lista de pesquisas disponíveis no SIDRA.
 
     Esta função é utilizada para identificar o código usado pela função
@@ -215,30 +211,27 @@ def lista_pesquisas(
     1           CA                                 Censo Agropecuário
     2           ME           Censo Comum do Mercosul, Bolívia e Chile
     3           CD                                  Censo Demográfico
-    4           CM                             Contagem da População 
+    4           CM                             Contagem da População
     ..         ...                                                ...
-    
+
     """
 
     data = get_data(
-        endpoint = 'https://servicodados.ibge.gov.br/api/v3/',
-        path = ['agregados']
+        endpoint="https://servicodados.ibge.gov.br/api/v3/", path=["agregados"]
     )
     df = _normalize(
         data,
-        'agregados',
-        ['id', 'nome'],
-        record_prefix = 'tabela_',
-        meta_prefix = 'pesquisa_'
+        "agregados",
+        ["id", "nome"],
+        record_prefix="tabela_",
+        meta_prefix="pesquisa_",
     )
-    df = df[['pesquisa_id', 'pesquisa_nome']] \
-        .drop_duplicates().reset_index(drop=True)
+    df = df[["pesquisa_id", "pesquisa_nome"]].drop_duplicates().reset_index(drop=True)
 
     if index:
-        df.set_index('pesquisa_id', inplace=True)
+        df.set_index("pesquisa_id", inplace=True)
 
     return df
-
 
 
 class Metadados:
@@ -289,39 +282,38 @@ class Metadados:
 
     def __init__(self, tabela: int):
         data = get_data(
-            endpoint = 'https://servicodados.ibge.gov.br/api/v3/',
-            path = ['agregados', tabela, 'metadados']
+            endpoint="https://servicodados.ibge.gov.br/api/v3/",
+            path=["agregados", tabela, "metadados"],
         )
 
         self.dados = data
         self.cod = tabela
-        self.nome = data['nome']
-        self.assunto = data['assunto']
-        self.periodos = data['periodicidade']
-        self.localidades = data['nivelTerritorial']
-        self.variaveis = data['variaveis']
-        self.classificacoes = data['classificacoes']
-
+        self.nome = data["nome"]
+        self.assunto = data["assunto"]
+        self.periodos = data["periodicidade"]
+        self.localidades = data["nivelTerritorial"]
+        self.variaveis = data["variaveis"]
+        self.classificacoes = data["classificacoes"]
 
     def __repr__(self) -> str:
-        return f'<DadosAbertosBrasil.ibge: Metadados da Tabela {self.cod} - {self.nome}>'
-
+        return (
+            f"<DadosAbertosBrasil.ibge: Metadados da Tabela {self.cod} - {self.nome}>"
+        )
 
     def __str__(self) -> str:
         return self.nome
 
 
-
 def sidra(
-        tabela: int,
-        periodos: Union[list, int, str] = 'last',
-        variaveis: Union[list, int, str] = 'allxp',
-        localidades: dict = {1: 'all'},
-        classificacoes: Optional[dict] = None,
-        ufs_extintas: bool = False,
-        decimais: Optional[int] = None,
-        retorna: str = 'dataframe'
-    ) -> Union[pd.DataFrame, dict, str]:
+    tabela: int,
+    periodos: Union[list, int, str] = "last",
+    variaveis: Union[list, int, str] = "allxp",
+    localidades: dict = {1: "all"},
+    classificacoes: Optional[dict] = None,
+    ufs_extintas: bool = False,
+    decimais: Optional[int] = None,
+    retorna: str = "dataframe",
+) -> Union[pd.DataFrame, dict, str]:
     """Função para captura de dados do SIDRA - Sistema IBGE de Recuperação
     Automática.
 
@@ -376,7 +368,7 @@ def sidra(
             - 34: Guanabara
     decimais : int, optional
         Número de fixo de casas decimais do resultado, entre 0 e 9.
-        Se None, utiliza o padrão de cada variável. 
+        Se None, utiliza o padrão de cada variável.
     retorna : str, default='dataframe'
         Formato do dado retornado:
             - 'dataframe': Retorna um DataFrame Pandas;
@@ -394,41 +386,41 @@ def sidra(
 
     """
 
-    path = f'http://api.sidra.ibge.gov.br/values/t/{tabela}'
+    path = f"http://api.sidra.ibge.gov.br/values/t/{tabela}"
 
     if periodos is not None:
         if isinstance(periodos, list):
-            periodos = ','.join([str(i) for i in periodos])
-        path += f'/p/{periodos}'
+            periodos = ",".join([str(i) for i in periodos])
+        path += f"/p/{periodos}"
 
     if variaveis is not None:
         if isinstance(variaveis, list):
-            variaveis = ','.join([str(i) for i in variaveis])
-        path += f'/v/{variaveis}'
+            variaveis = ",".join([str(i) for i in variaveis])
+        path += f"/v/{variaveis}"
 
     for n in localidades:
         if isinstance(localidades[n], list):
-            valor = ','.join([str(i) for i in localidades[n]])
+            valor = ",".join([str(i) for i in localidades[n]])
         else:
             valor = localidades[n]
-        path += f'/n{n}/{valor}'
+        path += f"/n{n}/{valor}"
 
     if classificacoes is not None:
         for c in classificacoes:
             if isinstance(classificacoes[c], list):
-                valor = ','.join([str(i) for i in classificacoes[c]])
+                valor = ",".join([str(i) for i in classificacoes[c]])
             else:
                 valor = classificacoes[c]
-            path += f'/c{c}/{valor}'
+            path += f"/c{c}/{valor}"
 
-    u = 'y' if ufs_extintas else 'n'
+    u = "y" if ufs_extintas else "n"
     path += f'/u/{u}/d/{decimais or "s"}'
 
-    if retorna == 'url':
+    if retorna == "url":
         return path
 
     data = requests.get(path).json()
-    if retorna == 'json':
+    if retorna == "json":
         return data
 
     df = pd.DataFrame(data[1:])
@@ -436,11 +428,7 @@ def sidra(
     return df
 
 
-
-def referencias(
-        cod: str,
-        index: bool = False
-    ) -> pd.DataFrame:
+def referencias(cod: str, index: bool = False) -> pd.DataFrame:
     """Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
 
     Parameters
@@ -480,10 +468,10 @@ def referencias(
 
     Lista classificações usando o `cod` da classificação como index
     do DataFrame.
-    
+
     >>> ibge.referencias('c', index=True)
                                                   referencia
-    cod                                                      
+    cod
     588    Acessibilidade possível na maior parte das via...
     957    Acesso à Internet por telefone móvel celular p...
     681                    Acesso a televisão por assinatura
@@ -495,43 +483,43 @@ def referencias(
 
     try:
         s = cod.lower()
-        if s.endswith('s'):
+        if s.endswith("s"):
             s = s[:-1]
         s = {
-            'a': 'A',
-            'assunto': 'A',
-            'c': 'C',
-            'classificacao': 'C',
-            'classificacoe': 'C',
-            'n': 'N',
-            'nivel': 'N',
-            'nivei': 'N',
-            't': 'T',
-            'territorio': 'T',
-            'p': 'P',
-            'periodo': 'P',
-            'e': 'E',
-            'periodicidade': 'E',
-            'v': 'V',
-            'variavel': 'V',
-            'variavei': 'V'
+            "a": "A",
+            "assunto": "A",
+            "c": "C",
+            "classificacao": "C",
+            "classificacoe": "C",
+            "n": "N",
+            "nivel": "N",
+            "nivei": "N",
+            "t": "T",
+            "territorio": "T",
+            "p": "P",
+            "periodo": "P",
+            "e": "E",
+            "periodicidade": "E",
+            "v": "V",
+            "variavel": "V",
+            "variavei": "V",
         }[s]
 
     except AttributeError:
-        raise TypeError('Código da referência `cod` deve ser do tipo `str`.')
+        raise TypeError("Código da referência `cod` deve ser do tipo `str`.")
 
     except KeyError:
         raise KeyError(f"Código de referência '{cod}' inválido.")
-        
+
     data = get_data(
-        endpoint = r'https://servicodados.ibge.gov.br/api/v3/',
-        path = ['agregados'],
-        params = {'acervo': s}
+        endpoint=r"https://servicodados.ibge.gov.br/api/v3/",
+        path=["agregados"],
+        params={"acervo": s},
     )
     df = pd.DataFrame(data)
-    df.columns = ['cod', 'referencia']
+    df.columns = ["cod", "referencia"]
 
     if index:
-        df.set_index('cod', inplace=True)
-    
+        df.set_index("cod", inplace=True)
+
     return df

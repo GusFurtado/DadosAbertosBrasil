@@ -12,17 +12,14 @@ import requests
 from . import errors
 
 
-
-_normalize = pd.io.json.json_normalize \
-    if pd.__version__[0] == '0' else pd.json_normalize
-
+_normalize = (
+    pd.io.json.json_normalize if pd.__version__[0] == "0" else pd.json_normalize
+)
 
 
 def get_data(
-        endpoint: str,
-        path: Union[str, list],
-        params: Optional[dict] = None
-    ) -> dict:
+    endpoint: str, path: Union[str, list], params: Optional[dict] = None
+) -> dict:
     """Coleta os dados requisitados das APIs REST.
 
     Parameters
@@ -46,33 +43,30 @@ def get_data(
 
     if isinstance(path, list):
         path = [str(p) for p in path]
-        path = '/'.join(path)
+        path = "/".join(path)
 
     return requests.get(
-        url = endpoint + path,
-        headers = {'Accept':'application/json'},
-        params = params
+        url=endpoint + path, headers={"Accept": "application/json"}, params=params
     ).json()
 
 
-
 def get_and_format(
-        api: str,
-        path: Union[str, list],
-        params: Optional[dict] = None,
-        unpack_keys: Optional[List[str]] = None,
-        cols_to_rename: Optional[dict] = None,
-        cols_to_int: Optional[List[str]] = None,
-        cols_to_date: Optional[List[str]] = None,
-        cols_to_bool: Optional[List[str]] = None,
-        true_value: Optional[str] = None,
-        false_value: Optional[str] = None,
-        url_cols: Optional[List[str]] = None,
-        url: bool = True,
-        index_col: str = 'codigo',
-        index: bool = False,
-        formato: str = 'dataframe'
-    ) -> Union[dict, pd.DataFrame]:
+    api: str,
+    path: Union[str, list],
+    params: Optional[dict] = None,
+    unpack_keys: Optional[List[str]] = None,
+    cols_to_rename: Optional[dict] = None,
+    cols_to_int: Optional[List[str]] = None,
+    cols_to_date: Optional[List[str]] = None,
+    cols_to_bool: Optional[List[str]] = None,
+    true_value: Optional[str] = None,
+    false_value: Optional[str] = None,
+    url_cols: Optional[List[str]] = None,
+    url: bool = True,
+    index_col: str = "codigo",
+    index: bool = False,
+    formato: str = "dataframe",
+) -> Union[dict, pd.DataFrame]:
     """Função padrão para coleta e formatação de dados JSON.
 
     Parameters
@@ -125,19 +119,15 @@ def get_and_format(
     ------
     DadosAbertosBrasil._utils.errors.DAB_InputError
         Caso nenhum dado seja encontrado.
-    
+
     """
 
     ENDPOINTS = {
-        'camara': 'https://dadosabertos.camara.leg.br/api/v2/',
-        'senado': 'http://legis.senado.gov.br/dadosabertos/'
+        "camara": "https://dadosabertos.camara.leg.br/api/v2/",
+        "senado": "http://legis.senado.gov.br/dadosabertos/",
     }
 
-    data = get_data(
-        endpoint = ENDPOINTS[api],
-        path = path,
-        params = params
-    )
+    data = get_data(endpoint=ENDPOINTS[api], path=path, params=params)
 
     if unpack_keys is not None:
         for key in unpack_keys:
@@ -146,10 +136,10 @@ def get_and_format(
                     data = data[key]
     if data is None:
         raise errors.DAB_InputError(
-            'Nenhum dado encontrado. Verifique os parâmetros da consulta.'
+            "Nenhum dado encontrado. Verifique os parâmetros da consulta."
         )
 
-    if formato != 'dataframe':
+    if formato != "dataframe":
         return data
 
     df = _normalize(data)
@@ -159,11 +149,7 @@ def get_and_format(
     if isinstance(cols_to_int, list):
         for col in cols_to_int:
             if col in df.columns:
-                df[col] = pd.to_numeric(
-                    df[col],
-                    errors = 'coerce',
-                    downcast = 'integer'
-                )
+                df[col] = pd.to_numeric(df[col], errors="coerce", downcast="integer")
 
     if isinstance(cols_to_date, list):
         for col in cols_to_date:
@@ -173,10 +159,7 @@ def get_and_format(
     if isinstance(cols_to_bool, list):
         for col in cols_to_bool:
             if col in df.columns:
-                df[col] = df[col].map({
-                    true_value: True,
-                    false_value: False
-                })
+                df[col] = df[col].map({true_value: True, false_value: False})
 
     if not url:
         df.drop(columns=url_cols, inplace=True)
@@ -185,7 +168,6 @@ def get_and_format(
         df.set_index(index_col, inplace=True)
 
     return df
-
 
 
 class DAB_Base:
@@ -218,29 +200,25 @@ class DAB_Base:
     """
 
     def __init__(
-            self,
-            api: str,
-            path: Union[str, List[str]],
-            unpack_keys: Union[str, List[str]],
-            error_key: str,
-            atributos: dict
-        ):
+        self,
+        api: str,
+        path: Union[str, List[str]],
+        unpack_keys: Union[str, List[str]],
+        error_key: str,
+        atributos: dict,
+    ):
 
         self.dados = get_and_format(
-            api = api,
-            path = path,
-            unpack_keys = unpack_keys,
-            formato = 'json'
+            api=api, path=path, unpack_keys=unpack_keys, formato="json"
         )
 
         if error_key not in self.dados:
-            raise errors.DAB_InputError('Dados não encontrados.')
+            raise errors.DAB_InputError("Dados não encontrados.")
 
         for attr in atributos:
             self._set_attribute(attr, atributos)
 
-
-    def _set_attribute(self, attr:str, attr_dict:dict) -> None:
+    def _set_attribute(self, attr: str, attr_dict: dict) -> None:
         """Converte os dados JSON em atributos para o objeto.
 
         Parameters
@@ -249,7 +227,7 @@ class DAB_Base:
             Nome do atributo.
         attr_dict : dict
             Dicionário de atributos (JSON).
-        
+
         """
 
         x = self.dados
