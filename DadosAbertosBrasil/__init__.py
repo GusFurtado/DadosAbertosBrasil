@@ -45,6 +45,5 @@ from .uf import UF
 from ._utils.errors import *
 
 
-
-__version__ = '0.4.1'
-__author__ = 'Gustavo Furtado da Silva'
+__version__ = "1.0.0"
+__author__ = "Gustavo Furtado da Silva"
