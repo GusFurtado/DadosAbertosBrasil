@@ -7,6 +7,7 @@ especiais do módulo `_utils.errors`.
 
 from datetime import datetime, date
 from typing import List, Union
+from unicodedata import normalize
 
 from . import errors
 
@@ -60,14 +61,14 @@ def data(data: Union[datetime, date, str], modulo: str) -> str:
         )
 
 
-def uf(uf: str, extintos: bool = False) -> str:
+def uf(uf: Union[str, int], extintos: bool = False) -> str:
     """Converte os nomes dos estados em siglas padrões.
     Suporta abreviaturas, acentuação e case sensibility.
 
     Parametros
     ----------
-    uf: str
-        Nome ou sigla da UF.
+    uf: str | int
+        Nome, sigla ou código IBGE da UF.
     extintos: bool, default=False
         Verificar também as UFs extintas:
             - 20: Fernando de Noronha / FN
@@ -115,58 +116,55 @@ def uf(uf: str, extintos: bool = False) -> str:
         "ALAGOAS": "AL",
         "AMAZONAS": "AM",
         "AMAPA": "AP",
-        "AMAPÁ": "AP",
         "BAHIA": "BA",
         "CEARA": "CE",
-        "CEARÁ": "CE",
         "DISTRITOFEDERAL": "DF",
         "ESPIRITOSANTO": "ES",
-        "ESPÍRITOSANTO": "ES",
         "GOIAS": "GO",
-        "GOIÁS": "GO",
         "MARANHAO": "MA",
-        "MARANHÃO": "MA",
         "MATOGROSSO": "MT",
         "MATOGROSSODOSUL": "MS",
         "MINASGERAIS": "MG",
         "MINAS": "MG",
         "PARA": "PA",
-        "PARÁ": "PA",
         "PARAIBA": "PB",
-        "PARAÍBA": "PB",
         "PARANA": "PR",
-        "PARANÁ": "PR",
         "PERNAMBUCO": "PE",
         "PIAUI": "PI",
-        "PIAUÍ": "PI",
         "RIODEJANEIRO": "RJ",
         "RIO": "RJ",
         "RIOGRANDEDONORTE": "RN",
         "RIOGRANDEDOSUL": "RS",
         "RONDONIA": "RO",
-        "RONDÔNIA": "RO",
         "RORAIMA": "RR",
         "SAOPAULO": "SP",
-        "SÃOPAULO": "SP",
         "SANTACATARINA": "SC",
         "SERGIPE": "SE",
         "TOCANTINS": "TO",
     }
 
-    EXTINTOS = {"20": "FN", "34": "GB", "FERNANDODENORONHA": "FN", "GUANABARA": "GB"}
-
-    uf = str(uf).upper().replace(" ", "")
+    _uf = str(uf).upper().replace(" ", "")
+    _uf = normalize("NFKD", _uf).encode("ASCII", "ignore").decode("ASCII")
 
     if extintos:
-        UFS.update(EXTINTOS)
+        UFS.update(
+            {
+                "20": "FN",
+                "34": "GB",
+                "FERNANDODENORONHA": "FN",
+                "GUANABARA": "GB",
+            }
+        )
 
-    if uf in UFS.values():
-        return uf
+    if _uf in UFS.values():
+        return _uf
     else:
         try:
-            return UFS[uf]
+            return UFS[_uf]
         except KeyError:
-            raise errors.DAB_UFError("UF incorreta.\n" "Insira uma das 27 UFs válidas.")
+            raise errors.DAB_UFError(
+                f"UF {uf} não identificada.\n" "Insira uma UF válida."
+            )
 
 
 def localidade(localidade: str, brasil=1, on_error="raise") -> str:
