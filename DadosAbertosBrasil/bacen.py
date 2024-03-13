@@ -489,6 +489,9 @@ def expectativas(
             "Selic",
             "Taxa de desocupação",
         )
+    elif expectativa in ("selic"):
+        expec = "ExpectativasMercadoSelic"
+        KPIS = ("Selic",)
     elif expectativa in ("trimestral", "trimestrais"):
         expec = "ExpectativasMercadoTrimestrais"
         KPIS = (
@@ -606,6 +609,7 @@ def expectativas(
         raise ValueError(
             """Valor inválido para o argumento `expectativa`. Insira um dos seguintes valores:
             - 'mensal' ou 'mensais';
+            - 'selic';
             - 'trimestral' ou 'trimestrais';
             - 'anual' ou 'anuais';
             - 'inflacao' ou 'inflacao12meses';
