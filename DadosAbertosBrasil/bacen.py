@@ -352,6 +352,8 @@ def expectativas(
     expectativa : str
         'mensal' ou 'mensais'
             Expectativas de Mercado Mensal
+        'selic'
+            Expectativas de Mercado Selic
         'trimestral' ou 'trimestrais'
             Expectativas de Mercado Trimestral
         'anual' ou 'anuais'
