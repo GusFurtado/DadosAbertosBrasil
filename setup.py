@@ -3,13 +3,13 @@ from os import path
 
 
 def get_long_description():
-    """
-    Retrieve the long description from the README.md file.
+    """Extrai o texto do `README.md` para o `long_description`.
 
     Returns
     -------
     str
-        The long description read from the README.md file.
+        Descrição do pacote.
+
     """
 
     this_directory = path.abspath(path.dirname(__file__))
@@ -18,13 +18,13 @@ def get_long_description():
 
 
 def get_version():
-    """
-    Retrieve the version number from the package __init__.py file.
+    """Obtém o número da versão do pacote salvo no `__init__.py`.
 
     Returns
     -------
     str
-        The version number extracted from the __init__.py file.
+        Número da versão do pacote.
+
     """
 
     with open("DadosAbertosBrasil/__init__.py") as file:
@@ -50,7 +50,7 @@ setup(
     author="Gustavo Furtado",
     author_email="gustavofurtado2@gmail.com",
     url="https://github.com/GusFurtado/DadosAbertosBrasil",
-    download_url="https://github.com/GusFurtado/DadosAbertosBrasil/archive/1.0.0.tar.gz",
+    download_url=f"https://github.com/GusFurtado/DadosAbertosBrasil/archive/{get_version()}.tar.gz",
     keywords=[
         "brasil",
         "ibge",
