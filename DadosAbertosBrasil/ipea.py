@@ -315,7 +315,7 @@ def lista_series(
         inplace=True,
     )
 
-    df.ativo = df.ativo.map({"A": True, "I": False})
+    df.ativo = df.ativo.map({"A": True, "I": False}).astype(bool)
 
     if index:
         df.set_index("codigo", inplace=True)
