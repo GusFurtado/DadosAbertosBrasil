@@ -9,7 +9,7 @@ DadosAbertosBrasil.
 
 from datetime import datetime
 import json
-from typing import List, Optional, Union
+from typing import Dict, Optional, Union
 
 from pandas import DataFrame
 import requests
@@ -573,13 +573,14 @@ class UF:
         )
 
     @property
-    def municipios(self) -> List[str]:
+    def municipios(self) -> Dict[int, str]:
         """Lista de municípios.
 
         Returns
         -------
-        list of str
-            Lista de municípios.
+        dict[int, str]
+            Dicionário onde a chave é o código IBGE do município e o valor é
+            seu respectivo nome.
 
         Raises
         ------
@@ -590,14 +591,14 @@ class UF:
         --------
         >>> ac = UF('AC')
         >>> ac.municipios()
-        ['Acrelândia', 'Assis Brasil', 'Brasiléia', 'Bujari', ...]
+        {1200013: 'Acrelândia', 1200054: 'Assis Brasil', 1200104: 'Brasiléia', ...
 
         """
 
         if self.extinto:
             raise DAB_UFError("Método `municipios` indisponível para UFs extintas.")
-        js = favoritos.geojson(self.sigla)
-        return [mun["properties"]["name"] for mun in js["features"]]
+        df = ibge.localidades("municipios", index=True)
+        return df.loc[df["UF_id"] == self.cod, "nome"].to_dict()
 
     @property
     def populacao(self) -> int:
