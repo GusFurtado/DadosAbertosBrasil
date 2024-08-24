@@ -96,8 +96,6 @@ class UF:
         Densidade populacional (hab/km²) da UF.
     galeria : DadosAbertosBrasil.ibge.Galeria
         Gera uma galeria de fotos da UF.
-    geojson : dict
-        Coordenadas dos municípios brasileiros em formato GeoJSON.
     governador : DadosAbertosBrasil.uf._Governador
         Informações básico do governador da UF.
     historia : DadosAbertosBrasil.ibge.Historia
@@ -372,58 +370,6 @@ class UF:
         if self.extinto:
             raise DAB_UFError("Método `galeria` indisponível para UFs extintas.")
         return ibge.Galeria(self.cod)
-
-    @property
-    def geojson(self) -> dict:
-        """Coordenadas dos municípios brasileiros em formato GeoJSON.
-
-        Returns
-        -------
-        dict
-            Coordenadas em formato GeoJSON.
-
-        Raises
-        ------
-        DAB_UFError
-            Caso seja uma UF extinta.
-
-        References
-        ----------
-        .. [1] https://github.com/tbrugz
-
-        See Also
-        --------
-        DadosAbertosBrasil.favoritos.geojson
-            Função original.
-
-        Examples
-        --------
-        >>> sc = UF('SC')
-        >>> sc.geojson()
-        {
-            'type': 'FeatureCollection',
-            'features': [{
-                'type': 'Feature',
-                'properties': {
-                    'id': '4200051',
-                    'name': 'Abdon Batista',
-                    'description': 'Abdon Batista'
-                },
-                'geometry': {
-                    'type': 'Polygon',
-                    'coordinates': [[
-                        [-51.0378352721, -27.5044338231],
-                        [-51.0307859254, -27.5196681175],
-                        [-51.0175689993, -27.5309862449],
-                        [-50.9902859975, -27.5334223314],
-                        [-50.9858971419, -27.5302011257],
-                        ...
-
-        """
-
-        if self.extinto:
-            raise DAB_UFError("Método `geojson` indisponível para UFs extintas.")
-        return favoritos.geojson(self.sigla)
 
     @property
     def governador(self) -> _Governador:
