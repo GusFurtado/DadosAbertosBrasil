@@ -441,7 +441,7 @@ class UF:
         nivel: str = "estados",
         divisoes: Optional[str] = None,
         periodo: int = 2020,
-        formato: str = "svg",
+        formato: str = "geojson",
         qualidade: str = "minima",
     ) -> Union[str, dict]:
         """Obtém a malha referente à UF.
@@ -455,7 +455,7 @@ class UF:
             Se None, apresenta a malha sem subdivisões.
         periodo : int, default=2020
             Ano da revisão da malha.
-        formato : {'svg', 'json', 'geojson'}, default='svg'
+        formato : {'svg', 'json', 'geojson'}, default='geojson'
             Formato dos dados da malha.
         qualidade : {'minima', 'intermediaria', 'maxima'}, default='minima'
             Qualidade de imagem da malha.

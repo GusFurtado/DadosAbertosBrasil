@@ -243,7 +243,7 @@ def malha(
     nivel: str = "estados",
     divisoes: Optional[str] = None,
     periodo: int = 2020,
-    formato: str = "svg",
+    formato: str = "geojson",
     qualidade: str = "minima",
 ) -> Union[str, dict]:
     """Obtém a URL para a malha referente ao identificador da localidade.
