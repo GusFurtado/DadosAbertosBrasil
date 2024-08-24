@@ -230,6 +230,7 @@ def localidades(
         return f"{y[-2]}_{y[-1]}" if len(y) > 1 else y[0]
 
     df.columns = df.columns.map(_loc_columns)
+    df = df.loc[:, ~df.columns.duplicated()]
 
     if index:
         df.set_index("id", inplace=True)
