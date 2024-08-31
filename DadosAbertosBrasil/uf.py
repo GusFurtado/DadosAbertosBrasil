@@ -1,9 +1,6 @@
 """Objeto UF contendo informações das Unidades da Federação.
 
-Este módulo é um protótipo e poderá passar por várias modificações.
-
-Serve como um consolidador por UF de diversar funções do pacote
-DadosAbertosBrasil.
+Serve como um consolidador por UF de diversar funções do pacote DadosAbertosBrasil.
 
 """
 
@@ -22,7 +19,7 @@ from ._utils.errors import DAB_UFError
 from ._utils import parse
 
 
-class _Governador:
+class Governador:
     """Informações básicas do governador da UF.
 
     Attributes
@@ -35,18 +32,47 @@ class _Governador:
     mandato_fim : datetime.date
     partido : str
     partido_sigla : str
-    cargo_anterior : str
     vice_governador : str
 
     """
 
-    def __init__(self, uf_nome: str, uf_sigla: str):
+    _UFS = {
+        "AC": "Acre",
+        "AL": "Alagoas",
+        "AM": "Amazonas",
+        "AP": "Amapá",
+        "BA": "Bahia",
+        "CE": "Ceará",
+        "DF": "Distrito Federal",
+        "ES": "Espírito Santo",
+        "GO": "Goiás",
+        "MA": "Maranhão",
+        "MT": "Mato Grosso",
+        "MS": "Mato Grosso do Sul",
+        "MG": "Minas Gerais",
+        "PA": "Pará",
+        "PB": "Paraíba",
+        "PR": "Paraná",
+        "PE": "Pernambuco",
+        "PI": "Piauí",
+        "RJ": "Rio de Janeiro",
+        "RN": "Rio Grande do Norte",
+        "RS": "Rio Grande do Sul",
+        "RO": "Rondônia",
+        "RR": "Roraima",
+        "SP": "São Paulo",
+        "SC": "Santa Catarina",
+        "SE": "Sergipe",
+        "TO": "Tocantins",
+    }
+
+    def __init__(self, uf: str):
+        self.uf = parse.uf(uf)
 
         # Baixar dados
-        self._uf = uf_sigla
         URL = r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/governadores.json"
         r = requests.get(URL)
-        data = json.loads(r.json())[uf_nome]
+        data = json.loads(r.json())[self._UFS[self.uf]]
 
         # Criar atributos
         for key in data:
@@ -58,7 +84,7 @@ class _Governador:
         return self.nome
 
     def __repr__(self) -> str:
-        return f"<DadosAbertosBrasil.uf._Governador: {self.nome} ({self._uf})>"
+        return f"<DadosAbertosBrasil.uf.Governador: {self.nome} ({self.uf})>"
 
 
 class UF:
@@ -89,6 +115,8 @@ class UF:
         Lema da UF.
     regiao : str
         Grande região (Norte, Nordeste, Sudeste, Sul ou Centro-Oeste).
+    coordenadas : dict[str, float]
+        Dicionário contendo latitude e longitude.
 
     Properties
     ----------
@@ -96,7 +124,7 @@ class UF:
         Densidade populacional (hab/km²) da UF.
     galeria : DadosAbertosBrasil.ibge.Galeria
         Gera uma galeria de fotos da UF.
-    governador : DadosAbertosBrasil.uf._Governador
+    governador : DadosAbertosBrasil.uf.Governador
         Informações básico do governador da UF.
     historia : DadosAbertosBrasil.ibge.Historia
         Objeto contendo a história da UF.
@@ -372,7 +400,7 @@ class UF:
         return ibge.Galeria(self.cod)
 
     @property
-    def governador(self) -> _Governador:
+    def governador(self) -> Governador:
         """Informações básicas do governador da UF.
 
         Attributes
@@ -402,7 +430,7 @@ class UF:
                 "Propriedade `governador` indisponível para UFs extintas."
             )
 
-        return _Governador(self.nome, self.sigla)
+        return Governador(self.nome, self.sigla)
 
     @property
     def historia(self) -> ibge.Historia:

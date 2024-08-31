@@ -41,7 +41,7 @@ from . import ibge
 from . import ipea
 from . import senado
 from .favoritos import *
-from .uf import UF
+from .uf import Governador, UF
 from ._utils.errors import *
 
 
