@@ -430,7 +430,7 @@ class UF:
                 "Propriedade `governador` indisponível para UFs extintas."
             )
 
-        return Governador(self.nome, self.sigla)
+        return Governador(self.sigla)
 
     @property
     def historia(self) -> ibge.Historia:
