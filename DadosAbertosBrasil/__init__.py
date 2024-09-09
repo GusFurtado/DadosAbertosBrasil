@@ -45,5 +45,5 @@ from .uf import Governador, UF
 from ._utils.errors import *
 
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 __author__ = "Gustavo Furtado da Silva"
