@@ -1,2 +1,8 @@
 pandas
 requests
+
+# dev
+pytest
+pytest-cov
+sphinx
+sphinx-rtd-theme
