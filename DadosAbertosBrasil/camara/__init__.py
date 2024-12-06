@@ -28,8 +28,8 @@ from typing import Optional, Union
 
 import pandas as pd
 
-from ._utils import parse
-from ._utils.get_data import DAB_Base, get_and_format
+from .._utils import parse
+from .._utils.get_data import DAB_Base, get_and_format
 
 
 class Bloco(DAB_Base):

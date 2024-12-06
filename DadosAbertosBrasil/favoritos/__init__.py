@@ -16,9 +16,8 @@ import warnings
 import pandas as pd
 import requests
 
-from ._utils import parse
-from . import bacen
-from . import ipea
+from .. import bacen, ipea
+from .._utils import parse
 
 
 def bandeira(uf: str, tamanho: int = 100) -> str:

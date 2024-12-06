@@ -11,12 +11,11 @@ from typing import Dict, Optional, Union
 from pandas import DataFrame
 import requests
 
-from . import ibge
-from . import favoritos
-from .camara import lista_deputados
-from .senado import lista_senadores
-from ._utils.errors import DAB_UFError
-from ._utils import parse
+from .. import favoritos, ibge
+from ..camara import lista_deputados
+from ..senado import lista_senadores
+from .._utils.errors import DAB_UFError
+from .._utils import parse
 
 
 class Governador:

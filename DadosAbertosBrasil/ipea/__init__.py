@@ -37,7 +37,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from ._utils.get_data import get_data
+from .._utils.get_data import get_data
 
 
 def _get(path: str) -> pd.DataFrame:

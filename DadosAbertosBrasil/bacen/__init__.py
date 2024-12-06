@@ -16,8 +16,8 @@ from typing import Union, Optional
 
 import pandas as pd
 
-from ._utils import parse
-from ._utils.get_data import get_data
+from .._utils import parse
+from .._utils.get_data import get_data
 
 
 def _df(path: str, params: dict = None) -> pd.DataFrame:

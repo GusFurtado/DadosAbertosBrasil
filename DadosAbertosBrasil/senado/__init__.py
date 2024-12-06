@@ -29,8 +29,8 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from ._utils import parse
-from ._utils.get_data import DAB_Base, get_and_format
+from .._utils import parse
+from .._utils.get_data import DAB_Base, get_and_format
 
 
 def lista_blocos(
@@ -1474,9 +1474,11 @@ class Senador(DAB_Base):
         return get_and_format(
             api="senado",
             path=["senador", self.cod, "licencas"],
-            params={"dataInicio": parse.data(inicio, "senado")}
-            if inicio is not None
-            else {},
+            params=(
+                {"dataInicio": parse.data(inicio, "senado")}
+                if inicio is not None
+                else {}
+            ),
             unpack_keys=["LicencaParlamentar", "Parlamentar", "Licencas", "Licenca"],
             cols_to_rename=cols_to_rename,
             cols_to_int=["codigo"],
