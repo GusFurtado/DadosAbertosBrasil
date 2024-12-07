@@ -1,4 +1,5 @@
 pandas
+pydantic
 requests
 
 # dev
