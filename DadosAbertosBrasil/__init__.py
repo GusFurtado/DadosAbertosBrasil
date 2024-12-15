@@ -40,10 +40,10 @@ from . import camara
 from . import ibge
 from . import ipea
 from . import senado
+from . import uf
 from .favoritos import *
-from .uf import Governador, UF
 from ._utils.errors import *
 
 
-__version__ = "1.2.0"
+__version__ = "2.0.0-alpha"
 __author__ = "Gustavo Furtado da Silva"
