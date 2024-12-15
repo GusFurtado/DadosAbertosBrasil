@@ -735,7 +735,7 @@ def lista_deputados(
     legislatura: Optional[PositiveInt] = None,
     uf: Optional[str] = None,
     partido: Optional[str] = None,
-    sexo: Literal["f", "m"] = None,
+    sexo: Optional[Literal["f", "m"]] = None,
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     pagina: PositiveInt = 1,
