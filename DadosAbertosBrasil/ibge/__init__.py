@@ -48,7 +48,7 @@ References
 
 """
 
-from .cidades import Galeria, Historia
-from .misc import coordenadas, localidades, malha, populacao
-from .nomes import nomes, nomes_ranking, nomes_uf
-from .sidra import Metadados, lista_pesquisas, lista_tabelas, referencias, sidra
+from ._cidades import Galeria, Historia
+from ._misc import coordenadas, localidades, malha, populacao
+from ._nomes import nomes, nomes_ranking, nomes_uf
+from ._sidra import Metadados, lista_pesquisas, lista_tabelas, referencias, sidra

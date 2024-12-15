@@ -6,9 +6,10 @@ Este submódulo é importado automaticamente com o módulo `ibge`.
 
 """
 
-from typing import Optional, Union
+from typing import Literal, Optional
 
 import pandas as pd
+from pydantic import validate_call, PositiveInt
 import requests
 
 from DadosAbertosBrasil._utils import parse
@@ -16,15 +17,13 @@ from DadosAbertosBrasil._utils.errors import DAB_LocalidadeError
 from DadosAbertosBrasil._utils.get_data import get_data
 
 
-_normalize = (
-    pd.io.json.json_normalize if pd.__version__[0] == "0" else pd.json_normalize
-)
-
-
+@validate_call
 def populacao(
-    projecao: Optional[str] = None,
-    localidade: Optional[int] = None,
-) -> Union[dict, int]:
+    projecao: Optional[
+        Literal["populacao", "nascimento", "obito", "incremento"]
+    ] = None,
+    localidade: Optional[PositiveInt] = None,
+) -> dict | int:
     """Obtém a projecao da população referente ao Brasil.
 
     Parameters
@@ -102,10 +101,11 @@ def populacao(
         )
 
 
+@validate_call
 def localidades(
     nivel: str = "distritos",
     divisoes: Optional[str] = None,
-    localidade: Union[int, str, list] = None,
+    localidade: PositiveInt | str | list = None,
     ordenar_por: Optional[str] = None,
     index: bool = False,
 ) -> pd.DataFrame:
@@ -223,7 +223,7 @@ def localidades(
         endpoint="https://servicodados.ibge.gov.br/api/v1/", path=path, params=params
     )
 
-    df = _normalize(data)
+    df = pd.json_normalize(data)
 
     def _loc_columns(x: str) -> str:
         y = x.replace("-", "_").split(".")
@@ -238,14 +238,15 @@ def localidades(
     return df
 
 
+@validate_call
 def malha(
-    localidade: int,
+    localidade: PositiveInt,
     nivel: str = "estados",
     divisoes: Optional[str] = None,
-    periodo: int = 2020,
-    formato: str = "geojson",
-    qualidade: str = "minima",
-) -> Union[str, dict]:
+    periodo: PositiveInt = 2020,
+    formato: Literal["svg", "json", "geojson"] = "geojson",
+    qualidade: Literal["minima", "intermediaria", "maxima"] = "minima",
+) -> str | dict:
     """Obtém a URL para a malha referente ao identificador da localidade.
 
     Parameters
@@ -358,8 +359,8 @@ def malha(
 
     params = {
         "periodo": periodo,
-        "qualidade": qualidade.lower(),
-        "formato": FORMATOS[formato.lower()],
+        "qualidade": qualidade,
+        "formato": FORMATOS[formato],
     }
 
     if divisoes is not None:

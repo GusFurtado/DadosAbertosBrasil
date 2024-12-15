@@ -9,18 +9,21 @@ Documentação Original
 https://servicodados.ibge.gov.br/api/docs
 
 """
-from typing import Optional, Union
+
+from typing import Literal, Optional
 
 import pandas as pd
+from pydantic import validate_call, PositiveInt
 import requests
 
 from DadosAbertosBrasil._utils import parse
 
 
+@validate_call
 def nomes(
-    nomes: Union[list, str],
-    sexo: Optional[str] = None,
-    localidade: Optional[int] = None,
+    nomes: list[str] | str,
+    sexo: Optional[Literal["f", "m"]] = None,
+    localidade: Optional[PositiveInt] = None,
 ) -> pd.DataFrame:
     """Obtém a frequência de nascimentos por década dos nomes consultados.
 
@@ -110,6 +113,7 @@ def nomes(
     return df
 
 
+@validate_call
 def nomes_uf(nome: str) -> pd.DataFrame:
     """Obtém a frequência de nascimentos por UF para o nome consultado.
 
@@ -157,10 +161,11 @@ def nomes_uf(nome: str) -> pd.DataFrame:
     return df
 
 
+@validate_call
 def nomes_ranking(
-    decada: Optional[int] = None,
-    sexo: Optional[str] = None,
-    localidade: Optional[int] = None,
+    decada: Optional[PositiveInt] = None,
+    sexo: Optional[Literal["f", "m"]] = None,
+    localidade: Optional[PositiveInt] = None,
 ) -> pd.DataFrame:
     """Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
 

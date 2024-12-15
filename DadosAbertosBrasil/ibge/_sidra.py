@@ -11,28 +11,24 @@ References
 
 """
 
-from typing import Optional, Union
+from typing import Optional
 
 import pandas as pd
+from pydantic import validate_call, PositiveInt
 import requests
 
 from DadosAbertosBrasil._utils.get_data import get_data
 
 
-# Retrocompatibilidade com pandas v0.x
-_normalize = (
-    pd.io.json.json_normalize if pd.__version__[0] == "0" else pd.json_normalize
-)
-
-
+@validate_call
 def lista_tabelas(
     contendo: Optional[str] = None,
     excluindo: Optional[str] = None,
-    assunto: Optional[Union[int, str]] = None,
-    classificacao: Optional[Union[int, str]] = None,
-    periodo: Optional[Union[dict, str]] = None,
-    periodicidade: Optional[Union[int, str]] = None,
-    nivel: Optional[Union[int, str]] = None,
+    assunto: Optional[int | str] = None,
+    classificacao: Optional[int | str] = None,
+    periodo: Optional[dict | str] = None,
+    periodicidade: Optional[int | str] = None,
+    nivel: Optional[int | str] = None,
     pesquisa: Optional[str] = None,
     index: bool = False,
 ) -> pd.DataFrame:
@@ -160,7 +156,7 @@ def lista_tabelas(
         path=["agregados"],
         params=params,
     )
-    df = _normalize(
+    df = pd.json_normalize(
         data,
         "agregados",
         ["id", "nome"],
@@ -219,7 +215,7 @@ def lista_pesquisas(index: bool = False) -> pd.DataFrame:
     data = get_data(
         endpoint="https://servicodados.ibge.gov.br/api/v3/", path=["agregados"]
     )
-    df = _normalize(
+    df = pd.json_normalize(
         data,
         "agregados",
         ["id", "nome"],
@@ -304,16 +300,17 @@ class Metadados:
         return self.nome
 
 
+@validate_call
 def sidra(
     tabela: int,
-    periodos: Union[list, int, str] = "last",
-    variaveis: Union[list, int, str] = "allxp",
+    periodos: list | int | str = "last",
+    variaveis: list | int | str = "allxp",
     localidades: dict = {1: "all"},
     classificacoes: Optional[dict] = None,
     ufs_extintas: bool = False,
     decimais: Optional[int] = None,
     retorna: str = "dataframe",
-) -> Union[pd.DataFrame, dict, str]:
+) -> pd.DataFrame | dict | str:
     """Função para captura de dados do SIDRA - Sistema IBGE de Recuperação
     Automática.
 
