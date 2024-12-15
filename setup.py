@@ -1,8 +1,8 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from os import path
 
 
-def get_long_description():
+def get_long_description() -> str:
     """Extrai o texto do `README.md` para o `long_description`.
 
     Returns
@@ -17,7 +17,7 @@ def get_long_description():
         return file.read()
 
 
-def get_version():
+def get_version() -> str:
     """Obtém o número da versão do pacote salvo no `__init__.py`.
 
     Returns
@@ -37,11 +37,7 @@ def get_version():
 
 setup(
     name="DadosAbertosBrasil",
-    packages=[
-        "DadosAbertosBrasil",
-        "DadosAbertosBrasil._utils",
-        "DadosAbertosBrasil._ibge",
-    ],
+    packages=find_packages(),
     version=get_version(),
     license="MIT",
     description="Pacote Python para acesso a dados abertos e APIs do governo brasileiro.",
@@ -68,6 +64,7 @@ setup(
     ],
     install_requires=[
         "pandas",
+        "pydantic",
         "requests",
     ],
     classifiers=[
@@ -78,6 +75,8 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: Portuguese (Brazilian)",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
 )
