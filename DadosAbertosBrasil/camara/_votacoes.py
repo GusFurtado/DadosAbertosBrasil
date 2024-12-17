@@ -65,7 +65,7 @@ class Votacao(Base):
 
     """
 
-    def __init__(self, cod: int, verificar_certificado: bool = True):
+    def __init__(self, cod: str, verificar_certificado: bool = True):
         self.cod = cod
         self.verify = verificar_certificado
         atributos = {
