@@ -30,5 +30,6 @@ from ._frentes import Frente, lista_frentes
 from ._legislaturas import Legislatura, lista_legislaturas
 from ._orgaos import Orgao, lista_orgaos
 from ._partidos import Partido, lista_partidos
+from ._proposicoes import Proposicao, lista_proposicoes
 from ._referencias import referencias
 from ._votacoes import Votacao, lista_votacoes
