@@ -1,12 +1,11 @@
-from typing import Literal, Optional
+from typing import Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils.get_data import DAB_Base, get_and_format
+from ..utils import Base, Get, Formato, Output
 
 
-class Bloco(DAB_Base):
+class Bloco(Base):
     """Informações sobre um bloco partidário específico.
 
     Parameters
@@ -36,16 +35,18 @@ class Bloco(DAB_Base):
 
     """
 
-    def __init__(self, cod: int):
+    def __init__(self, cod: int, verificar_certificado: bool = True):
         self.cod = cod
+        self.verify = verificar_certificado
         atributos = {"legislatura": ["idLegislatura"], "nome": ["nome"], "uri": ["uri"]}
 
         super().__init__(
-            api="camara",
+            endpoint="camara",
             path=["blocos", str(cod)],
             unpack_keys=["dados"],
             error_key="nome",
             atributos=atributos,
+            verify=self.verify,
         )
 
     def __repr__(self) -> str:
@@ -64,8 +65,9 @@ def lista_blocos(
     ordenar_por: str = "nome",
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> dict | pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista de dados sobre os blocos partidários.
 
     Nas atividades parlamentares, partidos podem se juntar em blocos
@@ -133,15 +135,15 @@ def lista_blocos(
         "idLegislatura": "legislatura",
     }
 
-    return get_and_format(
-        api="camara",
-        path="blocos",
+    return Get(
+        endpoint="camara",
+        path=["blocos"],
         params=params,
         unpack_keys=["dados"],
         cols_to_rename=cols_to_rename,
         cols_to_int=["codigo", "legislatura"],
         url_cols=["uri"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

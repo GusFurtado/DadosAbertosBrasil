@@ -17,7 +17,7 @@ import pandas as pd
 import requests
 
 from .. import bacen, ipea
-from .._utils import parse
+from ..utils import parse
 
 
 def bandeira(uf: str, tamanho: int = 100) -> str:
@@ -280,7 +280,13 @@ def ipca(
 
     """
 
-    return bacen.serie(cod=433, ultimos=ultimos, inicio=inicio, fim=fim, index=index)
+    return bacen.serie(
+        cod=433,
+        ultimos=ultimos,
+        inicio=inicio,
+        fim=fim,
+        index=index,
+    )
 
 
 def perfil_eleitorado() -> pd.DataFrame:

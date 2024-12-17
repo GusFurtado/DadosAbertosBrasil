@@ -1,14 +1,12 @@
 from datetime import date
 from typing import Literal, Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils import parse
-from .._utils.get_data import DAB_Base, get_and_format
+from ..utils import Base, Get, parse, Formato, Output
 
 
-class Proposicao(DAB_Base):
+class Proposicao(Base):
     """Informações detalhadas sobre uma proposição específica.
 
     Parameters
@@ -96,8 +94,9 @@ class Proposicao(DAB_Base):
 
     """
 
-    def __init__(self, cod: int):
+    def __init__(self, cod: int, verificar_certificado: bool = True):
         self.cod = cod
+        self.verify = verificar_certificado
         atributos = {
             "uri": ["uri"],
             "tipo_sigla": ["siglaTipo"],
@@ -134,11 +133,12 @@ class Proposicao(DAB_Base):
         }
 
         super().__init__(
-            api="camara",
+            endpoint="camara",
             path=["proposicoes", str(cod)],
             unpack_keys=["dados"],
             error_key="statusProposicao",
             atributos=atributos,
+            verify=self.verify,
         )
 
     def __repr__(self) -> str:
@@ -150,8 +150,8 @@ class Proposicao(DAB_Base):
     def autores(
         self,
         url: bool = True,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Lista pessoas e/ou entidades autoras da proposição.
 
         Retorna uma lista em que cada item identifica uma pessoa ou entidade
@@ -192,22 +192,22 @@ class Proposicao(DAB_Base):
             "proponente": "proponente",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["proposicoes", self.cod, "autores"],
+        return Get(
+            endpoint="camara",
+            path=["proposicoes", str(self.cod), "autores"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             url_cols=["uri"],
-            url=url,
-            formato=formato,
-        )
+            remover_url=not url,
+            verify=self.verify,
+        ).get(formato)
 
     def relacionadas(
         self,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Uma lista de proposições relacionadas a uma em especial.
 
         Lista de informações básicas sobre proposições que de alguma forma se
@@ -246,21 +246,21 @@ class Proposicao(DAB_Base):
             "ementa": "ementa",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["proposicoes", self.cod, "relacionadas"],
+        return Get(
+            endpoint="camara",
+            path=["proposicoes", str(self.cod), "relacionadas"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_int=["tipo_codigo", "numero", "ano"],
             url_cols=["uri"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def temas(
         self, index: bool = False, formato: Literal["dataframe", "json"] = "dataframe"
-    ) -> dict | pd.DataFrame:
+    ) -> Output:
         """Lista de áreas temáticas de uma proposição.
 
         Lista em que cada item traz informações sobre uma área temática à qual
@@ -292,14 +292,14 @@ class Proposicao(DAB_Base):
             "relevancia": "relevancia",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["proposicoes", self.cod, "temas"],
+        return Get(
+            endpoint="camara",
+            path=["proposicoes", str(self.cod), "temas"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def tramitacoes(
         self,
@@ -307,8 +307,8 @@ class Proposicao(DAB_Base):
         fim: Optional[date] = None,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """O histórico de passos na tramitação de uma proposta.
 
         Lista que traz, como cada item, um “retrato” de informações que podem
@@ -364,20 +364,20 @@ class Proposicao(DAB_Base):
             "ambito": "ambito",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["proposicoes", self.cod, "tramitacoes"],
+        return Get(
+            endpoint="camara",
+            path=["proposicoes", str(self.cod), "tramitacoes"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data"],
             cols_to_int=["tramitacao_codigo", "situacao_codigo"],
             url_cols=["orgao_uri", "ultimo_relator_uri", "url"],
-            url=url,
+            remover_url=not url,
             index_col="sequencia",
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def votacoes(
         self,
@@ -385,8 +385,8 @@ class Proposicao(DAB_Base):
         ordenar_por: str = "dataHoraRegistro",
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Informações detalhadas de votações sobre a proposição.
 
         Retorna uma lista de identificadores básicos sobre as votações na
@@ -439,19 +439,19 @@ class Proposicao(DAB_Base):
             "uriProposicaoObjeto": "proposicao_uri",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["proposicoes", self.cod, "votacoes"],
+        return Get(
+            endpoint="camara",
+            path=["proposicoes", str(self.cod), "votacoes"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data"],
             cols_to_int=["tramitacao_codigo", "situacao_codigo"],
             url_cols=["uri", "evento_uri", "orgao_uri", "proposicao_uri"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
 
 @validate_call
@@ -478,8 +478,9 @@ def lista_proposicoes(
     ordenar_por: str = "id",
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> dict | pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista de proposições na Câmara.
 
     Lista de informações básicas sobre projetos de lei, resoluções, medidas
@@ -636,14 +637,14 @@ def lista_proposicoes(
         "ementa": "ementa",
     }
 
-    return get_and_format(
-        api="camara",
-        path="proposicoes",
+    return Get(
+        endpoint="camara",
+        path=["proposicoes"],
         params=params,
         unpack_keys=["dados"],
         cols_to_rename=cols_to_rename,
         url_cols=["uri"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

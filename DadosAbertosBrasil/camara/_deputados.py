@@ -1,14 +1,12 @@
 from datetime import date
 from typing import Literal, Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils import parse
-from .._utils.get_data import DAB_Base, get_and_format
+from ..utils import Base, Get, parse, Formato, Output
 
 
-class Deputado(DAB_Base):
+class Deputado(Base):
     """Retorna os dados cadastrais de um parlamentar que, em algum momento
     da história e por qualquer período, entrou em exercício na Câmara.
 
@@ -99,8 +97,9 @@ class Deputado(DAB_Base):
 
     """
 
-    def __init__(self, cod: int):
+    def __init__(self, cod: int, verificar_certificado: bool = True):
         self.cod = cod
+        self.verify = verificar_certificado
         atributos = {
             "condicao_eleitoral": ["ultimoStatus", "condicaoEleitoral"],
             "cpf": ["cpf"],
@@ -128,11 +127,12 @@ class Deputado(DAB_Base):
         }
 
         super().__init__(
-            api="camara",
+            endpoint="camara",
             path=["deputados", str(cod)],
             unpack_keys=["dados"],
             error_key="ultimoStatus",
             atributos=atributos,
+            verify=self.verify,
         )
 
     def __repr__(self) -> str:
@@ -153,8 +153,8 @@ class Deputado(DAB_Base):
         ordenar_por: str = "ano",
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """As despesas com exercício parlamentar do deputado.
 
         Dá acesso aos registros de pagamentos e reembolsos feitos pela Câmara
@@ -244,18 +244,18 @@ class Deputado(DAB_Base):
             "parcela": "parcela",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["deputados", self.cod, "despesas"],
+        return Get(
+            endpoint="camara",
+            path=["deputados", str(self.cod), "despesas"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data"],
             url_cols=["url"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def discursos(
         self,
@@ -267,8 +267,8 @@ class Deputado(DAB_Base):
         asc: bool = True,
         ordenar_por: str = "dataHoraInicio",
         url: bool = True,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Os discursos feitos por um deputado em eventos diversos.
 
         Retorna uma lista de informações sobre os pronunciamentos feitos
@@ -345,17 +345,17 @@ class Deputado(DAB_Base):
             "transcricao": "transcricao",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["deputados", self.cod, "discursos"],
+        return Get(
+            endpoint="camara",
+            path=["deputados", str(self.cod), "discursos"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data_inicio", "data_fim"],
             url_cols=["evento_uri", "texto_uri", "audio_url", "video_url"],
-            url=url,
-            formato=formato,
-        )
+            remover_url=not url,
+            verify=self.verify,
+        ).get(formato)
 
     def eventos(
         self,
@@ -368,8 +368,8 @@ class Deputado(DAB_Base):
         ordenar_por: str = "dataHoraInicio",
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Uma lista de eventos com a participação do parlamentar.
 
         Retorna uma lista de objetos evento nos quais a participação do
@@ -451,20 +451,20 @@ class Deputado(DAB_Base):
             "urlRegistro": "url",
         }
 
-        df = get_and_format(
-            api="camara",
-            path=["deputados", self.cod, "eventos"],
+        data = Get(
+            endpoint="camara",
+            path=["deputados", str(self.cod), "eventos"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data_inicio", "data_fim"],
             url_cols=["uri", "url"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
-        if formato == "dataframe":
+        if formato == "pandas":
 
             def get_orgaos(orgaos):
                 cod = [orgao["id"] for orgao in orgaos]
@@ -472,16 +472,16 @@ class Deputado(DAB_Base):
                     return cod[0]
                 return cod
 
-            df.orgaos = df.orgaos.apply(get_orgaos)
+            data["orgaos"] = data["orgaos"].apply(get_orgaos)
 
-        return df
+        return data
 
     def frentes(
         self,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """As frentes parlamentares das quais um deputado é integrante.
 
         Retorna uma lista de informações básicas sobre as frentes
@@ -518,21 +518,21 @@ class Deputado(DAB_Base):
             "idLegislatura": "legislatura",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["deputados", self.cod, "frentes"],
+        return Get(
+            endpoint="camara",
+            path=["deputados", str(self.cod), "frentes"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             url_cols=["uri"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def ocupacoes(
         self,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Os empregos e atividades que o(a) deputado(a) já teve.
 
         Enumera as atividades profissionais ou ocupacionais que o deputado
@@ -563,13 +563,13 @@ class Deputado(DAB_Base):
             "titulo": "titulo",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["deputados", self.cod, "ocupacoes"],
+        return Get(
+            endpoint="camara",
+            path=["deputados", str(self.cod), "ocupacoes"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def orgaos(
         self,
@@ -581,8 +581,8 @@ class Deputado(DAB_Base):
         ordenar_por: str = "dataInicio",
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Os órgãos dos quais um deputado é integrante.
 
         Retorna uma lista de órgãos, como as comissões e procuradorias,
@@ -659,26 +659,26 @@ class Deputado(DAB_Base):
             "dataFim": "data_fim",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["deputados", self.cod, "orgaos"],
+        return Get(
+            endpoint="camara",
+            path=["deputados", str(self.cod), "orgaos"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_int=["titulo_codigo"],
             cols_to_date=["data_inicio", "data_fim"],
             url_cols=["uri"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def profissoes(
         self,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """As frentes parlamentares das quais um deputado é integrante.
 
         Retorna uma lista de dados sobre profissões que o parlamentar declarou
@@ -716,17 +716,17 @@ class Deputado(DAB_Base):
             "codTipoProfissao": "tipo",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["deputados", self.cod, "profissoes"],
+        return Get(
+            endpoint="camara",
+            path=["deputados", str(self.cod), "profissoes"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data"],
             url_cols=["uri"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
 
 @validate_call
@@ -744,8 +744,9 @@ def lista_deputados(
     ordenar_por: str = "nome",
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> dict | pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Listagem e busca de deputados, segundo critérios.
 
     Retorna uma lista de dados básicos sobre deputados que estiveram em
@@ -843,15 +844,15 @@ def lista_deputados(
         "email": "email",
     }
 
-    return get_and_format(
-        api="camara",
-        path="deputados",
+    return Get(
+        endpoint="camara",
+        path=["deputados"],
         params=params,
         unpack_keys=["dados"],
         cols_to_rename=cols_to_rename,
         cols_to_int=["codigo", "legislatura"],
         url_cols=["uri", "partido_uri", "foto", "email"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

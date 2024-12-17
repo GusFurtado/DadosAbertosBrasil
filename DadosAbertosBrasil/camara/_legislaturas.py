@@ -1,14 +1,12 @@
 from datetime import date
-from typing import Literal, Optional
+from typing import Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils import parse
-from .._utils.get_data import DAB_Base, get_and_format
+from ..utils import Base, Get, parse, Formato, Output
 
 
-class Legislatura(DAB_Base):
+class Legislatura(Base):
     """Informações extras sobre uma determinada legislatura da Câmara.
 
     Parameters
@@ -40,16 +38,18 @@ class Legislatura(DAB_Base):
 
     """
 
-    def __init__(self, cod: int):
+    def __init__(self, cod: int, verificar_certificado: bool = True):
         self.cod = cod
+        self.verify = verificar_certificado
         atributos = {"fim": ["dataFim"], "inicio": ["dataInicio"], "uri": ["uri"]}
 
         super().__init__(
-            api="camara",
+            endpoint="camara",
             path=["legislaturas", str(cod)],
             unpack_keys=["dados"],
             error_key="dataInicio",
             atributos=atributos,
+            verify=self.verify,
         )
 
     def __repr__(self) -> str:
@@ -64,8 +64,8 @@ class Legislatura(DAB_Base):
         fim: Optional[date] = None,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
 
         Retorna uma lista com dados básicos sobre todos os deputados que
@@ -124,19 +124,19 @@ class Legislatura(DAB_Base):
             "codTitulo": "titulo_codigo",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["legislaturas", self.cod, "mesa"],
+        return Get(
+            endpoint="camara",
+            path=["legislaturas", str(self.cod), "mesa"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_int=["titulo_codigo"],
             cols_to_date=["data_inicio", "data_fim"],
             url_cols=["uri", "partido_uri", "foto", "email"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
 
 @validate_call
@@ -148,8 +148,9 @@ def lista_legislaturas(
     ordenar_por: str = "id",
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> dict | pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Os períodos de mandatos e atividades parlamentares da Câmara.
 
     Legislatura é o nome dado ao período de trabalhos parlamentares entre uma
@@ -214,15 +215,15 @@ def lista_legislaturas(
         "dataFim": "data_fim",
     }
 
-    return get_and_format(
-        api="camara",
-        path="legislaturas",
+    return Get(
+        endpoint="camara",
+        path=["legislaturas"],
         params=params,
         unpack_keys=["dados"],
         cols_to_rename=cols_to_rename,
         cols_to_date=["data_inicio", "data_fim"],
         url_cols=["uri"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

@@ -1,16 +1,14 @@
-from typing import Literal
-
-import pandas as pd
 from pydantic import validate_call
 
-from .._utils.get_data import get_and_format
+from ..utils import Get, Formato, Output
 
 
 @validate_call
 def lista_blocos(
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> pd.DataFrame | list[dict]:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Obtém a lista e a composição dos Blocos Parlamentares no
     Congresso Nacional.
 
@@ -41,13 +39,13 @@ def lista_blocos(
         "DataCriacao": "data_criacao",
     }
 
-    return get_and_format(
-        api="senado",
+    return Get(
+        endpoint="senado",
         path=["blocoParlamentar", "lista"],
         unpack_keys=["ListaBlocoParlamentar", "Blocos", "Bloco"],
         cols_to_rename=cols_to_rename,
         cols_to_int=["codigo"],
         cols_to_date=["data_criacao"],
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

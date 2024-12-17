@@ -4,8 +4,7 @@ from typing import Optional
 import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils import parse
-from .._utils.get_data import get_data
+from ..utils import Get, parse, Formato, Output
 
 
 @validate_call
@@ -15,7 +14,9 @@ def serie(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Série do Sistema Gerenciador de Série Temporais (SGS) do Banco Central.
 
     Parameters
@@ -100,9 +101,9 @@ def serie(
 
     """
 
-    path = f"dados/serie/bcdata.sgs.{cod}/dados"
+    path = ["dados", "serie", f"bcdata.sgs.{cod}", "dados"]
     if ultimos is not None:
-        path += f"/ultimos/{ultimos}"
+        path += ["ultimos", str(ultimos)]
 
     params = []
     if inicio is not None:
@@ -111,16 +112,20 @@ def serie(
         params.append(f"dataFinal={parse.data(fim, modulo='sgs')}")
 
     if len(params) > 0:
-        path += f'?{"&".join(params)}'
+        path += [f'?{"&".join(params)}']
 
-    data = get_data(endpoint="https://api.bcb.gov.br/", path=path)
-    df = pd.DataFrame(data)
+    data = Get(
+        endpoint="sgs",
+        path=path,
+        verify=verificar_certificado,
+    ).get(formato)
 
-    df["data"] = pd.to_datetime(df["data"], format="%d/%m/%Y")
-    if "datafim" in df.columns:
-        df["datafim"] = pd.to_datetime(df["datafim"], format="%d/%m/%Y")
+    if formato == "pandas":
+        data["data"] = pd.to_datetime(data["data"], format="%d/%m/%Y")
+        if "datafim" in data.columns:
+            data["datafim"] = pd.to_datetime(data["datafim"], format="%d/%m/%Y")
 
-    if index:
-        df.set_index("data", inplace=True)
+        if index:
+            data.set_index("data", inplace=True)
 
-    return df
+    return data

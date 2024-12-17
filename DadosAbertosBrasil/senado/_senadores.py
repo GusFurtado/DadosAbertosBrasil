@@ -1,14 +1,12 @@
 from datetime import date
 from typing import Literal, Optional
 
-import pandas as pd
 from pydantic import validate_call
 
-from .._utils import parse
-from .._utils.get_data import DAB_Base, get_and_format
+from ..utils import Base, Get, parse, Formato, Output
 
 
-class Senador(DAB_Base):
+class Senador(Base):
     """Coleta os dados dos senadores.
 
     Parameters
@@ -112,8 +110,9 @@ class Senador(DAB_Base):
 
     """
 
-    def __init__(self, cod: int):
+    def __init__(self, cod: int, verificar_certificado: bool = True):
         self.cod = cod
+        self.verify = verificar_certificado
         atributos = {
             "email": ["IdentificacaoParlamentar", "EmailParlamentar"],
             "endereco": ["DadosBasicosParlamentar", "EnderecoParlamentar"],
@@ -131,11 +130,12 @@ class Senador(DAB_Base):
         }
 
         super().__init__(
-            api="senado",
+            endpoint="senado",
             path=["senador", cod],
             unpack_keys=["DetalheParlamentar", "Parlamentar"],
             error_key="IdentificacaoParlamentar",
             atributos=atributos,
+            verify=self.verify,
         )
 
         if "Telefones" in self.dados:
@@ -161,8 +161,8 @@ class Senador(DAB_Base):
         tipo_sessao: Optional[str] = None,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> pd.DataFrame | list[dict]:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Obtém a relação de apartes do senador.
 
         Parameters
@@ -238,9 +238,9 @@ class Senador(DAB_Base):
             "Publicacoes.Publicacao.UrlDiario": "publicacao_url",
         }
 
-        return get_and_format(
-            api="senado",
-            path=f"senador/{self.cod}/apartes",
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "apartes"],
             params=params,
             unpack_keys=["ApartesParlamentar", "Parlamentar", "Apartes", "Aparte"],
             cols_to_rename=cols_to_rename,
@@ -257,10 +257,10 @@ class Senador(DAB_Base):
             true_value="Sim",
             false_value="Não",
             url_cols=["url", "publicacao_url"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def autorias(
         self,
@@ -270,8 +270,8 @@ class Senador(DAB_Base):
         sigla: Optional[str] = None,
         tramitando: Optional[bool] = None,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> pd.DataFrame | list[dict]:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Obtém as matérias de autoria de um senador.
 
         Parameters
@@ -334,9 +334,9 @@ class Senador(DAB_Base):
             "IndicadorOutrosAutores": "outros_autores",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "autorias"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "autorias"],
             params=params,
             unpack_keys=[
                 "MateriasAutoriaParlamentar",
@@ -351,15 +351,15 @@ class Senador(DAB_Base):
             true_value="Sim",
             false_value="Não",
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def cargos(
         self,
         comissao: Optional[str] = None,
         ativos: Optional[bool] = None,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> pd.DataFrame | list[dict]:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Obtém a relação de cargos que o senador ja ocupou.
 
         Parameters
@@ -401,23 +401,23 @@ class Senador(DAB_Base):
             "IdentificacaoComissao.SiglaCasaComissao": "casa",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "cargos"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "cargos"],
             params=params,
             unpack_keys=["CargoParlamentar", "Parlamentar", "Cargos", "Cargo"],
             cols_to_rename=cols_to_rename,
             cols_to_int=["cargo_codigo", "comisao_codigo"],
             cols_to_date=["data_inicio", "data_fim"],
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def comissoes(
         self,
         comissao: Optional[str] = None,
         ativos: Optional[bool] = None,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> pd.DataFrame | list[dict]:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Obtém as comissões de que um senador é membro.
 
         Parameters
@@ -458,9 +458,9 @@ class Senador(DAB_Base):
             "IdentificacaoComissao.SiglaCasaComissao": "casa",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "comissoes"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "comissoes"],
             params=params,
             unpack_keys=[
                 "MembroComissaoParlamentar",
@@ -471,12 +471,10 @@ class Senador(DAB_Base):
             cols_to_rename=cols_to_rename,
             cols_to_int=["comissao_codigo"],
             cols_to_date=["data_inicio", "data_fim"],
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
-    def cursos(
-        self, formato: Literal["dataframe", "json"] = "dataframe"
-    ) -> pd.DataFrame | list[dict]:
+    def cursos(self, formato: Literal["dataframe", "json"] = "dataframe") -> Output:
         """Obtém o histórico acadêmico de um senador.
 
         Parameters
@@ -502,9 +500,9 @@ class Senador(DAB_Base):
             "Local": "local",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "historicoAcademico"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "historicoAcademico"],
             unpack_keys=[
                 "HistoricoAcademicoParlamentar",
                 "Parlamentar",
@@ -515,8 +513,8 @@ class Senador(DAB_Base):
             cols_to_bool=["atividade_principal"],
             true_value="Sim",
             false_value="Não",
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def discursos(
         self,
@@ -528,8 +526,8 @@ class Senador(DAB_Base):
         tipo_sessao: Optional[str] = None,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> pd.DataFrame | list[dict]:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Obtém a relação de discursos do senador.
 
         Se os argumentos `inicio` e `fim` não forem informados, retorna os
@@ -607,9 +605,9 @@ class Senador(DAB_Base):
             "Publicacoes.Publicacao.UrlDiario": "publicacao_url",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "discursos"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "discursos"],
             params=params,
             unpack_keys=[
                 "DiscursosParlamentar",
@@ -630,16 +628,16 @@ class Senador(DAB_Base):
             true_value="Sim",
             false_value="Não",
             url_cols=["url", "publicacao_url"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def filiacoes(
         self,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> pd.DataFrame | list[dict]:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Obtém as filiações partidárias que o senador já teve.
 
         Parameters
@@ -669,16 +667,16 @@ class Senador(DAB_Base):
             "DataDesfiliacao": "data_desfiliacao",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "filiacoes"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "filiacoes"],
             unpack_keys=["FiliacaoParlamentar", "Parlamentar", "Filiacoes", "Filiacao"],
             cols_to_rename=cols_to_rename,
             cols_to_int=["codigo"],
             cols_to_date=["data_filiacao", "data_desfiliacao"],
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def historico(self) -> dict:
         """Obtém todos os detalhes de um parlamentar no(s) mandato(s) como
@@ -691,9 +689,9 @@ class Senador(DAB_Base):
 
         """
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "historico"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "historico"],
             unpack_keys=["DetalheParlamentar", "Parlamentar"],
             formato="json",
         )
@@ -701,8 +699,8 @@ class Senador(DAB_Base):
     def mandatos(
         self,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> pd.DataFrame | list[dict]:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Obtém os mandatos que o senador já teve.
 
         Parameters
@@ -736,9 +734,9 @@ class Senador(DAB_Base):
             "SegundaLegislaturaDoMandato.DataFim": "segunda_legislatura_fim",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "mandatos"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "mandatos"],
             unpack_keys=["MandatoParlamentar", "Parlamentar", "Mandatos", "Mandato"],
             cols_to_rename=cols_to_rename,
             cols_to_int=["codigo"],
@@ -749,12 +747,10 @@ class Senador(DAB_Base):
                 "segunda_legislatura_fim",
             ],
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
-    def liderancas(
-        self, formato: Literal["dataframe", "json"] = "dataframe"
-    ) -> pd.DataFrame | list[dict]:
+    def liderancas(self, formato: Literal["dataframe", "json"] = "dataframe") -> Output:
         """Obtém os cargos de liderança de um senador.
 
         Parameters
@@ -789,9 +785,9 @@ class Senador(DAB_Base):
             "Bloco.ApelidoBloco": "bloco_apelido",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "liderancas"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "liderancas"],
             unpack_keys=[
                 "LiderancaParlamentar",
                 "Parlamentar",
@@ -801,15 +797,15 @@ class Senador(DAB_Base):
             cols_to_rename=cols_to_rename,
             cols_to_int=["partido_codigo", "bloco_codigo"],
             cols_to_date=["data_designacao", "data_fim"],
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def licencas(
         self,
         inicio: Optional[date] = None,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> pd.DataFrame | list[dict]:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Obtém as licenças de um senador.
 
         Parameters
@@ -843,9 +839,9 @@ class Senador(DAB_Base):
             "DescricaoTipoAfastamento": "afastamento_descricao",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "licencas"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "licencas"],
             params=(
                 {"dataInicio": parse.data(inicio, "senado")}
                 if inicio is not None
@@ -856,12 +852,10 @@ class Senador(DAB_Base):
             cols_to_int=["codigo"],
             cols_to_date=["inicio", "inicio_previsto", "fim", "fim_previsto"],
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
-    def profissoes(
-        self, formato: Literal["dataframe", "json"] = "dataframe"
-    ) -> pd.DataFrame | list[dict]:
+    def profissoes(self, formato: Literal["dataframe", "json"] = "dataframe") -> Output:
         """Obtém a(s) profissão(ões) de um senador.
 
         Parameters
@@ -885,9 +879,9 @@ class Senador(DAB_Base):
             "IndicadorAtividadePrincipal": "atividade_principal",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "profissao"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "profissao"],
             unpack_keys=[
                 "ProfissaoParlamentar",
                 "Parlamentar",
@@ -898,8 +892,8 @@ class Senador(DAB_Base):
             cols_to_bool=["atividade_principal"],
             true_value="Sim",
             false_value="Não",
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def relatorias(
         self,
@@ -908,8 +902,8 @@ class Senador(DAB_Base):
         numero: Optional[int] = None,
         sigla: Optional[str] = None,
         tramitando: Optional[bool] = None,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> pd.DataFrame | list[dict]:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Obtém as matérias de relatoria de um senador.
 
         Parameters
@@ -962,9 +956,9 @@ class Senador(DAB_Base):
             "DescricaoMotivoDestituicao": "motivo_destituicao",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "relatorias"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "relatorias"],
             params=params,
             unpack_keys=[
                 "MateriasRelatoriaParlamentar",
@@ -975,8 +969,8 @@ class Senador(DAB_Base):
             cols_to_rename=cols_to_rename,
             cols_to_int=["codigo", "materia", "comissao"],
             cols_to_date=["data_designacao", "data_destituicao"],
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def votacoes(
         self,
@@ -985,8 +979,8 @@ class Senador(DAB_Base):
         sigla: Optional[str] = None,
         tramitando: Optional[bool] = None,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> pd.DataFrame | list[dict]:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Obtém as votações de um senador.
 
         Parameters
@@ -1040,9 +1034,9 @@ class Senador(DAB_Base):
             "DescricaoResultado": "resultado",
         }
 
-        return get_and_format(
-            api="senado",
-            path=["senador", self.cod, "votacoes"],
+        return Get(
+            endpoint="senado",
+            path=["senador", str(self.cod), "votacoes"],
             params=params,
             unpack_keys=["VotacaoParlamentar", "Parlamentar", "Votacoes", "Votacao"],
             cols_to_rename=cols_to_rename,
@@ -1051,8 +1045,8 @@ class Senador(DAB_Base):
             true_value="Sim",
             false_value="Não",
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
 
 @validate_call
@@ -1065,8 +1059,9 @@ def lista_senadores(
     excluindo: Optional[str] = None,
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> pd.DataFrame | list[dict]:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista de senadores da república.
 
     Parameters
@@ -1193,8 +1188,8 @@ def lista_senadores(
         "Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento": "causa_afastamento",
     }
 
-    df = get_and_format(
-        api="senado",
+    data = Get(
+        endpoint="senado",
         path=["senador", "lista", TIPOS[tipo]["path"]],
         params=params,
         unpack_keys=[TIPOS[tipo]["key"], "Parlamentares", "Parlamentar"],
@@ -1202,29 +1197,30 @@ def lista_senadores(
         cols_to_int=["codigo"],
         cols_to_date=["data_inicio", "data_fim"],
         url_cols=["foto", "pagina_parlamentar", "pagina_particular", "email"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)
 
-    if sexo is not None:
-        SEXOS = {"m": "Masculino", "f": "Feminino"}
-        df = df[df.sexo == SEXOS[sexo]]
+    if formato == "pandas":
+        if sexo is not None:
+            SEXOS = {"m": "Masculino", "f": "Feminino"}
+            data = data[data["sexo"] == SEXOS[sexo]]
 
-    if (uf is not None) and (tipo == "afastados"):
-        df = df[df.uf == parse.uf(uf=uf)]
+        if (uf is not None) and (tipo == "afastados"):
+            data = data[data["uf"] == parse.uf(uf=uf)]
 
-    if partido is not None:
-        df = df[df.partido == partido.upper()]
+        if partido is not None:
+            data = data[data["partido"] == partido.upper()]
 
-    if contendo is not None:
-        nome_parlamentar = df.nome_parlamentar.str.contains(contendo)
-        nome_completo = df.nome_completo.str.contains(contendo)
-        df = df[nome_parlamentar | nome_completo]
+        if contendo is not None:
+            nome_parlamentar = data["nome_parlamentar"].str.contains(contendo)
+            nome_completo = data["nome_completo"].str.contains(contendo)
+            data = data[nome_parlamentar | nome_completo]
 
-    if excluindo is not None:
-        nome_parlamentar = ~df.nome_parlamentar.str.contains(excluindo)
-        nome_completo = ~df.nome_completo.str.contains(excluindo)
-        df = df[nome_parlamentar | nome_completo]
+        if excluindo is not None:
+            nome_parlamentar = ~data["nome_parlamentar"].str.contains(excluindo)
+            nome_completo = ~data["nome_completo"].str.contains(excluindo)
+            data = data[nome_parlamentar | nome_completo]
 
-    return df
+    return data

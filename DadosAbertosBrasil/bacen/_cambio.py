@@ -4,8 +4,7 @@ from typing import Literal, Optional
 import pandas as pd
 from pydantic import Field, validate_call
 
-from ._utils import get_bacen_data
-from .._utils import parse
+from ..utils import Get, parse, Formato, Output
 
 
 @validate_call
@@ -16,7 +15,9 @@ def cambio(
     cotacao: Literal["compra", "vendas"] = "compra",
     boletim: Literal["abertura", "intermediário", "fechamento"] = "fechamento",
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Taxa de câmbio das principais moedas internacionais.
 
     É possível escolher várias moedas inserindo uma lista no campo `moeda`.
@@ -103,36 +104,45 @@ def cambio(
     fim = parse.data(fim, "bacen")
     moedas = parse.moeda(moedas)
 
-    cotacao_moedas = []
+    cotacoes = []
     for moeda in moedas:
-        cotacao_moeda = get_bacen_data(
-            "CotacaoMoedaPeriodo("
-            + "moeda=@moeda,"
-            + "dataInicial=@dataInicial,"
-            + "dataFinalCotacao=@dataFinalCotacao)"
-            + f"?@moeda='{moeda}'"
-            + f"&@dataInicial='{inicio}'"
-            + f"&@dataFinalCotacao='{fim}'"
-            + f"&$filter=contains(tipoBoletim%2C'{boletim.title()}')"
-            + f"&$select=cotacao{cotacao.title()},dataHoraCotacao"
-        )
-        if cotacao_moeda.empty:
-            raise ValueError(
-                "Nenhum dado encontrado. Verifique os argumentos da função."
+        data = Get(
+            endpoint="bacen",
+            path=[
+                "CotacaoMoedaPeriodo("
+                + "moeda=@moeda,"
+                + "dataInicial=@dataInicial,"
+                + "dataFinalCotacao=@dataFinalCotacao)"
+                + f"?@moeda='{moeda}'"
+                + f"&@dataInicial='{inicio}'"
+                + f"&@dataFinalCotacao='{fim}'"
+                + f"&$filter=contains(tipoBoletim%2C'{boletim.title()}')"
+                + f"&$select=cotacao{cotacao.title()},dataHoraCotacao"
+            ],
+            unpack_keys=["value"],
+            verify=verificar_certificado,
+        ).get(formato)
+
+        if formato == "pandas":
+            if data.empty:
+                raise ValueError(
+                    "Nenhum dado encontrado. Verifique os argumentos da função."
+                )
+            data["dataHoraCotacao"] = data["dataHoraCotacao"].apply(
+                lambda x: datetime.strptime(x[:10], "%Y-%m-%d")
             )
-        cotacao_moeda["dataHoraCotacao"] = cotacao_moeda["dataHoraCotacao"].apply(
-            lambda x: datetime.strptime(x[:10], "%Y-%m-%d")
-        )
-        cotacao_moeda.rename(
-            columns={f"cotacao{cotacao.title()}": moeda, "dataHoraCotacao": "data"},
-            inplace=True,
-        )
+            data.rename(
+                columns={f"cotacao{cotacao.title()}": moeda, "dataHoraCotacao": "data"},
+                inplace=True,
+            )
+            data = data.groupby("data").last()
 
-        cotacao_moedas.append(cotacao_moeda.groupby("data").last())
-    cotacoes = pd.concat(cotacao_moedas, axis=1).reset_index()
+        cotacoes.append(data)
 
-    cotacoes["data"] = pd.to_datetime(cotacoes["data"], format="%Y-%m-%d %H:%M:%S")
-    if index:
-        cotacoes.set_index("data", inplace=True)
+    if formato == "pandas":
+        cotacoes = pd.concat(cotacoes, axis=1).reset_index()
+        cotacoes["data"] = pd.to_datetime(cotacoes["data"], format="%Y-%m-%d %H:%M:%S")
+        if index:
+            cotacoes.set_index("data", inplace=True)
 
     return cotacoes

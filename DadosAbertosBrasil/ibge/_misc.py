@@ -12,9 +12,8 @@ import pandas as pd
 from pydantic import validate_call, PositiveInt
 import requests
 
-from DadosAbertosBrasil._utils import parse
-from DadosAbertosBrasil._utils.errors import DAB_LocalidadeError
-from DadosAbertosBrasil._utils.get_data import get_data
+from ..utils import Get, parse, Formato, NivelTerritorial, Output
+from ..utils.errors import DAB_LocalidadeError
 
 
 @validate_call
@@ -103,12 +102,14 @@ def populacao(
 
 @validate_call
 def localidades(
-    nivel: str = "distritos",
-    divisoes: Optional[str] = None,
+    nivel: NivelTerritorial = "distritos",
+    divisoes: Optional[NivelTerritorial] = None,
     localidade: PositiveInt | str | list = None,
     ordenar_por: Optional[str] = None,
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Obtém o conjunto de localidades do Brasil e suas intrarregiões.
 
     Parameters
@@ -177,26 +178,6 @@ def localidades(
 
     """
 
-    NIVEIS = {
-        "distritos",
-        "estados",
-        "mesorregioes",
-        "microrregioes",
-        "municipios",
-        "regioes-imediatas",
-        "regioes-intermediarias",
-        "regioes",
-        "paises",
-    }
-
-    nivel = nivel.lower()
-    if nivel not in NIVEIS:
-        raise DAB_LocalidadeError(
-            f"""Nível inválido:
-        Preencha o argumento `nivel` com um dos seguintes valores:
-        {NIVEIS}"""
-        )
-
     path = ["localidades", nivel]
     params = {}
 
@@ -205,37 +186,31 @@ def localidades(
             localidade = "|".join([str(loc) for loc in localidade])
         path.append(localidade)
 
-    if divisoes is not None:
-        divisoes = divisoes.lower()
-        if divisoes not in NIVEIS:
-            raise DAB_LocalidadeError(
-                f"""Subdivisões inválida:
-            Preencha o argumento `divisoes` com um dos seguintes valores:
-            {NIVEIS}"""
-            )
-        if nivel != divisoes:
-            path.append(divisoes)
+    if (divisoes is not None) and (nivel != divisoes):
+        path.append(divisoes)
 
     if ordenar_por is not None:
         params["orderBy"] = ordenar_por
 
-    data = get_data(
-        endpoint="https://servicodados.ibge.gov.br/api/v1/", path=path, params=params
-    )
+    data = Get(
+        endpoint="ibge",
+        path=path,
+        params=params,
+        verify=verificar_certificado,
+    ).get(formato)
 
-    df = pd.json_normalize(data)
+    if formato == "pandas":
 
-    def _loc_columns(x: str) -> str:
-        y = x.replace("-", "_").split(".")
-        return f"{y[-2]}_{y[-1]}" if len(y) > 1 else y[0]
+        def _loc_columns(x: str) -> str:
+            y = x.replace("-", "_").split(".")
+            return f"{y[-2]}_{y[-1]}" if len(y) > 1 else y[0]
 
-    df.columns = df.columns.map(_loc_columns)
-    df = df.loc[:, ~df.columns.duplicated()]
+        data.columns = data.columns.map(_loc_columns)
+        data = data.loc[:, ~data.columns.duplicated()]
+        if index:
+            data.set_index("id", inplace=True)
 
-    if index:
-        df.set_index("id", inplace=True)
-
-    return df
+    return data
 
 
 @validate_call

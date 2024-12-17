@@ -1,17 +1,15 @@
-from typing import Literal
-
-import pandas as pd
 from pydantic import validate_call
 
-from .._utils.get_data import get_and_format
+from ..utils import Get, Formato, Output
 
 
 @validate_call
 def referencias(
     lista: str,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> dict | pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Listas de valores válidos para as funções deste módulo.
 
     Parameters
@@ -73,11 +71,11 @@ def referencias(
         "descricao": "descricao",
     }
 
-    return get_and_format(
-        api="camara",
+    return Get(
+        endpoint="camara",
         path=["referencias", referencia[lista]],
         unpack_keys=["dados"],
         cols_to_rename=cols_to_rename,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

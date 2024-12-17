@@ -1,9 +1,13 @@
-import pandas as pd
+from pydantic import validate_call
 
-from ._utils import get_bacen_data
+from ..utils import Get, Formato, Output
 
 
-def moedas() -> pd.DataFrame:
+@validate_call
+def moedas(
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Obtém os nomes e símbolos das principais moedas internacionais.
 
     Returns
@@ -53,6 +57,14 @@ def moedas() -> pd.DataFrame:
 
     """
 
-    df = get_bacen_data("Moedas")
-    df.columns = ["simbolo", "nome", "tipo"]
-    return df
+    data = Get(
+        endpoint="bacen",
+        path=["Moedas"],
+        unpack_keys=["value"],
+        verify=verificar_certificado,
+    ).get(formato)
+
+    if formato == "pandas":
+        data.columns = ["simbolo", "nome", "tipo"]
+
+    return data

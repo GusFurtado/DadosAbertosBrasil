@@ -1,13 +1,11 @@
-from typing import Literal, Optional
+from typing import Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils import parse
-from .._utils.get_data import DAB_Base, get_and_format
+from ..utils import Base, Get, Formato, Output
 
 
-class Frente(DAB_Base):
+class Frente(Base):
     """Informações detalhadas sobre uma frente parlamentar.
 
     Parameters
@@ -58,8 +56,9 @@ class Frente(DAB_Base):
 
     """
 
-    def __init__(self, cod: int):
+    def __init__(self, cod: int, verificar_certificado: bool = True):
         self.cod = cod
+        self.verify = verificar_certificado
         atributos = {
             "coordenador": ["coordenador"],
             "documento": ["urlDocumento"],
@@ -75,11 +74,12 @@ class Frente(DAB_Base):
         }
 
         super().__init__(
-            api="camara",
+            endpoint="camara",
             path=["frentes", str(cod)],
             unpack_keys=["dados"],
             error_key="titulo",
             atributos=atributos,
+            verify=self.verify,
         )
 
     def __repr__(self) -> str:
@@ -92,8 +92,8 @@ class Frente(DAB_Base):
         self,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Os deputados que participam da frente parlamentar.
 
         Uma lista dos deputados participantes da frente parlamentar e os
@@ -140,17 +140,17 @@ class Frente(DAB_Base):
             "dataFim": "data_fim",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["frentes", self.cod, "membros"],
+        return Get(
+            endpoint="camara",
+            path=["frentes", str(self.cod), "membros"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data_inicio", "data_fim"],
             url_cols=["uri", "partido_uri", "foto", "email"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
 
 @validate_call
@@ -159,8 +159,9 @@ def lista_frentes(
     pagina: PositiveInt = 1,
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> dict | pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista de frentes parlamentares de uma ou mais legislaturas.
 
     Retorna uma lista de informações sobre uma frente parlamentar - um
@@ -210,15 +211,15 @@ def lista_frentes(
         "idLegislatura": "legislatura",
     }
 
-    return get_and_format(
-        api="camara",
-        path="frentes",
+    return Get(
+        endpoint="camara",
+        path=["frentes"],
         params=params,
         unpack_keys=["dados"],
         cols_to_rename=cols_to_rename,
         cols_to_date=["data_inicio", "date_fim"],
         url_cols=["uri"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

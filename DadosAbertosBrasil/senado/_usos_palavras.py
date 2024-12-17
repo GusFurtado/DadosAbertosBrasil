@@ -1,17 +1,15 @@
-from typing import Literal
-
-import pandas as pd
 from pydantic import validate_call
 
-from .._utils.get_data import get_and_format
+from ..utils import Get, Formato, Output
 
 
 @validate_call
 def lista_uso_palavra(
     ativos: bool = False,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> pd.DataFrame | list[dict]:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista os tipos de uso da palavra.
 
     Parameters
@@ -42,8 +40,8 @@ def lista_uso_palavra(
         "IndicadorAtivo": "ativo",
     }
 
-    return get_and_format(
-        api="senado",
+    return Get(
+        endpoint="senado",
         path=["senador", "lista", "tiposUsoPalavra"],
         params={"indAtivos": "S" if ativos else "N"},
         unpack_keys=["ListaTiposUsoPalavra", "TiposUsoPalavra", "TipoUsoPalavra"],
@@ -53,5 +51,5 @@ def lista_uso_palavra(
         true_value="S",
         false_value="N",
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

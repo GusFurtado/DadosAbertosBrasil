@@ -12,8 +12,7 @@ References
 
 from typing import Iterator, Optional, Union
 
-from DadosAbertosBrasil._utils import parse
-from DadosAbertosBrasil._utils.get_data import get_data
+from ..utils import Get, parse
 
 
 class _Fotografia:
@@ -145,7 +144,8 @@ class Galeria:
 
     """
 
-    def __init__(self, localidade: Union[str, int]):
+    def __init__(self, localidade: Union[str, int], verificar_certificado: bool = True):
+        self.verify = verificar_certificado
         self.localidade = parse.localidade(localidade)
         galeria = self._get_photos()
         self.fotografias = [_Fotografia(galeria[foto]) for foto in galeria]
@@ -169,16 +169,17 @@ class Galeria:
         return f"Galeria {self.localidade}"
 
     def _get_photos(self) -> dict:
-        return get_data(
-            endpoint="https://servicodados.ibge.gov.br/api/v1/",
-            path="biblioteca",
+        return Get(
+            endpoint="ibge",
+            path=["biblioteca"],
             params={
                 "codmun": self.localidade,
                 "aspas": "3",
                 "fotografias": "1",
                 "serie": "Acervo dos Trabalhos Geográficos de Campo|Acervo dos Municípios brasileiros",
             },
-        )
+            verify=self.verify,
+        ).json
 
 
 class Historia:
@@ -236,8 +237,9 @@ class Historia:
 
     """
 
-    def __init__(self, localidade: Union[int, str]):
+    def __init__(self, localidade: Union[int, str], verificar_certificado: bool = True):
         self.localidade = parse.localidade(localidade)
+        self.verify = verificar_certificado
         d = self._get_historia()
         self._set_attribs(d)
 
@@ -248,11 +250,12 @@ class Historia:
         return f"História ({self.localidade})"
 
     def _get_historia(self) -> dict:
-        return get_data(
-            endpoint="https://servicodados.ibge.gov.br/api/v1/",
-            path="biblioteca",
+        return Get(
+            endpoint="ibge",
+            path=["biblioteca"],
             params={"aspas": "3", "codmun": self.localidade},
-        )
+            verify=self.verify,
+        ).json
 
     def _set_attribs(self, d: dict) -> None:
         for attribs in d:

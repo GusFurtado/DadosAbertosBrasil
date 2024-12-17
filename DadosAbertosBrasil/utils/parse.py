@@ -6,13 +6,12 @@ especiais do módulo `_utils.errors`.
 """
 
 from datetime import datetime, date
-from typing import List, Union
 from unicodedata import normalize
 
 from . import errors
 
 
-def data(data: Union[datetime, date, str], modulo: str) -> str:
+def data(data: datetime | date | str, modulo: str) -> str:
     """Padroniza o input de datas entre módulos.
 
     Parameters
@@ -61,7 +60,7 @@ def data(data: Union[datetime, date, str], modulo: str) -> str:
         )
 
 
-def uf(uf: Union[str, int], extintos: bool = False) -> str:
+def uf(uf: str | int, extintos: bool = False) -> str:
     """Converte os nomes dos estados em siglas padrões.
     Suporta abreviaturas, acentuação e case sensibility.
 
@@ -212,7 +211,7 @@ def localidade(localidade: str, brasil=1, on_error="raise") -> str:
         )
 
 
-def moeda(moedas: Union[str, List[str]]) -> List[str]:
+def moeda(moedas: str | list[str]) -> list[str]:
     """Verifica se o(s) código(s) da(s) moeda(s) inserida(s) está(ão) em um
     formato válido.
 

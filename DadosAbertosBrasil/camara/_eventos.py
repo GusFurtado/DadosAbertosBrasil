@@ -1,14 +1,12 @@
 from datetime import date
-from typing import Literal, Optional
+from typing import Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils import parse
-from .._utils.get_data import DAB_Base, get_and_format
+from ..utils import Base, Get, parse, Formato, Output
 
 
-class Evento(DAB_Base):
+class Evento(Base):
     """Retorna um conjunto detalhado de informações sobre o evento da Câmara.
 
     Parameters
@@ -79,8 +77,9 @@ class Evento(DAB_Base):
 
     """
 
-    def __init__(self, cod: int):
+    def __init__(self, cod: int, verificar_certificado: bool = True):
         self.cod = cod
+        self.verify = verificar_certificado
         atributos = {
             "andar": ["localCamara", "andar"],
             "descricao": ["descricao"],
@@ -103,11 +102,12 @@ class Evento(DAB_Base):
         }
 
         super().__init__(
-            api="camara",
+            endpoint="camara",
             path=["eventos", str(cod)],
             unpack_keys=["dados"],
             error_key="localCamara",
             atributos=atributos,
+            verify=self.verify,
         )
 
     def __repr__(self) -> str:
@@ -120,8 +120,8 @@ class Evento(DAB_Base):
         self,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Os deputados participantes do evento.
 
         Retorna uma lista de dados resumidos sobre deputados participantes do
@@ -165,23 +165,23 @@ class Evento(DAB_Base):
             "email": "email",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["eventos", self.cod, "deputados"],
+        return Get(
+            endpoint="camara",
+            path=["eventos", str(self.cod), "deputados"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             url_cols=["uri", "partido_uri", "foto", "email"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def orgaos(
         self,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Lista de órgãos organizadores do evento.
 
         Retorna uma lista em que cada item é um conjunto mínimo de dados sobre
@@ -221,23 +221,23 @@ class Evento(DAB_Base):
             "email": "email",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["eventos", self.cod, "orgaos"],
+        return Get(
+            endpoint="camara",
+            path=["eventos", str(self.cod), "orgaos"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             url_cols=["uri", "partido_uri", "foto", "email"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def pauta(
         self,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Lista de proposições que foram ou deverão ser avaliadas em um evento
         de caráter deliberativo.
 
@@ -284,24 +284,24 @@ class Evento(DAB_Base):
             "situacaoItem": "situacao",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["eventos", self.cod, "pauta"],
+        return Get(
+            endpoint="camara",
+            path=["eventos", str(self.cod), "pauta"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             url_cols=["uri"],
-            url=url,
+            remover_url=not url,
             index_col="ordem",
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def votacoes(
         self,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Informações detalhadas de votações sobre o evento.
 
         Retorna uma lista de dados básicos sobre votações que tenham sido
@@ -345,17 +345,17 @@ class Evento(DAB_Base):
             "aprovacao": "aprovacao",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["eventos", self.cod, "votacoes"],
+        return Get(
+            endpoint="camara",
+            path=["eventos", str(self.cod), "votacoes"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data", "data_registro"],
             url_cols=["uri", "orgao_uri", "evento_uri", "proposicao_uri"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
 
 @validate_call
@@ -374,8 +374,9 @@ def lista_eventos(
     ordenar_por: str = "dataHoraInicio",
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> dict | pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista de eventos ocorridos ou previstos nos diversos órgãos da Câmara.
 
     Retorna uma lista cujos elementos trazem informações básicas sobre eventos
@@ -488,18 +489,18 @@ def lista_eventos(
         "localCamara.andar": "local_andar",
     }
 
-    df = get_and_format(
-        api="camara",
-        path="eventos",
+    data = Get(
+        endpoint="camara",
+        path=["eventos"],
         params=params,
         unpack_keys=["dados"],
         cols_to_rename=cols_to_rename,
         cols_to_date=["data_inicio", "data_fim"],
         url_cols=["uri"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)
 
     if formato == "dataframe":
 
@@ -509,6 +510,6 @@ def lista_eventos(
                 return cod[0]
             return cod
 
-        df["orgaos"] = df["orgaos"].apply(get_orgaos)
+        data["orgaos"] = data["orgaos"].apply(get_orgaos)
 
-    return df
+    return data

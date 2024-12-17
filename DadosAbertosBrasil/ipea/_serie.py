@@ -3,7 +3,7 @@ from typing import Optional
 import pandas as pd
 from pydantic import validate_call
 
-from ._utils import get_ipea_data
+from ..utils import Get, Formato, Output
 
 
 _RENOMEAR_COLUNAS = {
@@ -127,9 +127,19 @@ class Serie:
 
     """
 
-    def __init__(self, cod: str, index: bool = False):
-        self.valores = get_ipea_data(f"Metadados(SERCODIGO='{cod}')/Valores")
-        self.valores.rename(columns=_RENOMEAR_COLUNAS, inplace=True)
+    def __init__(
+        self,
+        cod: str,
+        index: bool = False,
+        verificar_certificado: bool = True,
+    ):
+        self.valores = Get(
+            endpoint="ipea",
+            path=[f"Metadados(SERCODIGO='{cod}')", "Valores"],
+            verify=verificar_certificado,
+            cols_to_rename=_RENOMEAR_COLUNAS,
+            unpack_keys=["value"],
+        ).pandas
 
         if "data" in self.valores.columns:
             self.valores["data"] = pd.to_datetime(
@@ -141,7 +151,12 @@ class Serie:
         # Atributos
         self.dados = self.valores
         self.cod = cod
-        self.metadados = get_ipea_data(f"Metadados('{cod}')")
+        self.metadados = Get(
+            endpoint="ipea",
+            path=[f"Metadados('{cod}')"],
+            verify=verificar_certificado,
+            unpack_keys=["value"],
+        ).pandas
         self.base = self.metadados.loc[0, "BASNOME"]
         self.fonte_nome = self.metadados.loc[0, "FNTNOME"]
         self.fonte_sigla = self.metadados.loc[0, "FNTSIGLA"]
@@ -172,7 +187,9 @@ def lista_series(
     ativo: Optional[bool] = None,
     numerica: Optional[bool] = None,
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Registros de metadados de todas as séries do IPEA.
 
     Parameters
@@ -229,44 +246,53 @@ def lista_series(
 
     """
 
-    df = get_ipea_data("Metadados")
-    df.rename(columns=_RENOMEAR_COLUNAS, inplace=True)
+    data = Get(
+        endpoint="ipea",
+        path=["Metadados"],
+        unpack_keys=["value"],
+        cols_to_rename=_RENOMEAR_COLUNAS,
+        index=index,
+        verify=verificar_certificado,
+    ).get(formato)
 
-    if contendo is not None:
-        contendo = contendo.upper()
-        f1 = df["nome"].str.upper().str.contains(contendo)
-        f2 = df["comentario"].str.upper().str.contains(contendo)
-        df = df[f1 | f2]
+    if formato == "pandas":
+        if contendo is not None:
+            contendo = contendo.upper()
+            f1 = data["nome"].str.upper().str.contains(contendo)
+            f2 = data["comentario"].str.upper().str.contains(contendo)
+            data = data[f1 | f2]
 
-    if excluindo is not None:
-        if isinstance(excluindo, str):
-            excluindo = [excluindo]
-        for termo in excluindo:
-            df = df[~df["nome"].str.upper().str.contains(termo.upper())]
+        if excluindo is not None:
+            if isinstance(excluindo, str):
+                excluindo = [excluindo]
+            for termo in excluindo:
+                data = data[~data["nome"].str.upper().str.contains(termo.upper())]
 
-    if fonte is not None:
-        fonte = fonte.upper()
-        f1 = df["fonte_sigla"].str.upper().str.contains(fonte)
-        f2 = df["fonte_nome"].str.upper().str.contains(fonte)
-        df = df[f1 | f2]
+        if fonte is not None:
+            fonte = fonte.upper()
+            f1 = data["fonte_sigla"].str.upper().str.contains(fonte)
+            f2 = data["fonte_nome"].str.upper().str.contains(fonte)
+            data = data[f1 | f2]
 
-    if ativo is not None:
-        status = "A" if ativo else "I"
-        df = df[df["ativo"] == status]
+        if ativo is not None:
+            status = "A" if ativo else "I"
+            data = data[data["ativo"] == status]
 
-    if numerica is not None:
-        df = df[df["numerica"] == numerica]
+        if numerica is not None:
+            data = data[data["numerica"] == numerica]
 
-    df["ativo"] = df["ativo"].map({"A": True, "I": False}).astype(bool)
+        data["ativo"] = data["ativo"].map({"A": True, "I": False}).astype(bool)
 
-    if index:
-        df.set_index("codigo", inplace=True)
-
-    return df
+    return data
 
 
 @validate_call
-def serie(cod: str, index: bool = False) -> pd.DataFrame:
+def serie(
+    cod: str,
+    index: bool = False,
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Valores de uma série IPEA.
 
     Parameters
@@ -308,8 +334,13 @@ def serie(cod: str, index: bool = False) -> pd.DataFrame:
 
     """
 
-    df = get_ipea_data(f"Metadados(SERCODIGO='{cod}')/Valores")
-    df.rename(columns=_RENOMEAR_COLUNAS, inplace=True)
+    df = Get(
+        endpoint="ipea",
+        path=[f"Metadados(SERCODIGO='{cod}')", "Valores"],
+        unpack_keys=["value"],
+        cols_to_rename=_RENOMEAR_COLUNAS,
+        verify=verificar_certificado,
+    ).get(formato)
 
     if "data" in df.columns:
         df["data"] = pd.to_datetime(df["data"], utc=True).dt.date

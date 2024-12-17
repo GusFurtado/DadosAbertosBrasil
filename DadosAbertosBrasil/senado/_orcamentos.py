@@ -1,9 +1,8 @@
-from typing import Literal, Optional
+from typing import Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils.get_data import get_and_format
+from ..utils import Get, Formato, Output
 
 
 @validate_call
@@ -13,8 +12,9 @@ def lista_orcamentos(
     ano_execucao: Optional[PositiveInt] = None,
     ano_materia: Optional[PositiveInt] = None,
     url: bool = True,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> pd.DataFrame | list[dict]:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Obtém a lista dos lotes de emendas orçamentárias.
 
     Parameters
@@ -75,8 +75,8 @@ def lista_orcamentos(
         "DescricaoTipoPlOrcamento": "tipo_descricao",
     }
 
-    df = get_and_format(
-        api="senado",
+    data = Get(
+        endpoint="senado",
         path=["orcamento", "lista"],
         unpack_keys=[
             "ListaLoteEmendas",
@@ -95,17 +95,18 @@ def lista_orcamentos(
         true_value="Sim",
         false_value="Não",
         url_cols=["autor_email"],
-        url=url,
-        formato=formato,
-    )
+        remover_url=not url,
+        verify=verificar_certificado,
+    ).get(formato)
 
-    if autor is not None:
-        df = df[df.autor_nome.str.contains(autor)]
-    if tipo is not None:
-        df = df[df.tipo_sigla == tipo]
-    if ano_execucao is not None:
-        df = df[df.ano_execucao == ano_execucao]
-    if ano_materia is not None:
-        df = df[df.ano_materia == ano_materia]
+    if formato == "pandas":
+        if autor is not None:
+            data = data[data["autor_nome"].str.contains(autor)]
+        if tipo is not None:
+            data = data[data["tipo_sigla"] == tipo]
+        if ano_execucao is not None:
+            data = data[data["ano_execucao"] == ano_execucao]
+        if ano_materia is not None:
+            data = data[data["ano_materia"] == ano_materia]
 
-    return df
+    return data

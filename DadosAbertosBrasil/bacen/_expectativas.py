@@ -1,21 +1,8 @@
-from typing import Literal, Optional
+from typing import Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils.get_data import get_data
-
-
-Expectativa = Literal[
-    "mensal",
-    "selic",
-    "trimestral",
-    "anual",
-    "inflacao",
-    "top5mensal",
-    "top5anual",
-    "instituicoes",
-]
+from ..utils import Get, Expectativa, Formato, Output
 
 
 @validate_call
@@ -25,7 +12,9 @@ def expectativas(
     top: Optional[PositiveInt] = None,
     ordenar_por: str = "Data",
     asc: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Expectativas de mercado para os principais indicadores macroeconômicos.
 
     Parameters
@@ -142,161 +131,154 @@ def expectativas(
 
     """
 
-    URL = "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/"
-
     order_by = f'&%24orderby={ordenar_por}%20{"asc" if asc else "desc"}'
     top_n = "" if top is None else f"&%24top={top}"
 
-    expectativa = expectativa.lower()
-    if expectativa in ("mensal", "mensais"):
-        expec = "ExpectativaMercadoMensais"
-        KPIS = (
-            "Câmbio",
-            "IGP-DI",
-            "IGP-M",
-            "INPC",
-            "IPA-DI",
-            "IPA-M",
-            "IPCA",
-            "IPCA Administrados",
-            "IPCA Alimentação no domicílio",
-            "IPCA Bens industrializados",
-            "IPCA Livres",
-            "IPCA Serviços",
-            "IPCA-15",
-            "IPC-Fipe",
-            "Produção industrial",
-            "Selic",
-            "Taxa de desocupação",
-        )
-    elif expectativa in ("selic"):
-        expec = "ExpectativasMercadoSelic"
-        KPIS = ("Selic",)
-    elif expectativa in ("trimestral", "trimestrais"):
-        expec = "ExpectativasMercadoTrimestrais"
-        KPIS = (
-            "Câmbio",
-            "IPCA",
-            "IPCA Administrados",
-            "IPCA Alimentação no domicílio",
-            "IPCA Bens industrializados",
-            "IPCA Livres",
-            "IPCA Serviços",
-            "PIB Agropecuária",
-            "PIB Indústria",
-            "PIB Serviços",
-            "PIB Total",
-            "Taxa de desocupação",
-        )
-    elif expectativa in ("anual", "anuais"):
-        expec = "ExpectativasMercadoAnuais"
-        KPIS = (
-            "Balança Comercial",
-            "Câmbio",
-            "Conta corrente",
-            "Dívida bruta do governo geral",
-            "Dívida líquida do setor público",
-            "IGP-DI",
-            "IGP-M",
-            "INPC",
-            "Investimento direto no país",
-            "IPA-DI",
-            "IPA-M",
-            "IPCA",
-            "IPCA Administrados",
-            "IPCA Alimentação no domicílio",
-            "IPCA Bens industrializados",
-            "IPCA Livres",
-            "IPCA Serviços",
-            "IPCA-15",
-            "IPC-FIPE",
-            "PIB Agropecuária",
-            "PIB Despesa de consumo da administração pública",
-            "PIB despesa de consumo das famílias",
-            "PIB Exportação de bens e serviços",
-            "PIB Formação Bruta de Capital Fixo",
-            "PIB Importação de bens e serviços",
-            "PIB Indústria",
-            "PIB Serviços",
-            "PIB Total",
-            "Produção industrial",
-            "Resultado nominal",
-            "Resultado primário",
-            "Selic",
-            "Taxa de desocupação",
-        )
-    elif expectativa in ("inflacao", "inflacao12meses"):
-        expec = "ExpectativasMercadoInflacao12Meses"
-        KPIS = (
-            "IGP-DI",
-            "IGP-M",
-            "INPC",
-            "IPA-DI",
-            "IPA-M",
-            "IPCA",
-            "IPCA Administrados",
-            "IPCA Alimentação no domicílio",
-            "IPCA Bens industrializados",
-            "IPCA Livres",
-            "IPCA Serviços",
-            "IPCA-15",
-            "IPC-FIPE",
-        )
-    elif expectativa in ("top5mensal", "top5mensais"):
-        expec = "ExpectativasMercadoTop5Mensais"
-        KPIS = ("Câmbio", "IGP-DI", "IGP-M", "IPCA", "Selic")
-    elif expectativa in ("top5anual", "top5anuais"):
-        expec = "ExpectativasMercadoTop5Anuais"
-        KPIS = ("Câmbio", "IGP-DI", "IGP-M", "IPCA", "Selic")
-    elif expectativa == "instituicoes":
-        expec = "ExpectativasMercadoInstituicoes"
-        KPIS = (
-            "Balança Comercial",
-            "Câmbio",
-            "Conta corrente",
-            "Dívida bruta do governo geral",
-            "Dívida líquida do setor público",
-            "IGP-DI",
-            "IGP-M",
-            "INPC",
-            "Investimento direto no país",
-            "IPA-DI",
-            "IPA-M",
-            "IPCA",
-            "IPCA Administrados",
-            "IPCA Alimentação no domicílio",
-            "IPCA Bens industrializados",
-            "IPCA Livres",
-            "IPCA Serviços",
-            "IPCA-15",
-            "IPC-FIPE",
-            "PIB Agropecuária",
-            "PIB Despesa de consumo da administração pública",
-            "PIB despesa de consumo das famílias",
-            "PIB Exportação de bens e serviços",
-            "PIB Formação Bruta de Capital Fixo",
-            "PIB Importação de bens e serviços",
-            "PIB Indústria",
-            "PIB Serviços",
-            "PIB Total",
-            "Produção industrial",
-            "Resultado nominal",
-            "Resultado primário",
-            "Selic",
-            "Taxa de desocupação",
-        )
-    else:
-        raise ValueError(
-            """Valor inválido para o argumento `expectativa`. Insira um dos seguintes valores:
-            - 'mensal' ou 'mensais';
-            - 'selic';
-            - 'trimestral' ou 'trimestrais';
-            - 'anual' ou 'anuais';
-            - 'inflacao' ou 'inflacao12meses';
-            - 'top5mensal' ou 'top5mensais',
-            - 'top5anual' ou 'top5anuais',
-            - 'instituicoes'."""
-        )
+    match expectativa:
+        case "anual":
+            expec = "ExpectativasMercadoAnuais"
+            KPIS = (
+                "Balança Comercial",
+                "Câmbio",
+                "Conta corrente",
+                "Dívida bruta do governo geral",
+                "Dívida líquida do setor público",
+                "IGP-DI",
+                "IGP-M",
+                "INPC",
+                "Investimento direto no país",
+                "IPA-DI",
+                "IPA-M",
+                "IPCA",
+                "IPCA Administrados",
+                "IPCA Alimentação no domicílio",
+                "IPCA Bens industrializados",
+                "IPCA Livres",
+                "IPCA Serviços",
+                "IPCA-15",
+                "IPC-FIPE",
+                "PIB Agropecuária",
+                "PIB Despesa de consumo da administração pública",
+                "PIB despesa de consumo das famílias",
+                "PIB Exportação de bens e serviços",
+                "PIB Formação Bruta de Capital Fixo",
+                "PIB Importação de bens e serviços",
+                "PIB Indústria",
+                "PIB Serviços",
+                "PIB Total",
+                "Produção industrial",
+                "Resultado nominal",
+                "Resultado primário",
+                "Selic",
+                "Taxa de desocupação",
+            )
+
+        case "inflacao":
+            expec = "ExpectativasMercadoInflacao12Meses"
+            KPIS = (
+                "IGP-DI",
+                "IGP-M",
+                "INPC",
+                "IPA-DI",
+                "IPA-M",
+                "IPCA",
+                "IPCA Administrados",
+                "IPCA Alimentação no domicílio",
+                "IPCA Bens industrializados",
+                "IPCA Livres",
+                "IPCA Serviços",
+                "IPCA-15",
+                "IPC-FIPE",
+            )
+
+        case "instituicoes":
+            expec = "ExpectativasMercadoInstituicoes"
+            KPIS = (
+                "Balança Comercial",
+                "Câmbio",
+                "Conta corrente",
+                "Dívida bruta do governo geral",
+                "Dívida líquida do setor público",
+                "IGP-DI",
+                "IGP-M",
+                "INPC",
+                "Investimento direto no país",
+                "IPA-DI",
+                "IPA-M",
+                "IPCA",
+                "IPCA Administrados",
+                "IPCA Alimentação no domicílio",
+                "IPCA Bens industrializados",
+                "IPCA Livres",
+                "IPCA Serviços",
+                "IPCA-15",
+                "IPC-FIPE",
+                "PIB Agropecuária",
+                "PIB Despesa de consumo da administração pública",
+                "PIB despesa de consumo das famílias",
+                "PIB Exportação de bens e serviços",
+                "PIB Formação Bruta de Capital Fixo",
+                "PIB Importação de bens e serviços",
+                "PIB Indústria",
+                "PIB Serviços",
+                "PIB Total",
+                "Produção industrial",
+                "Resultado nominal",
+                "Resultado primário",
+                "Selic",
+                "Taxa de desocupação",
+            )
+
+        case "mensal":
+            expec = "ExpectativaMercadoMensais"
+            KPIS = (
+                "Câmbio",
+                "IGP-DI",
+                "IGP-M",
+                "INPC",
+                "IPA-DI",
+                "IPA-M",
+                "IPCA",
+                "IPCA Administrados",
+                "IPCA Alimentação no domicílio",
+                "IPCA Bens industrializados",
+                "IPCA Livres",
+                "IPCA Serviços",
+                "IPCA-15",
+                "IPC-Fipe",
+                "Produção industrial",
+                "Selic",
+                "Taxa de desocupação",
+            )
+
+        case "selic":
+            expec = "ExpectativasMercadoSelic"
+            KPIS = ("Selic",)
+
+        case "top5anual":
+            expec = "ExpectativasMercadoTop5Anuais"
+            KPIS = ("Câmbio", "IGP-DI", "IGP-M", "IPCA", "Selic")
+
+        case "top5mensal":
+            expec = "ExpectativasMercadoTop5Mensais"
+            KPIS = ("Câmbio", "IGP-DI", "IGP-M", "IPCA", "Selic")
+
+        case "trimestral":
+            expec = "ExpectativasMercadoTrimestrais"
+            KPIS = (
+                "Câmbio",
+                "IPCA",
+                "IPCA Administrados",
+                "IPCA Alimentação no domicílio",
+                "IPCA Bens industrializados",
+                "IPCA Livres",
+                "IPCA Serviços",
+                "PIB Agropecuária",
+                "PIB Indústria",
+                "PIB Serviços",
+                "PIB Total",
+                "Taxa de desocupação",
+            )
 
     if indicador is None:
         kpi = ""
@@ -308,6 +290,10 @@ def expectativas(
         - {", ".join(KPIS)}."""
         )
 
-    path = f"{expec}?%24format=json{order_by}{kpi}{top_n}"
-    data = get_data(URL, path=path)
-    return pd.DataFrame(data["value"])
+    data = Get(
+        endpoint="expectativas",
+        path=[f"{expec}?%24format=json{order_by}{kpi}{top_n}"],
+        unpack_keys=["value"],
+        verify=verificar_certificado,
+    )
+    return data.get(formato)

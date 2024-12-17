@@ -1,14 +1,12 @@
 from datetime import date
-from typing import Literal, Optional
+from typing import Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils import parse
-from .._utils.get_data import DAB_Base, get_and_format
+from ..utils import Base, Get, parse, Formato, Output
 
 
-class Orgao(DAB_Base):
+class Orgao(Base):
     """Informações detalhadas sobre um órgão da Câmara.
 
     Parameters
@@ -58,8 +56,9 @@ class Orgao(DAB_Base):
 
     """
 
-    def __init__(self, cod: int):
+    def __init__(self, cod: int, verificar_certificado: bool = True):
         self.cod = cod
+        self.verify = verificar_certificado
         atributos = {
             "apelido": ["apelido"],
             "casa": ["casa"],
@@ -77,11 +76,12 @@ class Orgao(DAB_Base):
         }
 
         super().__init__(
-            api="camara",
+            endpoint="camara",
             path=["orgaos", str(cod)],
             unpack_keys=["dados"],
             error_key="nome",
             atributos=atributos,
+            verify=self.verify,
         )
 
     def __repr__(self) -> str:
@@ -101,8 +101,8 @@ class Orgao(DAB_Base):
         ordenar_por: str = "dataHoraInicio",
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Os eventos ocorridos ou previstos em um órgão legislativo.
 
         Retorna uma lista de informações resumidas dos eventos realizados
@@ -179,18 +179,18 @@ class Orgao(DAB_Base):
             "urlRegistro": "url",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["orgaos", self.cod, "eventos"],
+        return Get(
+            endpoint="camara",
+            path=["orgaos", str(self.cod), "eventos"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data_inicio", "data_fim"],
             url_cols=["uri", "url"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def membros(
         self,
@@ -200,8 +200,8 @@ class Orgao(DAB_Base):
         itens: Optional[PositiveInt] = None,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Lista de cargos de um órgão e parlamentares que os ocupam.
 
         Retorna uma lista de dados resumidos que identificam cada parlamentar
@@ -268,19 +268,19 @@ class Orgao(DAB_Base):
             "codTitulo": "titulo_codigo",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["orgaos", self.cod, "membros"],
+        return Get(
+            endpoint="camara",
+            path=["orgaos", str(self.cod), "membros"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_int=["titulo_codigo"],
             cols_to_date=["data_inicio", "data_fim"],
             url_cols=["uri", "partido_uri", "foto", "email"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def votacoes(
         self,
@@ -293,8 +293,8 @@ class Orgao(DAB_Base):
         ordenar_por: str = "dataHoraRegistro",
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Uma lista de eventos com a participação do parlamentar.
 
         Retorna uma lista de dados básicos de votações que tenham sido
@@ -383,18 +383,18 @@ class Orgao(DAB_Base):
             "uriProposicaoObjeto": "proposicao_uri",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["orgaos", self.cod, "votacoes"],
+        return Get(
+            endpoint="camara",
+            path=["orgaos", str(self.cod), "votacoes"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data", "data_registro"],
             url_cols=["uri", "evento_uri", "orgao_uri", "proposicao_uri"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
 
 @validate_call
@@ -409,8 +409,9 @@ def lista_orgaos(
     ordenar_por: str = "id",
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> dict | pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista das comissões e outros órgãos legislativos da Câmara.
 
     Retorna uma lista de informações básicas sobre os órgãos legislativos e
@@ -492,14 +493,14 @@ def lista_orgaos(
         "nomePublicacao": "nome_publicacao",
     }
 
-    return get_and_format(
-        api="camara",
-        path="orgaos",
+    return Get(
+        endpoint="camara",
+        path=["orgaos"],
         params=params,
         unpack_keys=["dados"],
         cols_to_rename=cols_to_rename,
         url_cols=["uri"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

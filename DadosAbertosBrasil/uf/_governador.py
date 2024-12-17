@@ -9,7 +9,7 @@ import json
 
 import requests
 
-from .._utils import parse
+from ..utils import parse
 
 
 class Governador:

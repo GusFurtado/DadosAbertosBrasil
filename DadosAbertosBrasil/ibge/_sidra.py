@@ -14,10 +14,10 @@ References
 from typing import Optional
 
 import pandas as pd
-from pydantic import validate_call, PositiveInt
+from pydantic import validate_call
 import requests
 
-from DadosAbertosBrasil._utils.get_data import get_data
+from ..utils import Get, Formato, Output
 
 
 @validate_call
@@ -31,7 +31,8 @@ def lista_tabelas(
     nivel: Optional[int | str] = None,
     pesquisa: Optional[str] = None,
     index: bool = False,
-) -> pd.DataFrame:
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista de tabelas disponíveis no SIDRA.
 
     Parameters
@@ -151,11 +152,13 @@ def lista_tabelas(
             nivel = f"N{nivel}"
         params["nivel"] = nivel.upper()
 
-    data = get_data(
-        endpoint="https://servicodados.ibge.gov.br/api/v3/",
+    data = Get(
+        endpoint="sidra",
         path=["agregados"],
         params=params,
-    )
+        verify=verificar_certificado,
+    ).json
+
     df = pd.json_normalize(
         data,
         "agregados",
@@ -163,7 +166,7 @@ def lista_tabelas(
         record_prefix="tabela_",
         meta_prefix="pesquisa_",
     )
-    df.tabela_id = pd.to_numeric(df.tabela_id)
+    df["tabela_id"] = pd.to_numeric(df["tabela_id"])
 
     if isinstance(contendo, str):
         df = df[df.tabela_nome.str.upper().str.contains(contendo.upper())]
@@ -172,7 +175,7 @@ def lista_tabelas(
         if isinstance(excluindo, str):
             excluindo = [excluindo]
         for termo in excluindo:
-            df = df[~df.SERNOME.str.upper().str.contains(termo.upper())]
+            df = df[~df["SERNOME"].str.upper().str.contains(termo.upper())]
 
     if isinstance(pesquisa, str):
         df = df[df.pesquisa_id.str.upper() == pesquisa.upper()]
@@ -212,9 +215,7 @@ def lista_pesquisas(index: bool = False) -> pd.DataFrame:
 
     """
 
-    data = get_data(
-        endpoint="https://servicodados.ibge.gov.br/api/v3/", path=["agregados"]
-    )
+    data = Get(endpoint="sidra", path=["agregados"]).json
     df = pd.json_normalize(
         data,
         "agregados",
@@ -277,10 +278,7 @@ class Metadados:
     """
 
     def __init__(self, tabela: int):
-        data = get_data(
-            endpoint="https://servicodados.ibge.gov.br/api/v3/",
-            path=["agregados", tabela, "metadados"],
-        )
+        data = Get(endpoint="sidra", path=["agregados", str(tabela), "metadados"]).json
 
         self.dados = data
         self.cod = tabela
@@ -508,11 +506,12 @@ def referencias(cod: str, index: bool = False) -> pd.DataFrame:
     except KeyError:
         raise KeyError(f"Código de referência '{cod}' inválido.")
 
-    data = get_data(
-        endpoint=r"https://servicodados.ibge.gov.br/api/v3/",
+    data = Get(
+        endpoint="sidra",
         path=["agregados"],
         params={"acervo": s},
-    )
+    ).json
+
     df = pd.DataFrame(data)
     df.columns = ["cod", "referencia"]
 

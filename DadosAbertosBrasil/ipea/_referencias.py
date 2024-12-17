@@ -1,9 +1,8 @@
 from typing import Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from ._utils import get_ipea_data
+from ..utils import Get, Formato, Output
 
 
 _RENOMEAR_COLUNAS = {
@@ -27,7 +26,9 @@ def lista_temas(
     cod: Optional[PositiveInt] = None,
     pai: Optional[PositiveInt] = None,
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Registros de todos os temas cadastrados.
 
     Parameters
@@ -82,23 +83,29 @@ def lista_temas(
 
     """
 
-    if cod is None:
-        df = get_ipea_data("Temas")
-    else:
-        df = get_ipea_data(f"Temas({cod})")
-    df.rename(columns=_RENOMEAR_COLUNAS, inplace=True)
+    data = Get(
+        endpoint="ipea",
+        path=["Temas" if cod is None else f"Temas({cod})"],
+        unpack_keys=["value"],
+        cols_to_rename=_RENOMEAR_COLUNAS,
+        index=index,
+        verify=verificar_certificado,
+    ).get(formato)
 
-    if pai is not None:
-        df = df[df["pai"] == pai]
+    if formato == "pandas":
+        if pai is not None:
+            data = data[data["pai"] == pai]
 
-    if index:
-        df.set_index("codigo", inplace=True)
-
-    return df
+    return data
 
 
 @validate_call
-def lista_paises(cod: Optional[str] = None, index: bool = False) -> pd.DataFrame:
+def lista_paises(
+    cod: Optional[str] = None,
+    index: bool = False,
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Registros de todos os países cadastrados.
 
     Parameters
@@ -142,16 +149,14 @@ def lista_paises(cod: Optional[str] = None, index: bool = False) -> pd.DataFrame
 
     """
 
-    if cod is None:
-        df = get_ipea_data("Paises")
-    elif isinstance(cod, str):
-        df = get_ipea_data(f"Paises('{cod.upper()}')")
-    df.rename(columns=_RENOMEAR_COLUNAS, inplace=True)
-
-    if index:
-        df.set_index("codigo", inplace=True)
-
-    return df
+    return Get(
+        endpoint="ipea",
+        path=["Paises" if cod is None else f"Paises('{cod.upper()}')"],
+        unpack_keys=["value"],
+        cols_to_rename=_RENOMEAR_COLUNAS,
+        index=index,
+        verify=verificar_certificado,
+    ).get(formato)
 
 
 @validate_call
@@ -160,7 +165,9 @@ def lista_territorios(
     amc: Optional[bool] = None,
     cod: Optional[int] = None,
     nivel: Optional[str] = None,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Registros de todos os territórios brasileiros cadastrados.
 
     Parameters
@@ -223,19 +230,26 @@ def lista_territorios(
     """
 
     if (cod is None) or (nivel is None):
-        df = get_ipea_data("Territorios")
+        path = "Territorios"
     else:
         n = "Municipios" if nivel == "Municípios" else nivel
-        df = get_ipea_data(f"Territorios(TERCODIGO='{cod}',NIVNOME='{n}')")
-    df.rename(columns=_RENOMEAR_COLUNAS, inplace=True)
+        path = f"Territorios(TERCODIGO='{cod}',NIVNOME='{n}')"
 
-    if capital is not None:
-        df = df[df["capital"] == capital]
+    data = Get(
+        endpoint="ipea",
+        path=[path],
+        unpack_keys=["value"],
+        cols_to_rename=_RENOMEAR_COLUNAS,
+        verify=verificar_certificado,
+    ).get(formato)
 
-    if amc is not None:
-        df = df[df["amc"] == amc]
+    if formato == "pandas":
+        if capital is not None:
+            data = data[data["capital"] == capital]
+        if amc is not None:
+            data = data[data["amc"] == amc]
 
-    return df
+    return data
 
 
 def lista_niveis() -> list[str]:

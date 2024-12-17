@@ -1,14 +1,12 @@
 from datetime import date
-from typing import Literal, Optional
+from typing import Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils import parse
-from .._utils.get_data import DAB_Base, get_and_format
+from ..utils import Base, Get, parse, Formato, Output
 
 
-class Partido(DAB_Base):
+class Partido(Base):
     """Informações detalhadas sobre um partido.
 
     Parameters
@@ -61,8 +59,9 @@ class Partido(DAB_Base):
 
     """
 
-    def __init__(self, cod: int):
+    def __init__(self, cod: int, verificar_certificado: bool = True):
         self.cod = cod
+        self.verify = verificar_certificado
         atributos = {
             "facebook": ["urlFacebook"],
             "legislatura": ["status", "idLegislatura"],
@@ -81,11 +80,12 @@ class Partido(DAB_Base):
         }
 
         super().__init__(
-            api="camara",
+            endpoint="camara",
             path=["partidos", str(cod)],
             unpack_keys=["dados"],
             error_key="status",
             atributos=atributos,
+            verify=self.verify,
         )
 
     def __repr__(self) -> str:
@@ -105,8 +105,8 @@ class Partido(DAB_Base):
         asc: bool = True,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Uma lista dos parlamentares de um partido durante um período.
 
         Retorna uma lista de deputados que estão ou estiveram em exercício
@@ -182,17 +182,17 @@ class Partido(DAB_Base):
             "email": "email",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["partidos", self.cod, "membros"],
+        return Get(
+            endpoint="camara",
+            path=["partidos", str(self.cod), "membros"],
             params=params,
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             url_cols=["uri", "partido_uri", "foto", "email"],
-            url=url,
+            remover_url=not url,
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
 
 @validate_call
@@ -206,8 +206,9 @@ def lista_partidos(
     ordenar_por: str = "sigla",
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> dict | pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Os partidos políticos que têm ou já tiveram parlamentares em exercício
     na Câmara.
 
@@ -275,14 +276,14 @@ def lista_partidos(
 
     cols_to_rename = {"id": "codigo", "sigla": "sigla", "nome": "nome", "uri": "uri"}
 
-    return get_and_format(
-        api="camara",
-        path="partidos",
+    return Get(
+        endpoint="camara",
+        path=["partidos"],
         params=params,
         unpack_keys=["dados"],
         cols_to_rename=cols_to_rename,
         url_cols=["uri"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

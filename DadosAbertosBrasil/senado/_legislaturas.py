@@ -1,10 +1,8 @@
 from typing import Literal, Optional
 
-import pandas as pd
 from pydantic import validate_call
 
-from .._utils import parse
-from .._utils.get_data import get_and_format
+from ..utils import Get, parse, Formato, Output
 
 
 @validate_call
@@ -20,8 +18,9 @@ def lista_legislatura(
     excluindo: Optional[str] = None,
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> pd.DataFrame | list[dict]:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista senadores de uma legislatura ou de um intervalo de legislaturas.
 
     Parameters
@@ -107,7 +106,7 @@ def lista_legislatura(
 
     """
 
-    path = ["senador", "lista", "legislatura", inicio]
+    path = ["senador", "lista", "legislatura", str(inicio)]
     if fim is not None:
         path.append(fim)
 
@@ -138,8 +137,8 @@ def lista_legislatura(
         "Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento": "causa_afastamento",
     }
 
-    df = get_and_format(
-        api="senado",
+    data = Get(
+        endpoint="senado",
         path=path,
         params=params,
         unpack_keys=keys,
@@ -147,26 +146,27 @@ def lista_legislatura(
         cols_to_int=["codigo"],
         cols_to_date=["data_inicio", "data_fim"],
         url_cols=["foto", "pagina_parlamentar", "pagina_particular", "email"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)
 
-    if sexo is not None:
-        SEXOS = {"f": "Feminino", "m": "Masculino"}
-        df = df[df.sexo == SEXOS[sexo]]
+    if formato == "pandas":
+        if sexo is not None:
+            SEXOS = {"f": "Feminino", "m": "Masculino"}
+            data = data[data["sexo"] == SEXOS[sexo]]
 
-    if partido is not None:
-        df = df[df["partido"] == partido.upper()]
+        if partido is not None:
+            data = data[data["partido"] == partido.upper()]
 
-    if contendo is not None:
-        nome_parlamentar = df.nome_parlamentar.str.contains(contendo)
-        nome_completo = df.nome_completo.str.contains(contendo)
-        df = df[nome_parlamentar | nome_completo]
+        if contendo is not None:
+            nome_parlamentar = data["nome_parlamentar"].str.contains(contendo)
+            nome_completo = data["nome_completo"].str.contains(contendo)
+            data = data[nome_parlamentar | nome_completo]
 
-    if excluindo is not None:
-        nome_parlamentar = ~df.nome_parlamentar.str.contains(excluindo)
-        nome_completo = ~df.nome_completo.str.contains(excluindo)
-        df = df[nome_parlamentar | nome_completo]
+        if excluindo is not None:
+            nome_parlamentar = ~data["nome_parlamentar"].str.contains(excluindo)
+            nome_completo = ~data["nome_completo"].str.contains(excluindo)
+            data = data[nome_parlamentar | nome_completo]
 
-    return df
+    return data

@@ -16,7 +16,7 @@ import pandas as pd
 from pydantic import validate_call, PositiveInt
 import requests
 
-from DadosAbertosBrasil._utils import parse
+from ..utils import parse
 
 
 @validate_call

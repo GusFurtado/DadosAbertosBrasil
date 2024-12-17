@@ -14,8 +14,8 @@ from ._governador import Governador
 from .. import favoritos, ibge
 from ..camara import lista_deputados
 from ..senado import lista_senadores
-from .._utils.errors import DAB_UFError
-from .._utils import parse
+from ..utils.errors import DAB_UFError
+from ..utils import parse
 
 
 class UF:
@@ -292,7 +292,7 @@ class UF:
             itens=itens,
             asc=asc,
             ordenar_por=ordenar_por,
-            url=url,
+            remover_url=not url,
             index=index,
             formato=formato,
         )
@@ -607,7 +607,7 @@ class UF:
             partido=partido,
             contendo=contendo,
             excluindo=excluindo,
-            url=url,
+            remover_url=not url,
             index=index,
             formato=formato,
         )

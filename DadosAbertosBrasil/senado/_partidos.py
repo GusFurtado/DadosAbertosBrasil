@@ -1,17 +1,15 @@
-from typing import Literal
-
-import pandas as pd
 from pydantic import validate_call
 
-from .._utils.get_data import get_and_format
+from ..utils import Get, Formato, Output
 
 
 @validate_call
 def lista_partidos(
     inativos: bool = False,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> pd.DataFrame | list[dict]:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista os partidos políticos.
 
     Parameters
@@ -59,8 +57,8 @@ def lista_partidos(
         "DataExtincao": "data_extincao",
     }
 
-    return get_and_format(
-        api="senado",
+    return Get(
+        endpoint="senado",
         path=["senador", "partidos"],
         params={"indAtivos": "N"} if inativos else {},
         unpack_keys=["ListaPartidos", "Partidos", "Partido"],
@@ -68,5 +66,5 @@ def lista_partidos(
         cols_to_int=["codigo"],
         cols_to_date=["data_criacao", "data_extincao"],
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)

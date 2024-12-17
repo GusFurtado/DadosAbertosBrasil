@@ -42,7 +42,7 @@ from . import ipea
 from . import senado
 from . import uf
 from .favoritos import *
-from ._utils.errors import *
+from .utils.errors import *
 
 
 __version__ = "2.0.0-alpha"

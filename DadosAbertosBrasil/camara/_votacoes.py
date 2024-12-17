@@ -1,14 +1,12 @@
 from datetime import date
-from typing import Literal, Optional
+from typing import Optional
 
-import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from .._utils import parse
-from .._utils.get_data import DAB_Base, get_and_format
+from ..utils import Base, Get, parse, Formato, Output
 
 
-class Votacao(DAB_Base):
+class Votacao(Base):
     """Informações detalhadas sobre uma votação da Câmara.
 
     Retorna um conjunto detalhado de dados sobre a votação, tais como as
@@ -67,8 +65,9 @@ class Votacao(DAB_Base):
 
     """
 
-    def __init__(self, cod: int):
+    def __init__(self, cod: int, verificar_certificado: bool = True):
         self.cod = cod
+        self.verify = verificar_certificado
         atributos = {
             "aprovacao": ["aprovacao"],
             "data": ["data"],
@@ -88,11 +87,12 @@ class Votacao(DAB_Base):
         }
 
         super().__init__(
-            api="camara",
+            endpoint="camara",
             path=["votacoes", str(cod)],
             unpack_keys=["dados"],
             error_key="descricao",
             atributos=atributos,
+            verify=self.verify,
         )
 
     def __repr__(self) -> str:
@@ -105,8 +105,8 @@ class Votacao(DAB_Base):
         self,
         url: bool = True,
         index: bool = False,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """O voto recomendado pelas lideranças aos seus deputados na votação.
 
         Em muitas votações, os líderes de partidos e blocos – as bancadas –
@@ -152,23 +152,23 @@ class Votacao(DAB_Base):
             "uriPartidoBloco": "bloco_uri",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["votacoes", self.cod, "orientacoes"],
+        return Get(
+            endpoint="camara",
+            path=["votacoes", str(self.cod), "orientacoes"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             url_cols=["bloco_uri"],
-            url=url,
+            remover_url=not url,
             index_col="bloco_codigo",
             index=index,
-            formato=formato,
-        )
+            verify=self.verify,
+        ).get(formato)
 
     def votos(
         self,
         url: bool = True,
-        formato: Literal["dataframe", "json"] = "dataframe",
-    ) -> dict | pd.DataFrame:
+        formato: Formato = "pandas",
+    ) -> Output:
         """Como cada parlamentar votou em uma votação nominal e aberta.
 
         Se a votação da Câmara é nominal e não foi secreta, retorna uma lista
@@ -214,9 +214,9 @@ class Votacao(DAB_Base):
             "deputado_.email": "deputado_email",
         }
 
-        return get_and_format(
-            api="camara",
-            path=["votacoes", self.cod, "votos"],
+        return Get(
+            endpoint="camara",
+            path=["votacoes", str(self.cod), "votos"],
             unpack_keys=["dados"],
             cols_to_rename=cols_to_rename,
             cols_to_date=["data"],
@@ -226,9 +226,9 @@ class Votacao(DAB_Base):
                 "deputado_foto",
                 "deputado_email",
             ],
-            url=url,
-            formato=formato,
-        )
+            remover_url=not url,
+            verify=self.verify,
+        ).get(formato)
 
 
 @validate_call
@@ -244,8 +244,9 @@ def lista_votacoes(
     ordenar_por: str = "dataHoraRegistro",
     url: bool = True,
     index: bool = False,
-    formato: Literal["dataframe", "json"] = "dataframe",
-) -> dict | pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista de votações na Câmara.
 
     Retorna uma lista de informações básicas sobre as votações ocorridas em
@@ -354,15 +355,15 @@ def lista_votacoes(
         "aprovacao": "aprovacao",
     }
 
-    return get_and_format(
-        api="camara",
-        path="votacoes",
+    return Get(
+        endpoint="camara",
+        path=["votacoes"],
         params=params,
         unpack_keys=["dados"],
         cols_to_rename=cols_to_rename,
         cols_to_date=["data", "data_registro"],
         url_cols=["uri", "orgao_uri", "evento_uri", "proposicao_uri"],
-        url=url,
+        remover_url=not url,
         index=index,
-        formato=formato,
-    )
+        verify=verificar_certificado,
+    ).get(formato)
