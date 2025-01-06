@@ -131,7 +131,7 @@ class Senador(Base):
 
         super().__init__(
             endpoint="senado",
-            path=["senador", cod],
+            path=["senador", str(cod)],
             unpack_keys=["DetalheParlamentar", "Parlamentar"],
             error_key="IdentificacaoParlamentar",
             atributos=atributos,
