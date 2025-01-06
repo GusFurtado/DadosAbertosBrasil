@@ -8,14 +8,13 @@ from datetime import date
 from typing import Optional
 
 from pandas import DataFrame
-import requests
 
 from ._governador import Governador
 from .. import favoritos, ibge
 from ..camara import lista_deputados
 from ..senado import lista_senadores
+from ..utils import Get, parse
 from ..utils.errors import DAB_UFError
-from ..utils import parse
 
 
 class UF:
@@ -79,8 +78,9 @@ class UF:
 
     """
 
-    def __init__(self, uf: str):
+    def __init__(self, uf: str, verificar_certificado: bool = True):
         self.sigla = parse.uf(uf=uf, extintos=True)
+        self.verify = verificar_certificado
         data = self._get_data()
         for attr in data:
             setattr(self, attr, data[attr])
@@ -93,9 +93,13 @@ class UF:
 
     def _get_data(self) -> dict:
         """Buscar dados de UFs em `dab_assets`."""
-        URL = r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/ufs.json"
-        r = requests.get(URL)
-        return r.json()[self.sigla]
+
+        data = Get(
+            endpoint="github",
+            path=["GusFurtado", "dab_assets", "main", "data", "ufs.json"],
+            verify=self.verify,
+        ).json
+        return data[self.sigla]
 
     def bandeira(self, tamanho: int = 100) -> str:
         """Gera a URL da WikiMedia para a bandeira do estado.

@@ -5,11 +5,8 @@ Serve como um consolidador por UF de diversar funções do pacote DadosAbertosBr
 """
 
 from datetime import datetime
-import json
 
-import requests
-
-from ..utils import parse
+from ..utils import Get, parse
 
 
 class Governador:
@@ -59,13 +56,15 @@ class Governador:
         "TO": "Tocantins",
     }
 
-    def __init__(self, uf: str):
+    def __init__(self, uf: str, verificar_certificado: bool = True):
         self.uf = parse.uf(uf)
 
-        # Baixar dados
-        URL = r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/governadores.json"
-        r = requests.get(URL)
-        data = json.loads(r.json())[self._UFS[self.uf]]
+        data = Get(
+            endpoint="github",
+            path=["GusFurtado", "dab_assets", "main", "data", "governadores.json"],
+            verify=verificar_certificado,
+        ).json
+        data = data[self._UFS[self.uf]]
 
         # Criar atributos
         for key in data:

@@ -11,13 +11,11 @@ interesse público.
 
 from datetime import datetime
 from typing import Union, Optional
-import warnings
 
 import pandas as pd
-import requests
 
 from .. import bacen, ipea
-from ..utils import parse
+from ..utils import Get, parse, Formato, Output
 
 
 def bandeira(uf: str, tamanho: int = 100) -> str:
@@ -185,7 +183,10 @@ def catalogo() -> pd.DataFrame:
     return pd.read_csv(URL)
 
 
-def codigos_municipios() -> pd.DataFrame:
+def codigos_municipios(
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Lista dos códigos dos municípios do IBGE e do TSE.
 
     Utilizado para correlacionar dados das duas APIs diferentes.
@@ -213,9 +214,16 @@ def codigos_municipios() -> pd.DataFrame:
 
     """
 
-    URL = r"https://raw.githubusercontent.com/betafcc/Municipios-Brasileiros-TSE/master/municipios_brasileiros_tse.json"
-    df = pd.read_json(URL)
-    return df[["codigo_tse", "codigo_ibge", "nome_municipio", "uf", "capital"]]
+    return Get(
+        endpoint="github",
+        path=[
+            "betafcc",
+            "Municipios-Brasileiros-TSE",
+            "master",
+            "municipios_brasileiros_tse.json",
+        ],
+        verify=verificar_certificado,
+    ).get(formato)
 
 
 def ipca(
