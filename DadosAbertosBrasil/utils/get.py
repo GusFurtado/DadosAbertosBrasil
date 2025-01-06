@@ -74,7 +74,9 @@ class Get(BaseModel):
 
     @cached_property
     def url(self) -> str:
-        return ENDPOINTS[self.endpoint] + "/".join(self.path)
+        endpoint = ENDPOINTS.get(self.endpoint, self.endpoint)
+        path = "/".join(self.path)
+        return endpoint + path
 
     @cached_property
     def json(self) -> dict:
