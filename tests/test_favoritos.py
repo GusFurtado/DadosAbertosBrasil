@@ -19,13 +19,13 @@ from DadosAbertosBrasil import (
 
 def test_bandeira():
     url = bandeira(uf="SP", tamanho=120)
-    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
     assert response.status_code == 200
 
 
 def test_brasao():
     url = brasao(uf="SP", tamanho=120)
-    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
     assert response.status_code == 200, url
 
 
@@ -45,3 +45,43 @@ def test_ipca():
 
     df = ipca(inicio="2024-01-01", fim="2024-02-01")
     assert df.shape == (2, 2)
+
+
+def test_perfil_eleitorado():
+    df = perfil_eleitorado()
+    assert not df.empty
+
+
+def test_pib():
+    df = pib(index=True)
+    assert not df.empty
+
+
+def test_rentabilidade_poupanca():
+    df = rentabilidade_poupanca(ultimos=5)
+    assert not df.empty
+
+
+def test_reservas_internacionais():
+    df = reservas_internacionais(ultimos=5)
+    assert not df.empty
+
+
+def test_risco_brasil():
+    df = risco_brasil(index=True)
+    assert not df.empty
+
+
+def test_salario_minimo():
+    df = salario_minimo(index=True)
+    assert not df.empty
+
+
+def test_selic():
+    df = selic(ultimos=5)
+    assert not df.empty
+
+
+def test_taxa_referencial():
+    df = taxa_referencial(ultimos=5, index=True)
+    assert not df.empty

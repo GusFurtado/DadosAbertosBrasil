@@ -1,4 +1,4 @@
-from DadosAbertosBrasil import Governador, UF
+from DadosAbertosBrasil.uf import UF, Governador
 
 
 def test_uf_attributes():
