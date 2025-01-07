@@ -9,16 +9,18 @@ interesse público.
 
 """
 
-from datetime import datetime
-from typing import Union, Optional
+from datetime import date
+from typing import Literal, Optional
 
 import pandas as pd
+from pydantic import validate_call, PositiveInt
 
 from .. import bacen, ipea
 from ..utils import Get, parse, Formato, Output
 
 
-def bandeira(uf: str, tamanho: int = 100) -> str:
+@validate_call
+def bandeira(uf: str, tamanho: PositiveInt = 100) -> str:
     """Gera a URL da WikiMedia para a bandeira de um estado.
 
     Parameters
@@ -86,7 +88,8 @@ def bandeira(uf: str, tamanho: int = 100) -> str:
     return URL + bandeira[parse.uf(uf, extintos=True)]
 
 
-def brasao(uf: str, tamanho: int = 100) -> str:
+@validate_call
+def brasao(uf: str, tamanho: PositiveInt = 100) -> str:
     """Gera a URL da WikiMedia para o brasão de um estado.
 
     Parameters
@@ -183,6 +186,7 @@ def catalogo() -> pd.DataFrame:
     return pd.read_csv(URL)
 
 
+@validate_call
 def codigos_municipios(
     formato: Formato = "pandas",
     verificar_certificado: bool = True,
@@ -226,10 +230,11 @@ def codigos_municipios(
     ).get(formato)
 
 
+@validate_call
 def ipca(
-    ultimos: Optional[int] = None,
-    inicio: Union[datetime, str] = None,
-    fim: Union[datetime, str] = None,
+    ultimos: Optional[PositiveInt] = None,
+    inicio: Optional[date] = None,
+    fim: Optional[date] = None,
     index: bool = False,
 ) -> pd.DataFrame:
     """Índice nacional de preços ao consumidor-amplo (IPCA).
@@ -322,7 +327,12 @@ def perfil_eleitorado() -> pd.DataFrame:
     )
 
 
-def pib(periodo: str = "anual", index: bool = False) -> pd.DataFrame:
+@validate_call
+def pib(
+    periodo: Literal["anual", "trimestral"] = "anual",
+    tipo: Literal["nominal", "real"] = "real",
+    index: bool = False,
+) -> pd.DataFrame:
     """Variação percentual do Produto Interno Bruto Real.
 
     Esta é uma função de fácil acesso às séries temporais 'PAN_PIBPMG' e
@@ -367,24 +377,31 @@ def pib(periodo: str = "anual", index: bool = False) -> pd.DataFrame:
 
     """
 
-    # Parsing período
-    periodo = periodo.lower()[0]
-    if periodo == "a":
-        cod = "PAN_PIBPMG"
-    elif periodo == "t":
-        cod = "PAN4_PIBPMG4"
+    match periodo, tipo:
+        case "anual", "real":
+            cod = "SCN10_PIBG10"
+        case "anual", "nominal":
+            cod = "SCN10_PIBN10"
+        case "trimestral", "real":
+            cod = "PAN4_PIBPMG4"
+        case "trimestral", "nominal":
+            cod = "PAN4_PIBPMV4"
 
     df = ipea.serie(cod=cod, index=False)
+    assert not df.empty, "Problema na série do IPEA"
+
     df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
     if index:
         df.set_index("data", inplace=True)
+
     return df
 
 
+@validate_call
 def rentabilidade_poupanca(
-    ultimos: Optional[int] = None,
-    inicio: Union[datetime, str] = None,
-    fim: Union[datetime, str] = None,
+    ultimos: Optional[PositiveInt] = None,
+    inicio: Optional[date] = None,
+    fim: Optional[date] = None,
     index: bool = False,
 ) -> pd.DataFrame:
     """Rentailidade dos depósitos de poupança a partir de Maio de 2012.
@@ -448,11 +465,12 @@ def rentabilidade_poupanca(
     return bacen.serie(cod=195, ultimos=ultimos, inicio=inicio, fim=fim, index=index)
 
 
+@validate_call
 def reservas_internacionais(
-    periodo: str = "mensal",
-    ultimos: Optional[int] = None,
-    inicio: Union[datetime, str] = None,
-    fim: Union[datetime, str] = None,
+    periodo: Literal["diario", "mensal"] = "mensal",
+    ultimos: Optional[PositiveInt] = None,
+    inicio: Optional[date] = None,
+    fim: Optional[date] = None,
     index: bool = False,
 ) -> pd.DataFrame:
     """Reservar internacionais mensais ou diárias.
@@ -534,6 +552,7 @@ def reservas_internacionais(
         )
 
 
+@validate_call
 def risco_brasil(index: bool = False) -> pd.DataFrame:
     """Valores diários do Risco-Brasil, disponibilizados pela J.P. Morgan
     desde 1994.
@@ -571,7 +590,11 @@ def risco_brasil(index: bool = False) -> pd.DataFrame:
     return df
 
 
-def salario_minimo(tipo: str = "nominal", index: bool = False) -> pd.DataFrame:
+@validate_call
+def salario_minimo(
+    tipo: Literal["nominal", "pcc", "real"] = "nominal",
+    index: bool = False,
+) -> pd.DataFrame:
     """Valores do salário-mínimo mensal brasileiro desde 1940.
 
     Esta é uma função de fácil acesso às série temporais do módulo `ipea`.
@@ -618,29 +641,31 @@ def salario_minimo(tipo: str = "nominal", index: bool = False) -> pd.DataFrame:
 
     """
 
-    if tipo.lower() == "nominal":
-        df = ipea.serie(cod="MTE12_SALMIN12", index=False)
-    elif tipo.lower() == "real":
-        df = ipea.serie(cod="GAC12_SALMINRE12", index=False)
-    elif tipo.lower() == "ppc":
-        df = ipea.serie(cod="GAC12_SALMINDOL12", index=False)
-    else:
-        raise ValueError(
-            "Tipo inválido. Escolha um dos seguintes valores: 'nominal', 'real' ou 'ppc'."
-        )
+    match tipo:
+        case "nominal":
+            cod = "MTE12_SALMIN12"
+        case "real":
+            cod = "GAC12_SALMINRE12"
+        case "ppc":
+            cod = "GAC12_SALMINDOL12"
+
+    df = ipea.serie(cod=cod, index=False)
+    assert not df.empty, "Problema na série do IPEA"
 
     df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
     if index:
         df.set_index("data", inplace=True)
+
     return df
 
 
+@validate_call
 def selic(
-    periodo: str = "meta",
+    periodo: Literal["diario", "mensal", "meta"] = "meta",
     anualizado: bool = True,
-    ultimos: Optional[int] = None,
-    inicio: Union[datetime, str] = None,
-    fim: Union[datetime, str] = None,
+    ultimos: Optional[PositiveInt] = None,
+    inicio: Optional[date] = None,
+    fim: Optional[date] = None,
     index: bool = False,
 ) -> pd.DataFrame:
     """Taxa de juros - Meta Selic definida pelo COPOM.
@@ -649,25 +674,25 @@ def selic(
 
     Parameters
     ----------
-    periodo : {'meta', 'diario', 'dia', 'mensal', 'mes'}, default='meta'
+    periodo : {"meta", "diario", "mensal"}, default="meta"
         Tipo da série que será retornada.
-        - 'meta': Meta anual do COPOM;
-        - 'diario' ou 'dia': Intervalo de dados por dia.
-        - 'mensal' ou 'mes': Intervalo de dados por mês.
+        - "meta": Meta anual do COPOM;
+        - "diario": Intervalo de dados por dia.
+        - "mensal": Intervalo de dados por mês.
     anualizado : bool, default=True
         Se True, anualiza a série mantendo o período.
-        Esse argumento é ignorado quando `periodo == 'meta'`.
+        Esse argumento é ignorado quando `periodo == "meta"`.
     ultimos : int, optional
         Retorna os últimos N valores da série numérica.
     inicio : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        Valor datetime ou string no formato de data "AAAA-MM-DD" que
         representa o primeiro dia da pesquisa.
     fim : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+        Valor datetime ou string no formato de data "AAAA-MM-DD" que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
     index : bool, default=False
-        Define se a coluna 'data' será o index do DataFrame.
+        Define se a coluna "data" será o index do DataFrame.
 
     Returns
     -------
@@ -728,29 +753,32 @@ def selic(
 
     """
 
-    periodo = periodo.lower()
+    match periodo, anualizado:
+        case "meta", _:
+            cod = 432
+        case "diario", True:
+            cod = 1178
+        case "diario", False:
+            cod = 11
+        case "mensal", True:
+            cod = 4189
+        case "mensal", False:
+            cod = 4390
 
-    if periodo == "meta":
-        cod = 432
-
-    elif periodo.startswith("dia"):
-        cod = 1178 if anualizado else 11
-
-    elif periodo in ("mensal", "mes"):
-        cod = 4189 if anualizado else 4390
-
-    else:
-        raise ValueError(
-            "Período inválido.\nEscolha entre 'meta', 'diario' ou 'mensal'."
-        )
-
-    return bacen.serie(cod=cod, ultimos=ultimos, inicio=inicio, fim=fim, index=index)
+    return bacen.serie(
+        cod=cod,
+        ultimos=ultimos,
+        inicio=inicio,
+        fim=fim,
+        index=index,
+    )
 
 
+@validate_call
 def taxa_referencial(
-    ultimos: Optional[int] = None,
-    inicio: Union[datetime, str] = None,
-    fim: Union[datetime, str] = None,
+    ultimos: Optional[PositiveInt] = None,
+    inicio: Optional[date] = None,
+    fim: Optional[date] = None,
     index: bool = False,
 ) -> pd.DataFrame:
     """Taxa referencial (TR).
@@ -811,4 +839,10 @@ def taxa_referencial(
 
     """
 
-    return bacen.serie(cod=226, ultimos=ultimos, inicio=inicio, fim=fim, index=index)
+    return bacen.serie(
+        cod=226,
+        ultimos=ultimos,
+        inicio=inicio,
+        fim=fim,
+        index=index,
+    )
