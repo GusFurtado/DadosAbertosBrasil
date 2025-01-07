@@ -14,7 +14,7 @@ Expectativa = Literal[
     "instituicoes",
 ]
 
-Formato = Literal["pandas", "url", "json"]
+Formato = Literal["json", "pandas", "url"]
 
 NivelTerritorial = Literal[
     "distritos",

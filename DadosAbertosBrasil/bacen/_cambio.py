@@ -13,7 +13,7 @@ def cambio(
     inicio: date = date(2000, 1, 1),
     fim: Optional[date] = Field(default_factory=date.today),
     cotacao: Literal["compra", "vendas"] = "compra",
-    boletim: Literal["abertura", "intermediário", "fechamento"] = "fechamento",
+    boletim: Literal["abertura", "fechamento", "intermediário"] = "fechamento",
     index: bool = False,
     formato: Formato = "pandas",
     verificar_certificado: bool = True,
@@ -25,53 +25,67 @@ def cambio(
 
     Parameters
     ----------
-    moedas : str or list of str, default='USD'
+    moedas : str or list of str, default="USD"
         Sigla da moeda ou lista de siglas de moedas que serão pesquisadas no
-        formato 'MMM' (três letras). Utilize a função `bacen.moedas` para
+        formato `"MMM"` (três letras). Utilize a função `bacen.moedas` para
         obter a lista de moedas válidas.
-    inicio : datetime or str, default='2000-01-01'
-        String no formato de data 'AAAA-MM-DD' que representa o primeiro dia
+
+    inicio : date, default="2000-01-01"
+        String no formato de data `"AAAA-MM-DD"` que representa o primeiro dia
         da pesquisa.
-    fim : datetime or str, default=None
-        String no formato de data 'AAAA-MM-DD' que representa o último dia da
+
+    fim : date, optional
+        String no formato de data `"AAAA-MM-DD"` que representa o último dia da
         pesquisa. Caso este campo seja None, será considerada a data de hoje.
-    cotacao : {'compra', 'venda'}, default='compra'
+
+    cotacao : {"compra", "venda"}, default="compra"
         Tipo de cotação.
-    boletim : {'abertura', 'intermediário', 'fechamento'}, default='fechamento'
+
+    boletim : {"abertura", "intermediário", "fechamento"}, default="fechamento"
         Tipo de boletim.
+
     index : bool, default=False
-        Define se a coluna 'Data' será o index do DataFrame.
+        Define se a coluna "Data" será o index do DataFrame.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo as cotações diárias das moedas selecionadas.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Cotações diárias das moedas selecionadas.
 
     Raises
     ------
     DAB_DataError
         Caso seja inserida uma data inválida.
+
     DAB_MoedaError
         Caso seja inserida uma moeda inválida.
-    ValueError
-        Caso nenhum dado seja encontrado devido a argumentos inválidos.
 
     See Also
     --------
-    DadosAbertosBrasil.bacen.moedas :
+    DadosAbertosBrasil.bacen.moedas
         Utilize a função `bacen.moedas` para identificar as moedas que serão
         usadas no argumento da função `bacen.cambio`.
 
-    References
-    ----------
-    .. [1] Cotação do Câmbio
+    Notes
+    -----
+    API original das cotações de câmbio
         https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3
 
     Examples
     --------
     Retornar uma moeda usando argumentos padrões.
 
-    >>> bacen.cambio(moedas='EUR')
+    >>> bacen.cambio(moedas="EUR")
                 Data      EUR
     0    2000-01-03  1.84601
     1    2000-01-04  1.88695
@@ -83,11 +97,11 @@ def cambio(
     Retornar várias moedas, alterando argumentos.
 
     >>> bacen.cambio(
-    ...     moedas = ['USD', 'CAD'],
-    ...     inicio = '2021-01-01',
-    ...     fim = '2021-01-10',
-    ...     cotacao = 'venda',
-    ...     boletim = 'abertura',
+    ...     moedas = ["USD", "CAD"],
+    ...     inicio = "2021-01-01",
+    ...     fim = "2021-01-10",
+    ...     cotacao = "venda",
+    ...     boletim = "abertura",
     ...     index = True
     ... )
                     USD     CAD
