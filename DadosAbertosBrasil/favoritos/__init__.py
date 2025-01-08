@@ -27,6 +27,7 @@ def bandeira(uf: str, tamanho: PositiveInt = 100) -> str:
     ----------
     uf : str
         Sigla da Unidade Federativa.
+
     tamanho : int, default=100
         Tamanho em pixels da bandeira.
 
@@ -96,6 +97,7 @@ def brasao(uf: str, tamanho: PositiveInt = 100) -> str:
     ----------
     uf : str
         Sigla da Unidade Federativa.
+
     tamanho : int, default=100
         Tamanho em pixels da bandeira.
 
@@ -157,17 +159,28 @@ def brasao(uf: str, tamanho: PositiveInt = 100) -> str:
     return URL + brasao[parse.uf(uf, extintos=True)]
 
 
-def catalogo() -> pd.DataFrame:
+@validate_call
+def catalogo(
+    formato: Literal["pandas", "url"] = "pandas",
+) -> pd.DataFrame | str:
     """Catálogo de iniciativas oficiais de dados abertos no Brasil.
+
+    Parameters
+    ----------
+    formato : {"pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo um catálogo de iniciativas de dados abertos.
+    pandas.core.frame.DataFrame | str
+        Catálogo de iniciativas de dados abertos.
 
-    References
-    ----------
-    .. [1] https://github.com/dadosgovbr
+    Notes
+    -----
+    Fonte dos dados
+        https://github.com/dadosgovbr
 
     Examples
     --------
@@ -183,7 +196,12 @@ def catalogo() -> pd.DataFrame:
     """
 
     URL = "https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv"
-    return pd.read_csv(URL)
+
+    match formato:
+        case "pandas":
+            return pd.read_csv(URL)
+        case "url":
+            return URL
 
 
 @validate_call
@@ -195,15 +213,27 @@ def codigos_municipios(
 
     Utilizado para correlacionar dados das duas APIs diferentes.
 
+    Parameters
+    ----------
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo os códigos do IBGE e do TSE para todos os
-        municípios do Brasil.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Códigos do IBGE e do TSE para todos os municípios do Brasil.
 
-    References
-    ----------
-    .. [1] https://github.com/betafcc
+    Notes
+    -----
+    Fonte dos dados
+        https://github.com/betafcc
 
     Examples
     --------
@@ -236,7 +266,9 @@ def ipca(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Índice nacional de preços ao consumidor-amplo (IPCA).
 
     Esta é uma função de fácil acesso à série temporal 433 do módulo `bacen`.
@@ -245,30 +277,37 @@ def ipca(
     ----------
     ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+
+    inicio : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o primeiro dia da pesquisa.
-    fim : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+
+    fim : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
+
     index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame | str | dict | list[dict]
         DataFrame contendo os valores da série temporal.
-
-    Raises
-    ------
-    JSONDecodeError
-        Em caso de parâmetros inválidos.
 
     Notes
     -----
-    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
-    funcionar.
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para funcionar.
 
     Examples
     --------
@@ -299,16 +338,28 @@ def ipca(
         inicio=inicio,
         fim=fim,
         index=index,
+        formato=formato,
+        verificar_certificado=verificar_certificado,
     )
 
 
-def perfil_eleitorado() -> pd.DataFrame:
+@validate_call
+def perfil_eleitorado(
+    formato: Literal["pandas", "url"] = "pandas"
+) -> pd.DataFrame | str:
     """Tabela com perfil do eleitorado por município.
+
+    Parameters
+    ----------
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo o perfil do eleitorado em todos os municípios.
+    pandas.core.frame.DataFrame | str
+        Perfil do eleitorado em todos os municípios.
 
     Examples
     --------
@@ -320,11 +371,13 @@ def perfil_eleitorado() -> pd.DataFrame:
 
     """
 
-    return pd.read_csv(
-        r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/eleitorado.csv",
-        encoding="latin-1",
-        sep=";",
-    )
+    URL = r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/eleitorado.csv"
+
+    match formato:
+        case "pandas":
+            return pd.read_csv(URL, encoding="latin-1", sep=";")
+        case "url":
+            return URL
 
 
 @validate_call
@@ -332,29 +385,45 @@ def pib(
     periodo: Literal["anual", "trimestral"] = "anual",
     tipo: Literal["nominal", "real"] = "real",
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Variação percentual do Produto Interno Bruto Real.
 
-    Esta é uma função de fácil acesso às séries temporais 'PAN_PIBPMG' e
-    'PAN4_PIBPMG4' do módulo `ipea`.
+    Esta é uma função de fácil acesso às séries temporais de PIB do módulo `ipea`.
 
     Parameters
     ----------
-    periodo : {'anual', 'trimestral'}, default='anual'
+    periodo : {"anual", "trimestral"}, default="anual"
         Granularidade dos valores.
+
+    tipo : {"nominal", "real"}, default="real"
+        - "nominal": Valores absolutos do PIB em reais;
+        - "real": Variação real do PIB no período.
+
     index : bool, default=False
         Define a coluna `data` como index da tabela.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Tabela contendo os valores do PIB real.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Valores do PIB real ou nominal.
 
     Examples
     --------
     Capturar PIB trimestral.
 
-    >>> favoritos.pib(periodo='trimestral')
+    >>> favoritos.pib(periodo="trimestral")
               data      valor
     0   1997-01-01   3.400572
     1   1997-04-01   4.754002
@@ -365,7 +434,7 @@ def pib(
 
     Capturar PIB anual, pondo o período como index da tabela.
 
-    >>> favoritos.pib(periodo='anual', index=True)
+    >>> favoritos.pib(periodo="anual", index=True)
                    valor
     data
     1997-01-01  3.394846
@@ -387,9 +456,17 @@ def pib(
         case "trimestral", "nominal":
             cod = "PAN4_PIBPMV4"
 
-    df = ipea.serie(cod=cod, index=False)
-    assert not df.empty, "Problema na série do IPEA"
+    df = ipea.serie(
+        cod=cod,
+        index=False,
+        formato=formato,
+        verificar_certificado=verificar_certificado,
+    )
 
+    if formato != "pandas":
+        return df
+
+    assert not df.empty, "Problema na série do IPEA"
     df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
     if index:
         df.set_index("data", inplace=True)
@@ -403,7 +480,9 @@ def rentabilidade_poupanca(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Rentailidade dos depósitos de poupança a partir de Maio de 2012.
 
     Esta é uma função de fácil acesso à série temporal 195 do módulo `bacen`.
@@ -412,30 +491,37 @@ def rentabilidade_poupanca(
     ----------
     ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+
+    inicio : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o primeiro dia da pesquisa.
-    fim : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+
+    fim : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
+
     index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame | str | dict | list[dict]
         DataFrame contendo os valores da série temporal.
-
-    Raises
-    ------
-    JSONDecodeError
-        Em caso de parâmetros inválidos.
 
     Notes
     -----
-    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
-    funcionar.
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para funcionar.
 
     Examples
     --------
@@ -450,7 +536,7 @@ def rentabilidade_poupanca(
 
     Os valores entre Janeiro e Abril de 2021 usando a data como índice.
 
-    >>> favoritos.rentabilidade_poupanca(inicio='2021-01-01', fim='2021-04-01', index=True)
+    >>> favoritos.rentabilidade_poupanca(inicio="2021-01-01", fim="2021-04-01", index=True)
                   datafim   valor
     data
     2021-01-01 2021-02-01  0.1159
@@ -462,7 +548,15 @@ def rentabilidade_poupanca(
 
     """
 
-    return bacen.serie(cod=195, ultimos=ultimos, inicio=inicio, fim=fim, index=index)
+    return bacen.serie(
+        cod=195,
+        ultimos=ultimos,
+        inicio=inicio,
+        fim=fim,
+        index=index,
+        formato=formato,
+        verificar_certificado=verificar_certificado,
+    )
 
 
 @validate_call
@@ -472,7 +566,9 @@ def reservas_internacionais(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Reservar internacionais mensais ou diárias.
 
     Esta é uma função de fácil acesso às séries temporais 3546 e 13621
@@ -480,40 +576,48 @@ def reservas_internacionais(
 
     Parameters
     ----------
-    periodo : {'mensal', 'diario'}, default='mensal'
+    periodo : {"mensal", "diario"}, default="mensal"
         Período dos dados consultados.
+
     ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+
+    inicio : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o primeiro dia da pesquisa.
-    fim : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+
+    fim : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
+
     index : bool, default=False
-        Define se a coluna 'data' será o index do DataFrame.
+        Define se a coluna `"data"` será o index do DataFrame.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame | str | dict | list[dict]
         DataFrame contendo os valores da série temporal.
-
-    Raises
-    ------
-    JSONDecodeError
-        Em caso de parâmetros inválidos.
 
     Notes
     -----
-    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
-    funcionar.
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para funcionar.
 
     Examples
     --------
     Os quatro valores diários mais recentes.
 
-    >>> favoritos.reservas_internacionais(periodo='diario', ultimos=4)
+    >>> favoritos.reservas_internacionais(periodo="diario", ultimos=4)
             data   valor
     0 2021-07-05  353870
     1 2021-07-06  354086
@@ -524,9 +628,9 @@ def reservas_internacionais(
     índice.
 
     >>> favoritos.reservas_internacionais(
-    ...     periodo = 'mensal',
-    ...     inicio = '2021-01-01',
-    ...     fim = '2021-04-01',
+    ...     periodo = "mensal",
+    ...     inicio = "2021-01-01",
+    ...     fim = "2021-04-01",
     ...     index = True
     ... )
                  valor
@@ -538,22 +642,29 @@ def reservas_internacionais(
 
     """
 
-    if periodo.lower() == "mensal":
-        return bacen.serie(
-            cod=3546, ultimos=ultimos, inicio=inicio, fim=fim, index=index
-        )
-    elif periodo.lower() in ["diaria", "diario", "diário", "diária"]:
-        return bacen.serie(
-            cod=13621, ultimos=ultimos, inicio=inicio, fim=fim, index=index
-        )
-    else:
-        raise ValueError(
-            "Período inválido. Escolha um dos seguintes valores: 'mensal' ou 'diaria'."
-        )
+    match periodo:
+        case "diario":
+            cod = 13621
+        case "mensal":
+            cod = 3546
+
+    return bacen.serie(
+        cod=cod,
+        ultimos=ultimos,
+        inicio=inicio,
+        fim=fim,
+        index=index,
+        formato=formato,
+        verificar_certificado=verificar_certificado,
+    )
 
 
 @validate_call
-def risco_brasil(index: bool = False) -> pd.DataFrame:
+def risco_brasil(
+    index: bool = False,
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Valores diários do Risco-Brasil, disponibilizados pela J.P. Morgan
     desde 1994.
 
@@ -565,9 +676,19 @@ def risco_brasil(index: bool = False) -> pd.DataFrame:
     index : bool, default=False
         Define a coluna `data` como index da tabela.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame | str | dict | list[dict]
         Tabela contendo os valores diários do Risco-Brasil.
 
     Examples
@@ -583,10 +704,20 @@ def risco_brasil(index: bool = False) -> pd.DataFrame:
 
     """
 
-    df = ipea.serie(cod="JPM366_EMBI366", index=False)
+    df = ipea.serie(
+        cod="JPM366_EMBI366",
+        index=False,
+        formato=formato,
+        verificar_certificado=verificar_certificado,
+    )
+
+    if formato != "pandas":
+        return df
+
     df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
     if index:
         df.set_index("data", inplace=True)
+
     return df
 
 
@@ -594,24 +725,37 @@ def risco_brasil(index: bool = False) -> pd.DataFrame:
 def salario_minimo(
     tipo: Literal["nominal", "pcc", "real"] = "nominal",
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Valores do salário-mínimo mensal brasileiro desde 1940.
 
     Esta é uma função de fácil acesso às série temporais do módulo `ipea`.
 
     Parameters
     ----------
-    tipo : {'nominal', 'real', 'pcc'}, default='nominal'
+    tipo : {"nominal", "real", "pcc"}, default="nominal"
         Tipo de salário-mínimo.
-        - 'nominal': Salário-mínimo nominal;
-        - 'real': Salário-mínimo real (abatido pela inflação);
-        - 'ppc': Salario-mínimo por Paridade de Poder de Compra.
+        - "nominal": Salário-mínimo nominal;
+        - "real": Salário-mínimo real (abatido pela inflação);
+        - "ppc": Salario-mínimo por Paridade de Poder de Compra.
+
     index : bool, default=False
         Define a coluna `data` como index da tabela.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame | str | dict | list[dict]
         Tabela contendo os valores mensais do salário-mínimo.
 
     Examples
@@ -629,7 +773,7 @@ def salario_minimo(
 
     Salário-mínimo real usando a data como índice da tabela.
 
-    >>> favoritos.salario_minimo(tipo='real', index=True)
+    >>> favoritos.salario_minimo(tipo="real", index=True)
                       valor
     data
     1940-07-01   962.321161
@@ -649,9 +793,17 @@ def salario_minimo(
         case "ppc":
             cod = "GAC12_SALMINDOL12"
 
-    df = ipea.serie(cod=cod, index=False)
-    assert not df.empty, "Problema na série do IPEA"
+    df = ipea.serie(
+        cod=cod,
+        index=False,
+        formato=formato,
+        verificar_certificado=verificar_certificado,
+    )
 
+    if formato != "pandas":
+        return df
+
+    assert not df.empty, "Problema na série do IPEA"
     df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
     if index:
         df.set_index("data", inplace=True)
@@ -667,7 +819,9 @@ def selic(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Taxa de juros - Meta Selic definida pelo COPOM.
 
     Esta é uma função de fácil acesso à série temporal 432 do módulo `bacen`.
@@ -679,37 +833,44 @@ def selic(
         - "meta": Meta anual do COPOM;
         - "diario": Intervalo de dados por dia.
         - "mensal": Intervalo de dados por mês.
+
     anualizado : bool, default=True
         Se True, anualiza a série mantendo o período.
         Esse argumento é ignorado quando `periodo == "meta"`.
+
     ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : datetime or str, optional
-        Valor datetime ou string no formato de data "AAAA-MM-DD" que
+
+    inicio : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o primeiro dia da pesquisa.
-    fim : datetime or str, optional
-        Valor datetime ou string no formato de data "AAAA-MM-DD" que
+
+    fim : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
+
     index : bool, default=False
         Define se a coluna "data" será o index do DataFrame.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame | str | dict | list[dict]
         DataFrame contendo os valores da série temporal.
-
-    Raises
-    ------
-    JSONDecodeError
-        Em caso de parâmetros inválidos.
-    ValueError
-        Caso seja passado um período inválido.
 
     Notes
     -----
-    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
-    funcionar.
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para funcionar.
 
     Examples
     --------
@@ -717,7 +878,7 @@ def selic(
 
     >>> import DadosAbertosBrasil as dab
     >>> dab.selic(
-    ...     periodo = 'mensal',
+    ...     periodo = "mensal",
     ...     anualizado = True,
     ...     ultimos = 4
     ... )
@@ -729,7 +890,7 @@ def selic(
 
     Captura a meta SELIC corrente.
 
-    >>> dab.selic(periodo='meta', ultimos=1)
+    >>> dab.selic(periodo="meta", ultimos=1)
             data  valor
     0 2022-03-16  10.75
 
@@ -737,10 +898,10 @@ def selic(
     utilizando a data como índice.
 
     >>> dab.selic(
-    ...     periodo = 'diario',
+    ...     periodo = "diario",
     ...     anualizado = False,
-    ...     inicio = '2022-01-03',
-    ...     fim = '2022-01-07',
+    ...     inicio = "2022-01-03",
+    ...     fim = "2022-01-07",
     ...     index = True
     ... )
                    valor
@@ -771,6 +932,8 @@ def selic(
         inicio=inicio,
         fim=fim,
         index=index,
+        formato=formato,
+        verificar_certificado=verificar_certificado,
     )
 
 
@@ -780,7 +943,9 @@ def taxa_referencial(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Taxa referencial (TR).
 
     Esta é uma função de fácil acesso à série temporal 226 do módulo `bacen`.
@@ -789,30 +954,37 @@ def taxa_referencial(
     ----------
     ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+
+    inicio : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o primeiro dia da pesquisa.
-    fim : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+
+    fim : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
+
     index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame | str | dict | list[dict]
         DataFrame contendo os valores da série temporal.
-
-    Raises
-    ------
-    JSONDecodeError
-        Em caso de parâmetros inválidos.
 
     Notes
     -----
-    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
-    funcionar.
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para funcionar.
 
     Examples
     --------
@@ -827,7 +999,7 @@ def taxa_referencial(
 
     Os valores entre Janeiro e Abril de 2021 usando a data como índice.
 
-    >>> favoritos.taxa_referencial(inicio='2021-01-01', fim='2021-04-01', index=True)
+    >>> favoritos.taxa_referencial(inicio="2021-01-01", fim="2021-04-01", index=True)
                   datafim   valor
     data
     2021-01-01 2021-02-01  0.0000
@@ -845,4 +1017,6 @@ def taxa_referencial(
         inicio=inicio,
         fim=fim,
         index=index,
+        formato=formato,
+        verificar_certificado=verificar_certificado,
     )
