@@ -13,16 +13,24 @@ class Bloco(Base):
     cod: int
         Código numérico do bloco partidário do qual se deseja informações.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     dados : dict
         Conjunto completo de dados.
+
     cod : int
         Código numérico do bloco partidário.
+
     legislatura : str
         Legislatura do bloco partidário.
+
     nome : str
         Nome do bloco partidário.
+
     uri : str
         Endereço para coleta de dados direta pela API do bloco partidário.
 
@@ -84,37 +92,48 @@ def lista_blocos(
     ----------
     legislatura : int, optional
         Número da legislatura a qual os dados buscados devem corresponder.
+        Se omitido, busca os dados da legislatura atual.
+
     pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
     itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
+
     asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
+
     ordenar_por : str, default='nome'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+
     url : bool, default=False
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Lista de blocos partidários.
 
     """
 

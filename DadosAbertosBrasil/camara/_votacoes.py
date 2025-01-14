@@ -19,40 +19,60 @@ class Votacao(Base):
     cod : str
         Código alfa-numérico da votação da qual se deseja informações.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     dados : dict
         Conjunto completo de dados.
+
     cod : str
         Código alfa-numérico da votação.
+
     aprovacao : int
         Aprovação da votação.
+
     data : str
         Data da votação.
+
     data_regitro : str
         Data e horário de registro da votação.
+
     data_ultima_abertura : str
         Data e horário da última abertura da votação.
+
     descricao : str
         Descrição da votação.
+
     efeitos_registrados : list
         Lista de efeitos registrados.
+
     evento : int
         Código numérico do evento da votação.
+
     orgao : int
         Código numérico do órgão da votação.
+
     objetos_possiveis : list of dict
         Lista de objetos possíveis.
+
     proposicoes_afetadas : str
         Proposições afetadas.
+
     sigla_orgao : str
         Sigla do órgão.
+
     ultima_apresentacao_proposicao : dict
         Última apresentação da proposição.
+
     uri : str
         Endereço para coleta de dados direta pela API da votação.
+
     uri_evento : str
         Endereço para coleta de dados direta pela API do evento.
+
     uri_orgao : str
         Endereço para coleta de dados direta pela API do órgão.
 
@@ -116,9 +136,11 @@ class Votacao(Base):
         liberar a bancada para que cada deputado vote como quiser, ou entrar
         em obstrução, para que seus parlamentares não sejam contados para o
         quórum da votação.
+
         Se a votação teve orientações, este recurso retorna uma lista em que
         cada item contém os identificadores de um partido, bloco ou liderança,
         e o posicionamento ou voto que foi recomendado aos seus parlamentares.
+
         Até o momento, só estão disponíveis dados sobre orientações dadas em
         votações no Plenário.
 
@@ -127,20 +149,21 @@ class Votacao(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            O voto recomendado pelas lideranças aos seus deputados na votação.
 
         """
 
@@ -174,11 +197,13 @@ class Votacao(Base):
         Se a votação da Câmara é nominal e não foi secreta, retorna uma lista
         em que cada item contém os identificadores básicos de um deputado e o
         voto ou posicionamento que ele registrou.
+
         O resultado é uma lista vazia se a votação foi uma votação simbólica,
         em que os votos individuais não são contabilizados. Mas há algumas
         votações simbólicas que também têm registros de "votos": nesses casos,
         normalmente se trata de parlamentares que pediram expressamente que
         seus posicionamentos fossem registrados.
+
         Não são listados parlamentares ausentes à votação.
 
         Parameters
@@ -186,17 +211,17 @@ class Votacao(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Como cada parlamentar votou em uma votação nominal e aberta.
 
         """
 
@@ -267,59 +292,73 @@ def lista_votacoes(
         `camara.lista_proposições`. Se presente, listará as votações que
         tiveram a proposição como objeto de votação ou que afetaram as
         proposições listadas.
+
     evento : int, optional
         Código numérico do evento realizado na Câmara, no qual tenham sido
         realizadas as votações a serem listadas. Os códigos podem ser obtidos
         pela função `camara.lista_eventos`. Somente os eventos deliberativos
         podem ter votações. Os eventos podem ter ocorrido fora do intervalo de
         tempo padrão ou definido por `inicio` e/ou `fim`.
+
     orgao : int, optional
         Código numérico do órgão da Câmara. Se presente, serão retornadas
         somente votações do órgão enumerado. Os códigos existentes podem ser
         obtidos pela função `camara.lista_orgaos`.
+
     inicio : str, optional
-        Data em formato 'AAAA-MM-DD' para início do intervalo de tempo no qual
+        Data em formato `'AAAA-MM-DD'` para início do intervalo de tempo no qual
         tenham sido realizadas as votações a serem listadas. Se usado sozinho,
         esse parâmetro faz com que sejam retornadas votações ocorridas dessa
         data até o fim do mesmo ano. Se usado com `fim`, as duas datas devem
         ser de um mesmo ano.
+
     fim : str, optional
-        Data em formato 'AAAA-MM-DD' que define o fim do intervalo de tempo no
+        Data em formato `'AAAA-MM-DD'` que define o fim do intervalo de tempo no
         qual tenham sido realizadas as votações a serem listadas. Se usado
         sozinho, esse parâmetro faz com que sejam retornadas todas as votações
         ocorridas desde 1º de janeiro do mesmo ano até esta data. Se usado com
         `inicio`, é preciso que as duas datas sejam de um mesmo ano.
+
     pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
     itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
+
     asc : bool, default=False
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
+
     ordenar_por : str, default='dataHoraRegistro'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+
     url : bool, default=False
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Lista de votações na Câmara.
 
     """
 

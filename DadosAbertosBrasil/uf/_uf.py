@@ -5,15 +5,13 @@ Serve como um consolidador por UF de diversar funções do pacote DadosAbertosBr
 """
 
 from datetime import date
-from typing import Optional
-
-from pandas import DataFrame
+from typing import Optional, Literal
 
 from ._governador import Governador
 from .. import favoritos, ibge
 from ..camara import lista_deputados
 from ..senado import lista_senadores
-from ..utils import Get, parse
+from ..utils import Get, parse, Formato, Output
 from ..utils.errors import DAB_UFError
 
 
@@ -25,26 +23,39 @@ class UF:
     uf : str
         Nome, sigla ou código da UF desejada.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     sigla : str
         Sigla de duas letras maiúsculas.
+
     cod : int
         Código IBGE.
+
     nome : str
         Nome completo.
+
     area : float
         Área terrotorial em quilómetros quadrados.
+
     capital : str
         Cidade sede do governo estadual.
+
     extinto : bool
         True, caso UF tenha sido extinta (Fernando de Noronha ou Guanabara).
+
     gentilico : set
         Conjunto de gentílicos e variações.
+
     lema : str
         Lema da UF.
+
     regiao : str
         Grande região (Norte, Nordeste, Sudeste, Sul ou Centro-Oeste).
+
     coordenadas : dict[str, float]
         Dicionário contendo latitude e longitude.
 
@@ -52,14 +63,19 @@ class UF:
     ----------
     densidade : float
         Densidade populacional (hab/km²) da UF.
+
     galeria : DadosAbertosBrasil.ibge.Galeria
         Gera uma galeria de fotos da UF.
+
     governador : DadosAbertosBrasil.uf.Governador
         Informações básico do governador da UF.
+
     historia : DadosAbertosBrasil.ibge.Historia
         Objeto contendo a história da UF.
+
     municipios : list[str]
         Lista de municípios.
+
     populacao : int
         População projetada pelo IBGE.
 
@@ -67,12 +83,16 @@ class UF:
     -------
     bandeira(tamanho=100)
         Gera a URL da WikiMedia para a bandeira do estado.
+
     brasao(tamanho=100)
         Gera a URL da WikiMedia para o brasão do estado.
+
     deputados(nome, legislatura, partido, sexo, inicio, fim, pagina, itens...)
         Lista dos deputados federais em exercício.
+
     malha(nivel, divisoes, periodo, formato, qualidade)
         Obtém a URL para a malha referente à UF.
+
     senadores(tipo, sexo, partido, contendo, excluindo, url, index, formato)
         Lista de senadores da república desta UF.
 
@@ -123,7 +143,7 @@ class UF:
         --------
         Gera o link para a imagem da bandeira de Santa Catarina de 200 pixels.
 
-        >>> sc = UF('sc')
+        >>> sc = UF("sc")
         >>> sc.bandeira(tamanho=200)
         'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/' ...
 
@@ -209,8 +229,9 @@ class UF:
         ordenar_por: str = "nome",
         url: bool = True,
         index: bool = False,
-        formato: str = "dataframe",
-    ) -> DataFrame:
+        formato: Formato = "pandas",
+        verificar_certificado: bool = True,
+    ) -> Output:
         """Lista dos deputados federais da UF em exercício.
 
         Retorna uma lista de dados básicos sobre deputados que estiveram em
@@ -222,47 +243,65 @@ class UF:
         ----------
         nome : str, optional
             Parte do nome dos parlamentares.
+
         legislatura : int, optional
             Número da legislatura a qual os dados buscados devem corresponder.
+
         partido : str, optional
             Sigla do partido ao qual sejam filiados os deputados.
             Para obter as siglas válidas, consulte a função `camara.lista_partidos`.
             Atenção: partidos diferentes podem usar a mesma sigla em diferentes
             legislaturas.
-        sexo : {'M', 'F'}, optional
-            Letra que designe o gênero dos parlamentares que se deseja buscar,
-            - 'M': Masculino;
-            - 'F': Feminino.
+
+        sexo : {'f', 'm'}, optional
+            Letra que designe o gênero dos parlamentares que se deseja buscar:
+            - 'f': Feminino;
+            - 'm': Masculino.
+
         inicio : str, optional
             Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+
         fim : str, optional
             Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+
         pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
         itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
+
         asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
+
         ordenar_por : str, default='nome'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Obs.: Alguns filtros não serão aplicados no formato 'json'.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
+
+        verificar_certificado : bool, default=True
+            Defina esse argumento como `False` em caso de falha na verificação do
+            certificado SSL.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
+        pandas.core.frame.DataFrame | str | dict | list[dict]
             Tabela com informações básicas dos deputados federais.
 
         Raises
@@ -284,6 +323,7 @@ class UF:
 
         if self.extinto:
             raise DAB_UFError("Método `deputados` indisponível para UFs extintas.")
+
         return lista_deputados(
             nome=nome,
             legislatura=legislatura,
@@ -299,6 +339,7 @@ class UF:
             remover_url=not url,
             index=index,
             formato=formato,
+            verificar_certificado=verificar_certificado,
         )
 
     @property
@@ -413,13 +454,17 @@ class UF:
         ----------
         nivel : str, default='estados'
             Nível geográfico dos dados.
+
         divisoes : str, optional
             Subdiviões intrarregionais do nível.
             Se None, apresenta a malha sem subdivisões.
+
         periodo : int, default=2020
             Ano da revisão da malha.
+
         formato : {'svg', 'json', 'geojson'}, default='geojson'
             Formato dos dados da malha.
+
         qualidade : {'minima', 'intermediaria', 'maxima'}, default='minima'
             Qualidade de imagem da malha.
 
@@ -437,9 +482,9 @@ class UF:
         DAB_LocalidadeError
             Caso o nível geográfico seja inválido.
 
-        References
-        ----------
-        .. [1] https://servicodados.ibge.gov.br/api/docs/malhas?versao=3
+        Notes
+        -----
+        https://servicodados.ibge.gov.br/api/docs/malhas?versao=3
 
         See also
         --------
@@ -542,15 +587,16 @@ class UF:
 
     def senadores(
         self,
-        tipo: str = "atual",
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = "atual",
         sexo: Optional[str] = None,
         partido: Optional[str] = None,
         contendo: Optional[str] = None,
         excluindo: Optional[str] = None,
         url: bool = True,
         index: bool = False,
-        formato: str = "dataframe",
-    ) -> DataFrame | dict:
+        formato: Formato = "pandas",
+        verificar_certificado: bool = True,
+    ) -> Output:
         """Lista de senadores da república desta UF.
 
         Parameters
@@ -560,29 +606,40 @@ class UF:
             - 'titulares': Apenas senadores que iniciaram o mandato como titulares;
             - 'suplentes': Apenas senadores que iniciaram o mandato como suplentes;
             - 'afastados': Todos os senadores afastados.
+
         sexo : str, optional
             Filtro de sexo dos senadores.
+
         partido : str, optional
             Filtro de partido dos senadores.
+
         contendo : str, optional
             Captura apenas senadores contendo esse texto no nome.
+
         excluindo : str, optional
             Exclui da consulta senadores contendo esse texto no nome.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Obs.: Alguns filtros não serão aplicados no formato 'json'.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
+
+        verificar_certificado : bool, default=True
+            Defina esse argumento como `False` em caso de falha na verificação do
+            certificado SSL.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Tabela com informações básicas dos senadores consultados.
-        dict
-            Dados brutos em formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Lista de senadores.
 
         See Also
         --------
@@ -614,4 +671,5 @@ class UF:
             remover_url=not url,
             index=index,
             formato=formato,
+            verificar_certificado=verificar_certificado,
         )

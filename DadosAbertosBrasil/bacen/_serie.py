@@ -25,22 +25,36 @@ def serie(
         Código da série temporal.
         Utilize o seguinte link para obter o número da série desejada:
         https://www3.bcb.gov.br/sgspub/
+
     ultimos : int, optional
         Retorna os últimos N valores da série numérica.
-    inicio : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+
+    inicio : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o primeiro dia da pesquisa.
-    fim : datetime or str, optional
-        Valor datetime ou string no formato de data 'AAAA-MM-DD' que
+
+    fim : date, optional
+        Valor datetime ou string no formato de data `"AAAA-MM-DD"` que
         representa o último dia da pesquisa. Caso este campo seja None, será
         considerada a data de hoje.
+
     index : bool, default=False
-        Define se a coluna 'data' será o index do DataFrame.
+        Define se a coluna `"data"` será o index do DataFrame.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo os valores da série temporal pesquisada.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Valores da série temporal pesquisada.
 
     Raises
     ------
@@ -49,18 +63,15 @@ def serie(
 
     See Also
     --------
-    DadosAbertosBrasil.favoritos :
+    DadosAbertosBrasil.favoritos
         O módulo `favoritos` apresenta as principais séries temporáis do Banco
         Central do Brasil.
 
     Notes
     -----
-    Os argumentos `inicio` e `fim` devem ser usados em conjunto para
-    funcionar.
+    Os argumentos `inicio` e `fim` devem ser usados em conjunto para funcionar.
 
-    References
-    ----------
-    .. [1] SGS - Sistema Gerenciador de Séries Temporais
+    API original do SGS - Sistema Gerenciador de Séries Temporais
         https://www3.bcb.gov.br/sgspub/
 
     Examples

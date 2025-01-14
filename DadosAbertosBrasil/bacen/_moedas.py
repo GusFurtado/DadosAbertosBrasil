@@ -10,35 +10,45 @@ def moedas(
 ) -> Output:
     """Obtém os nomes e símbolos das principais moedas internacionais.
 
+    Parameters
+    ----------
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo os nomes e símbolos das principais moedas
-        internacionais.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Nomes e símbolos das principais moedas internacionais.
 
     See Also
     --------
-    DadosAbertosBrasil.bacen.cambio :
+    DadosAbertosBrasil.bacen.cambio
         Utilize a função `bacen.moedas` para identificar os argumentos da
         função `bacen.cambio`.
 
     Notes
     -----
+    API original das cotações de câmbio
+        https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3
+
     Moedas do tipo 'A':
         - Para calcular o valor equivalente em US$ (dólar americano), divida o
           montante na moeda consultada pela respectiva paridade.
         - Para obter o valor em R$ (reais), multiplique o montante na moeda
           consultada pela respectiva taxa.
+
     Moedas do tipo 'B':
         - Para calcular o valor equivalente em US$ (dólar americano),
           multiplique o montante na moeda consultada pela respectiva paridade.
         - Para obter o valor em R$ (reais), multiplique o montante na moeda
           consultada pela respectiva taxa.
-
-    References
-    ----------
-    .. [1] Cotação do Câmbio
-        https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3
 
     Examples
     --------

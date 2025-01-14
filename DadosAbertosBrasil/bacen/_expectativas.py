@@ -33,40 +33,39 @@ def expectativas(
         Capturar apenas o indicador desejado. Deve ser um dos seguintes
         indicadores, desde que esteja de acordo com a `expectativa` escolhida.
         Caso o valor seja `None`, retorna todos os indicadores disponíveis:
-            - "Balança Comercial",
-            - "Câmbio",
-            - "Conta corrente",
-            - "Dívida bruta do governo geral",
-            - "Dívida líquida do setor público",
-            - "IGP-DI",
-            - "IGP-M",
-            - "INPC",
-            - "Investimento direto no país",
-            - "IPA-DI",
-            - "IPA-M",
-            - "IPCA",
-            - "IPCA Administrados",
-            - "IPCA Alimentação no domicílio",
-            - "IPCA Bens industrializados",
-            - "IPCA Livres",
-            - "IPCA Serviços",
-            - "IPCA-15",
-            - "IPC-FIPE",
-            - "PIB Agropecuária",
-            - "PIB Despesa de consumo da administração pública",
-            - "PIB despesa de consumo das famílias",
-            - "PIB Exportação de bens e serviços",
-            - "PIB Formação Bruta de Capital Fixo",
-            - "PIB Importação de bens e serviços",
-            - "PIB Indústria",
-            - "PIB Serviços",
-            - "PIB Total",
-            - "Produção industrial",
-            - "Resultado nominal",
-            - "Resultado primário",
-            - "Selic",
-            - "Taxa de desocupação".
-
+        - "Balança Comercial",
+        - "Câmbio",
+        - "Conta corrente",
+        - "Dívida bruta do governo geral",
+        - "Dívida líquida do setor público",
+        - "IGP-DI",
+        - "IGP-M",
+        - "INPC",
+        - "Investimento direto no país",
+        - "IPA-DI",
+        - "IPA-M",
+        - "IPCA",
+        - "IPCA Administrados",
+        - "IPCA Alimentação no domicílio",
+        - "IPCA Bens industrializados",
+        - "IPCA Livres",
+        - "IPCA Serviços",
+        - "IPCA-15",
+        - "IPC-FIPE",
+        - "PIB Agropecuária",
+        - "PIB Despesa de consumo da administração pública",
+        - "PIB despesa de consumo das famílias",
+        - "PIB Exportação de bens e serviços",
+        - "PIB Formação Bruta de Capital Fixo",
+        - "PIB Importação de bens e serviços",
+        - "PIB Indústria",
+        - "PIB Serviços",
+        - "PIB Total",
+        - "Produção industrial",
+        - "Resultado nominal",
+        - "Resultado primário",
+        - "Selic",
+        - "Taxa de desocupação".
 
     top : int, optional
         Número máximo de registros que será retornado.
@@ -79,11 +78,21 @@ def expectativas(
           `ordenar_por` em ordem crescente (A-Z ou 0-9);
         - Se False, ordena em ordem descrescente (Z-A ou 9-0).
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Tabela contendo uma breve estatística descritiva da expectativa de
-        mercado de cada indicador poe período de referência.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Breve estatística descritiva da expectativa de mercado de cada
+        indicador por período de referência.
 
     Raises
     ------
@@ -92,19 +101,18 @@ def expectativas(
 
     Notes
     -----
+    API original de expectativas de mercado
+        https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/swagger-ui3#/
+
     Base de Cálculo 0:
         Uso das expectativas mais recentes informadas pelas instituições
         participantes a partir do 30º dia anterior à data de cálculo das
         estatísticas.
+
     Base de Cálculo 1:
         Uso das expectativas mais recentes informadas pelas instituições
         participantes a partir do 4º dia útil anterior à data de cálculo
         das estatísticas.
-
-    References
-    ----------
-    .. [1] Expectativas de Mercado
-        https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/swagger-ui3#/
 
     Examples
     --------

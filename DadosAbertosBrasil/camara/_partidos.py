@@ -14,41 +14,64 @@ class Partido(Base):
     cod : int
         Código numérico do partido do qual se deseja informações.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     dados : dict
         Conjunto completo de dados.
+
     cod : int
         Código numérico do partido.
+
     facebook : str
         URL da página no Facebook do partido.
+
     legislatura : str
         Código numérico da última legislatura.
+
     lider : dict
         Informações sobre o líder do partido.
+
     logo : str
         URL da logo do partido.
+
     nome : str
         Nome completo do partido.
+
     numero : int
         Número eleitoral do partido.
+
     sigla : str
         Sigla do partido.
+
     situacao : str
         Situação do partido.
+
     total_membros : str
         Total de membros do partido.
+
     total_posse : str
         Total de posse do partido.
+
     ultima_atualizacao : str
         Última atualização das informações sobre o partido.
+
     uri : str
         Endereço para coleta de dados direta pela API do partido.
+
     uri_membros : str
         Endereço para coleta de dados direta pela API dos membros do partido.
+
     website : str
         URL do website do partido.
 
+    Methods
+    -------
+    membros()
+        Uma lista dos parlamentares de um partido durante um período.
 
     Examples
     --------
@@ -119,42 +142,50 @@ class Partido(Base):
         Parameters
         ----------
         inicio : str, optional
-            Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de início de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         fim : str, optional
-            Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de término de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         legislatura : int, optional
             Número da legislatura, à qual os dados buscados devem corresponder.
+
         pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
         itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
+
         asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
+
         ordenar_por : str, optional
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Lista dos parlamentares de um partido durante um período.
 
         """
 
@@ -222,41 +253,54 @@ def lista_partidos(
     ----------
     legislatura : int, optional
         Número da legislatura a qual os dados buscados devem corresponder.
+
     inicio : str, optional
-        Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        Data de início de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
     fim : str, optional
-        Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        Data de término de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
     pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
     itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
+
     asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
+
     ordenar_por : str, default='sigla'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+
     url : bool, default=False
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Os partidos políticos que têm ou já tiveram parlamentares em exercício
+        na Câmara.
 
     """
 

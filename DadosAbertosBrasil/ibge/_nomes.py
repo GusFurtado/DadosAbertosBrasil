@@ -16,7 +16,7 @@ import pandas as pd
 from pydantic import validate_call, PositiveInt
 import requests
 
-from ..utils import parse
+from ..utils import parse, Formato, Output
 
 
 @validate_call
@@ -24,7 +24,9 @@ def nomes(
     nomes: list[str] | str,
     sexo: Optional[Literal["f", "m"]] = None,
     localidade: Optional[PositiveInt] = None,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Obtém a frequência de nascimentos por década dos nomes consultados.
 
     Defina o campo `nomes` com um string ou uma lista de string.
@@ -34,10 +36,12 @@ def nomes(
     ----------
     nomes : list or str
         Nome ou lista de nomes a ser consultado.
-    sexo : {'F', 'M'}, optional
-        - 'M' para consultar apenas o nome de pessoas do sexo masculino;
+
+    sexo : {'f', 'm'}, optional
         - 'F' para consultar apenas o nome de pessoas do sexo feminino;
+        - 'M' para consultar apenas o nome de pessoas do sexo masculino;
         - None para consultar ambos.
+
     localidade : int, optional
         Caso deseje obter a frequência referente a uma dada localidade,
         informe o parâmetro localidade. Por padrão, assume o valor BR,
@@ -45,18 +49,25 @@ def nomes(
         Utilize a função `ibge.localidade` para encontrar a localidade
         desejada.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo a frequência de nascimentos por década para
-        o(s) nome(s) consultado(s).
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Frequência de nascimentos por década para os nomes consultados.
 
     Raises
     ------
     DAB_LocalidadeError
         Caso o código da localidade seja inválido.
-    ValueError
-        Caso nenhum valor seja encontrado ou em caso de um argumento inválido.
 
     Examples
     --------
@@ -103,9 +114,14 @@ def nomes(
         params["localidade"] = parse.localidade(localidade)
 
     url = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nomes}"
-    data = requests.get(url, params=params).json()
-    json = pd.DataFrame(data)
+    if formato == "url":
+        return url
 
+    data = requests.get(url, params=params, verify=verificar_certificado).json()
+    if formato == "json":
+        return data
+
+    json = pd.DataFrame(data)
     dfs = [pd.DataFrame(json.res[i]).set_index("periodo") for i in json.index]
     df = pd.concat(dfs, axis=1)
     df.columns = json.nome
@@ -114,7 +130,11 @@ def nomes(
 
 
 @validate_call
-def nomes_uf(nome: str) -> pd.DataFrame:
+def nomes_uf(
+    nome: str,
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Obtém a frequência de nascimentos por UF para o nome consultado.
 
     Parameters
@@ -122,11 +142,20 @@ def nomes_uf(nome: str) -> pd.DataFrame:
     nome : str
         Nome que se deseja pesquisar.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo a frequência de nascimentos do nome pesquisado,
-        agrupado por Unidade da Federação.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Frequência de nascimentos do nome pesquisado, agrupado por Unidade da Federação.
 
     Examples
     --------
@@ -142,21 +171,22 @@ def nomes_uf(nome: str) -> pd.DataFrame:
 
     """
 
-    if isinstance(nome, str):
-
-        json = pd.read_json(
-            f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nome}?groupBy=UF"
+    if formato == "json":
+        raise NotImplementedError(
+            "Formato `json` temporariamente indisponível. Escolha formato `url` ou `pandas`."
         )
 
-        df = pd.DataFrame(
-            [json[json.localidade == i].res.values[0][0] for i in json.localidade]
-        )
+    url = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nome}?groupBy=UF"
+    if formato == "url":
+        return url
 
-        df.index = json.localidade
-        df.sort_index(inplace=True)
+    json = pd.read_json(url)
+    df = pd.DataFrame(
+        [json[json.localidade == i].res.values[0][0] for i in json.localidade]
+    )
 
-    else:
-        raise TypeError("O argumento 'nome' deve ser do tipo string.")
+    df.index = json.localidade
+    df.sort_index(inplace=True)
 
     return df
 
@@ -166,17 +196,21 @@ def nomes_ranking(
     decada: Optional[PositiveInt] = None,
     sexo: Optional[Literal["f", "m"]] = None,
     localidade: Optional[PositiveInt] = None,
-) -> pd.DataFrame:
+    formato: Formato = "pandas",
+    verificar_certificado: bool = True,
+) -> Output:
     """Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
 
     Parameters
     ----------
     decada : int, optional
         Deve ser um número múltiplo de 10 no formato AAAA.
-    sexo : {'F', 'M'}, optional
-        - 'M' para consultar apenas o nome de pessoas do sexo masculino;
+
+    sexo : {'f', 'm'}, optional
         - 'F' para consultar apenas o nome de pessoas do sexo feminino;
+        - 'M' para consultar apenas o nome de pessoas do sexo masculino;
         - None para consultar ambos.
+
     localidade : int, optional
         Caso deseje obter o ranking de nomes referente a uma dada localidade,
         informe o parâmetro localidade. Por padrão, assume o valor BR,
@@ -184,11 +218,20 @@ def nomes_ranking(
         Utilize a função `ibge.localidade` para encontrar a localidade
         desejada.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo os nomes mais populadores dentro do universo de
-        parâmetros pesquisados.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Nomes mais populadores dentro do universo de parâmetros pesquisados.
 
     Raises
     ------
@@ -249,4 +292,12 @@ def nomes_ranking(
     if params != "":
         query += f"?{params}"
 
-    return pd.DataFrame(pd.read_json(query).res[0]).set_index("ranking")
+    match formato:
+        case "url":
+            return query
+        case "json":
+            raise NotImplementedError(
+                "Formato `json` temporariamente indisponível. Escolha formato `url` ou `pandas`."
+            )
+        case "pandas":
+            return pd.DataFrame(pd.read_json(query).res[0]).set_index("ranking")

@@ -14,18 +14,31 @@ class Legislatura(Base):
     cod : int
         Código numérico da legislatura da qual se deseja informações.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     dados : dict
         Conjunto completo de dados.
+
     cod : int
         Código numérico da legislatura.
+
     inicio : str
         Primeiro dia da legislatura.
+
     fim : str
         Último dia da legislatura.
+
     uri : str
         Endereço para coleta de dados direta pela API da legislatura.
+
+    Methods
+    -------
+    mesa()
+        Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
 
     Examples
     --------
@@ -78,27 +91,30 @@ class Legislatura(Base):
         ----------
         inicio : str, optional
             Dia de início do intervalo de tempo do qual se deseja saber a
-            composição da Mesa, no formato 'AAAA-MM-DD'.
+            composição da Mesa, no formato `'AAAA-MM-DD'`.
+
         fim : str, optional
             Data de término do intervalo de tempo do qual se deseja saber a
-            composição da Mesa, no formato 'AAAA-MM-DD'.
+            composição da Mesa, no formato `'AAAA-MM-DD'`.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
 
         """
 
@@ -161,40 +177,50 @@ def lista_legislaturas(
     Parameters
     ----------
     data : str, optional
-        Data no formato 'AAAA-MM-DD'. Se este parâmetro estiver presente, a
+        Data no formato `'AAAA-MM-DD'`. Se este parâmetro estiver presente, a
         função retornará as informações básicas sobre a legislatura que estava
         em curso na data informada.
+
     pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
     itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
+
     asc : bool, default=False
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
+
     ordenar_por : str, default='id'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+
     url : bool, default=False
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Os períodos de mandatos e atividades parlamentares da Câmara.
 
     """
 

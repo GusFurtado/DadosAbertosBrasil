@@ -10,7 +10,7 @@ def lista_legislatura(
     inicio: int,
     fim: int = None,
     exercicio: Optional[str] = None,
-    participacao: Optional[str] = None,
+    participacao: Optional[Literal["titulares", "suplentes"]] = None,
     uf: Optional[str] = None,
     sexo: Optional[Literal["f", "m"]] = None,
     partido: Optional[str] = None,
@@ -27,46 +27,60 @@ def lista_legislatura(
     ----------
     inicio : int
         Código da primeira legislatura da consulta.
+
     fim : int, optional
         Código da última legislatura da consulta.
         Se fim=None, pesquisa apenas pela legislatura do campo `inicio`.
         Caso contrário, pesquisa todas os valores de todas as legislaturas
-        entre `inicio` e `fim`. 
+        entre `inicio` e `fim`.
+
     exercicio : str, optional
         - True: Consulta apenas os senadores que entraram em exercício.
         - False: Consulta apenas os senadores que não entratam em exercício.
-    participacao : {'titulares', 'suplentes'}, optional
+
+    participacao : {"titulares", "suplentes"}, optional
         - None: Busca qualquer tipo de participação.
-        - 'titulares': Busca apenas titulares.
-        - 'suplentes': Busca apenas suplentes.
+        - "titulares": Busca apenas titulares.
+        - "suplentes": Busca apenas suplentes.
+
     uf : str, optional
         Filtra uma unidade federativa.
         Se uf=None, lista senadores de todas as UFs.
-    sexo : {'F', 'M'}, optional
+
+    sexo : {"f", "m"}, optional
         Filtro de sexo dos senadores.
+
     partido : str, optional
         Filtro de partido dos senadores.
+
     contendo : str, optional
         Captura apenas senadores contendo esse texto no nome.
+
     excluindo : str, optional
         Exclui da consulta senadores contendo esse texto no nome.
+
     url : bool, default=False
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Lista senadores de uma legislatura ou de um intervalo de legislaturas.
 
     Raises
     ------
@@ -77,6 +91,7 @@ def lista_legislatura(
     --------
     DadosAbertosBrasil.senado.Senador
         Use o `codigo` para obter um detalhamento do senador.
+        
     DadosAbertosBrasil.senado.lista_senadores
         Função de busca de senadores específica para a legislação atual.
 
