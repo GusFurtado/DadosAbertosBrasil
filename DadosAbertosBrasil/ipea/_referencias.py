@@ -35,15 +35,27 @@ def lista_temas(
     ----------
     cod : int, optional
         Código do tema, caso queira ver os dados deste tema exclusivamente.
+
     pai : int, optional
         Filtrar temas por código pai.
+
     index : bool, default=False
         Se True, define a coluna 'codigo' como index do DataFrame.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo um registro de todos os temas das séries do IPEA.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Registros de todos os temas das séries do IPEA.
 
     Examples
     --------
@@ -113,12 +125,23 @@ def lista_paises(
     cod : str, optional
         Sigla de três letras do país, caso queira ver os dados deste
         país exclusivamente.
+
     index : bool, default=False
         Se True, define a coluna 'codigo' como index do DataFrame.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame | str | dict | list[dict]
         DataFrame contendo um registro de todos os países das séries do IPEA.
 
     Examples
@@ -176,23 +199,35 @@ def lista_territorios(
         Se True, retorna apenas territórios que são capitais.
         Se False, retorna apenas territórios que não são capitais.
         Se None, retorna todos os territórios.
+
     amc : bool, optional
         Se True, retorna apenas territórios que são AMC.
         Se False, retorna apenas territórios que não são AMC.
         Se None, retorna todos os territórios.
+
     cod : int, optional
         Código do território, caso queira ver os dados deste
         território exclusivamente.
+
     nivel : str, optional
         Nome do nível territorial.
         Utilize a função `ipea.niveis_territoriais` para verificar
         as opções disponíveis.
     
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo o registro de todos os territórios
-        das séries do IPEA.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Registros de todos os territórios das séries do IPEA.
 
     Notes
     -----
@@ -257,7 +292,7 @@ def lista_niveis() -> list[str]:
 
     Returns
     -------
-    list of str
+    list[str]
         Lista de todos os níveis territoriais das séries do IPEA.
 
     Examples

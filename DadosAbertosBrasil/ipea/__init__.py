@@ -27,9 +27,9 @@ as outras funções `lista`.
 valores da série, sem os metadados. Está é uma forma simplificada e mais
 rápida de obter os dados de uma série.
 
-References
-----------
-.. [1] http://www.ipeadata.gov.br/api/
+Notes
+-----
+http://www.ipeadata.gov.br/api/
 
 """
 

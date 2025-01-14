@@ -38,49 +38,71 @@ class Serie:
         Código da série que se deseja obter os dados.
         Utilize a função `ipea.lista_series` para identificar a série desejada.
         O código desejado estará na coluna 'codigo'.
+
     index : bool, default=False
         Se True, define a coluna 'codigo' como index do atributo 'valores'.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Attributes
     ---------
     cod : str
         Código da série escolhida.
+
     valores : pandas.core.frame.DataFrame
         Dados históricos da série escolhida. Alias de `dados`.
+
     dados : pandas.core.frame.DataFrame
         Dados históricos da série escolhida. Alias de `valores`.
+
     metadados : pandas.core.frame.DataFrame
         Metadados da série escolhida.
+
     base : str
         Nome da base de dados da série.
+
     fonte_nome : str
         Nome completo da fonte da série, em português.
+
     fonte_sigla : str
         Sigla ou nome abreviado da fonte da série, em português.
+
     fonte_url : str
         URL para o site da fonte da série.
+
     mutiplicador : str
         Nome do fator multiplicador dos valores da série.
+
     periodicidade : str
         Nome da periodicidade, em português.
+
     atualizacao : str
         Data da última carga de dados na série.
+
     comentario : str
         Comentários relativos a série, em português.
+
     nome : str
         Nome da série, em português.
+
     unidade : str
         Nome da unidade dos valores da série.
+
     status : str
         Indica se uma série macroeconômica ainda é atualizada.
         - 'A' (Ativa) para séries atualizadas;
         - 'I' (Inativa) para séries que não são atualizadas.
         As séries regionais ou sociais não possuem este metadado.
+
     tema : int
         Código de identificação do tema ao qual a série está associada.
+
     pais : str
         Código de identificação país ou região (como América Latina, Zona do
         Euro, etc.) ao qual a série está associada.
+
     numerica : bool
         - True: Série possui valores numéricos (tratados como números);
         - False: Série possui valores são alfanuméricos (string).
@@ -196,27 +218,41 @@ def lista_series(
     ----------
     contendo : str, optional
         Termo que deve estar contido no nome ou no comentário da série.
+
     excluindo : str | list[str], optional
         Termo ou lista de termos que não pode aparecer no nome da série.
         Sobrepõe o argumento `contendo`.
+
     fonte : str, optional
         Retorna apenas as séries desta fonte.
+
     ativo : bool, optional
         Se True, retorna apenas séries ativas.
         Se False, retorna apenas séries inativas.
         Se None, retorna todas as séries.
+
     numerica : bool, optional
         Se True, retorna apenas séries numéricas.
         Se False, não retorna as séries numéricas.
         Se None, retorna todas as séries.
+
     index : bool, default=False
         Se True, define a coluna 'codigo' como index do DataFrame.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame onde cada coluna é um metadado e cada registro é uma série
-        do IPEA.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Lista de séries do IPEA.
 
     Example
     -------
@@ -301,13 +337,24 @@ def serie(
         Código da série que se deseja obter os dados.
         Utilize a função `ipea.lista_series` para identificar a série desejada.
         O código desejado estará na coluna 'codigo'.
+
     index : bool, default=False
         Se True, define a coluna 'data' como index do DataFrame.
 
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Série temporal do Ipeadata em formato de DataFrame.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Valores de uma série temporal do Ipeadata.
 
     Example
     -------
@@ -342,9 +389,10 @@ def serie(
         verify=verificar_certificado,
     ).get(formato)
 
-    if "data" in df.columns:
-        df["data"] = pd.to_datetime(df["data"], utc=True).dt.date
-        if index:
-            df.set_index("data", inplace=True)
+    if formato == "pandas":
+        if "data" in df.columns:
+            df["data"] = pd.to_datetime(df["data"], utc=True).dt.date
+            if index:
+                df.set_index("data", inplace=True)
 
     return df
