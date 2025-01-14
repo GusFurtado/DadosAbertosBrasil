@@ -12,6 +12,15 @@ from ..utils import Get, parse
 class Governador:
     """Informações básicas do governador da UF.
 
+    Parameters
+    ----------
+    uf: str
+        Nome, sigla ou código da UF desejada.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     uf : str

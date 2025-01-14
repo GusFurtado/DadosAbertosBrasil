@@ -18,9 +18,9 @@ outros tipos de informação sobre ele(a).
 >>> sen.votacoes( ... )
 >>> ... 
 
-References
-----------
-.. [1] http://legis.senado.gov.br/dadosabertos/docs/
+Notes
+-----
+http://legis.senado.gov.br/dadosabertos/docs/
 
 """
 
