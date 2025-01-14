@@ -16,31 +16,36 @@ def referencias(
     ----------
     lista : str
         Referências que serão listadas. Deve ser uma destas opções:
-            - 'autores'
-            - 'temas'
-            - 'eventos'
-            - 'orgaos'
-            - 'proposicoes'
-            - 'tramitacoes'
-            - 'ufs'
-            - 'situacoes_deputados'
-            - 'situacoes_eventos'
-            - 'situacoes_orgaos'
-            - 'situacoes_proposicoes'
+        - "autores"
+        - "temas"
+        - "eventos"
+        - "orgaos"
+        - "proposicoes"
+        - "tramitacoes"
+        - "ufs"
+        - "situacoes_deputados"
+        - "situacoes_eventos"
+        - "situacoes_orgaos"
+        - "situacoes_proposicoes"
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Listas de valores válidos para as funções deste módulo.
 
     """
 

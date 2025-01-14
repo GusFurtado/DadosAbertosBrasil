@@ -13,32 +13,48 @@ class Frente(Base):
     cod : int
         Código numérico da frente parlamentar da qual se deseja informações.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     dados : dict
         Conjunto completo de dados.
+
     cod : int
         Código numérico da frente parlamentar.
+
     coordenador : dict
         Informações do(a) coordenador(a) da frente parlamentar.
+
     documento : str
         URL do documento da frente parlamentar.
+
     email : str
         E-mail de contato.
+
     id_sitacao : int
         ID da situação da frente parlamentar.
+
     keywords : str
         Palavras-chaves da frente parlamentar.
+
     legislatura : int
         ID da legislatura da frente parlamentar.
+
     situacao : str
         Situação da frente parlamentar.
+
     telefone : str
         Telefone de contato.
+
     titulo : str
         Título da frente parlamentar.
+
     uri : str
         Endereço para coleta de dados direta pela API da frente parlamentar.
+
     website : str
         URL do website da frente parlamentar.
 
@@ -107,20 +123,21 @@ class Frente(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Os deputados que participam da frente parlamentar.
 
         """
 
@@ -176,27 +193,34 @@ def lista_frentes(
     ----------
     legislatura : int, optional
         Número da legislatura a qual os dados buscados devem corresponder.
+
     pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
     url : bool, default=False
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Lista de frentes parlamentares de uma ou mais legislaturas.
 
     """
 

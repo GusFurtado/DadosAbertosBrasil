@@ -15,58 +15,86 @@ class Deputado(Base):
     cod : int
         Código do parlamentar.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     dados : dict
         Conjunto completo de dados.
+
     cod : int
         Código de identificação.
+
     condicao_eleitoral : str
         Condição eleitoral.
+
     cpf : str
         Número do CPF.
+
     descricao_status : str
         Descrição do último status.
+
     email : str
         E-mail.
+
     escolaridade : str
         Escolaridade.
+
     falecimento : str
-        Data de falecimento no formato 'AAAA-MM-DD'.
+        Data de falecimento no formato `'AAAA-MM-DD'`.
         Retorna vazio caso o parlamentar não tenha falecido.
+
     foto : str
         URL da foto.
+
     gabinete : dict
         Informações de identificação e contato do gabinete.
+
     legislatura : int
         ID da legislatura mais recente.
+
     municipio_nascimento : str
         Município de nascimento.
+
     nascimento : str
-        Data de nascimento no formato 'AAAA-MM-DD'.
+        Data de nascimento no formato `'AAAA-MM-DD'`.
+
     nome : str
         Nome mais comum.
+
     nome_completo : str
         Nome civil completo.
+
     nome_eleitoral : str
         Nome utilizado na campanha eleitoral.
+
     partido : str
         Último partido.
+
     rede_social : list
         Lista de nomes em redes sociais.
+
     sexo : str
         - 'M': Masculino;
         - 'F': Feminino.
+
     situacao : str
         Situação do último status.
+
     uf : str
         Sigla da Unidade Federativa pela qual foi eleito.
+
     uf_nascimento : str
         Unidade Federativa de nascimento.
+
     ultima_atualizacao : str
         Dia e horário da última atualização de status.
+
     uri : str
         Endereço para coleta de dados direta pela API.
+
     website : str
         Website.
 
@@ -74,16 +102,22 @@ class Deputado(Base):
     -------
     despesas()
         As despesas com exercício parlamentar do deputado.
+
     discursos()
         Os discursos feitos por um deputado em eventos diversos.
+
     eventos()
         Uma lista de eventos com a participação do parlamentar.
+
     frentes()
         As frentes parlamentares das quais um deputado é integrante.
+
     ocupacoes()
         Os empregos e atividades que o(a) deputado(a) já teve.
+
     orgaos()
         Os órgãos dos quais um deputado é integrante.
+
     profissoes()
         As frentes parlamentares das quais um deputado é integrante.
 
@@ -167,44 +201,53 @@ class Deputado(Base):
         ----------
         legislatura : int, optional
             ID da legislatura em que tenham ocorrido as despesas.
+
         ano : int, optional
             Ano de ocorrência das despesas.
+
         mes : int, optional
             Número do mês de ocorrência das despesas.
+
         fornecedor : int, optional
             CNPJ de uma pessoa jurídica, ou CPF de uma pessoa física,
             fornecedora do produto ou serviço (apenas números).
+
         pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
         itens : int, optional
             Número máximo de itens na página que se deseja obter com
             esta requisição.
+
         asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
+
         ordenar_por : str, default='ano'
             Nome do campo pelo qual a lista deverá ser ordenada:
             qualquer um dos campos do retorno, e também idLegislatura.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            As despesas com exercício parlamentar do deputado.
 
         """
 
@@ -282,38 +325,45 @@ class Deputado(Base):
         ----------
         legislatura : int, optional
             Número da legislatura a qual os dados buscados devem corresponder.
+
         inicio : str, optional
-            Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de início de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         fim : str, optional
-            Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de término de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
+
         pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
         asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
+
         ordenar_por : str, default='dataHoraInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Os discursos feitos por um deputado em eventos diversos.
 
         """
 
@@ -382,41 +432,49 @@ class Deputado(Base):
         ----------
         legislatura : int, optional
             Número da legislatura a qual os dados buscados devem corresponder.
+
         inicio : str, optional
-            Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de início de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         fim : str, optional
-            Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de término de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
         itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
+
         asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
+
         ordenar_por : str, default='dataHoraInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Uma lista de eventos com a participação do parlamentar.
 
         """
 
@@ -494,20 +552,21 @@ class Deputado(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            As frentes parlamentares das quais um deputado é integrante.
 
         """
 
@@ -540,17 +599,16 @@ class Deputado(Base):
 
         Parameters
         ----------
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Os empregos e atividades que o(a) deputado(a) já teve.
 
         """
 
@@ -598,40 +656,47 @@ class Deputado(Base):
         Parameters
         ----------
         inicio : str, optional
-            Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de início de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         fim : str, optional
-            Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de término de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
         itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
+
         asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
+
         ordenar_por : str, default='dataInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Os órgãos dos quais um deputado é integrante.
 
         """
 
@@ -690,20 +755,21 @@ class Deputado(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            As frentes parlamentares das quais um deputado é integrante.
 
         """
 
@@ -758,55 +824,71 @@ def lista_deputados(
     ----------
     nome : str, optional
         Parte do nome dos parlamentares.
+
     legislatura : int, optional
         Número da legislatura a qual os dados buscados devem corresponder.
+
     uf : str, optional
         Sigla da unidade federativa (estados e Distrito Federal).
         Se None, serão retornados deputados de todos os estados.
+
     partido : str, optional
         Sigla do partido ao qual sejam filiados os deputados.
         Para obter as siglas válidas, consulte a função `camara.lista_partidos`.
         Atenção: partidos diferentes podem usar a mesma sigla em diferentes
         legislaturas.
+
     sexo : {'f', 'm'}, optional
         Letra que designe o gênero dos parlamentares que se deseja buscar,
         - 'f': Feminino;
         - 'm': Masculino.
+
     inicio : str, optional
-        Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        Data de início de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
     fim : str, optional
-        Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        Data de término de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
     pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
     itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
+
     asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
+
     ordenar_por : str, default='nome'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+
     url : bool, default=False
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Lista de deputados.
 
     """
 

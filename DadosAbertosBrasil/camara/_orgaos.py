@@ -14,38 +14,67 @@ class Orgao(Base):
     cod : int
         Código numérico do órgão do qual se deseja informações.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     dados : dict
         Conjunto completo de dados.
+
     cod : int
         Código numérico do órgão.
+
     apelido : str
         Apelido do órgão.
+
     casa : str
         Casa do órgão.
+
     cod_tipo : int
         Código do tipo do órgão.
+
     fim : str
         Data final do órgão.
+
     inicio : str
         Data inicial do órgão.
+
     instalacao : str
         Data de instalação do órgão.
+
     nome : str
         Nome do órgão.
+
     nome_publicacao : str
         Nome de publicação.
+
     sala : str
         Sala do órgão.
+
     sigla : str
         Sigla do órgão.
+
     tipo : str
         Tipo do órgão.
+
     uri : str
         Endereço para coleta de dados direta pela API do órgão.
+
     urlWebsite : str
         URL para acessar o website do órgão.
+
+    Methods
+    -------
+    eventos()
+        Os eventos ocorridos ou previstos em um órgão legislativo.
+
+    membros()
+        Lista de cargos de um órgão e parlamentares que os ocupam.
+
+    votacoes()
+        Uma lista de eventos com a participação do parlamentar.
 
     Examples
     --------
@@ -115,38 +144,47 @@ class Orgao(Base):
         ----------
         tipo_evento : str, optional
             Identificador numérico do tipo de evento que se deseja obter.
+
         inicio : str, optional
-            Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de início de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         fim : str, optional
-            Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de término de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
         itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
+
         asc : bool, default=True
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
+
         ordenar_por : str, default='dataHoraInicio'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
 
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
+        pandas.core.frame.DataFrame | str | dict | list[dict]
             Lista de discursos feitos por um deputado em eventos diversos.
 
         """
@@ -214,33 +252,38 @@ class Orgao(Base):
         Parameters
         ----------
         inicio : str, optional
-            Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de início de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         fim : str, optional
-            Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de término de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
         itens : int, optional
             Número máximo de itens na “página” que se deseja obter com esta
             requisição.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Lista de cargos de um órgão e parlamentares que os ocupam.
 
         """
 
@@ -304,6 +347,7 @@ class Orgao(Base):
         ser alterado com o uso dos parâmetros `inicio` e/ou `fim`, que por
         enquanto são limitados a selecionar somente votações ocorridas em um
         mesmo ano.
+
         Caso este seja um órgão temporário, como uma comissão especial, são
         listadas por padrão todas as votações ocorridas no órgão, em qualquer
         período de tempo.
@@ -317,41 +361,49 @@ class Orgao(Base):
             função `camara.lista_proposicoes`. Se presente, listará as
             votações que tiveram a proposição como objeto de votação ou que
             afetaram as proposições listadas.
+
         inicio : str, optional
-            Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de início de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         fim : str, optional
-            Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+            Data de término de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
         pagina : int, default=1
             Número da página de resultados, a partir de 1, que se deseja
             obter com a requisição, contendo o número de itens definido
             pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
         itens : int, optional
             Número máximo de itens na página que se deseja obter com esta
             requisição.
+
         asc : bool, default=False
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
+
         ordenar_por : str, default='dataHoraRegistro'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Uma lista de eventos com a participação do parlamentar.
 
         """
 
@@ -423,46 +475,59 @@ def lista_orgaos(
     ----------
     sigla : str, optional
         Sigla oficialmente usadas para designar o órgão da câmara.
+
     tipo : int, optional
         Código numérico do tipo de órgãos que se deseja buscar dados. Pode ser
         obtido pela função `camara.referencias`.
+
     inicio : str, optional
-        Data de início, no formato 'AAAA-MM-DD', de um intervalo de tempo no
+        Data de início, no formato `'AAAA-MM-DD'`, de um intervalo de tempo no
         qual os órgãos buscados devem ter estado em atividade.
+
     fim : str, optional
-        Data de término, no formato 'AAAA-MM-DD', de um intervalo de tempo no
+        Data de término, no formato `'AAAA-MM-DD'`, de um intervalo de tempo no
         qual os órgãos buscados devem ter estado em atividade.
+
     pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
     itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
+
     asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
+
     ordenar_por : str, default='id'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+
     url : bool, default=False
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Lista das comissões e outros órgãos legislativos da Câmara.
 
     """
 

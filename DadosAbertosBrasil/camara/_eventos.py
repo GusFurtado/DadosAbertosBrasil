@@ -14,46 +14,69 @@ class Evento(Base):
     cod : int
         Código numérico do evento do qual se deseja informações.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     dados : dict
         Conjunto completo de dados.
+
     cod : int
         Código numérico do evento.
+
     andar : str
         Andar do prédio onde ocorreu o evento.
+
     descricao : str
         Descrição do evento.
+
     descricao_tipo : str
         Tipo do evento.
+
     fases : str
         Fases do evento.
+
     fim : str
-        Data e horário que o evento foi finalizado no formato 'AAAA-MM-DD'.
+        Data e horário que o evento foi finalizado no formato `'AAAA-MM-DD'`.
+
     inicio : str
-        Data e horário que o evento foi iniciado no formato 'AAAA-MM-DD'.
+        Data e horário que o evento foi iniciado no formato `'AAAA-MM-DD'`.
+
     local : str
         Local onde ocorreu o evento.
+
     local_externo : str
         Local externo do evento.
+
     lista_orgaos : list of dict
         Lista de orgãos e informações sobre os mesmos.
+
     predio : str
         Prédio que ocorreu o evento.
+
     requerimentos : list of dict
         Requerimentos do evento.
+
     sala : str
         Sala do prédio onde ocorreu o evento.
+
     situacao : str
         Situação do evento.
+
     uri : str
         Endereço para coleta de dados direta pela API do evento.
+
     uri_convidados : str
         Endereço para coleta de dados direta pela API dos convidados.
+
     uri_deputados : str
         Endereço para coleta de dados direta pela API dos deputados.
+
     url_documento_pauta : str
         Endereço URL para visualizar a pauta do evento.
+
     url_registro : str
         Endereço URL onde o evento foi registrado.
 
@@ -61,10 +84,13 @@ class Evento(Base):
     -------
     deputados()
         Os deputados participantes do evento.
+
     orgaos()
         Lista de órgãos organizadores do evento.
+
     pauta()
         Lista de proposições que foram ou deverão ser avaliadas.
+
     votacoes()
         Informações detalhadas de votações sobre o evento.
 
@@ -136,20 +162,21 @@ class Evento(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Os deputados participantes do evento.
 
         """
 
@@ -192,20 +219,21 @@ class Evento(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Lista de órgãos organizadores do evento.
 
         """
 
@@ -253,20 +281,21 @@ class Evento(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `ordem` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Lista de proposições.
 
         """
 
@@ -314,20 +343,21 @@ class Evento(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Informações detalhadas de votações sobre o evento.
 
         """
 
@@ -392,58 +422,75 @@ def lista_eventos(
         Identificador numérico do tipo de evento que se deseja obter.
         Os valores válidos podem ser obtidos pela função
         `camara.referencias('tiposEvento')`.
+
     situacao : int, optional
         Identificador numéricos do tipo de situação de evento.
         Valores válidos podem ser obtidos pela função
         `camara.referencias('situacoesEvento')`.
+
     tipo_orgao : int, optional
         Identificador numérico do tipo de órgão realizador dos eventos que se
         deseja obter. Os valores válidos podem ser obtidos pela função
         `camara.referencias('tiposOrgao').
+
     orgao : int, optional
         Identificador numérico do órgão. Os identificadores podem ser obtidos
         pela função `camara.lista_orgaos`.
+
     inicio : str, optional
-        Data de início de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        Data de início de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
     fim : str, optional
-        Data de término de um intervalo de tempo, no formato 'AAAA-MM-DD'.
+        Data de término de um intervalo de tempo, no formato `'AAAA-MM-DD'`.
+
     hora_inicio : str, optional
         Hora inicial de um intervalo de tempo, no formato 'HH:MM', em horário
         de Brasília.
+
     hora_fim : str, optional
         Hora final de um intervalo de tempo, no formato 'HH:MM', em horário
         de Brasília.
+
     pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
     itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
+
     asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
+
     ordenar_por : str, default='dataHoraInicio'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+
     url : bool, default=False
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Lista de eventos ocorridos ou previstos nos diversos órgãos da Câmara.
 
     """
 

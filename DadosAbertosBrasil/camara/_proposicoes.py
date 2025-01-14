@@ -14,74 +14,111 @@ class Proposicao(Base):
     cod : int
         Código numérico da proposição da qual se deseja informações.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     dados : dict
         Conjunto completo de dados.
+
     cod : int
         Código numérico da proposição.
+
     uri : str
         Endereço para coleta de dados direta pela API da proposição.
+
     tipo_sigla : str
         Sigla do tipo de proposição.
+
     tipo_codigo : int
         Código numérico do tipo de proposição.
+
     numero : int
         Número da proposição.
+
     ano : int
         Ano da proposição.
+
     ementa : str
         Ementa da proposição.
+
     apresentacao : str
         Horário da apresentação da proposição no formato 'AAAA-MM-DD HH:MM'.
+
     uri_orgao_numerador : str
         Endereço para coleta de dados direta pela API do órgão numerador.
+
     ultima_atualizacao : str
         Data da última atualização do status da proposição.
+
     sequencia : int
         Sequência da proposição.
+
     sigla_orgao : str
         Sigla do órgão.
+
     uri_orgao : str
         Endereço para coleta de dados direta pela API do órgão.
+
     uri_ultimo_relator : str
         Endereço para coleta de dados direta pela API do último relaltor.
+
     regime : str
         Regime da proposição.
+
     descricao_tramitacao : str
         Descrição da tramitação.
+
     cod_tipo_tramitacao : str
         Código do tipo da tramitação.
+
     descricao_situacao : str
         Descrição da situação da proposição.
+
     cod_situacao : int
         Código númerico da situação da proposição.
+
     despacho : str
         Despacho.
+
     url : str
         URL da proposição.
+
     ambito : str
         Âmbito da proposição.
+
     uri_autores : str
         Endereço para coleta de dados direta pela API dos autores.
+
     descricao_tipo : str
         Descrição do tipo da proposição.
+
     ementa_detalhada : str
         Ementa detalhada da proposição.
+
     keywords : str
         Palavras-chaves da proposição.
+
     uri_proposicao_principal : str
         Endereço para coleta de dados direta pela API da proposição principal.
+
     uri_proposicao_anterior : str
         Endereço para coleta de dados direta pela API da proposição anterior.
+
     uri_proposicao_posterior : str
         Endereço para coleta de dados direta pela API da proposição posterior.
+
     url_inteiro_teor : str
         URL do inteiro teor.
+
     urn_final : str
         URN final.
+
     texto : str
         Texto da proposição.
+
     justificativa : str
         Justificativa da proposição.
 
@@ -158,9 +195,11 @@ class Proposicao(Base):
         que é autora da proposição. Além de deputados, também podem ser
         autores de proposições os senadores, a sociedade civil, assembleias
         legislativas e os poderes Executivo e Judiciário.
+
         Pelo Regimento da Câmara, todos os que assinam uma proposição são
         considerados autores (art. 102), tanto os proponentes quanto os
         apoiadores.
+
         Para obter mais informações sobre cada autor, é recomendável acessar,
         se disponível, a URL que é valor do campo uri.
 
@@ -169,17 +208,17 @@ class Proposicao(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Lista pessoas e/ou entidades autoras da proposição.
 
         """
 
@@ -219,20 +258,21 @@ class Proposicao(Base):
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Uma lista de proposições relacionadas a uma em especial.
 
         """
 
@@ -272,17 +312,17 @@ class Proposicao(Base):
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Lista de áreas temáticas de uma proposição.
 
         """
 
@@ -319,26 +359,29 @@ class Proposicao(Base):
         Parameters
         ----------
         inicio : datetime.datetime or str, optional
-            Data de início da tramitação, no formato 'AAAA-MM-DD'.
+            Data de início da tramitação, no formato `'AAAA-MM-DD'`.
+
         fim : datetime.datetime or str, optional
-            Data de término da tramitação, no formato 'AAAA-MM-DD'.
+            Data de término da tramitação, no formato `'AAAA-MM-DD'`.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `sequencia` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            O histórico de passos na tramitação de uma proposta.
 
         """
 
@@ -400,26 +443,29 @@ class Proposicao(Base):
             Se os registros são ordenados no sentido ascendente:
             - True: De A a Z ou 0 a 9 (ascendente);
             - False: De Z a A ou 9 a 0 (descendente).
+
         ordenar_por : str, default='dataHoraRegistro'
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
+
         url : bool, default=False
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
+
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'.
-        formato : {'dataframe', 'json'}, default='dataframe'
-            Formato do dado que será retornado.
-            Os dados no formato 'json' são mais completos, porém alguns filtros
-            podem não ser aplicados.
+
+        formato : {"json", "pandas", "url"}, default="pandas"
+            Formato do dado que será retornado:
+            - "json": Dicionário com as chaves e valores originais da API;
+            - "pandas": DataFrame formatado;
+            - "url": Endereço da API que retorna o arquivo JSON.
 
         Returns
         -------
-        pandas.core.frame.DataFrame
-            Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-        list of dict
-            Se formato = 'json', retorna os dados brutos no formato json.
+        pandas.core.frame.DataFrame | str | dict | list[dict]
+            Informações detalhadas de votações sobre a proposição.
 
         """
 
@@ -502,88 +548,113 @@ def lista_proposicoes(
     tipo : str, optional
         Sigla do tipo das proposições que se deseja obter. A lista de tipos e
         siglas existentes pode ser obtida pela função `camara.referencias`.
+
     numero : int, optional
         Número oficialmente atribuídos às proposições segundo o art. 137 do
-        Regimento Interno, como “PL 1234/2016”
+        Regimento Interno, como “PL 1234/2016”.
+
     ano : int, optional
         Ano de apresentação das proposições que serão listadas no formato
-        'AAAA'.
+        `'AAAA'`.
+
     autor_cod : int, optional
         Código numérico identificador do deputado autor das proposições que
         serão listadas.
+
     autor_nome : str, optional
         Nome ou parte do nome do(s) autor(es) das proposições que se deseja
         obter. Deve estar entre aspas.
+
     partido_sigla : str, optional
         Sigla do partido a que pertençam os autores das proposições a serem
         listadas.
+
     partido_cod : int, optional
         Identificador numérico do partido a que pertençam os autores das
         proposições que serão listadas. Esses identificadores podem ser
         obtidos pela função `camara.lista_partidos` e são mais precisos do
         que as siglas, que podem ser usadas por partidos diferentes em épocas
         diferentes.
+
     autor_uf : str, optional
         Sigla da unidade da federação (estados e Distrito Federal) pela qual
         o(s) autor(es) das proposições selecionadas tenha(m) sido eleito(s).
+
     keyword : str, optional
         Palavra-chave sobre o tema a que a proposição se relaciona.
+
     tramitacao_senado : bool, optional
         Buscar proposições que já tenha tramitado no Senado.
+
     inicio : str, optional
         Data do início do intervalo de tempo em que tenha havido tramitação
-        das proposições a serem listadas, no formato 'AAAA-MM-DD'. Se omitido,
+        das proposições a serem listadas, no formato `'AAAA-MM-DD'`. Se omitido,
         é assumido como a data de 30 dias anteriores à proposição.
+
     fim : str, optional
         Data do fim do intervalo de tempo em que tenha havido tramitação das
         proposições a serem listadas. Se omitido, é considerado ser o dia em
         que é feita a requisição.
+
     apresentacao_inicio : str, optional
         Data do início do intervalo de tempo em que tenham sido apresentadas
-        as proposições a serem listadas, no formato 'AAAA-MM-DD'.
+        as proposições a serem listadas, no formato `'AAAA-MM-DD'`.
+
     apresentacao_fim : str, optional
         Data do fim do intervalo de tempo em que tenham sido apresentadas as
         proposições a serem listadas.
+
     situacao : int, optional
         Código numérico do tipo de situação em que se encontram as proposições
         que serão listadas. As situações possíveis podem ser obtidas pela
         função `camara.referencias`. Atenção: este parâmetro pode apresentar
         resultados inesperados, por problemas com o registro dos dados.
+
     tema : int, optional
         Código numérico das áreas temáticas das proposições que serão
         listadas. Os temas possíveis podem ser obtidos pela função
         `camara.referencias`.
+
     pagina : int, default=1
         Número da página de resultados, a partir de 1, que se deseja
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
+
     itens : int, optional
         Número máximo de itens na página que se deseja obter com esta
         requisição.
+
     asc : bool, default=True
         Se os registros são ordenados no sentido ascendente:
         - True: De A a Z ou 0 a 9 (ascendente);
         - False: De Z a A ou 9 a 0 (descendente).
+
     ordenar_por : str, default='id'
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
+
     url : bool, default=False
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
+
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
         Esse argumento é ignorado se `formato` for igual a 'json'.
-    formato : {'dataframe', 'json'}, default='dataframe'
-        Formato do dado que será retornado.
-        Os dados no formato 'json' são mais completos, porém alguns filtros
-        podem não ser aplicados.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Se formato = 'dataframe', retorna os dados formatados em uma tabela.
-    list of dict
-        Se formato = 'json', retorna os dados brutos no formato json.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Lista de proposições na Câmara.
 
     """
 

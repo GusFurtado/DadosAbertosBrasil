@@ -17,9 +17,9 @@ Mini-Tutorial
 5. Utilize os métodos da classe para obter informações detalhadas do objeto.
 >>> dep.despesas( ... )
 
-References
-----------
-.. [1] https://dadosabertos.camara.leg.br/swagger/api.html
+Notes
+-----
+https://dadosabertos.camara.leg.br/swagger/api.html
 
 """
 
