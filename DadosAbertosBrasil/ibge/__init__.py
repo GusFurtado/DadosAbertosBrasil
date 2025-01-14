@@ -37,13 +37,15 @@ disponíveis para consulta desta tabela.
 função `sidra`.
 >>> ibge.sidra( ... )
 
-References
-----------
-.. [1] IBGE Cidades
+Notes
+-----
+IBGE Cidades
     https://cidades.ibge.gov.br/
-.. [2] Serviços
+
+Serviços
     https://servicodados.ibge.gov.br/api/docs
-.. [3] SIDRA
+
+SIDRA
     http://api.sidra.ibge.gov.br/
 
 """

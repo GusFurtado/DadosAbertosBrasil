@@ -104,7 +104,7 @@ def populacao(
 def localidades(
     nivel: NivelTerritorial = "distritos",
     divisoes: Optional[NivelTerritorial] = None,
-    localidade: PositiveInt | str | list = None,
+    localidade: PositiveInt | str | list[PositiveInt | str] = None,
     ordenar_por: Optional[str] = None,
     index: bool = False,
     formato: Formato = "pandas",
@@ -114,22 +114,36 @@ def localidades(
 
     Parameters
     ----------
-    nivel : str, default='distritos'
+    nivel : str, default="distritos"
         Nível geográfico dos dados.
+
     divisoes : str, optional
         Subdiviões intrarregionais do nível.
         Se None, captura todos os registros do `nivel`.
-    localidade : int or str or list, optional
+
+    localidade : int | str | list[int|str], optional
         ID (os lista de IDs) da localidade que filtrará o `nivel`.
+
     ordenar_por : str, optional
         Coluna pela qual a tabela será ordenada.
+
     index : bool, default=False
-        Se True, defina a coluna 'id' como index do DataFrame.
+        Se True, defina a coluna `"id"` como index do DataFrame.
+
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "json": Dicionário com as chaves e valores originais da API;
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame contendo os localidades desejadas.
+    pandas.core.frame.DataFrame | str | dict | list[dict]
+        Localidades desejadas.
 
     Raises
     ------
@@ -140,7 +154,7 @@ def localidades(
     --------
     Captura todos os estados do Brasil
 
-    >>> ibge.localidades(nivel='estados')
+    >>> ibge.localidades(nivel="estados")
         id sigla                 nome  regiao_id regiao_sigla   regiao_nome
     0   11    RO             Rondônia          1            N         Norte
     1   12    AC                 Acre          1            N         Norte
@@ -163,7 +177,7 @@ def localidades(
 
     Captura todos os municípios do estado do Rio de Janeiro (localidade=33)
 
-    >>> ibge.localidades(nivel='estados', divisoes='municipios', localidade=33)
+    >>> ibge.localidades(nivel="estados", divisoes="municipios", localidade=33)
              id                nome  microrregiao_id           microrregiao_nome  \
     0   3300100      Angra dos Reis            33013         Baía da Ilha Grande   
     1   3300159             Aperibé            33002      Santo Antônio de Pádua   
@@ -172,9 +186,10 @@ def localidades(
     4   3300233  Armação dos Búzios            33010                       Lagos   
     ..      ...                 ...              ...                         ...
 
-    References
-    ----------
-    .. [1] https://servicodados.ibge.gov.br/api/docs/localidades
+    Notes
+    -----
+    API original de códigos de localidades
+        https://servicodados.ibge.gov.br/api/docs/localidades
 
     """
 
@@ -226,18 +241,23 @@ def malha(
 
     Parameters
     ----------
-    localidade : int, optional
+    localidade : int
         Código da localidade desejada.
         Utilize a função `ibge.localidades` para identificar a localidade.
+
     nivel : str, default='estados'
         Nível geográfico dos dados.
+
     divisoes : str, optional
         Subdiviões intrarregionais do nível.
         Se None, apresenta a malha sem subdivisões.
+
     periodo : int, default=2020
         Ano da revisão da malha.
+
     formato : {'svg', 'json', 'geojson'}, default='svg'
         Formato dos dados da malha.
+
     qualidade : {'minima', 'intermediaria', 'maxima'}, default='minima'
         Qualidade de imagem da malha.
 
@@ -255,9 +275,10 @@ def malha(
     DAB_LocalidadeError
         Caso o nível geográfico seja inválido.
 
-    References
-    ----------
-    .. [1] https://servicodados.ibge.gov.br/api/docs/malhas?versao=3
+    Notes
+    -----
+    API original das malhas territoriais
+        https://servicodados.ibge.gov.br/api/docs/malhas?versao=3
 
     Examples
     --------
@@ -360,14 +381,24 @@ def malha(
         return data.url
 
 
-def coordenadas() -> pd.DataFrame:
+@validate_call
+def coordenadas(
+    formato: Literal["pandas", "url"] = "pandas",
+) -> pd.DataFrame | str:
     """Obtém as coordenadas de todas as localidades brasileiras, incluindo
     latitude, longitude e altitude.
 
+    Parameters
+    ----------
+    formato : {"json", "pandas", "url"}, default="pandas"
+        Formato do dado que será retornado:
+        - "pandas": DataFrame formatado;
+        - "url": Endereço da API que retorna o arquivo JSON.
+
     Returns
     -------
-    pandas.core.frame.DataFrame
-        DataFrame das coordenadas de todas as localidade brasileiras.
+    pandas.core.frame.DataFrame | str
+        Coordenadas de todas as localidade brasileiras.
 
     Examples
     --------
@@ -382,7 +413,10 @@ def coordenadas() -> pd.DataFrame:
 
     """
 
-    return pd.read_csv(
-        r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/coordenadas.csv",
-        sep=";",
-    )
+    URL = r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/coordenadas.csv"
+
+    match formato:
+        case "pandas":
+            return pd.read_csv(URL, sep=";")
+        case "url":
+            return URL

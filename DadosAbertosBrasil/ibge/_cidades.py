@@ -4,13 +4,14 @@ Este submódulo é importado automaticamente com o módulo `ibge`.
 
 >>> from DadosAbertosBrasil import ibge
 
-References
-----------
-.. [1] https://cidades.ibge.gov.br/
+Notes
+-----
+API original do IBGE Cidades
+    https://cidades.ibge.gov.br/
 
 """
 
-from typing import Iterator, Optional, Union
+from typing import Iterator, Optional
 
 from ..utils import Get, parse
 
@@ -22,14 +23,19 @@ class _Fotografia:
     ----------
     ano : str
         Ano que a fotografia foi tirada.
+
     autor : str
         Autor(a) da fotografia.
+
     codigo_municipal : str
         Código IBGE da localidade.
+
     id : str
         Código da fotografia.
+
     link : str
         Nome do arquivo na biblioteca do IBGE.
+
     titulo : str
         Título da fotografia.
 
@@ -57,9 +63,10 @@ class _Fotografia:
     >>> foto(altura=500)
     'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600&max...'
 
-    References
-    ----------
-    .. [1] https://cidades.ibge.gov.br/
+    Notes
+    -----
+    API original do IBGE Cidades
+        https://cidades.ibge.gov.br/
 
     """
 
@@ -112,10 +119,15 @@ class Galeria:
         Código IBGE da localidade.
         O código pode ser obtido com auxílio da função `ibge.localidades`.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
-    fotografias : list of ibge._Fotografia
+    fotografias : list[ibge._Fotografia]
         Lista de fotografias da localidade.
+
     localidade : int
         Código IBGE da localidade.
 
@@ -138,13 +150,14 @@ class Galeria:
     >>> foto(altura=500)
     'https://servicodados.ibge.gov.br/api/v1/resize/image?maxwidth=600&max...'
 
-    References
-    ----------
-    .. [1] https://cidades.ibge.gov.br/
+    Notes
+    -----
+    API original do IBGE Cidades
+        https://cidades.ibge.gov.br/
 
     """
 
-    def __init__(self, localidade: Union[str, int], verificar_certificado: bool = True):
+    def __init__(self, localidade: int | str, verificar_certificado: bool = True):
         self.verify = verificar_certificado
         self.localidade = parse.localidade(localidade)
         galeria = self._get_photos()
@@ -191,24 +204,36 @@ class Historia:
         Código da localidade.
         Este código pode ser obtido com auxílio da função `ìbge.localidades`.
 
+    verificar_certificado : bool, default=True
+        Defina esse argumento como `False` em caso de falha na verificação do
+        certificado SSL.
+
     Attributes
     ----------
     ano : int
         Ano da publicação do histórico.
+
     estado : str
         Nome do estado no formato 'Estado - UF'.
+
     estado1 : str
         Nome do estado sem a sigla.
+
     formacao_administrativa : str
         Descrição da formação administrativa da localidade.
+
     gentilico : str
         Gentílico dos naturais desta localidade.
+
     historico : str
         Texto descrevendo a história da localidade.
+
     historico_fonte : str
         Fonte do texto do atributo `historico`.
+
     localidade : int
         Código da localidade.
+
     municipio : str
         Nome do município.
 
@@ -231,13 +256,14 @@ class Historia:
     Capturar o histórico do estado de Minas Gerais
     >>> mg = ibge.Historia(52)
 
-    References
-    ----------
-    .. [1] https://cidades.ibge.gov.br/
+    Notes
+    -----
+    API original do IBGE Cidades
+        https://cidades.ibge.gov.br/
 
     """
 
-    def __init__(self, localidade: Union[int, str], verificar_certificado: bool = True):
+    def __init__(self, localidade: int | str, verificar_certificado: bool = True):
         self.localidade = parse.localidade(localidade)
         self.verify = verificar_certificado
         d = self._get_historia()
