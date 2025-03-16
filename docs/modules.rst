@@ -1,8 +1,5 @@
-DadosAbertosBrasil
-==================
-
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    DadosAbertosBrasil.bacen
    DadosAbertosBrasil.camara

@@ -1,8 +1,3 @@
-.. Dados Abertos Brasil documentation master file, created by
-   sphinx-quickstart on Fri Dec  6 03:36:57 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Dados Abertos Brasil
 ====================
 
@@ -14,8 +9,8 @@ Atualmente o pacote Dados Abertos Brasil possui seis módulos, além da classe *
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: Módulos
 
    modules
 
@@ -41,12 +36,14 @@ Instalação
    :maxdepth: 2
    :caption: Dependências
 
-   Python 3.6 ou superior <https://www.python.org/>
-   pandas <https://pandas.pydata.org/>
-   requests <https://requests.readthedocs.io/en/master/>
+   Python 3.10 ou superior <https://www.python.org/>
+   Pandas <https://pandas.pydata.org/>
+   Pydantic <https://docs.pydantic.dev/latest/>
+   Requests <https://requests.readthedocs.io/en/master/>
 
 
-Licença
-=======
+.. toctree::
+   :maxdepth: 2
+   :caption: Licença
 
-MIT
+   MIT <https://github.com/GusFurtado/DadosAbertosBrasil/blob/master/LICENSE.txt>

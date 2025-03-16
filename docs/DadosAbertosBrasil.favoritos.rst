@@ -1,8 +1,5 @@
-DadosAbertosBrasil.favoritos package
-====================================
-
-Module contents
----------------
+DadosAbertosBrasil.favoritos
+============================
 
 .. automodule:: DadosAbertosBrasil.favoritos
    :members:
