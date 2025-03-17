@@ -1,11 +1,12 @@
-"""Módulo para consulta a informações variadas.
+"""Módulo de consulta a informações de interesse público.
 
-Essas funções são importadas pelo `__init__` do super-módulo
-`DadosAbertosBrasil`.
+Este módulo reúne funções pré-parametrizadas de outros submódulos do 
+`DadosAbertosBrasil`, facilitando o acesso a informações diversas e 
+amplamente utilizadas.
 
-Elas consistem em informações diversas ou em funções pré-parametrizadas de
-outros módulo. Seu objetivo é facilitar o acesso às informações de maior
-interesse público.
+As funções deste módulo são importadas automaticamente pelo `__init__` 
+do supermódulo, proporcionando uma interface simplificada para consultas 
+rápidas.
 
 """
 

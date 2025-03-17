@@ -1,16 +1,3 @@
-"""Submódulo IBGE contendo os wrappers das APIs do IBGE Cidades.
-
-Este submódulo é importado automaticamente com o módulo `ibge`.
-
->>> from DadosAbertosBrasil import ibge
-
-Notes
------
-API original do IBGE Cidades
-    https://cidades.ibge.gov.br/
-
-"""
-
 from typing import Iterator, Optional
 
 from ..utils import Get, parse

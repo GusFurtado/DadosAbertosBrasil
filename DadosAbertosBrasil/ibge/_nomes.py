@@ -1,15 +1,3 @@
-"""Submódulo IBGE contendo os wrappers da API do Nomes 2.0.
-
-Este submódulo é importado automaticamente com o módulo `ibge`.
-
->>> from DadosAbertosBrasil import ibge
-
-Documentação Original
----------------------
-https://servicodados.ibge.gov.br/api/docs
-
-"""
-
 from typing import Literal, Optional
 
 import pandas as pd

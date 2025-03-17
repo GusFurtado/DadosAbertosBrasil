@@ -1,6 +1,7 @@
-"""Objeto UF contendo informações das Unidades da Federação.
+"""Objeto `UF` contendo informações das Unidades da Federação.
 
-Serve como um consolidador por UF de diversar funções do pacote DadosAbertosBrasil.
+Este módulo consolida dados estaduais disponíveis no pacote DadosAbertosBrasil, 
+incluindo informações sobre governadores e outras estatísticas por estado.
 
 """
 

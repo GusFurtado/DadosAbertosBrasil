@@ -1,25 +1,46 @@
-"""Módulo para captura dos dados abertos da Câmara dos Deputados do Brasil.
+"""Módulo para captura de dados abertos da Câmara dos Deputados do Brasil.
+
+Este módulo permite acessar informações detalhadas sobre deputados, partidos, 
+frentes parlamentares, proposições, votações e outros dados legislativos 
+disponibilizados pela API da Câmara dos Deputados.
 
 Mini-Tutorial
 -------------
-1. Importe o módulo `camara`.
->>> from DadosAbertosBrasil import camara
 
-2. Busque o código do objeto de estudo utilizando as funções `lista`.
->>> camara.lista_deputados( ... )
+1. Importe o módulo `camara`:
 
-3. Instancie o objeto de estudo utilizando o código encontrado.
->>> dep = camara.Deputado(cod)
+.. code-block:: python
 
-4. Utilize os atributos da classe para obter informações básicas do objeto.
->>> dep.dados
+	from DadosAbertosBrasil import camara
 
-5. Utilize os métodos da classe para obter informações detalhadas do objeto.
->>> dep.despesas( ... )
+2. Busque o código do objeto de estudo utilizando as funções `lista`:
 
-Notes
------
-https://dadosabertos.camara.leg.br/swagger/api.html
+.. code-block:: python
+
+	camara.lista_deputados(...)
+
+3. Instancie o objeto de estudo utilizando o código encontrado:
+
+.. code-block:: python
+
+	dep = camara.Deputado(cod)
+
+4. Utilize os atributos da classe para obter informações básicas do objeto:
+
+.. code-block:: python
+	
+    dep.dados
+
+5. Utilize os métodos da classe para obter informações detalhadas do objeto:
+
+.. code-block:: python
+
+	dep.despesas(...)
+
+API Oficial
+-----------
+
+- **Dados Abertos da Câmara dos Deputados:** `<https://dadosabertos.camara.leg.br/swagger/api.html>`_
 
 """
 

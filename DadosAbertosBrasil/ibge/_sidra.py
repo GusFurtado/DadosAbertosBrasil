@@ -1,15 +1,3 @@
-"""Submódulo IBGE contendo os wrappers da API do SIDRA.
-
-Este submódulo é importado automaticamente com o módulo `ibge`.
-
->>> from DadosAbertosBrasil import ibge
-
-Documentação Original
----------------------
-http://api.sidra.ibge.gov.br/
-
-"""
-
 from typing import Optional, Literal
 
 import pandas as pd

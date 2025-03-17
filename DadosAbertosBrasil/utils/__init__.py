@@ -1,13 +1,11 @@
-"""O subpacote `_utils` contém ferramentas de auxílio às funções do pacote.
+"""Subpacote `_utils` — Ferramentas auxiliares do pacote DadosAbertosBrasil.
 
 Módulos
 -------
-errors
-    Pacote de `Exceptions` exclusivas para as funções do `DadosAbertosBrasil`
-get
-    Pacote contendo a função para captura de dados em formato JSON.
-parse
-    Pacote para padronização de inputs das funções do `DadosAbertosBrasil`
+
+- **errors**: Exceções personalizadas para as funções do pacote.
+- **get**: Função para captura de dados em formato JSON.
+- **parse**: Padronização de inputs das funções do pacote.
 
 """
 

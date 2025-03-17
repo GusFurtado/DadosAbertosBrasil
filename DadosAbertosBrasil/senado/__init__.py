@@ -1,26 +1,41 @@
-"""Módulo para captura dos dados abertos da Senado Brasileiro.
+"""Módulo para captura de dados abertos do Senado Brasileiro.
+
+Este módulo permite acessar informações sobre senadores, legislaturas, partidos,
+orçamentos e outros dados legislativos disponibilizados pelo Senado Federal.
 
 Mini-Tutorial
 -------------
-1. Importe o módulo `senado`
->>> from DadosAbertosBrasil import senado
 
-2. Utilize as funções `lista` para identificar o código do Senado desejado.
->>> senado.lista_senadores( ... )
->>> senado.lista_legislatura( ... )
+1. Importe o módulo `senado`:
 
-3. Utilize a class `Senador` para obter as informações do(a) parlamentar.
->>> sen = senado.Senador(cod)
+.. code-block:: python
 
-4. Após a class `Senador` ser instanciada, utilize seus métodos para buscas
-outros tipos de informação sobre ele(a).
->>> sen.cargos( ... )
->>> sen.votacoes( ... )
->>> ... 
+    from DadosAbertosBrasil import senado
 
-Notes
------
-http://legis.senado.gov.br/dadosabertos/docs/
+2. Utilize as funções `lista` para obter códigos necessários:
+
+.. code-block:: python
+
+    senado.lista_senadores(...)
+	senado.lista_legislatura(...)
+
+Instancie um objeto `Senador` para acessar informações do parlamentar:
+
+.. code-block:: python
+
+    sen = senado.Senador(cod)
+
+Utilize os métodos da classe `Senador` para obter mais detalhes:
+
+.. code-block:: python
+
+    sen.cargos(...)
+	sen.votacoes(...)
+
+API Original
+------------ 
+  
+- **Dados Abertos do Senado:** `<http://legis.senado.gov.br/dadosabertos/docs/>`_
 
 """
 

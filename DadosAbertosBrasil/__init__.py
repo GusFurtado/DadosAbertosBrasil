@@ -1,37 +1,50 @@
-"""Dados Abertos Brasil é uma iniciativa para facilitar o acesso a dados
-abertos e APIs do governo brasileiro.
+"""
+Dados Abertos Brasil
+====================
 
-É um pacote open-source para Python e Pandas e a forma mais simples de acessar
-dados de instituições como IGBE, IPEA, Banco Central, etc.
+Dados Abertos Brasil é uma iniciativa para facilitar o acesso a dados abertos e APIs do governo brasileiro.
+
+É um pacote open-source para Python e Pandas e a forma mais simples de acessar dados de instituições como IBGE, IPEA, Banco Central, etc.
 
 Módulos
 -------
-- DadosAbertosBrasil.ibge
-- DadosAbertosBrasil.ipea
-- DadosAbertosBrasil.camara
-- DadosAbertosBrasil.senado
-- DadosAbertosBrasil.bacen
-- DadosAbertosBrasil.favoritos
-- DadosAbertosBrasil.UF
+
+- ``DadosAbertosBrasil.ibge``
+- ``DadosAbertosBrasil.ipea``
+- ``DadosAbertosBrasil.camara``
+- ``DadosAbertosBrasil.senado``
+- ``DadosAbertosBrasil.bacen``
+- ``DadosAbertosBrasil.favoritos``
+- ``DadosAbertosBrasil.uf``
 
 Sobre
 -----
-- Página Oficial: https://www.gustavofurtado.com/dab.html
-- Documentação: https://www.gustavofurtado.com/DadosAbertosBrasil
+
+- **Página Oficial:** `<https://www.gustavofurtado.com/dab.html>`_
+- **Documentação:** `<https://www.gustavofurtado.com/DadosAbertosBrasil>`_
 
 Instalação
 ----------
-- `pip install DadosAbertosBrasil`
+
+Para instalar, utilize o seguinte comando:
+
+.. code-block:: bash
+
+   pip install DadosAbertosBrasil
 
 Dependências
 ------------
-- Python 3.6 ou superior
-- pandas
-- requests
+
+- `Python 3.10 ou superior <https://www.python.org/>`_
+- `Pandas <https://pandas.pydata.org/>`_
+- `Pydantic <https://docs.pydantic.dev/latest/>`_
+- `Requests <https://requests.readthedocs.io/en/master/>`_
 
 Licença
 -------
+
 - MIT
+
 
 """
 

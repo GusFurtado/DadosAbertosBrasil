@@ -1,15 +1,17 @@
-"""Módulo de captura de dados das APIs do Banco Central do Brasil.
+"""Módulo para captura de dados das APIs do Banco Central do Brasil.
 
-Notes
------
-SGS - Sistema Gerenciador de Séries Temporais
-    https://www3.bcb.gov.br/sgspub/
+Este módulo permite o acesso a diversas informações econômicas disponibilizadas pelo Banco Central, incluindo:
 
-Cotação do Câmbio
-    https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3
-    
-Expectativas de Mercado
-    https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/swagger-ui3#/
+- Histórico de câmbio das principais moedas do mundo;
+- Expectativas do mercado para indicadores macroeconômicos do Brasil;
+- Consulta a séries temporais do Sistema Gerenciador de Séries Temporais (SGS).
+
+APIs Oficiais
+-------------
+
+- **SGS - Sistema Gerenciador de Séries Temporais:** `<https://www3.bcb.gov.br/sgspub/>`_
+- **Cotação de Câmbio (PTAX):** `<https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/swagger-ui3>`_
+- **Expectativas de Mercado:** `<https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/swagger-ui3#/>`_
 
 """
 

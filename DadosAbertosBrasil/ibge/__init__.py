@@ -1,52 +1,67 @@
-"""Módulo para captura dos dados abertos das APIs do IBGE.
+"""Módulo para captura de dados abertos das APIs do IBGE.
+
+Este módulo fornece acesso a diversas informações do Instituto Brasileiro de Geografia e Estatística (IBGE), 
+incluindo dados geográficos, demográficos e estatísticos.
 
 Serviços Disponíveis
 --------------------
-- IBGE Cidades
-- Nomes 2.0
-- Agregados 3.0 (SIDRA)
-- Malhas Geográficas 2.0
-- Projeções 1.0
-- Localidades 1.0
+
+- **IBGE Cidades**: Informações sobre municípios brasileiros.
+- **Nomes 2.0**: Estatísticas sobre nomes mais comuns no Brasil.
+- **Agregados 3.0 (SIDRA)**: Dados de séries temporais e tabelas estatísticas.
+- **Malhas Geográficas 2.0**: Arquivos geoespaciais do Brasil.
+- **Projeções 1.0**: Projeções populacionais e estatísticas futuras.
+- **Localidades 1.0**: Informações detalhadas sobre unidades territoriais.
 
 Mini-Tutorial de SIDRA
 ----------------------
-1. Importe o módulo `ibge`.
->>> from DadosAbertosBrasil import ibge
 
-2. Utilize a função `lista_tabelas` com os filtros necessários para encontrar
-a tabela desejada.
->>> ibge.lista_tabelas( ... )
+1. Importe o módulo `ibge`:
 
-3. Utilize as funções `lista_pesquisas` e `referencias` para facilitar a busca.
->>> pesquisas = ibge.lista_pesquisas( ... )
->>> referencias = ibge.referencias( ... )
+.. code-block:: python
 
-4. Após obter o código numérico da tabela, insira-o como argumento de um
-objeto `Metadados`.
->>> dados = ibge.Metadados(tabela)
+	from DadosAbertosBrasil import ibge
 
-5. Pelos atributos do objeto `Metadados`, veja quais são os valores
-disponíveis para consulta desta tabela.
->>> print(dados.periodos)
->>> print(dados.variaveis)
->>> print(dados.localidades)
->>> print(dados.classificacoes)
+2. Utilize `lista_tabelas` para encontrar a tabela desejada:
 
-6. Utilize os valores encontrados nos metadados da tabela para alimentar a
-função `sidra`.
->>> ibge.sidra( ... )
+.. code-block:: python
 
-Notes
------
-IBGE Cidades
-    https://cidades.ibge.gov.br/
+	ibge.lista_tabelas(...)
 
-Serviços
-    https://servicodados.ibge.gov.br/api/docs
+3. Use `lista_pesquisas` e `referencias` para facilitar a busca:
 
-SIDRA
-    http://api.sidra.ibge.gov.br/
+.. code-block:: python
+
+	pesquisas = ibge.lista_pesquisas(...)
+	referencias = ibge.referencias(...)
+
+4. Após obter o código numérico da tabela, instancie um objeto `Metadados`:
+
+.. code-block:: python
+
+	dados = ibge.Metadados(tabela)
+
+5. Verifique os valores disponíveis para consulta na tabela:
+
+.. code-block:: python
+
+	print(dados.periodos)
+	print(dados.variaveis)
+	print(dados.localidades)
+	print(dados.classificacoes)
+
+6. Use os valores dos metadados para alimentar a função `sidra`:
+
+.. code-block:: python
+
+	ibge.sidra(...)
+
+APIs Originais
+--------------
+
+- **IBGE Cidades:** `<https://cidades.ibge.gov.br/>`_
+- **Serviços IBGE:** `<https://servicodados.ibge.gov.br/api/docs>`_
+- **SIDRA:** `<http://api.sidra.ibge.gov.br/>`_
 
 """
 
