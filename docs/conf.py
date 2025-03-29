@@ -6,14 +6,16 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+from datetime import date
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath(".."))
 
 
+year = date.today().year
 project = "Dados Abertos Brasil"
-copyright = "2024, Gustavo Furtado"
+copyright = f"{year}, Gustavo Furtado"
 author = "Gustavo Furtado"
 release = "2.0.0"
 

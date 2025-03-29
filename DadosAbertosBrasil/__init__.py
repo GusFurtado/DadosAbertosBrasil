@@ -58,5 +58,5 @@ from .favoritos import *
 from .utils.errors import *
 
 
-__version__ = "2.0.0-alpha"
+__version__ = "2.0.0"
 __author__ = "Gustavo Furtado da Silva"
