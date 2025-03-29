@@ -8,19 +8,18 @@
 
 É um pacote open-source para **Python** e **Pandas** e a forma mais simples de acessar dados de instituições como **IGBE**, **IPEA**, **Banco Central**, etc.
 
-Atualmente o pacote Dados Abertos Brasil possui seis módulos, além da classe **[UF](https://www.gustavofurtado.com/DadosAbertosBrasil/uf.html)** que consolida dados diversos de Unidades Federativas em um único objeto.
+Atualmente o pacote Dados Abertos Brasil possui seis módulos, além da classe **[UF](https://www.gustavofurtado.com/dab/DadosAbertosBrasil.uf.html)** que consolida dados diversos de Unidades Federativas em um único objeto.
 
-- DadosAbertosBrasil.**[ibge](https://www.gustavofurtado.com/DadosAbertosBrasil/ibge.html)**
-- DadosAbertosBrasil.**[ipea](https://www.gustavofurtado.com/DadosAbertosBrasil/ipea.html)**
-- DadosAbertosBrasil.**[camara](https://www.gustavofurtado.com/DadosAbertosBrasil/camara.html)**
-- DadosAbertosBrasil.**[senado](https://www.gustavofurtado.com/DadosAbertosBrasil/senado.html)**
-- DadosAbertosBrasil.**[bacen](https://www.gustavofurtado.com/DadosAbertosBrasil/bacen.html)**
-- DadosAbertosBrasil.**[favoritos](https://www.gustavofurtado.com/DadosAbertosBrasil/favoritos.html)**
+- DadosAbertosBrasil.**[ibge](https://www.gustavofurtado.com/dab/DadosAbertosBrasil.ibge.html)**
+- DadosAbertosBrasil.**[ipea](https://www.gustavofurtado.com/dab/DadosAbertosBrasil.ipea.html)**
+- DadosAbertosBrasil.**[camara](https://www.gustavofurtado.com/dab/DadosAbertosBrasil.camara.html)**
+- DadosAbertosBrasil.**[senado](https://www.gustavofurtado.com/dab/DadosAbertosBrasil.senado.html)**
+- DadosAbertosBrasil.**[bacen](https://www.gustavofurtado.com/dab/DadosAbertosBrasil.bacen.html)**
+- DadosAbertosBrasil.**[favoritos](https://www.gustavofurtado.com/dab/DadosAbertosBrasil.favoritos.html)**
 
 ### Sobre
-- **[Página Oficial](https://www.gustavofurtado.com/dab.html)**
-- **[Documentação](https://www.gustavofurtado.com/DadosAbertosBrasil.html)**
-- **[Exemplos](https://github.com/GusFurtado/dab_assets/tree/main/exemplos)**
+- [Documentação](https://www.gustavofurtado.com/dab/index.html)
+- [Exemplos](https://github.com/GusFurtado/dab_assets/tree/main/exemplos)
 
 ### Instalação
 ```
@@ -28,12 +27,13 @@ pip install DadosAbertosBrasil
 ```
 
 ### Dependências
-- Python 3.6 ou superior
-- **[pandas](https://pandas.pydata.org/)**
-- **[requests](https://requests.readthedocs.io/en/master/)**
+- [Python 3.10 ou superior](https://www.python.org/)
+- [Pandas](https://pandas.pydata.org/)
+- [Pydantic](https://docs.pydantic.dev/latest/)
+- [Requests](https://requests.readthedocs.io/en/master/)
 
 ### Licença
-- **[MIT](LICENSE)**
+- [MIT](LICENSE)
 
 ---
 
