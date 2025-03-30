@@ -14,16 +14,6 @@ Atualmente o pacote Dados Abertos Brasil possui seis módulos, além da classe *
 
    modules
 
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Sobre
-
-   Página Oficial <https://www.gustavofurtado.com/dab.html>
-   Documentação <https://www.gustavofurtado.com/DadosAbertosBrasil.html>
-   Exemplos <https://github.com/GusFurtado/dab_assets/tree/main/exemplos>
-
-
 Instalação
 ==========
 
@@ -44,6 +34,8 @@ Instalação
 
 .. toctree::
    :maxdepth: 2
-   :caption: Licença
+   :caption: Sobre
 
-   MIT <https://github.com/GusFurtado/DadosAbertosBrasil/blob/master/LICENSE.txt>
+   Exemplos <https://github.com/GusFurtado/dab_assets/tree/main/exemplos>
+   Licença <https://github.com/GusFurtado/DadosAbertosBrasil/blob/master/LICENSE.txt>
+   Autor <https://www.gustavofurtado.com/>
