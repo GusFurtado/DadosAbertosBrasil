@@ -1,5 +1,6 @@
-Dados Abertos Brasil
-====================
+.. image:: https://raw.githubusercontent.com/GusFurtado/dab_assets/refs/heads/main/images/logo.png
+   :width: 100%
+   :alt: Dados Abertos Brasil
 
 **Dados Abertos Brasil** é uma iniciativa para facilitar o acesso a dados abertos e APIs do governo brasileiro.
 
@@ -36,6 +37,7 @@ Instalação
    :maxdepth: 2
    :caption: Sobre
 
+   GitHub <https://github.com/GusFurtado/DadosAbertosBrasil>
    Exemplos <https://github.com/GusFurtado/dab_assets/tree/main/exemplos>
    Licença <https://github.com/GusFurtado/DadosAbertosBrasil/blob/master/LICENSE.txt>
    Autor <https://www.gustavofurtado.com/>
