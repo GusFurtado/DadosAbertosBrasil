@@ -12,7 +12,7 @@ def cambio(
     moedas: list[str] | str = ["USD"],
     inicio: date = date(2000, 1, 1),
     fim: Optional[date] = Field(default_factory=date.today),
-    cotacao: Literal["compra", "vendas"] = "compra",
+    cotacao: Literal["compra", "venda"] = "compra",
     boletim: Literal["abertura", "fechamento", "intermediário"] = "fechamento",
     index: bool = False,
     formato: Formato = "pandas",
