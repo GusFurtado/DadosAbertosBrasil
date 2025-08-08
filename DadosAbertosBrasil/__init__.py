@@ -8,7 +8,6 @@ Dados Abertos Brasil é uma iniciativa para facilitar o acesso a dados abertos e
 
 Módulos
 -------
-
 - ``DadosAbertosBrasil.ibge``
 - ``DadosAbertosBrasil.ipea``
 - ``DadosAbertosBrasil.camara``
@@ -19,13 +18,11 @@ Módulos
 
 Sobre
 -----
-
 - **Página Oficial:** `<https://www.gustavofurtado.com/dab.html>`_
 - **Documentação:** `<https://www.gustavofurtado.com/DadosAbertosBrasil>`_
 
 Instalação
 ----------
-
 Para instalar, utilize o seguinte comando:
 
 .. code-block:: bash
@@ -34,7 +31,6 @@ Para instalar, utilize o seguinte comando:
 
 Dependências
 ------------
-
 - `Python 3.10 ou superior <https://www.python.org/>`_
 - `Pandas <https://pandas.pydata.org/>`_
 - `Pydantic <https://docs.pydantic.dev/latest/>`_
@@ -42,7 +38,6 @@ Dependências
 
 Licença
 -------
-
 - MIT
 
 
@@ -108,3 +103,4 @@ __all__ = [
 ]
 
 __author__ = "Gustavo Furtado da Silva"
+__version__ = "2.0.1"
