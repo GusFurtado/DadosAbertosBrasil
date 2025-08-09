@@ -433,7 +433,7 @@ def sidra(
             path += f"/c{c}/{valor}"
 
     u = "y" if ufs_extintas else "n"
-    path += f'/u/{u}/d/{decimais or "s"}'
+    path += f"/u/{u}/d/{decimais or 's'}"
 
     if formato == "url":
         return path
@@ -523,12 +523,12 @@ def referencias(
     """
 
     CODIGOS = {
-        "assunto": "A",
+        "assuntos": "A",
         "classificacoes": "C",
         "niveis": "N",
         "territorios": "T",
-        "periodo": "P",
-        "periodicidade": "E",
+        "periodos": "P",
+        "periodicidades": "E",
         "variaveis": "V",
     }
 
