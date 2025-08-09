@@ -63,7 +63,7 @@ def test_lista_tabelas():
 
 
 def test_referencias():
-    df = ibge.referencias(cod="A")
+    df = ibge.referencias(cod="assuntos")
     assert not df.empty
 
 
