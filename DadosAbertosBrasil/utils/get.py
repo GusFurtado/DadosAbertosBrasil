@@ -1,4 +1,5 @@
 from functools import cached_property
+import json
 from typing import Literal, Optional
 
 import pandas as pd
@@ -86,6 +87,9 @@ class Get(BaseModel):
             params=self.params,
             verify=self.verify,
         ).json()
+
+        if isinstance(data, str):
+            data = json.loads(data)
 
         if self.unpack_keys is not None:
             for key in self.unpack_keys:
@@ -182,7 +186,6 @@ class Base:
         atributos: dict,
         verify: bool,
     ):
-
         self.dados = Get(
             endpoint=endpoint,
             path=path,
