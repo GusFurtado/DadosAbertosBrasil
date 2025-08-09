@@ -1,4 +1,5 @@
 from DadosAbertosBrasil import bacen
+import pytest
 
 
 def test_moedas():
@@ -6,8 +7,9 @@ def test_moedas():
     assert not df.empty
 
 
-def test_cambio():
-    df = bacen.cambio(index=True)
+@pytest.mark.parametrize("cotacao", ["compra", "venda"])
+def test_cambio(cotacao):
+    df = bacen.cambio(index=True, cotacao=cotacao)
     assert not df.empty
 
 

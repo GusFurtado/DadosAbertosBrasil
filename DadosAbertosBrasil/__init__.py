@@ -8,7 +8,6 @@ Dados Abertos Brasil é uma iniciativa para facilitar o acesso a dados abertos e
 
 Módulos
 -------
-
 - ``DadosAbertosBrasil.ibge``
 - ``DadosAbertosBrasil.ipea``
 - ``DadosAbertosBrasil.camara``
@@ -19,13 +18,11 @@ Módulos
 
 Sobre
 -----
-
 - **Página Oficial:** `<https://www.gustavofurtado.com/dab.html>`_
 - **Documentação:** `<https://www.gustavofurtado.com/DadosAbertosBrasil>`_
 
 Instalação
 ----------
-
 Para instalar, utilize o seguinte comando:
 
 .. code-block:: bash
@@ -34,7 +31,6 @@ Para instalar, utilize o seguinte comando:
 
 Dependências
 ------------
-
 - `Python 3.10 ou superior <https://www.python.org/>`_
 - `Pandas <https://pandas.pydata.org/>`_
 - `Pydantic <https://docs.pydantic.dev/latest/>`_
@@ -42,7 +38,6 @@ Dependências
 
 Licença
 -------
-
 - MIT
 
 
@@ -54,9 +49,58 @@ from . import ibge
 from . import ipea
 from . import senado
 from . import uf
-from .favoritos import *
-from .utils.errors import *
+from .favoritos import (
+    bandeira,
+    brasao,
+    catalogo,
+    codigos_municipios,
+    ipca,
+    perfil_eleitorado,
+    pib,
+    rentabilidade_poupanca,
+    reservas_internacionais,
+    risco_brasil,
+    salario_minimo,
+    selic,
+    taxa_referencial,
+)
+from .utils.errors import (
+    DAB_DataError,
+    DAB_InputError,
+    DAB_LocalidadeError,
+    DAB_MoedaError,
+    DAB_UFError,
+    DAB_DeprecationError,
+)
 
 
-__version__ = "2.0.0"
+__all__ = [
+    "bacen",
+    "camara",
+    "ibge",
+    "ipea",
+    "senado",
+    "uf",
+    "bandeira",
+    "brasao",
+    "catalogo",
+    "codigos_municipios",
+    "ipca",
+    "perfil_eleitorado",
+    "pib",
+    "rentabilidade_poupanca",
+    "reservas_internacionais",
+    "risco_brasil",
+    "salario_minimo",
+    "selic",
+    "taxa_referencial",
+    "DAB_DataError",
+    "DAB_InputError",
+    "DAB_LocalidadeError",
+    "DAB_MoedaError",
+    "DAB_UFError",
+    "DAB_DeprecationError",
+]
+
 __author__ = "Gustavo Furtado da Silva"
+__version__ = "2.0.1"
