@@ -27,7 +27,7 @@ keywords = [
     "dadosgovbr",
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Financial and Insurance Industry",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering",
@@ -40,8 +40,8 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "pandas",
-    "pydantic",
+    "pandas>=2.0.0",
+    "pydantic>=2.0.0",
     "requests>=2.3.3",
     "urllib3>=2.6.3",
 ]
@@ -56,9 +56,10 @@ include = ["DadosAbertosBrasil*"]
 
 [tool.ruff]
 target-version = "py310"
+line-length = 120
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W"]
+select = ["E", "F", "I", "N", "W", "B", "UP", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -67,6 +68,7 @@ testpaths = ["tests"]
 dev = [
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
+    "ruff>=0.15.20",
     "sphinx>=8.1.3",
     "sphinx-rtd-theme>=3.1.0",
 ]
