@@ -1,10 +1,12 @@
-from functools import cached_property
 import json
-from typing import Literal, Optional
+from functools import cached_property
+from typing import Literal
 
 import pandas as pd
-from pydantic import BaseModel
 import requests
+from pydantic import BaseModel
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from .endpoints import ENDPOINTS
 from .errors import DAB_InputError
@@ -49,6 +51,8 @@ class Get(BaseModel):
     index_col : str, default='codigo'
         Nome da coluna que será o index do DataFrame, caso o argumento `index`
         seja igual a `True`.
+    timeout : int, default=30
+        Timeout em segundos para a requisição HTTP.
 
     """
 
@@ -57,21 +61,38 @@ class Get(BaseModel):
     path: list[str]
 
     # json
-    params: Optional[dict] = None
+    params: dict | None = None
     verify: bool = True
-    unpack_keys: Optional[list[str]] = None
+    unpack_keys: list[str] | None = None
+    timeout: int = 30
 
     # pandas
-    cols_to_rename: Optional[dict] = None
-    cols_to_int: Optional[list[str]] = None
-    cols_to_date: Optional[list[str]] = None
-    cols_to_bool: Optional[list[str]] = None
-    true_value: Optional[str] = None
-    false_value: Optional[str] = None
+    cols_to_rename: dict | None = None
+    cols_to_int: list[str] | None = None
+    cols_to_date: list[str] | None = None
+    cols_to_bool: list[str] | None = None
+    true_value: str | None = None
+    false_value: str | None = None
     remover_url: bool = False
-    url_cols: Optional[list[str]] = None
+    url_cols: list[str] | None = None
     index: bool = False
     index_col: str = "codigo"
+
+    @cached_property
+    def _session(self) -> requests.Session:
+        """Cria uma sessão HTTP com retry adapters."""
+        session = requests.Session()
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET"],
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+        session.headers.update({"Accept": "application/json"})
+        return session
 
     @cached_property
     def url(self) -> str:
@@ -81,21 +102,23 @@ class Get(BaseModel):
 
     @cached_property
     def json(self) -> dict:
-        data = requests.get(
+        response = self._session.get(
             url=self.url,
-            headers={"Accept": "application/json"},
             params=self.params,
             verify=self.verify,
-        ).json()
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+
+        data = response.json()
 
         if isinstance(data, str):
             data = json.loads(data)
 
         if self.unpack_keys is not None:
             for key in self.unpack_keys:
-                if data is not None:
-                    if key in data:
-                        data = data[key]
+                if data is not None and key in data:
+                    data = data[key]
         if data is None:
             raise DAB_InputError(
                 "Nenhum dado encontrado. Verifique os parâmetros da consulta."
@@ -108,7 +131,7 @@ class Get(BaseModel):
         df = pd.json_normalize(self.json)
 
         if self.cols_to_rename is not None:
-            df = df[[col for col in self.cols_to_rename.keys() if col in df.columns]]
+            df = df[[col for col in self.cols_to_rename if col in df.columns]]
             df.columns = df.columns.map(self.cols_to_rename)
 
         if self.cols_to_int is not None:
@@ -161,8 +184,10 @@ class Base:
         Lista de keys do arquivo JSON onde estão os dados.
     error_key : str
         Key que deve estar contida no arquivo JSON.
-    atributos : dict[str, str]
+    atributos : dict[str, list[str]]
         Dicionário de atributos e respectivos unpack_keys.
+    verify : bool, default=True
+        Defina como False em caso de falha na verificação do certificado SSL.
 
     Attributes
     ----------
@@ -183,8 +208,8 @@ class Base:
         path: list[str],
         unpack_keys: list[str],
         error_key: str,
-        atributos: dict,
-        verify: bool,
+        atributos: dict[str, list[str]],
+        verify: bool = True,
     ):
         self.dados = Get(
             endpoint=endpoint,
