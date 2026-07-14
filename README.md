@@ -2,6 +2,15 @@
   <img src="https://raw.githubusercontent.com/GusFurtado/dab_assets/main/images/logo.png"><br>
 </div>
 
+<div align="center">
+
+![PyPI - Version](https://img.shields.io/pypi/v/DadosAbertosBrasil)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/DadosAbertosBrasil)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/DadosAbertosBrasil)
+![PyPI - License](https://img.shields.io/pypi/l/DadosAbertosBrasil)
+
+</div>
+
 ---
 
 **Dados Abertos Brasil** é uma iniciativa para facilitar o acesso a dados abertos e APIs do governo brasileiro.

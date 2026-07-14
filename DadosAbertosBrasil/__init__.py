@@ -43,12 +43,7 @@ Licença
 
 """
 
-from . import bacen
-from . import camara
-from . import ibge
-from . import ipea
-from . import senado
-from . import uf
+from . import bacen, camara, ibge, ipea, senado, uf
 from .favoritos import (
     bandeira,
     brasao,
@@ -66,13 +61,12 @@ from .favoritos import (
 )
 from .utils.errors import (
     DAB_DataError,
+    DAB_DeprecationError,
     DAB_InputError,
     DAB_LocalidadeError,
     DAB_MoedaError,
     DAB_UFError,
-    DAB_DeprecationError,
 )
-
 
 __all__ = [
     "bacen",
@@ -103,4 +97,4 @@ __all__ = [
 ]
 
 __author__ = "Gustavo Furtado da Silva"
-__version__ = "2.0.1"
+__version__ = "2.1.0"
