@@ -35,9 +35,21 @@ Atualmente o pacote Dados Abertos Brasil possui seis módulos, além da classe *
 pip install DadosAbertosBrasil
 ```
 
+Para obter os resultados como DataFrames do [Polars](https://pola.rs/), instale o extra opcional:
+```
+pip install DadosAbertosBrasil[polars]
+```
+
+> **Aviso:** atualmente o Pandas é uma dependência obrigatória e o formato padrão
+> dos resultados. Em uma versão futura, o Pandas deixará de ser obrigatório e
+> passará a ser instalado apenas como extra opcional. Para não depender do
+> formato padrão, defina `DadosAbertosBrasil.config.formato` ou use o argumento
+> `formato` nas funções.
+
 ### Dependências
 - [Python 3.10 ou superior](https://www.python.org/)
 - [Pandas](https://pandas.pydata.org/)
+- [Polars](https://pola.rs/) (opcional)
 - [Pydantic](https://docs.pydantic.dev/latest/)
 - [Requests](https://requests.readthedocs.io/en/master/)
 
