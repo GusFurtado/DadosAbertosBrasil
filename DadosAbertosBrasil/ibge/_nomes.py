@@ -4,6 +4,7 @@ import pandas as pd
 from pydantic import validate_call, PositiveInt
 import requests
 
+from .._config import config
 from ..utils import parse, Formato, Output
 
 
@@ -13,7 +14,7 @@ def nomes(
     sexo: Optional[Literal["f", "m"]] = None,
     localidade: Optional[PositiveInt] = None,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém a frequência de nascimentos por década dos nomes consultados.
 
@@ -43,9 +44,9 @@ def nomes(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -105,7 +106,7 @@ def nomes(
     if formato == "url":
         return url
 
-    data = requests.get(url, params=params, verify=verificar_certificado).json()
+    data = requests.get(url, params=params, verify=config.resolver_certificado(verificar_certificado)).json()
     if formato == "json":
         return data
 
@@ -121,7 +122,7 @@ def nomes(
 def nomes_uf(
     nome: str,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém a frequência de nascimentos por UF para o nome consultado.
 
@@ -136,9 +137,9 @@ def nomes_uf(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -185,7 +186,7 @@ def nomes_ranking(
     sexo: Optional[Literal["f", "m"]] = None,
     localidade: Optional[PositiveInt] = None,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
 
@@ -212,9 +213,9 @@ def nomes_ranking(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------

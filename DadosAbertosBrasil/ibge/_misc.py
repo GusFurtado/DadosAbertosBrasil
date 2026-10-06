@@ -4,6 +4,7 @@ import pandas as pd
 from pydantic import validate_call, PositiveInt
 import requests
 
+from .._config import config
 from ..utils import Get, parse, Formato, NivelTerritorial, Output
 from ..utils.errors import DAB_LocalidadeError
 
@@ -70,7 +71,7 @@ def populacao(
     localidade = parse.localidade(localidade, "")
     query = f"https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/{localidade}"
 
-    r = requests.get(query).json()
+    r = requests.get(query, verify=config.verificar_certificado).json()
 
     if projecao is None:
         return r
@@ -100,7 +101,7 @@ def localidades(
     ordenar_por: Optional[str] = None,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém o conjunto de localidades do Brasil e suas intrarregiões.
 
@@ -128,9 +129,9 @@ def localidades(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -365,7 +366,7 @@ def malha(
     url = "https://servicodados.ibge.gov.br/api/v3/"
     url += "/".join([str(p) for p in path])
 
-    data = requests.get(url=url, params=params)
+    data = requests.get(url=url, params=params, verify=config.verificar_certificado)
 
     if formato.lower().endswith("json"):
         return data.json()

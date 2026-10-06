@@ -44,6 +44,7 @@ Licença
 """
 
 from . import bacen, camara, ibge, ipea, senado, uf
+from ._config import config
 from .favoritos import (
     bandeira,
     brasao,
@@ -75,6 +76,7 @@ __all__ = [
     "ipea",
     "senado",
     "uf",
+    "config",
     "bandeira",
     "brasao",
     "catalogo",

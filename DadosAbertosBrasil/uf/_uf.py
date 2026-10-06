@@ -23,9 +23,9 @@ class UF:
     uf : str
         Nome, sigla ou código da UF desejada.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ----------
@@ -98,7 +98,7 @@ class UF:
 
     """
 
-    def __init__(self, uf: str, verificar_certificado: bool = True):
+    def __init__(self, uf: str, verificar_certificado: bool | None = None):
         self.sigla = parse.uf(uf=uf, extintos=True)
         self.verify = verificar_certificado
         data = self._get_data()
@@ -230,7 +230,7 @@ class UF:
         url: bool = True,
         index: bool = False,
         formato: Formato = "pandas",
-        verificar_certificado: bool = True,
+        verificar_certificado: bool | None = None,
     ) -> Output:
         """Lista dos deputados federais da UF em exercício.
 
@@ -295,9 +295,9 @@ class UF:
             - "pandas": DataFrame formatado;
             - "url": Endereço da API que retorna o arquivo JSON.
 
-        verificar_certificado : bool, default=True
-            Defina esse argumento como `False` em caso de falha na verificação do
-            certificado SSL.
+        verificar_certificado : bool, optional
+            Defina como `False` em caso de falha na verificação do certificado
+            SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
         Returns
         -------
@@ -595,7 +595,7 @@ class UF:
         url: bool = True,
         index: bool = False,
         formato: Formato = "pandas",
-        verificar_certificado: bool = True,
+        verificar_certificado: bool | None = None,
     ) -> Output:
         """Lista de senadores da república desta UF.
 
@@ -632,9 +632,9 @@ class UF:
             - "pandas": DataFrame formatado;
             - "url": Endereço da API que retorna o arquivo JSON.
 
-        verificar_certificado : bool, default=True
-            Defina esse argumento como `False` em caso de falha na verificação do
-            certificado SSL.
+        verificar_certificado : bool, optional
+            Defina como `False` em caso de falha na verificação do certificado
+            SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
         Returns
         -------
