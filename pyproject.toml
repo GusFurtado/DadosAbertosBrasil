@@ -46,6 +46,9 @@ dependencies = [
     "urllib3>=2.8.0",
 ]
 
+[project.optional-dependencies]
+polars = ["polars>=1.0.0"]
+
 [project.urls]
 Homepage = "https://github.com/GusFurtado/DadosAbertosBrasil"
 Documentation = "https://www.gustavofurtado.com/DadosAbertosBrasil"

@@ -108,7 +108,7 @@ class Frente(Base):
         self,
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Os deputados que participam da frente parlamentar.
 
@@ -126,17 +126,20 @@ class Frente(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Os deputados que participam da frente parlamentar.
 
         """
@@ -176,7 +179,7 @@ def lista_frentes(
     pagina: PositiveInt = 1,
     url: bool = True,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista de frentes parlamentares de uma ou mais legislaturas.
@@ -205,13 +208,16 @@ def lista_frentes(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -219,7 +225,7 @@ def lista_frentes(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Lista de frentes parlamentares de uma ou mais legislaturas.
 
     """

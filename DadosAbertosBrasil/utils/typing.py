@@ -1,4 +1,4 @@
-from typing import Literal, Union
+from typing import TYPE_CHECKING, Literal, Union
 
 from pandas import DataFrame
 
@@ -14,7 +14,7 @@ Expectativa = Literal[
     "instituicoes",
 ]
 
-Formato = Literal["json", "pandas", "url"]
+Formato = Literal["json", "pandas", "polars", "url"]
 
 NivelTerritorial = Literal[
     "distritos",
@@ -28,4 +28,10 @@ NivelTerritorial = Literal[
     "paises",
 ]
 
-Output = Union[DataFrame, str, dict, list[dict]]
+if TYPE_CHECKING:
+    import polars as pl
+
+    Output = Union[DataFrame, pl.DataFrame, str, dict, list[dict]]
+else:
+    # polars é opcional: fora do type checking, o tipo não pode referenciá-lo.
+    Output = Union[DataFrame, str, dict, list[dict]]
