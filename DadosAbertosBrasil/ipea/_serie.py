@@ -3,7 +3,8 @@ from typing import Optional
 import pandas as pd
 from pydantic import validate_call
 
-from ..utils import Get, Formato, Output
+from .._config import config
+from ..utils import Get, Formato, Output, converter
 
 
 _RENOMEAR_COLUNAS = {
@@ -209,7 +210,7 @@ def lista_series(
     ativo: Optional[bool] = None,
     numerica: Optional[bool] = None,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Registros de metadados de todas as séries do IPEA.
@@ -238,12 +239,15 @@ def lista_series(
 
     index : bool, default=False
         Se True, define a coluna 'codigo' como index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -251,7 +255,7 @@ def lista_series(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Lista de séries do IPEA.
 
     Example
@@ -282,51 +286,53 @@ def lista_series(
 
     """
 
-    data = Get(
+    formato = config.resolver_formato(formato)
+    get = Get(
         endpoint="ipea",
         path=["Metadados"],
         unpack_keys=["value"],
         cols_to_rename=_RENOMEAR_COLUNAS,
-        index=index,
         verify=verificar_certificado,
-    ).get(formato)
+    )
+    if formato not in ("pandas", "polars"):
+        return get.get(formato)
 
-    if formato == "pandas":
-        if contendo is not None:
-            contendo = contendo.upper()
-            f1 = data["nome"].str.upper().str.contains(contendo)
-            f2 = data["comentario"].str.upper().str.contains(contendo)
-            data = data[f1 | f2]
+    data = get.pandas
+    if contendo is not None:
+        contendo = contendo.upper()
+        f1 = data["nome"].str.upper().str.contains(contendo)
+        f2 = data["comentario"].str.upper().str.contains(contendo)
+        data = data[f1 | f2]
 
-        if excluindo is not None:
-            if isinstance(excluindo, str):
-                excluindo = [excluindo]
-            for termo in excluindo:
-                data = data[~data["nome"].str.upper().str.contains(termo.upper())]
+    if excluindo is not None:
+        if isinstance(excluindo, str):
+            excluindo = [excluindo]
+        for termo in excluindo:
+            data = data[~data["nome"].str.upper().str.contains(termo.upper())]
 
-        if fonte is not None:
-            fonte = fonte.upper()
-            f1 = data["fonte_sigla"].str.upper().str.contains(fonte)
-            f2 = data["fonte_nome"].str.upper().str.contains(fonte)
-            data = data[f1 | f2]
+    if fonte is not None:
+        fonte = fonte.upper()
+        f1 = data["fonte_sigla"].str.upper().str.contains(fonte)
+        f2 = data["fonte_nome"].str.upper().str.contains(fonte)
+        data = data[f1 | f2]
 
-        if ativo is not None:
-            status = "A" if ativo else "I"
-            data = data[data["ativo"] == status]
+    if ativo is not None:
+        status = "A" if ativo else "I"
+        data = data[data["ativo"] == status]
 
-        if numerica is not None:
-            data = data[data["numerica"] == numerica]
+    if numerica is not None:
+        data = data[data["numerica"] == numerica]
 
-        data["ativo"] = data["ativo"].map({"A": True, "I": False}).astype(bool)
+    data = data.assign(ativo=data["ativo"].map({"A": True, "I": False}).astype(bool))
 
-    return data
+    return converter(data, formato, index, "codigo")
 
 
 @validate_call
 def serie(
     cod: str,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Valores de uma série IPEA.
@@ -340,12 +346,15 @@ def serie(
 
     index : bool, default=False
         Se True, define a coluna 'data' como index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -353,7 +362,7 @@ def serie(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Valores de uma série temporal do Ipeadata.
 
     Example
@@ -381,18 +390,19 @@ def serie(
 
     """
 
-    df = Get(
+    formato = config.resolver_formato(formato)
+    get = Get(
         endpoint="ipea",
         path=[f"Metadados(SERCODIGO='{cod}')", "Valores"],
         unpack_keys=["value"],
         cols_to_rename=_RENOMEAR_COLUNAS,
         verify=verificar_certificado,
-    ).get(formato)
+    )
+    if formato not in ("pandas", "polars"):
+        return get.get(formato)
 
-    if formato == "pandas":
-        if "data" in df.columns:
-            df["data"] = pd.to_datetime(df["data"], utc=True).dt.date
-            if index:
-                df.set_index("data", inplace=True)
-
-    return df
+    df = get.pandas
+    if "data" not in df.columns:
+        return converter(df, formato)
+    df["data"] = pd.to_datetime(df["data"], utc=True).dt.date
+    return converter(df, formato, index, "data")

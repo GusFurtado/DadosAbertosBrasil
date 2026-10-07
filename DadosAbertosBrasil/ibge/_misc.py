@@ -5,7 +5,7 @@ from pydantic import validate_call, PositiveInt
 import requests
 
 from .._config import config
-from ..utils import Get, parse, Formato, NivelTerritorial, Output
+from ..utils import Get, parse, Formato, NivelTerritorial, Output, converter
 from ..utils.errors import DAB_LocalidadeError
 
 
@@ -100,7 +100,7 @@ def localidades(
     localidade: PositiveInt | str | list[PositiveInt | str] = None,
     ordenar_por: Optional[str] = None,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém o conjunto de localidades do Brasil e suas intrarregiões.
@@ -122,12 +122,15 @@ def localidades(
 
     index : bool, default=False
         Se True, defina a coluna `"id"` como index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -135,7 +138,7 @@ def localidades(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Localidades desejadas.
 
     Raises
@@ -200,25 +203,24 @@ def localidades(
     if ordenar_por is not None:
         params["orderBy"] = ordenar_por
 
-    data = Get(
+    formato = config.resolver_formato(formato)
+    get = Get(
         endpoint="ibge",
         path=path,
         params=params,
         verify=verificar_certificado,
-    ).get(formato)
+    )
+    if formato not in ("pandas", "polars"):
+        return get.get(formato)
 
-    if formato == "pandas":
+    def _loc_columns(x: str) -> str:
+        y = x.replace("-", "_").split(".")
+        return f"{y[-2]}_{y[-1]}" if len(y) > 1 else y[0]
 
-        def _loc_columns(x: str) -> str:
-            y = x.replace("-", "_").split(".")
-            return f"{y[-2]}_{y[-1]}" if len(y) > 1 else y[0]
-
-        data.columns = data.columns.map(_loc_columns)
-        data = data.loc[:, ~data.columns.duplicated()]
-        if index:
-            data.set_index("id", inplace=True)
-
-    return data
+    data = get.pandas
+    data.columns = data.columns.map(_loc_columns)
+    data = data.loc[:, ~data.columns.duplicated()]
+    return converter(data, formato, index, "id")
 
 
 @validate_call
@@ -376,21 +378,23 @@ def malha(
 
 @validate_call
 def coordenadas(
-    formato: Literal["pandas", "url"] = "pandas",
-) -> pd.DataFrame | str:
+    formato: Literal["pandas", "polars", "url"] | None = None,
+) -> Output:
     """Obtém as coordenadas de todas as localidades brasileiras, incluindo
     latitude, longitude e altitude.
 
     Parameters
     ----------
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "pandas": DataFrame formatado;
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
+        - "url": Endereço do arquivo CSV.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str
+    pandas.core.frame.DataFrame | polars.DataFrame | str
         Coordenadas de todas as localidade brasileiras.
 
     Examples
@@ -408,8 +412,8 @@ def coordenadas(
 
     URL = r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/coordenadas.csv"
 
-    match formato:
-        case "pandas":
-            return pd.read_csv(URL, sep=";")
+    match config.resolver_formato(formato):
         case "url":
             return URL
+        case formato:
+            return converter(pd.read_csv(URL, sep=";"), formato)

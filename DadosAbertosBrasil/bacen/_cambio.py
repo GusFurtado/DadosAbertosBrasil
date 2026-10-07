@@ -4,7 +4,8 @@ from typing import Literal, Optional
 import pandas as pd
 from pydantic import Field, validate_call
 
-from ..utils import Get, parse, Formato, Output
+from .._config import config
+from ..utils import Get, parse, Formato, Output, converter
 
 
 @validate_call
@@ -15,7 +16,7 @@ def cambio(
     cotacao: Literal["compra", "venda"] = "compra",
     boletim: Literal["abertura", "fechamento", "intermediário"] = "fechamento",
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Taxa de câmbio das principais moedas internacionais.
@@ -46,12 +47,15 @@ def cambio(
 
     index : bool, default=False
         Define se a coluna "Data" será o index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -59,7 +63,7 @@ def cambio(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Cotações diárias das moedas selecionadas.
 
     Raises
@@ -114,6 +118,7 @@ def cambio(
 
     """
 
+    formato = config.resolver_formato(formato)
     inicio = parse.data(inicio, "bacen")
     fim = parse.data(fim, "bacen")
     moedas = parse.moeda(moedas)
@@ -135,9 +140,9 @@ def cambio(
             ],
             unpack_keys=["value"],
             verify=verificar_certificado,
-        ).get(formato)
+        ).get("pandas" if formato == "polars" else formato)
 
-        if formato == "pandas":
+        if formato in ("pandas", "polars"):
             if data.empty:
                 raise ValueError(
                     "Nenhum dado encontrado. Verifique os argumentos da função."
@@ -153,10 +158,9 @@ def cambio(
 
         cotacoes.append(data)
 
-    if formato == "pandas":
+    if formato in ("pandas", "polars"):
         cotacoes = pd.concat(cotacoes, axis=1).reset_index()
         cotacoes["data"] = pd.to_datetime(cotacoes["data"], format="%Y-%m-%d %H:%M:%S")
-        if index:
-            cotacoes.set_index("data", inplace=True)
+        return converter(cotacoes, formato, index, "data")
 
     return cotacoes
