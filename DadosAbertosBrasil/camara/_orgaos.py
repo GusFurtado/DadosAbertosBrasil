@@ -14,9 +14,9 @@ class Orgao(Base):
     cod : int
         Código numérico do órgão do qual se deseja informações.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ----------
@@ -85,7 +85,7 @@ class Orgao(Base):
 
     """
 
-    def __init__(self, cod: int, verificar_certificado: bool = True):
+    def __init__(self, cod: int, verificar_certificado: bool | None = None):
         self.cod = cod
         self.verify = verificar_certificado
         atributos = {
@@ -462,7 +462,7 @@ def lista_orgaos(
     url: bool = True,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista das comissões e outros órgãos legislativos da Câmara.
 
@@ -520,9 +520,9 @@ def lista_orgaos(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------

@@ -8,7 +8,7 @@ def referencias(
     lista: str,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Listas de valores válidos para as funções deste módulo.
 
@@ -38,9 +38,9 @@ def referencias(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------

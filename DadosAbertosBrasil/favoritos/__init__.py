@@ -208,7 +208,7 @@ def catalogo(
 @validate_call
 def codigos_municipios(
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista dos códigos dos municípios do IBGE e do TSE.
 
@@ -222,9 +222,9 @@ def codigos_municipios(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -268,7 +268,7 @@ def ipca(
     fim: Optional[date] = None,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Índice nacional de preços ao consumidor-amplo (IPCA).
 
@@ -297,9 +297,9 @@ def ipca(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -387,7 +387,7 @@ def pib(
     tipo: Literal["nominal", "real"] = "real",
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Variação percentual do Produto Interno Bruto Real.
 
@@ -411,9 +411,9 @@ def pib(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -482,7 +482,7 @@ def rentabilidade_poupanca(
     fim: Optional[date] = None,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Rentailidade dos depósitos de poupança a partir de Maio de 2012.
 
@@ -511,9 +511,9 @@ def rentabilidade_poupanca(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -568,7 +568,7 @@ def reservas_internacionais(
     fim: Optional[date] = None,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Reservar internacionais mensais ou diárias.
 
@@ -601,9 +601,9 @@ def reservas_internacionais(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -664,7 +664,7 @@ def reservas_internacionais(
 def risco_brasil(
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Valores diários do Risco-Brasil, disponibilizados pela J.P. Morgan
     desde 1994.
@@ -683,9 +683,9 @@ def risco_brasil(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -727,7 +727,7 @@ def salario_minimo(
     tipo: Literal["nominal", "pcc", "real"] = "nominal",
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Valores do salário-mínimo mensal brasileiro desde 1940.
 
@@ -750,9 +750,9 @@ def salario_minimo(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -821,7 +821,7 @@ def selic(
     fim: Optional[date] = None,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Taxa de juros - Meta Selic definida pelo COPOM.
 
@@ -860,9 +860,9 @@ def selic(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -945,7 +945,7 @@ def taxa_referencial(
     fim: Optional[date] = None,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Taxa referencial (TR).
 
@@ -974,9 +974,9 @@ def taxa_referencial(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------

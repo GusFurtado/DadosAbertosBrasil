@@ -17,9 +17,9 @@ class Governador:
     uf: str
         Nome, sigla ou código da UF desejada.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ----------
@@ -65,7 +65,7 @@ class Governador:
         "TO": "Tocantins",
     }
 
-    def __init__(self, uf: str, verificar_certificado: bool = True):
+    def __init__(self, uf: str, verificar_certificado: bool | None = None):
         self.uf = parse.uf(uf)
 
         data = Get(

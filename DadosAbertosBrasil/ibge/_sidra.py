@@ -4,6 +4,7 @@ import pandas as pd
 from pydantic import validate_call
 import requests
 
+from .._config import config
 from ..utils import Get, Formato, Output
 
 
@@ -19,7 +20,7 @@ def lista_tabelas(
     pesquisa: Optional[str] = None,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista de tabelas disponíveis no SIDRA.
 
@@ -85,9 +86,9 @@ def lista_tabelas(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -324,7 +325,7 @@ def sidra(
     ufs_extintas: bool = False,
     decimais: Optional[int] = None,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Função para captura de dados do SIDRA - Sistema IBGE de Recuperação
     Automática.
@@ -394,9 +395,9 @@ def sidra(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -438,7 +439,7 @@ def sidra(
     if formato == "url":
         return path
 
-    data = requests.get(path, verify=verificar_certificado).json()
+    data = requests.get(path, verify=config.resolver_certificado(verificar_certificado)).json()
     if formato == "json":
         return data
 
@@ -460,7 +461,7 @@ def referencias(
     ],
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
 
@@ -485,9 +486,9 @@ def referencias(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
