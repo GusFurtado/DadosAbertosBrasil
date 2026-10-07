@@ -212,7 +212,7 @@ class Get(BaseModel):
 
         if self.cols_to_rename is not None:
             df = df.select([col for col in self.cols_to_rename if col in df.columns])
-            df = df.rename(self.cols_to_rename)
+            df = df.rename(self.cols_to_rename, strict=False)
 
         for col in self.cols_to_int or []:
             if col in df.columns:

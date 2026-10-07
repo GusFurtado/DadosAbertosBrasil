@@ -3,7 +3,8 @@ from typing import Literal, Optional
 
 from pydantic import validate_call, PositiveInt
 
-from ..utils import Base, Get, parse, Formato, Output
+from .._config import config
+from ..utils import Base, Get, parse, Formato, Output, filtrar, filtrar_nome
 
 
 class Senador(Base):
@@ -187,7 +188,7 @@ class Senador(Base):
         tipo_sessao: Optional[str] = None,
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Obtém a relação de apartes do senador.
 
@@ -223,17 +224,20 @@ class Senador(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Apartes do senador.
 
         """
@@ -303,7 +307,7 @@ class Senador(Base):
         sigla: Optional[str] = None,
         tramitando: Optional[bool] = None,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Obtém as matérias de autoria de um senador.
 
@@ -330,17 +334,20 @@ class Senador(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Matérias de autoria do senador.
 
         """
@@ -396,7 +403,7 @@ class Senador(Base):
         self,
         comissao: Optional[str] = None,
         ativos: Optional[bool] = None,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Obtém a relação de cargos que o senador ja ocupou.
 
@@ -410,15 +417,17 @@ class Senador(Base):
             - False: Retorna apenas os cargos já finalizadas;
             - None: Retorna ambos.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Relação de cargos que o senador já ocupou.
 
         """
@@ -455,7 +464,7 @@ class Senador(Base):
         self,
         comissao: Optional[str] = None,
         ativos: Optional[bool] = None,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Obtém as comissões de que um senador é membro.
 
@@ -469,15 +478,17 @@ class Senador(Base):
             - False: Retorna apenas as comissões já finalizadas;
             - None: Retorna ambas.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Comissões que o senador é membro.
 
         """
@@ -514,20 +525,22 @@ class Senador(Base):
             verify=self.verify,
         ).get(formato)
 
-    def cursos(self, formato: Formato = "pandas") -> Output:
+    def cursos(self, formato: Formato | None = None) -> Output:
         """Obtém o histórico acadêmico de um senador.
 
         Parameters
         ----------
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Histórico acadêmico do senador.
 
         """
@@ -565,7 +578,7 @@ class Senador(Base):
         tipo_sessao: Optional[str] = None,
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Obtém a relação de discursos do senador.
 
@@ -604,17 +617,20 @@ class Senador(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Relação de discursos do senador.
 
         """
@@ -682,7 +698,7 @@ class Senador(Base):
     def filiacoes(
         self,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Obtém as filiações partidárias que o senador já teve.
 
@@ -690,17 +706,20 @@ class Senador(Base):
         ----------
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Filiações partidárias que o senador já teve.
 
         """
@@ -744,7 +763,7 @@ class Senador(Base):
     def mandatos(
         self,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Obtém os mandatos que o senador já teve.
 
@@ -752,17 +771,20 @@ class Senador(Base):
         ----------
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Mandatos que o senador já teve.
 
         """
@@ -795,20 +817,22 @@ class Senador(Base):
             verify=self.verify,
         ).get(formato)
 
-    def liderancas(self, formato: Literal["dataframe", "json"] = "dataframe") -> Output:
+    def liderancas(self, formato: Formato | None = None) -> Output:
         """Obtém os cargos de liderança de um senador.
 
         Parameters
         ----------
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Cargos de liderança do senador.
 
         """
@@ -848,7 +872,7 @@ class Senador(Base):
         self,
         inicio: Optional[date] = None,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Obtém as licenças de um senador.
 
@@ -859,17 +883,20 @@ class Senador(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Licenças do senador.
 
         """
@@ -900,20 +927,22 @@ class Senador(Base):
             verify=self.verify,
         ).get(formato)
 
-    def profissoes(self, formato: Literal["dataframe", "json"] = "dataframe") -> Output:
+    def profissoes(self, formato: Formato | None = None) -> Output:
         """Obtém a(s) profissão(ões) de um senador.
 
         Parameters
         ----------
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Profissões do senador.
 
         """
@@ -946,7 +975,7 @@ class Senador(Base):
         numero: Optional[int] = None,
         sigla: Optional[str] = None,
         tramitando: Optional[bool] = None,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Obtém as matérias de relatoria de um senador.
 
@@ -969,15 +998,17 @@ class Senador(Base):
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Matérias de relatoria do senador.
 
         """
@@ -1027,7 +1058,7 @@ class Senador(Base):
         sigla: Optional[str] = None,
         tramitando: Optional[bool] = None,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Obtém as votações de um senador.
 
@@ -1049,17 +1080,20 @@ class Senador(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Votações do senador.
 
         """
@@ -1111,7 +1145,7 @@ def lista_senadores(
     excluindo: Optional[str] = None,
     url: bool = True,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista de senadores da república.
@@ -1145,13 +1179,16 @@ def lista_senadores(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -1159,7 +1196,7 @@ def lista_senadores(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Lista de senadores da república.
 
     Raises
@@ -1253,6 +1290,7 @@ def lista_senadores(
         "Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento": "causa_afastamento",
     }
 
+    formato = config.resolver_formato(formato)
     data = Get(
         endpoint="senado",
         path=["senador", "lista", TIPOS[tipo]["path"]],
@@ -1267,25 +1305,22 @@ def lista_senadores(
         verify=verificar_certificado,
     ).get(formato)
 
-    if formato == "pandas":
-        if sexo is not None:
-            SEXOS = {"m": "Masculino", "f": "Feminino"}
-            data = data[data["sexo"] == SEXOS[sexo]]
+    if sexo is not None:
+        SEXOS = {"m": "Masculino", "f": "Feminino"}
+        data = filtrar(data, formato, "sexo", SEXOS[sexo])
 
-        if (uf is not None) and (tipo == "afastados"):
-            data = data[data["uf"] == parse.uf(uf=uf)]
+    if (uf is not None) and (tipo == "afastados"):
+        data = filtrar(data, formato, "uf", parse.uf(uf=uf))
 
-        if partido is not None:
-            data = data[data["partido"] == partido.upper()]
+    if partido is not None:
+        data = filtrar(data, formato, "partido", partido.upper())
 
-        if contendo is not None:
-            nome_parlamentar = data["nome_parlamentar"].str.contains(contendo)
-            nome_completo = data["nome_completo"].str.contains(contendo)
-            data = data[nome_parlamentar | nome_completo]
-
-        if excluindo is not None:
-            nome_parlamentar = ~data["nome_parlamentar"].str.contains(excluindo)
-            nome_completo = ~data["nome_completo"].str.contains(excluindo)
-            data = data[nome_parlamentar | nome_completo]
+    data = filtrar_nome(
+        data,
+        formato,
+        ["nome_parlamentar", "nome_completo"],
+        contendo=contendo,
+        excluindo=excluindo,
+    )
 
     return data

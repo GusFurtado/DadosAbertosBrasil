@@ -101,3 +101,9 @@ def test_polars_ausente(monkeypatch):
     monkeypatch.setitem(sys.modules, "polars", None)
     with pytest.raises(ImportError, match="DadosAbertosBrasil\\[polars\\]"):
         _ = _get().polars
+
+
+def test_polars_ignora_coluna_ausente_no_rename():
+    renomear = {"id": "codigo", "nome": "nome", "inexistente": "x"}
+    plf = _get(cols_to_rename=renomear).polars
+    assert set(plf.columns) == {"codigo", "nome"}
