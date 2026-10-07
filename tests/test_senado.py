@@ -1,6 +1,9 @@
+import pytest
 import pandas as pd
 from DadosAbertosBrasil import senado
 from DadosAbertosBrasil.senado._senadores import lista_senadores
+
+pytestmark = pytest.mark.online
 
 
 def test_lista_blocos():
