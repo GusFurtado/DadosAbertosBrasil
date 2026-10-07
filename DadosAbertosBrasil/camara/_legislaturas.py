@@ -77,7 +77,7 @@ class Legislatura(Base):
         fim: Optional[date] = None,
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
 
@@ -103,17 +103,20 @@ class Legislatura(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Quais deputados fizeram parte da Mesa Diretora em uma legislatura.
 
         """
@@ -164,7 +167,7 @@ def lista_legislaturas(
     ordenar_por: str = "id",
     url: bool = True,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Os períodos de mandatos e atividades parlamentares da Câmara.
@@ -205,13 +208,16 @@ def lista_legislaturas(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -219,7 +225,7 @@ def lista_legislaturas(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Os períodos de mandatos e atividades parlamentares da Câmara.
 
     """

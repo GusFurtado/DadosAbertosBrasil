@@ -130,7 +130,7 @@ class Orgao(Base):
         ordenar_por: str = "dataHoraInicio",
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Os eventos ocorridos ou previstos em um órgão legislativo.
 
@@ -175,16 +175,20 @@ class Orgao(Base):
 
         index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Lista de discursos feitos por um deputado em eventos diversos.
 
         """
@@ -238,7 +242,7 @@ class Orgao(Base):
         itens: Optional[PositiveInt] = None,
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Lista de cargos de um órgão e parlamentares que os ocupam.
 
@@ -272,17 +276,20 @@ class Orgao(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Lista de cargos de um órgão e parlamentares que os ocupam.
 
         """
@@ -336,7 +343,7 @@ class Orgao(Base):
         ordenar_por: str = "dataHoraRegistro",
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Uma lista de eventos com a participação do parlamentar.
 
@@ -392,17 +399,20 @@ class Orgao(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Uma lista de eventos com a participação do parlamentar.
 
         """
@@ -461,7 +471,7 @@ def lista_orgaos(
     ordenar_por: str = "id",
     url: bool = True,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista das comissões e outros órgãos legislativos da Câmara.
@@ -512,13 +522,16 @@ def lista_orgaos(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -526,7 +539,7 @@ def lista_orgaos(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Lista das comissões e outros órgãos legislativos da Câmara.
 
     """

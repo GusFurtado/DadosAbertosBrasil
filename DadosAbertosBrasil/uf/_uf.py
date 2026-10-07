@@ -229,7 +229,7 @@ class UF:
         ordenar_por: str = "nome",
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
         verificar_certificado: bool | None = None,
     ) -> Output:
         """Lista dos deputados federais da UF em exercício.
@@ -288,12 +288,16 @@ class UF:
 
         index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         verificar_certificado : bool, optional
             Defina como `False` em caso de falha na verificação do certificado
@@ -301,7 +305,7 @@ class UF:
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Tabela com informações básicas dos deputados federais.
 
         Raises
@@ -594,7 +598,7 @@ class UF:
         excluindo: Optional[str] = None,
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
         verificar_certificado: bool | None = None,
     ) -> Output:
         """Lista de senadores da república desta UF.
@@ -625,12 +629,16 @@ class UF:
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         verificar_certificado : bool, optional
             Defina como `False` em caso de falha na verificação do certificado
@@ -638,7 +646,7 @@ class UF:
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Lista de senadores.
 
         See Also

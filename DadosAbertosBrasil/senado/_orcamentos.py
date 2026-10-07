@@ -2,7 +2,8 @@ from typing import Optional
 
 from pydantic import validate_call, PositiveInt
 
-from ..utils import Get, Formato, Output
+from .._config import config
+from ..utils import Get, Formato, Output, filtrar, filtrar_nome
 
 
 @validate_call
@@ -12,7 +13,7 @@ def lista_orcamentos(
     ano_execucao: Optional[PositiveInt] = None,
     ano_materia: Optional[PositiveInt] = None,
     url: bool = True,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém a lista dos lotes de emendas orçamentárias.
@@ -35,11 +36,13 @@ def lista_orcamentos(
         Se False, remove as colunas contendo URI, URL e e-mails.
         Esse argumento é ignorado se `formato` for igual a 'json'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -47,7 +50,7 @@ def lista_orcamentos(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Lista dos lotes de emendas orçamentárias.
 
     Examples
@@ -83,6 +86,7 @@ def lista_orcamentos(
         "DescricaoTipoPlOrcamento": "tipo_descricao",
     }
 
+    formato = config.resolver_formato(formato)
     data = Get(
         endpoint="senado",
         path=["orcamento", "lista"],
@@ -107,14 +111,13 @@ def lista_orcamentos(
         verify=verificar_certificado,
     ).get(formato)
 
-    if formato == "pandas":
-        if autor is not None:
-            data = data[data["autor_nome"].str.contains(autor)]
-        if tipo is not None:
-            data = data[data["tipo_sigla"] == tipo]
-        if ano_execucao is not None:
-            data = data[data["ano_execucao"] == ano_execucao]
-        if ano_materia is not None:
-            data = data[data["ano_materia"] == ano_materia]
+    if autor is not None:
+        data = filtrar_nome(data, formato, ["autor_nome"], contendo=autor)
+    if tipo is not None:
+        data = filtrar(data, formato, "tipo_sigla", tipo)
+    if ano_execucao is not None:
+        data = filtrar(data, formato, "ano_execucao", ano_execucao)
+    if ano_materia is not None:
+        data = filtrar(data, formato, "materia_ano", ano_materia)
 
     return data
