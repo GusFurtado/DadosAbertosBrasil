@@ -5,7 +5,7 @@ from pydantic import validate_call
 import requests
 
 from .._config import config
-from ..utils import Get, Formato, Output
+from ..utils import Get, Formato, Output, converter
 
 
 @validate_call
@@ -19,7 +19,7 @@ def lista_tabelas(
     nivel: Optional[int | str] = None,
     pesquisa: Optional[str] = None,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista de tabelas disponíveis no SIDRA.
@@ -79,12 +79,15 @@ def lista_tabelas(
 
     index : bool, default=False
         Se True, define a coluna 'tabela_id' como index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -92,7 +95,7 @@ def lista_tabelas(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Lista de tabelas disponíveis no SIDRA.
 
     Examples
@@ -166,7 +169,8 @@ def lista_tabelas(
         verify=verificar_certificado,
     )
 
-    if formato != "pandas":
+    formato = config.resolver_formato(formato)
+    if formato not in ("pandas", "polars"):
         return get_obj.get(formato)
 
     df = pd.json_normalize(
@@ -185,18 +189,18 @@ def lista_tabelas(
         if isinstance(excluindo, str):
             excluindo = [excluindo]
         for termo in excluindo:
-            df = df[~df["SERNOME"].str.upper().str.contains(termo.upper())]
+            df = df[~df["tabela_nome"].str.upper().str.contains(termo.upper())]
 
     if isinstance(pesquisa, str):
         df = df[df.pesquisa_id.str.upper() == pesquisa.upper()]
 
-    if index:
-        df.set_index("tabela_id", inplace=True)
-
-    return df
+    return converter(df, formato, index, "tabela_id")
 
 
-def lista_pesquisas(index: bool = False) -> pd.DataFrame:
+def lista_pesquisas(
+    index: bool = False,
+    formato: Literal["pandas", "polars"] | None = None,
+) -> Output:
     """Lista de pesquisas disponíveis no SIDRA.
 
     Esta função é utilizada para identificar o código usado pela função
@@ -206,10 +210,15 @@ def lista_pesquisas(index: bool = False) -> pd.DataFrame:
     ----------
     index : bool, default=False
         Se True, define a coluna 'pesquisa_id' como index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
+
+    formato : {"pandas", "polars"}, optional
+        Biblioteca do DataFrame retornado.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame | polars.DataFrame
         Lista de pesquisas disponíveis no SIDRA.
 
     Examples
@@ -235,10 +244,7 @@ def lista_pesquisas(index: bool = False) -> pd.DataFrame:
     )
     df = df[["pesquisa_id", "pesquisa_nome"]].drop_duplicates().reset_index(drop=True)
 
-    if index:
-        df.set_index("pesquisa_id", inplace=True)
-
-    return df
+    return converter(df, config.resolver_formato(formato), index, "pesquisa_id")
 
 
 class Metadados:
@@ -324,7 +330,7 @@ def sidra(
     classificacoes: Optional[dict] = None,
     ufs_extintas: bool = False,
     decimais: Optional[int] = None,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Função para captura de dados do SIDRA - Sistema IBGE de Recuperação
@@ -389,11 +395,13 @@ def sidra(
         Número de fixo de casas decimais do resultado, entre 0 e 9.
         Se None, utiliza o padrão de cada variável.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -401,7 +409,7 @@ def sidra(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Série de dados do SIDRA.
 
     """
@@ -436,6 +444,7 @@ def sidra(
     u = "y" if ufs_extintas else "n"
     path += f"/u/{u}/d/{decimais or 's'}"
 
+    formato = config.resolver_formato(formato)
     if formato == "url":
         return path
 
@@ -445,7 +454,7 @@ def sidra(
 
     df = pd.DataFrame(data[1:])
     df.columns = data[0].values()
-    return df
+    return converter(df, formato)
 
 
 @validate_call
@@ -460,7 +469,7 @@ def referencias(
         "variaveis",
     ],
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
@@ -479,12 +488,15 @@ def referencias(
 
     index: bool, default=False
         Defina True caso o campo `"cod"` deva ser o index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -492,7 +504,7 @@ def referencias(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Referências do código pesquisado.
 
     Examples
@@ -537,7 +549,7 @@ def referencias(
         endpoint="sidra",
         path=["agregados"],
         params={"acervo": CODIGOS[cod]},
-        cols_to_rename={"id": "col", "literal": "referencia"},
+        cols_to_rename={"id": "cod", "literal": "referencia"},
         index=index,
         index_col="cod",
         verify=verificar_certificado,
