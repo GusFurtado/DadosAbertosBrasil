@@ -66,6 +66,9 @@ select = ["E", "F", "I", "N", "W", "B", "UP", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "online: consulta APIs externas e depende de rede e da disponibilidade dos serviços",
+]
 
 [dependency-groups]
 dev = [
