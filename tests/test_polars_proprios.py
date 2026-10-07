@@ -197,3 +197,23 @@ def test_favoritos_catalogo_polars(monkeypatch):
     df = favoritos.catalogo(formato="polars")
     assert isinstance(df, pl.DataFrame)
     assert favoritos.catalogo(formato="url").startswith("https://")
+
+
+@pytest.mark.parametrize("formato", ["pandas", "polars"])
+def test_ipea_classe_serie(api, formato):
+    def resposta(url):
+        if url.endswith("Valores"):
+            return {"value": [{"SERCODIGO": "X", "VALDATA": "1996-01-01T00:00:00-02:00", "VALVALOR": 1.0}]}
+        campos = [
+            "BASNOME", "FNTNOME", "FNTSIGLA", "FNTURL", "MULNOME", "PERNOME", "SERATUALIZACAO",
+            "SERCOMENTARIO", "UNINOME", "SERSTATUS", "TEMCODIGO", "PAICODIGO", "SERNUMERICA",
+        ]
+        return {"value": [{**dict.fromkeys(campos, "x"), "SERNOME": "PIB"}]}
+
+    api(resposta)
+    s = ipea.Serie("X", formato=formato)
+    tipo = pl.DataFrame if formato == "polars" else pd.DataFrame
+    assert isinstance(s.valores, tipo)
+    assert isinstance(s.metadados, tipo)
+    assert list(s.valores["data"]) == [dt.date(1996, 1, 1)]
+    assert s.nome == "PIB"
