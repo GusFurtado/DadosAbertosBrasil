@@ -127,7 +127,7 @@ class Frente(Base):
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
             Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+            é ignorado com aviso.
 
         formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:

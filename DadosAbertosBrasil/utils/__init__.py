@@ -9,5 +9,6 @@ Módulos
 
 """
 
+from .filtros import codigos_orgaos, filtrar, filtrar_nome
 from .get import Base, Get
 from .typing import Formato, Expectativa, NivelTerritorial, Output

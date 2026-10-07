@@ -1,22 +1,25 @@
 from pydantic import validate_call
 
+from .._config import config
 from ..utils import Get, Formato, Output
 
 
 @validate_call
 def moedas(
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém os nomes e símbolos das principais moedas internacionais.
 
     Parameters
     ----------
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -24,7 +27,7 @@ def moedas(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Nomes e símbolos das principais moedas internacionais.
 
     See Also
@@ -67,6 +70,7 @@ def moedas(
 
     """
 
+    formato = config.resolver_formato(formato)
     data = Get(
         endpoint="bacen",
         path=["Moedas"],
@@ -74,7 +78,7 @@ def moedas(
         verify=verificar_certificado,
     ).get(formato)
 
-    if formato == "pandas":
+    if formato in ("pandas", "polars"):
         data.columns = ["simbolo", "nome", "tipo"]
 
     return data

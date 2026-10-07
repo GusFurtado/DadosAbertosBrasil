@@ -125,7 +125,7 @@ class Votacao(Base):
         self,
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """O voto recomendado pelas lideranças aos seus deputados na votação.
 
@@ -152,17 +152,20 @@ class Votacao(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             O voto recomendado pelas lideranças aos seus deputados na votação.
 
         """
@@ -190,7 +193,7 @@ class Votacao(Base):
     def votos(
         self,
         url: bool = True,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Como cada parlamentar votou em uma votação nominal e aberta.
 
@@ -212,15 +215,17 @@ class Votacao(Base):
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Como cada parlamentar votou em uma votação nominal e aberta.
 
         """
@@ -269,7 +274,7 @@ def lista_votacoes(
     ordenar_por: str = "dataHoraRegistro",
     url: bool = True,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista de votações na Câmara.
@@ -343,13 +348,16 @@ def lista_votacoes(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -357,7 +365,7 @@ def lista_votacoes(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Lista de votações na Câmara.
 
     """

@@ -2,7 +2,8 @@ from typing import Literal, Optional
 
 from pydantic import validate_call
 
-from ..utils import Get, parse, Formato, Output
+from .._config import config
+from ..utils import Get, parse, Formato, Output, filtrar, filtrar_nome
 
 
 @validate_call
@@ -18,7 +19,7 @@ def lista_legislatura(
     excluindo: Optional[str] = None,
     url: bool = True,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista senadores de uma legislatura ou de um intervalo de legislaturas.
@@ -65,13 +66,16 @@ def lista_legislatura(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -79,7 +83,7 @@ def lista_legislatura(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Lista senadores de uma legislatura ou de um intervalo de legislaturas.
 
     Raises
@@ -152,6 +156,7 @@ def lista_legislatura(
         "Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento": "causa_afastamento",
     }
 
+    formato = config.resolver_formato(formato)
     data = Get(
         endpoint="senado",
         path=path,
@@ -166,22 +171,19 @@ def lista_legislatura(
         verify=verificar_certificado,
     ).get(formato)
 
-    if formato == "pandas":
-        if sexo is not None:
-            SEXOS = {"f": "Feminino", "m": "Masculino"}
-            data = data[data["sexo"] == SEXOS[sexo]]
+    if sexo is not None:
+        SEXOS = {"f": "Feminino", "m": "Masculino"}
+        data = filtrar(data, formato, "sexo", SEXOS[sexo])
 
-        if partido is not None:
-            data = data[data["partido"] == partido.upper()]
+    if partido is not None:
+        data = filtrar(data, formato, "partido", partido.upper())
 
-        if contendo is not None:
-            nome_parlamentar = data["nome_parlamentar"].str.contains(contendo)
-            nome_completo = data["nome_completo"].str.contains(contendo)
-            data = data[nome_parlamentar | nome_completo]
-
-        if excluindo is not None:
-            nome_parlamentar = ~data["nome_parlamentar"].str.contains(excluindo)
-            nome_completo = ~data["nome_completo"].str.contains(excluindo)
-            data = data[nome_parlamentar | nome_completo]
+    data = filtrar_nome(
+        data,
+        formato,
+        ["nome_parlamentar", "nome_completo"],
+        contendo=contendo,
+        excluindo=excluindo,
+    )
 
     return data
