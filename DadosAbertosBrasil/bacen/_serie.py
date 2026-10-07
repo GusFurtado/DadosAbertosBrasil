@@ -4,7 +4,8 @@ from typing import Optional
 import pandas as pd
 from pydantic import validate_call, PositiveInt
 
-from ..utils import Get, parse, Formato, Output
+from .._config import config
+from ..utils import Get, parse, Formato, Output, converter
 
 
 @validate_call
@@ -14,7 +15,7 @@ def serie(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Série do Sistema Gerenciador de Série Temporais (SGS) do Banco Central.
@@ -40,12 +41,15 @@ def serie(
 
     index : bool, default=False
         Define se a coluna `"data"` será o index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -53,7 +57,7 @@ def serie(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Valores da série temporal pesquisada.
 
     Raises
@@ -125,18 +129,14 @@ def serie(
     if len(params) > 0:
         path += [f'?{"&".join(params)}']
 
-    data = Get(
-        endpoint="sgs",
-        path=path,
-        verify=verificar_certificado,
-    ).get(formato)
+    formato = config.resolver_formato(formato)
+    get = Get(endpoint="sgs", path=path, verify=verificar_certificado)
+    if formato not in ("pandas", "polars"):
+        return get.get(formato)
 
-    if formato == "pandas":
-        data["data"] = pd.to_datetime(data["data"], format="%d/%m/%Y")
-        if "datafim" in data.columns:
-            data["datafim"] = pd.to_datetime(data["datafim"], format="%d/%m/%Y")
+    data = get.pandas
+    data["data"] = pd.to_datetime(data["data"], format="%d/%m/%Y")
+    if "datafim" in data.columns:
+        data["datafim"] = pd.to_datetime(data["datafim"], format="%d/%m/%Y")
 
-        if index:
-            data.set_index("data", inplace=True)
-
-    return data
+    return converter(data, formato, index, "data")
