@@ -42,9 +42,9 @@ class Serie:
     index : bool, default=False
         Se True, define a coluna 'codigo' como index do atributo 'valores'.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ---------
@@ -153,7 +153,7 @@ class Serie:
         self,
         cod: str,
         index: bool = False,
-        verificar_certificado: bool = True,
+        verificar_certificado: bool | None = None,
     ):
         self.valores = Get(
             endpoint="ipea",
@@ -210,7 +210,7 @@ def lista_series(
     numerica: Optional[bool] = None,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Registros de metadados de todas as séries do IPEA.
 
@@ -245,9 +245,9 @@ def lista_series(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
@@ -327,7 +327,7 @@ def serie(
     cod: str,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Valores de uma série IPEA.
 
@@ -347,9 +347,9 @@ def serie(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------

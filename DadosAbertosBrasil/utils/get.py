@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from .._config import config
 from .endpoints import ENDPOINTS
 from .errors import DAB_InputError
 from .typing import Formato, Output
@@ -62,7 +63,7 @@ class Get(BaseModel):
 
     # json
     params: dict | None = None
-    verify: bool = True
+    verify: bool | None = None
     unpack_keys: list[str] | None = None
     timeout: int = 30
 
@@ -105,7 +106,7 @@ class Get(BaseModel):
         response = self._session.get(
             url=self.url,
             params=self.params,
-            verify=self.verify,
+            verify=config.resolver_certificado(self.verify),
             timeout=self.timeout,
         )
         response.raise_for_status()
@@ -186,8 +187,9 @@ class Base:
         Key que deve estar contida no arquivo JSON.
     atributos : dict[str, list[str]]
         Dicionário de atributos e respectivos unpack_keys.
-    verify : bool, default=True
+    verify : bool, optional
         Defina como False em caso de falha na verificação do certificado SSL.
+        Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ----------
@@ -209,7 +211,7 @@ class Base:
         unpack_keys: list[str],
         error_key: str,
         atributos: dict[str, list[str]],
-        verify: bool = True,
+        verify: bool | None = None,
     ):
         self.dados = Get(
             endpoint=endpoint,

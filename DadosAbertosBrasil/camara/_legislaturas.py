@@ -14,9 +14,9 @@ class Legislatura(Base):
     cod : int
         Código numérico da legislatura da qual se deseja informações.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ----------
@@ -51,7 +51,7 @@ class Legislatura(Base):
 
     """
 
-    def __init__(self, cod: int, verificar_certificado: bool = True):
+    def __init__(self, cod: int, verificar_certificado: bool | None = None):
         self.cod = cod
         self.verify = verificar_certificado
         atributos = {"fim": ["dataFim"], "inicio": ["dataInicio"], "uri": ["uri"]}
@@ -165,7 +165,7 @@ def lista_legislaturas(
     url: bool = True,
     index: bool = False,
     formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Os períodos de mandatos e atividades parlamentares da Câmara.
 
@@ -213,9 +213,9 @@ def lista_legislaturas(
         - "pandas": DataFrame formatado;
         - "url": Endereço da API que retorna o arquivo JSON.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
