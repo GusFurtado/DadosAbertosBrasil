@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "DadosAbertosBrasil"
-version = "2.1.0"
+version = "2.2.0rc1"
 description = "Pacote Python para acesso a dados abertos e APIs do governo brasileiro."
 readme = "README.md"
 license = {text = "MIT"}
@@ -52,7 +52,7 @@ polars = ["polars>=1.0.0"]
 [project.urls]
 Homepage = "https://github.com/GusFurtado/DadosAbertosBrasil"
 Documentation = "https://www.gustavofurtado.com/DadosAbertosBrasil"
-Download = "https://github.com/GusFurtado/DadosAbertosBrasil/archive/2.1.0.tar.gz"
+Download = "https://github.com/GusFurtado/DadosAbertosBrasil/archive/2.2.0rc1.tar.gz"
 
 [tool.setuptools.packages.find]
 include = ["DadosAbertosBrasil*"]

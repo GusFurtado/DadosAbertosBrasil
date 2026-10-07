@@ -99,4 +99,4 @@ __all__ = [
 ]
 
 __author__ = "Gustavo Furtado da Silva"
-__version__ = "2.1.0"
+__version__ = "2.2.0rc1"
