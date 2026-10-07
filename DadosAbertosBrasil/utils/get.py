@@ -39,12 +39,13 @@ def _avisar_index_polars() -> None:
 
 
 def _pandas_para_polars(df: pd.DataFrame) -> "pl.DataFrame":
-    # pl.from_pandas exige pyarrow para colunas `object`; estas passam por listas.
+    # pl.from_pandas exige pyarrow para colunas `object` e de extensão (como o
+    # `str` padrão do pandas 3); essas passam por listas Python.
     pl = _importar_polars()
     colunas = []
     for nome, serie in df.items():
         nome = str(nome)
-        if serie.dtype == object:
+        if serie.dtype == object or pd.api.types.is_extension_array_dtype(serie.dtype):
             valores = [None if pd.isna(v) is True else v for v in serie]
             colunas.append(pl.Series(nome, valores, strict=False))
         else:
