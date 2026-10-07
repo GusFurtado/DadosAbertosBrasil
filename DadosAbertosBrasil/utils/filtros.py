@@ -28,32 +28,35 @@ def filtrar_nome(
     """Filtra linhas pelo texto (regex) presente nas colunas de nome.
 
     `contendo` mantém as linhas em que alguma coluna contém o padrão.
-    `excluindo` remove as linhas em que todas as colunas contêm o padrão.
+    `excluindo` remove as linhas em que alguma coluna contém o padrão.
+    Valores ausentes não contêm o padrão.
     Para os formatos 'json' e 'url', retorna `data` sem alteração.
     """
     match formato:
         case "pandas":
+
+            def contem(padrao):
+                mascara = data[colunas[0]].str.contains(padrao, na=False)
+                for coluna in colunas[1:]:
+                    mascara |= data[coluna].str.contains(padrao, na=False)
+                return mascara
+
             if contendo is not None:
-                mascara = data[colunas[0]].str.contains(contendo)
-                for coluna in colunas[1:]:
-                    mascara |= data[coluna].str.contains(contendo)
-                data = data[mascara]
+                data = data[contem(contendo)]
             if excluindo is not None:
-                mascara = ~data[colunas[0]].str.contains(excluindo)
-                for coluna in colunas[1:]:
-                    mascara |= ~data[coluna].str.contains(excluindo)
-                data = data[mascara]
+                data = data[~contem(excluindo)]
         case "polars":
             import polars as pl
 
+            def contem(padrao):
+                return pl.any_horizontal(
+                    pl.col(c).str.contains(padrao).fill_null(False) for c in colunas
+                )
+
             if contendo is not None:
-                data = data.filter(
-                    pl.any_horizontal(pl.col(c).str.contains(contendo) for c in colunas)
-                )
+                data = data.filter(contem(contendo))
             if excluindo is not None:
-                data = data.filter(
-                    ~pl.all_horizontal(pl.col(c).str.contains(excluindo) for c in colunas)
-                )
+                data = data.filter(~contem(excluindo))
     return data
 
 

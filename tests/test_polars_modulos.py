@@ -57,9 +57,9 @@ def test_lista_senadores_filtros(api, formato):
 def test_lista_senadores_contendo_excluindo(api, formato):
     api(SENADORES)
     contendo = senado.lista_senadores(contendo="Silva", formato=formato)
-    excluindo = senado.lista_senadores(excluindo="Bia", formato=formato)
+    excluindo = senado.lista_senadores(excluindo="Silva", formato=formato)
     assert list(contendo["codigo"]) == [1, 3]
-    assert list(excluindo["codigo"]) == [1, 2, 3]  # só remove se todas as colunas contêm
+    assert list(excluindo["codigo"]) == [2]
 
 
 def test_lista_senadores_formato_global_aplica_filtros(api):
