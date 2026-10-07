@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 import pandas as pd
 from pydantic import validate_call
@@ -41,24 +41,29 @@ class Serie:
         O código desejado estará na coluna 'codigo'.
 
     index : bool, default=False
-        Se True, define a coluna 'codigo' como index do atributo 'valores'.
+        Se True, define a coluna 'data' como index do atributo 'valores'.
+        Ignorado com aviso se `formato` for 'polars'.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
         SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
+
+    formato : {"pandas", "polars"}, optional
+        Biblioteca dos DataFrames `valores` e `metadados`.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     Attributes
     ---------
     cod : str
         Código da série escolhida.
 
-    valores : pandas.core.frame.DataFrame
+    valores : pandas.core.frame.DataFrame | polars.DataFrame
         Dados históricos da série escolhida. Alias de `dados`.
 
-    dados : pandas.core.frame.DataFrame
+    dados : pandas.core.frame.DataFrame | polars.DataFrame
         Dados históricos da série escolhida. Alias de `valores`.
 
-    metadados : pandas.core.frame.DataFrame
+    metadados : pandas.core.frame.DataFrame | polars.DataFrame
         Metadados da série escolhida.
 
     base : str
@@ -155,8 +160,10 @@ class Serie:
         cod: str,
         index: bool = False,
         verificar_certificado: bool | None = None,
+        formato: Literal["pandas", "polars"] | None = None,
     ):
-        self.valores = Get(
+        formato = config.resolver_formato(formato)
+        valores = Get(
             endpoint="ipea",
             path=[f"Metadados(SERCODIGO='{cod}')", "Valores"],
             verify=verificar_certificado,
@@ -164,12 +171,11 @@ class Serie:
             unpack_keys=["value"],
         ).pandas
 
-        if "data" in self.valores.columns:
-            self.valores["data"] = pd.to_datetime(
-                self.valores["data"], utc=True
-            ).dt.date
-            if index:
-                self.valores.set_index("data", inplace=True)
+        if "data" in valores.columns:
+            valores["data"] = pd.to_datetime(valores["data"], utc=True).dt.date
+            self.valores = converter(valores, formato, index, "data")
+        else:
+            self.valores = converter(valores, formato)
 
         # Atributos
         self.dados = self.valores
@@ -194,6 +200,7 @@ class Serie:
         self.tema = self.metadados.loc[0, "TEMCODIGO"]
         self.pais = self.metadados.loc[0, "PAICODIGO"]
         self.numerica = self.metadados.loc[0, "SERNUMERICA"]
+        self.metadados = converter(self.metadados, formato)
 
     def __repr__(self) -> str:
         return f"<DadosAbertosBrasil.ipea: Dados da série '{self.cod}'>"
