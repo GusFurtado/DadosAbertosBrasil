@@ -1,6 +1,7 @@
 import json
+import warnings
 from functools import cached_property
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
 import requests
@@ -12,6 +13,32 @@ from .._config import config
 from .endpoints import ENDPOINTS
 from .errors import DAB_InputError
 from .typing import Formato, Output
+
+if TYPE_CHECKING:
+    import polars as pl
+
+
+def _importar_polars():
+    try:
+        import polars as pl
+    except ImportError as erro:
+        raise ImportError(
+            "O formato 'polars' requer a biblioteca polars. "
+            "Instale com `pip install DadosAbertosBrasil[polars]`."
+        ) from erro
+    return pl
+
+
+def _achatar(registro: dict, prefixo: str = "") -> dict:
+    """Achata dicionários aninhados usando "." como separador."""
+    achatado = {}
+    for chave, valor in registro.items():
+        nome = f"{prefixo}{chave}"
+        if isinstance(valor, dict):
+            achatado.update(_achatar(valor, f"{nome}."))
+        else:
+            achatado[nome] = valor
+    return achatado
 
 
 class Get(BaseModel):
@@ -162,12 +189,62 @@ class Get(BaseModel):
 
         return df
 
-    def get(self, formato: Formato = "pandas") -> Output:
-        match formato:
+    @cached_property
+    def polars(self) -> "pl.DataFrame":
+        pl = _importar_polars()
+
+        if self.index:
+            warnings.warn(
+                "Os argumentos `index` e `index_col` são ignorados quando o "
+                "formato é 'polars', pois polars não possui index.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+        registros = self.json
+        if isinstance(registros, dict):
+            registros = [registros]
+        df = pl.from_dicts(
+            [_achatar(registro) for registro in registros],
+            infer_schema_length=None,
+            strict=False,
+        )
+
+        if self.cols_to_rename is not None:
+            df = df.select([col for col in self.cols_to_rename if col in df.columns])
+            df = df.rename(self.cols_to_rename)
+
+        for col in self.cols_to_int or []:
+            if col in df.columns:
+                df = df.with_columns(pl.col(col).cast(pl.Int64, strict=False))
+
+        for col in self.cols_to_date or []:
+            if col in df.columns and df.schema[col] == pl.String:
+                df = df.with_columns(pl.col(col).str.to_datetime(strict=False))
+
+        for col in self.cols_to_bool or []:
+            if col in df.columns:
+                df = df.with_columns(
+                    pl.col(col).replace_strict(
+                        {self.true_value: True, self.false_value: False},
+                        default=None,
+                        return_dtype=pl.Boolean,
+                    )
+                )
+
+        if self.remover_url and self.url_cols:
+            df = df.drop(self.url_cols, strict=False)
+
+        return df
+
+    def get(self, formato: Formato | None = None) -> Output:
+        match config.resolver_formato(formato):
             case "json":
                 return self.json
             case "pandas":
                 return self.pandas
+            case "polars":
+                return self.polars
             case "url":
                 return self.url
 

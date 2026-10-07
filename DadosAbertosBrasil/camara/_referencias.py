@@ -7,7 +7,7 @@ from ..utils import Get, Formato, Output
 def referencias(
     lista: str,
     index: bool = False,
-    formato: Formato = "pandas",
+    formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Output:
     """Listas de valores válidos para as funções deste módulo.
@@ -30,13 +30,16 @@ def referencias(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
         Defina como `False` em caso de falha na verificação do certificado
@@ -44,7 +47,7 @@ def referencias(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Listas de valores válidos para as funções deste módulo.
 
     """
