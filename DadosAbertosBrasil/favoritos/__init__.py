@@ -17,7 +17,8 @@ import pandas as pd
 from pydantic import validate_call, PositiveInt
 
 from .. import bacen, ipea
-from ..utils import Get, parse, Formato, Output
+from .._config import config
+from ..utils import Get, parse, Formato, Output, converter
 
 
 @validate_call
@@ -162,20 +163,22 @@ def brasao(uf: str, tamanho: PositiveInt = 100) -> str:
 
 @validate_call
 def catalogo(
-    formato: Literal["pandas", "url"] = "pandas",
-) -> pd.DataFrame | str:
+    formato: Literal["pandas", "polars", "url"] | None = None,
+) -> Output:
     """Catálogo de iniciativas oficiais de dados abertos no Brasil.
 
     Parameters
     ----------
-    formato : {"pandas", "url"}, default="pandas"
+    formato : {"pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "pandas": DataFrame formatado;
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
+        - "url": Endereço do arquivo CSV.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str
+    pandas.core.frame.DataFrame | polars.DataFrame | str
         Catálogo de iniciativas de dados abertos.
 
     Notes
@@ -198,17 +201,17 @@ def catalogo(
 
     URL = "https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv"
 
-    match formato:
-        case "pandas":
-            return pd.read_csv(URL)
+    match config.resolver_formato(formato):
         case "url":
             return URL
+        case formato:
+            return converter(pd.read_csv(URL), formato)
 
 
 @validate_call
 def codigos_municipios(
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista dos códigos dos municípios do IBGE e do TSE.
 
@@ -216,19 +219,21 @@ def codigos_municipios(
 
     Parameters
     ----------
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Códigos do IBGE e do TSE para todos os municípios do Brasil.
 
     Notes
@@ -267,8 +272,8 @@ def ipca(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Índice nacional de preços ao consumidor-amplo (IPCA).
 
@@ -290,20 +295,23 @@ def ipca(
 
     index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         DataFrame contendo os valores da série temporal.
 
     Notes
@@ -346,20 +354,22 @@ def ipca(
 
 @validate_call
 def perfil_eleitorado(
-    formato: Literal["pandas", "url"] = "pandas"
-) -> pd.DataFrame | str:
+    formato: Literal["pandas", "polars", "url"] | None = None,
+) -> Output:
     """Tabela com perfil do eleitorado por município.
 
     Parameters
     ----------
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "pandas": DataFrame formatado;
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
+        - "url": Endereço do arquivo CSV.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str
+    pandas.core.frame.DataFrame | polars.DataFrame | str
         Perfil do eleitorado em todos os municípios.
 
     Examples
@@ -374,11 +384,11 @@ def perfil_eleitorado(
 
     URL = r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/eleitorado.csv"
 
-    match formato:
-        case "pandas":
-            return pd.read_csv(URL, encoding="latin-1", sep=";")
+    match config.resolver_formato(formato):
         case "url":
             return URL
+        case formato:
+            return converter(pd.read_csv(URL, encoding="latin-1", sep=";"), formato)
 
 
 @validate_call
@@ -386,8 +396,8 @@ def pib(
     periodo: Literal["anual", "trimestral"] = "anual",
     tipo: Literal["nominal", "real"] = "real",
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Variação percentual do Produto Interno Bruto Real.
 
@@ -404,20 +414,23 @@ def pib(
 
     index : bool, default=False
         Define a coluna `data` como index da tabela.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Valores do PIB real ou nominal.
 
     Examples
@@ -457,22 +470,20 @@ def pib(
         case "trimestral", "nominal":
             cod = "PAN4_PIBPMV4"
 
+    formato = config.resolver_formato(formato)
     df = ipea.serie(
         cod=cod,
         index=False,
-        formato=formato,
+        formato="pandas" if formato == "polars" else formato,
         verificar_certificado=verificar_certificado,
     )
 
-    if formato != "pandas":
+    if formato not in ("pandas", "polars"):
         return df
 
     assert not df.empty, "Problema na série do IPEA"
     df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
-    if index:
-        df.set_index("data", inplace=True)
-
-    return df
+    return converter(df, formato, index, "data")
 
 
 @validate_call
@@ -481,8 +492,8 @@ def rentabilidade_poupanca(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Rentailidade dos depósitos de poupança a partir de Maio de 2012.
 
@@ -504,20 +515,23 @@ def rentabilidade_poupanca(
 
     index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         DataFrame contendo os valores da série temporal.
 
     Notes
@@ -567,8 +581,8 @@ def reservas_internacionais(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Reservar internacionais mensais ou diárias.
 
@@ -594,20 +608,23 @@ def reservas_internacionais(
 
     index : bool, default=False
         Define se a coluna `"data"` será o index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         DataFrame contendo os valores da série temporal.
 
     Notes
@@ -663,8 +680,8 @@ def reservas_internacionais(
 @validate_call
 def risco_brasil(
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Valores diários do Risco-Brasil, disponibilizados pela J.P. Morgan
     desde 1994.
@@ -676,20 +693,23 @@ def risco_brasil(
     ----------
     index : bool, default=False
         Define a coluna `data` como index da tabela.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Tabela contendo os valores diários do Risco-Brasil.
 
     Examples
@@ -705,29 +725,27 @@ def risco_brasil(
 
     """
 
+    formato = config.resolver_formato(formato)
     df = ipea.serie(
         cod="JPM366_EMBI366",
         index=False,
-        formato=formato,
+        formato="pandas" if formato == "polars" else formato,
         verificar_certificado=verificar_certificado,
     )
 
-    if formato != "pandas":
+    if formato not in ("pandas", "polars"):
         return df
 
     df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
-    if index:
-        df.set_index("data", inplace=True)
-
-    return df
+    return converter(df, formato, index, "data")
 
 
 @validate_call
 def salario_minimo(
     tipo: Literal["nominal", "pcc", "real"] = "nominal",
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Valores do salário-mínimo mensal brasileiro desde 1940.
 
@@ -743,20 +761,23 @@ def salario_minimo(
 
     index : bool, default=False
         Define a coluna `data` como index da tabela.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Tabela contendo os valores mensais do salário-mínimo.
 
     Examples
@@ -794,22 +815,20 @@ def salario_minimo(
         case "ppc":
             cod = "GAC12_SALMINDOL12"
 
+    formato = config.resolver_formato(formato)
     df = ipea.serie(
         cod=cod,
         index=False,
-        formato=formato,
+        formato="pandas" if formato == "polars" else formato,
         verificar_certificado=verificar_certificado,
     )
 
-    if formato != "pandas":
+    if formato not in ("pandas", "polars"):
         return df
 
     assert not df.empty, "Problema na série do IPEA"
     df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
-    if index:
-        df.set_index("data", inplace=True)
-
-    return df
+    return converter(df, formato, index, "data")
 
 
 @validate_call
@@ -820,8 +839,8 @@ def selic(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Taxa de juros - Meta Selic definida pelo COPOM.
 
@@ -853,20 +872,23 @@ def selic(
 
     index : bool, default=False
         Define se a coluna "data" será o index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         DataFrame contendo os valores da série temporal.
 
     Notes
@@ -944,8 +966,8 @@ def taxa_referencial(
     inicio: Optional[date] = None,
     fim: Optional[date] = None,
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Taxa referencial (TR).
 
@@ -967,20 +989,23 @@ def taxa_referencial(
 
     index : bool, default=False
         Define se a coluna 'data' será o index do DataFrame.
+        Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         DataFrame contendo os valores da série temporal.
 
     Notes

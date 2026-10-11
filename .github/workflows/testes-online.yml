@@ -1,0 +1,27 @@
+name: Testes online
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testes-online:
+    name: pytest online
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: uv sync --locked --extra polars
+
+      - name: Testes que consultam as APIs
+        run: uv run pytest -m online

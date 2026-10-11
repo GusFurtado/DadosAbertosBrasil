@@ -2,7 +2,8 @@ from typing import Optional
 
 from pydantic import validate_call, PositiveInt
 
-from ..utils import Get, Formato, Output
+from .._config import config
+from ..utils import Get, Formato, Output, filtrar
 
 
 _RENOMEAR_COLUNAS = {
@@ -26,8 +27,8 @@ def lista_temas(
     cod: Optional[PositiveInt] = None,
     pai: Optional[PositiveInt] = None,
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Registros de todos os temas cadastrados.
 
@@ -41,20 +42,24 @@ def lista_temas(
 
     index : bool, default=False
         Se True, define a coluna 'codigo' como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Registros de todos os temas das séries do IPEA.
 
     Examples
@@ -95,6 +100,7 @@ def lista_temas(
 
     """
 
+    formato = config.resolver_formato(formato)
     data = Get(
         endpoint="ipea",
         path=["Temas" if cod is None else f"Temas({cod})"],
@@ -104,9 +110,8 @@ def lista_temas(
         verify=verificar_certificado,
     ).get(formato)
 
-    if formato == "pandas":
-        if pai is not None:
-            data = data[data["pai"] == pai]
+    if pai is not None:
+        data = filtrar(data, formato, "pai", pai)
 
     return data
 
@@ -115,8 +120,8 @@ def lista_temas(
 def lista_paises(
     cod: Optional[str] = None,
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Registros de todos os países cadastrados.
 
@@ -128,20 +133,24 @@ def lista_paises(
 
     index : bool, default=False
         Se True, define a coluna 'codigo' como index do DataFrame.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         DataFrame contendo um registro de todos os países das séries do IPEA.
 
     Examples
@@ -188,8 +197,8 @@ def lista_territorios(
     amc: Optional[bool] = None,
     cod: Optional[int] = None,
     nivel: Optional[str] = None,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Registros de todos os territórios brasileiros cadastrados.
 
@@ -214,19 +223,21 @@ def lista_territorios(
         Utilize a função `ipea.niveis_territoriais` para verificar
         as opções disponíveis.
     
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Registros de todos os territórios das séries do IPEA.
 
     Notes
@@ -270,6 +281,7 @@ def lista_territorios(
         n = "Municipios" if nivel == "Municípios" else nivel
         path = f"Territorios(TERCODIGO='{cod}',NIVNOME='{n}')"
 
+    formato = config.resolver_formato(formato)
     data = Get(
         endpoint="ipea",
         path=[path],
@@ -278,11 +290,10 @@ def lista_territorios(
         verify=verificar_certificado,
     ).get(formato)
 
-    if formato == "pandas":
-        if capital is not None:
-            data = data[data["capital"] == capital]
-        if amc is not None:
-            data = data[data["amc"] == amc]
+    if capital is not None:
+        data = filtrar(data, formato, "capital", capital)
+    if amc is not None:
+        data = filtrar(data, formato, "amc", amc)
 
     return data
 

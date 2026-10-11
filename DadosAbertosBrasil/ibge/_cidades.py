@@ -106,9 +106,9 @@ class Galeria:
         Código IBGE da localidade.
         O código pode ser obtido com auxílio da função `ibge.localidades`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ----------
@@ -144,7 +144,7 @@ class Galeria:
 
     """
 
-    def __init__(self, localidade: int | str, verificar_certificado: bool = True):
+    def __init__(self, localidade: int | str, verificar_certificado: bool | None = None):
         self.verify = verificar_certificado
         self.localidade = parse.localidade(localidade)
         galeria = self._get_photos()
@@ -191,9 +191,9 @@ class Historia:
         Código da localidade.
         Este código pode ser obtido com auxílio da função `ìbge.localidades`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ----------
@@ -250,7 +250,7 @@ class Historia:
 
     """
 
-    def __init__(self, localidade: int | str, verificar_certificado: bool = True):
+    def __init__(self, localidade: int | str, verificar_certificado: bool | None = None):
         self.localidade = parse.localidade(localidade)
         self.verify = verificar_certificado
         d = self._get_historia()

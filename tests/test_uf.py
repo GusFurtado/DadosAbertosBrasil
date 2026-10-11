@@ -1,4 +1,7 @@
+import pytest
 from DadosAbertosBrasil.uf import UF, Governador
+
+pytestmark = pytest.mark.online
 
 
 def test_uf_attributes():

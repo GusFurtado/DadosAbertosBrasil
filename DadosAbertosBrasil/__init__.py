@@ -44,6 +44,7 @@ Licença
 """
 
 from . import bacen, camara, ibge, ipea, senado, uf
+from ._config import config
 from .favoritos import (
     bandeira,
     brasao,
@@ -75,6 +76,7 @@ __all__ = [
     "ipea",
     "senado",
     "uf",
+    "config",
     "bandeira",
     "brasao",
     "catalogo",
@@ -97,4 +99,4 @@ __all__ = [
 ]
 
 __author__ = "Gustavo Furtado da Silva"
-__version__ = "2.1.0"
+__version__ = "2.2.0"

@@ -13,9 +13,9 @@ class Bloco(Base):
     cod: int
         Código numérico do bloco partidário do qual se deseja informações.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ----------
@@ -43,7 +43,7 @@ class Bloco(Base):
 
     """
 
-    def __init__(self, cod: int, verificar_certificado: bool = True):
+    def __init__(self, cod: int, verificar_certificado: bool | None = None):
         self.cod = cod
         self.verify = verificar_certificado
         atributos = {"legislatura": ["idLegislatura"], "nome": ["nome"], "uri": ["uri"]}
@@ -73,8 +73,8 @@ def lista_blocos(
     ordenar_por: str = "nome",
     url: bool = True,
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista de dados sobre os blocos partidários.
 
@@ -118,21 +118,24 @@ def lista_blocos(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Lista de blocos partidários.
 
     """

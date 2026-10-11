@@ -1,6 +1,8 @@
 from DadosAbertosBrasil import bacen
 import pytest
 
+pytestmark = pytest.mark.online
+
 
 def test_moedas():
     df = bacen.moedas()

@@ -1,4 +1,7 @@
+import pytest
 from DadosAbertosBrasil import ipea
+
+pytestmark = pytest.mark.online
 
 
 def test_lista_niveis():

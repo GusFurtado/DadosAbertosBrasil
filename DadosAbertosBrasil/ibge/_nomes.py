@@ -4,7 +4,8 @@ import pandas as pd
 from pydantic import validate_call, PositiveInt
 import requests
 
-from ..utils import parse, Formato, Output
+from .._config import config
+from ..utils import parse, Formato, Output, converter
 
 
 @validate_call
@@ -12,8 +13,8 @@ def nomes(
     nomes: list[str] | str,
     sexo: Optional[Literal["f", "m"]] = None,
     localidade: Optional[PositiveInt] = None,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém a frequência de nascimentos por década dos nomes consultados.
 
@@ -37,19 +38,21 @@ def nomes(
         Utilize a função `ibge.localidade` para encontrar a localidade
         desejada.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Frequência de nascimentos por década para os nomes consultados.
 
     Raises
@@ -101,11 +104,12 @@ def nomes(
     if localidade is not None:
         params["localidade"] = parse.localidade(localidade)
 
+    formato = config.resolver_formato(formato)
     url = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nomes}"
     if formato == "url":
         return url
 
-    data = requests.get(url, params=params, verify=verificar_certificado).json()
+    data = requests.get(url, params=params, verify=config.resolver_certificado(verificar_certificado)).json()
     if formato == "json":
         return data
 
@@ -114,14 +118,14 @@ def nomes(
     df = pd.concat(dfs, axis=1)
     df.columns = json.nome
 
-    return df
+    return converter(df, formato)
 
 
 @validate_call
 def nomes_uf(
     nome: str,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém a frequência de nascimentos por UF para o nome consultado.
 
@@ -130,19 +134,21 @@ def nomes_uf(
     nome : str
         Nome que se deseja pesquisar.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Frequência de nascimentos do nome pesquisado, agrupado por Unidade da Federação.
 
     Examples
@@ -159,9 +165,10 @@ def nomes_uf(
 
     """
 
+    formato = config.resolver_formato(formato)
     if formato == "json":
         raise NotImplementedError(
-            "Formato `json` temporariamente indisponível. Escolha formato `url` ou `pandas`."
+            "Formato `json` temporariamente indisponível. Escolha formato `url`, `pandas` ou `polars`."
         )
 
     url = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nome}?groupBy=UF"
@@ -176,7 +183,7 @@ def nomes_uf(
     df.index = json.localidade
     df.sort_index(inplace=True)
 
-    return df
+    return converter(df, formato)
 
 
 @validate_call
@@ -184,8 +191,8 @@ def nomes_ranking(
     decada: Optional[PositiveInt] = None,
     sexo: Optional[Literal["f", "m"]] = None,
     localidade: Optional[PositiveInt] = None,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
 
@@ -206,19 +213,21 @@ def nomes_ranking(
         Utilize a função `ibge.localidade` para encontrar a localidade
         desejada.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Nomes mais populadores dentro do universo de parâmetros pesquisados.
 
     Raises
@@ -280,12 +289,14 @@ def nomes_ranking(
     if params != "":
         query += f"?{params}"
 
-    match formato:
+    match config.resolver_formato(formato):
         case "url":
             return query
         case "json":
             raise NotImplementedError(
-                "Formato `json` temporariamente indisponível. Escolha formato `url` ou `pandas`."
+                "Formato `json` temporariamente indisponível. Escolha formato `url`, `pandas` ou `polars`."
             )
         case "pandas":
             return pd.DataFrame(pd.read_json(query).res[0]).set_index("ranking")
+        case "polars":
+            return converter(pd.DataFrame(pd.read_json(query).res[0]), "polars")

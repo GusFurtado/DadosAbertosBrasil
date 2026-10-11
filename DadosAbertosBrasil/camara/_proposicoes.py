@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Literal, Optional
+from typing import Optional
 
 from pydantic import validate_call, PositiveInt
 
@@ -14,9 +14,9 @@ class Proposicao(Base):
     cod : int
         Código numérico da proposição da qual se deseja informações.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ----------
@@ -131,7 +131,7 @@ class Proposicao(Base):
 
     """
 
-    def __init__(self, cod: int, verificar_certificado: bool = True):
+    def __init__(self, cod: int, verificar_certificado: bool | None = None):
         self.cod = cod
         self.verify = verificar_certificado
         atributos = {
@@ -187,7 +187,7 @@ class Proposicao(Base):
     def autores(
         self,
         url: bool = True,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Lista pessoas e/ou entidades autoras da proposição.
 
@@ -209,15 +209,17 @@ class Proposicao(Base):
             Se False, remove as colunas contendo URI, URL e e-mails.
             Esse argumento é ignorado se `formato` for igual a 'json'.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Lista pessoas e/ou entidades autoras da proposição.
 
         """
@@ -245,7 +247,7 @@ class Proposicao(Base):
         self,
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Uma lista de proposições relacionadas a uma em especial.
 
@@ -261,17 +263,20 @@ class Proposicao(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Uma lista de proposições relacionadas a uma em especial.
 
         """
@@ -299,7 +304,7 @@ class Proposicao(Base):
         ).get(formato)
 
     def temas(
-        self, index: bool = False, formato: Literal["dataframe", "json"] = "dataframe"
+        self, index: bool = False, formato: Formato | None = None
     ) -> Output:
         """Lista de áreas temáticas de uma proposição.
 
@@ -311,17 +316,20 @@ class Proposicao(Base):
         ----------
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Lista de áreas temáticas de uma proposição.
 
         """
@@ -347,7 +355,7 @@ class Proposicao(Base):
         fim: Optional[date] = None,
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """O histórico de passos na tramitação de uma proposta.
 
@@ -370,17 +378,20 @@ class Proposicao(Base):
 
         index : bool, default=False
             Se True, define a coluna `sequencia` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             O histórico de passos na tramitação de uma proposta.
 
         """
@@ -428,7 +439,7 @@ class Proposicao(Base):
         ordenar_por: str = "dataHoraRegistro",
         url: bool = True,
         index: bool = False,
-        formato: Formato = "pandas",
+        formato: Formato | None = None,
     ) -> Output:
         """Informações detalhadas de votações sobre a proposição.
 
@@ -454,17 +465,20 @@ class Proposicao(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+            é ignorado com aviso.
 
-        formato : {"json", "pandas", "url"}, default="pandas"
+        formato : {"json", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
             - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado;
+            - "pandas": DataFrame formatado (pandas);
+            - "polars": DataFrame formatado (polars);
             - "url": Endereço da API que retorna o arquivo JSON.
+            Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | str | dict | list[dict]
+        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
             Informações detalhadas de votações sobre a proposição.
 
         """
@@ -524,8 +538,8 @@ def lista_proposicoes(
     ordenar_por: str = "id",
     url: bool = True,
     index: bool = False,
-    formato: Formato = "pandas",
-    verificar_certificado: bool = True,
+    formato: Formato | None = None,
+    verificar_certificado: bool | None = None,
 ) -> Output:
     """Lista de proposições na Câmara.
 
@@ -639,21 +653,24 @@ def lista_proposicoes(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
+        é ignorado com aviso.
 
-    formato : {"json", "pandas", "url"}, default="pandas"
+    formato : {"json", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
         - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado;
+        - "pandas": DataFrame formatado (pandas);
+        - "polars": DataFrame formatado (polars);
         - "url": Endereço da API que retorna o arquivo JSON.
+        Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
-    verificar_certificado : bool, default=True
-        Defina esse argumento como `False` em caso de falha na verificação do
-        certificado SSL.
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | str | dict | list[dict]
+    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
         Lista de proposições na Câmara.
 
     """

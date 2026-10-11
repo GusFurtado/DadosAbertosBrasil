@@ -1,4 +1,7 @@
+import pytest
 from DadosAbertosBrasil import ibge
+
+pytestmark = pytest.mark.online
 
 
 def test_Galeria():

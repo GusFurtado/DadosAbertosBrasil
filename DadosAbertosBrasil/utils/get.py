@@ -1,6 +1,7 @@
 import json
+import warnings
 from functools import cached_property
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
 import requests
@@ -8,9 +9,82 @@ from pydantic import BaseModel
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from .._config import config
 from .endpoints import ENDPOINTS
 from .errors import DAB_InputError
 from .typing import Formato, Output
+
+if TYPE_CHECKING:
+    import polars as pl
+
+
+def _importar_polars():
+    try:
+        import polars as pl
+    except ImportError as erro:
+        raise ImportError(
+            "O formato 'polars' requer a biblioteca polars. "
+            "Instale com `pip install DadosAbertosBrasil[polars]`."
+        ) from erro
+    return pl
+
+
+def _avisar_index_polars() -> None:
+    warnings.warn(
+        "Os argumentos `index` e `index_col` são ignorados quando o "
+        "formato é 'polars', pois polars não possui index.",
+        UserWarning,
+        stacklevel=3,
+    )
+
+
+def _pandas_para_polars(df: pd.DataFrame) -> "pl.DataFrame":
+    # pl.from_pandas exige pyarrow para colunas `object` e de extensão (como o
+    # `str` padrão do pandas 3); essas passam por listas Python.
+    pl = _importar_polars()
+    colunas = []
+    for nome, serie in df.items():
+        nome = str(nome)
+        if serie.dtype == object or pd.api.types.is_extension_array_dtype(serie.dtype):
+            valores = [None if pd.isna(v) is True else v for v in serie]
+            colunas.append(pl.Series(nome, valores, strict=False))
+        else:
+            colunas.append(pl.from_pandas(serie.rename(nome)))
+    return pl.DataFrame(colunas)
+
+
+def converter(
+    df: pd.DataFrame,
+    formato: str,
+    index: bool = False,
+    index_col: str | None = None,
+) -> Output:
+    """Entrega um DataFrame pandas já formatado no `formato` resolvido.
+
+    Em pandas, define `index_col` como index se `index` for True. Em polars,
+    um index nomeado vira coluna e `index` é ignorado com aviso.
+    """
+    if formato == "polars":
+        if index:
+            _avisar_index_polars()
+        if any(nome is not None for nome in df.index.names):
+            df = df.reset_index()
+        return _pandas_para_polars(df)
+    if index and index_col is not None and not df.empty:
+        df = df.set_index(index_col)
+    return df
+
+
+def _achatar(registro: dict, prefixo: str = "") -> dict:
+    """Achata dicionários aninhados usando "." como separador."""
+    achatado = {}
+    for chave, valor in registro.items():
+        nome = f"{prefixo}{chave}"
+        if isinstance(valor, dict):
+            achatado.update(_achatar(valor, f"{nome}."))
+        else:
+            achatado[nome] = valor
+    return achatado
 
 
 class Get(BaseModel):
@@ -62,7 +136,7 @@ class Get(BaseModel):
 
     # json
     params: dict | None = None
-    verify: bool = True
+    verify: bool | None = None
     unpack_keys: list[str] | None = None
     timeout: int = 30
 
@@ -105,7 +179,7 @@ class Get(BaseModel):
         response = self._session.get(
             url=self.url,
             params=self.params,
-            verify=self.verify,
+            verify=config.resolver_certificado(self.verify),
             timeout=self.timeout,
         )
         response.raise_for_status()
@@ -161,12 +235,57 @@ class Get(BaseModel):
 
         return df
 
-    def get(self, formato: Formato = "pandas") -> Output:
-        match formato:
+    @cached_property
+    def polars(self) -> "pl.DataFrame":
+        pl = _importar_polars()
+
+        if self.index:
+            _avisar_index_polars()
+
+        registros = self.json
+        if isinstance(registros, dict):
+            registros = [registros]
+        df = pl.from_dicts(
+            [_achatar(registro) for registro in registros],
+            infer_schema_length=None,
+            strict=False,
+        )
+
+        if self.cols_to_rename is not None:
+            df = df.select([col for col in self.cols_to_rename if col in df.columns])
+            df = df.rename(self.cols_to_rename, strict=False)
+
+        for col in self.cols_to_int or []:
+            if col in df.columns:
+                df = df.with_columns(pl.col(col).cast(pl.Int64, strict=False))
+
+        for col in self.cols_to_date or []:
+            if col in df.columns and df.schema[col] == pl.String:
+                df = df.with_columns(pl.col(col).str.to_datetime(strict=False))
+
+        for col in self.cols_to_bool or []:
+            if col in df.columns:
+                df = df.with_columns(
+                    pl.col(col).replace_strict(
+                        {self.true_value: True, self.false_value: False},
+                        default=None,
+                        return_dtype=pl.Boolean,
+                    )
+                )
+
+        if self.remover_url and self.url_cols:
+            df = df.drop(self.url_cols, strict=False)
+
+        return df
+
+    def get(self, formato: Formato | None = None) -> Output:
+        match config.resolver_formato(formato):
             case "json":
                 return self.json
             case "pandas":
                 return self.pandas
+            case "polars":
+                return self.polars
             case "url":
                 return self.url
 
@@ -186,8 +305,9 @@ class Base:
         Key que deve estar contida no arquivo JSON.
     atributos : dict[str, list[str]]
         Dicionário de atributos e respectivos unpack_keys.
-    verify : bool, default=True
+    verify : bool, optional
         Defina como False em caso de falha na verificação do certificado SSL.
+        Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Attributes
     ----------
@@ -209,7 +329,7 @@ class Base:
         unpack_keys: list[str],
         error_key: str,
         atributos: dict[str, list[str]],
-        verify: bool = True,
+        verify: bool | None = None,
     ):
         self.dados = Get(
             endpoint=endpoint,

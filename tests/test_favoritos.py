@@ -1,3 +1,4 @@
+import pytest
 import requests
 
 from DadosAbertosBrasil import (
@@ -15,6 +16,8 @@ from DadosAbertosBrasil import (
     selic,
     taxa_referencial,
 )
+
+pytestmark = pytest.mark.online
 
 
 def test_bandeira():
