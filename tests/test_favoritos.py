@@ -19,17 +19,21 @@ from DadosAbertosBrasil import (
 
 pytestmark = pytest.mark.online
 
+# A Wikimedia pede um User-Agent que identifique o cliente e limita primeiro os
+# genéricos: https://meta.wikimedia.org/wiki/User-Agent_policy
+USER_AGENT = "DadosAbertosBrasil-testes (https://github.com/GusFurtado/DadosAbertosBrasil)"
+
 
 def test_bandeira():
     url = bandeira(uf="SP", tamanho=120)
-    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-    assert response.status_code == 200
+    response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
+    response.raise_for_status()
 
 
 def test_brasao():
     url = brasao(uf="SP", tamanho=120)
-    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-    assert response.status_code == 200, url
+    response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
+    response.raise_for_status()
 
 
 def test_catalogo():
