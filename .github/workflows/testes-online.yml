@@ -24,4 +24,6 @@ jobs:
         run: uv sync --locked --extra polars
 
       - name: Testes que consultam as APIs
-        run: uv run pytest -m online
+        # Erros de rede ou serviço fora do ar viram `skip` na última tentativa
+        # (tests/conftest.py); falhas de verdade continuam vermelhas.
+        run: uv run pytest -m online --reruns 2 --reruns-delay 30 -rs

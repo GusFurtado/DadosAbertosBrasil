@@ -85,7 +85,8 @@ def test_Orgao():
 
 
 def test_Partido():
-    obj = camara.Partido(13)
+    # ID do PT na Câmara (13 é o número eleitoral, não o ID).
+    obj = camara.Partido(36844)
     assert obj.dados
 
 
