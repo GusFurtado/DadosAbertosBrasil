@@ -1,61 +1,44 @@
-<div align="center">
-  <img src="https://raw.githubusercontent.com/GusFurtado/dab_assets/main/images/logo.png"><br>
-</div>
+<p align="center">
+  <a href="https://www.gustavofurtado.com/DadosAbertosBrasil/"><img src="https://www.gustavofurtado.com/assets/img/projects/dab.png" alt="Dados Abertos Brasil" width="640"></a>
+</p>
 
-<div align="center">
+<p align="center">
+  <b>A forma mais simples de acessar dados abertos e APIs do governo brasileiro com Python.</b>
+</p>
 
-![PyPI - Version](https://img.shields.io/pypi/v/DadosAbertosBrasil)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/DadosAbertosBrasil)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/DadosAbertosBrasil)
-![PyPI - License](https://img.shields.io/pypi/l/DadosAbertosBrasil)
+<p align="center">
+  <a href="https://pypi.org/project/DadosAbertosBrasil/"><img src="https://img.shields.io/pypi/v/DadosAbertosBrasil" alt="PyPI"></a>
+  <a href="https://pypi.org/project/DadosAbertosBrasil/"><img src="https://img.shields.io/pypi/pyversions/DadosAbertosBrasil" alt="Versões do Python"></a>
+  <a href="https://pepy.tech/projects/DadosAbertosBrasil"><img src="https://static.pepy.tech/badge/DadosAbertosBrasil/month" alt="Downloads"></a>
+  <a href="https://github.com/GusFurtado/DadosAbertosBrasil/actions/workflows/testes.yml"><img src="https://github.com/GusFurtado/DadosAbertosBrasil/actions/workflows/testes.yml/badge.svg" alt="Testes"></a>
+  <a href="https://github.com/GusFurtado/DadosAbertosBrasil/blob/master/LICENSE.txt"><img src="https://img.shields.io/pypi/l/DadosAbertosBrasil" alt="Licença"></a>
+</p>
 
-</div>
+<p align="center">
+  <b><a href="https://www.gustavofurtado.com/DadosAbertosBrasil/">Documentação</a></b>
+</p>
 
----
+Pacote open-source que padroniza o acesso às APIs do IBGE, do Ipea, do Banco Central, da Câmara
+dos Deputados e do Senado Federal. As consultas devolvem DataFrames do Pandas ou do Polars.
 
-**Dados Abertos Brasil** é uma iniciativa para facilitar o acesso a dados abertos e APIs do governo brasileiro.
+## Instalação
 
-É um pacote open-source para **Python** e **Pandas** e a forma mais simples de acessar dados de instituições como **IGBE**, **IPEA**, **Banco Central**, etc.
-
-Atualmente o pacote Dados Abertos Brasil possui seis módulos, além da classe **[UF](https://www.gustavofurtado.com/DadosAbertosBrasil/DadosAbertosBrasil.uf.html)** que consolida dados diversos de Unidades Federativas em um único objeto.
-
-- DadosAbertosBrasil.**[ibge](https://www.gustavofurtado.com/DadosAbertosBrasil/DadosAbertosBrasil.ibge.html)**
-- DadosAbertosBrasil.**[ipea](https://www.gustavofurtado.com/DadosAbertosBrasil/DadosAbertosBrasil.ipea.html)**
-- DadosAbertosBrasil.**[camara](https://www.gustavofurtado.com/DadosAbertosBrasil/DadosAbertosBrasil.camara.html)**
-- DadosAbertosBrasil.**[senado](https://www.gustavofurtado.com/DadosAbertosBrasil/DadosAbertosBrasil.senado.html)**
-- DadosAbertosBrasil.**[bacen](https://www.gustavofurtado.com/DadosAbertosBrasil/DadosAbertosBrasil.bacen.html)**
-- DadosAbertosBrasil.**[favoritos](https://www.gustavofurtado.com/DadosAbertosBrasil/DadosAbertosBrasil.favoritos.html)**
-
-### Sobre
-- [Documentação](https://www.gustavofurtado.com/DadosAbertosBrasil/)
-- [Exemplos](https://github.com/GusFurtado/dab_assets/tree/main/exemplos)
-
-### Instalação
-```
+```sh
 pip install DadosAbertosBrasil
+
+# Para resultados em Polars
+pip install "DadosAbertosBrasil[polars]"
 ```
 
-Para obter os resultados como DataFrames do [Polars](https://pola.rs/), instale o extra opcional:
-```
-pip install DadosAbertosBrasil[polars]
-```
+## Módulos
 
-> **Aviso:** atualmente o Pandas é uma dependência obrigatória e o formato padrão
-> dos resultados. Em uma versão futura, o Pandas deixará de ser obrigatório e
-> passará a ser instalado apenas como extra opcional. Para não depender do
-> formato padrão, defina `DadosAbertosBrasil.config.formato` ou use o argumento
-> `formato` nas funções.
+- **`ibge`**: localidades, malhas, população, nomes e tabelas do SIDRA.
+- **`ipea`**: séries temporais do IpeaData.
+- **`bacen`**: câmbio, expectativas de mercado e séries do SGS do Banco Central.
+- **`camara`**: deputados, partidos, proposições, votações e eventos da Câmara.
+- **`senado`**: senadores, legislaturas, partidos e orçamentos do Senado.
+- **`favoritos`**: atalhos para as consultas mais comuns, como IPCA, Selic e PIB.
+- **`uf`**: a classe `UF`, que reúne os dados de um estado num só objeto.
 
-### Dependências
-- [Python 3.10 ou superior](https://www.python.org/)
-- [Pandas](https://pandas.pydata.org/)
-- [Polars](https://pola.rs/) (opcional)
-- [Pydantic](https://docs.pydantic.dev/latest/)
-- [Requests](https://requests.readthedocs.io/en/master/)
-
-### Licença
-- [MIT](LICENSE)
-
----
-
-Desenvolvido por: **[Gustavo Furtado](https://www.gustavofurtado.com/)**
+Veja a [referência](https://www.gustavofurtado.com/DadosAbertosBrasil/referencia/ibge/) de cada
+módulo e os [exemplos](https://github.com/GusFurtado/dab_assets/tree/main/exemplos).
