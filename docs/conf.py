@@ -7,6 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 from datetime import date
+from importlib import metadata
 import os
 import sys
 
@@ -17,7 +18,7 @@ year = date.today().year
 project = "Dados Abertos Brasil"
 copyright = f"{year}, Gustavo Furtado"
 author = "Gustavo Furtado"
-release = "2.0.0"
+release = metadata.version("DadosAbertosBrasil")
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

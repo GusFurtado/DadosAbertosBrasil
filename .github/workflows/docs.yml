@@ -1,0 +1,56 @@
+name: Documentação
+
+# Gera a documentação com Sphinx e publica no GitHub Pages, servido em
+# https://www.gustavofurtado.com/DadosAbertosBrasil/ (site de usuário GusFurtado.github.io).
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "docs/**"
+      - "DadosAbertosBrasil/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: uv sync --locked
+
+      - name: Gerar documentação
+        run: uv run python -m sphinx -b html docs docs/_build/html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_build/html
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
