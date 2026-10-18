@@ -1,0 +1,16 @@
+/* Cabeçalho: o card do DAB em gustavofurtado.com, sob um véu azul para o título ficar legível. */
+:root {
+  --md-primary-fg-color: #002776;
+  --md-primary-fg-color--light: #1a4199;
+  --md-primary-fg-color--dark: #001a52;
+}
+
+.md-header {
+  background:
+    linear-gradient(rgba(0, 39, 118, 0.82), rgba(0, 39, 118, 0.82)),
+    #002776 url("https://www.gustavofurtado.com/assets/img/projects/dab.svg") center / cover no-repeat;
+}
+
+.md-header[data-md-state="shadow"] {
+  box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.4), 0 0.2rem 0.4rem rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,81 @@
+site_name: Dados Abertos Brasil
+site_description: A forma mais simples de acessar dados abertos e APIs do governo brasileiro com Python.
+site_url: https://www.gustavofurtado.com/DadosAbertosBrasil/
+repo_url: https://github.com/GusFurtado/DadosAbertosBrasil
+repo_name: GusFurtado/DadosAbertosBrasil
+edit_uri: edit/master/docs/
+
+extra_css:
+  - assets/extra.css
+
+hooks:
+  - docs/hooks/redirects.py
+
+exclude_docs: |
+  hooks/
+
+theme:
+  name: material
+  language: pt-BR
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: green
+      toggle:
+        icon: material/weather-night
+        name: Mudar para o modo escuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: green
+      toggle:
+        icon: material/weather-sunny
+        name: Mudar para o modo claro
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+
+nav:
+  - Início: index.md
+  - Instalação: instalacao.md
+  - Referência:
+      - ibge: referencia/ibge.md
+      - ipea: referencia/ipea.md
+      - bacen: referencia/bacen.md
+      - camara: referencia/camara.md
+      - senado: referencia/senado.md
+      - favoritos: referencia/favoritos.md
+      - uf: referencia/uf.md
+      - Configuração e erros: referencia/configuracao.md
+  - Exemplos: https://github.com/GusFurtado/dab_assets/tree/main/exemplos
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            filters: ["!^_"]
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            merge_init_into_class: true
+            separate_signature: true
+            show_signature_annotations: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - tables
+  - toc:
+      permalink: true

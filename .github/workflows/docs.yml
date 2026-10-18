@@ -1,6 +1,6 @@
 name: Documentação
 
-# Gera a documentação com Sphinx e publica no GitHub Pages, servido em
+# Gera a documentação com MkDocs e publica no GitHub Pages, servido em
 # https://www.gustavofurtado.com/DadosAbertosBrasil/ (site de usuário GusFurtado.github.io).
 
 on:
@@ -9,6 +9,7 @@ on:
     paths:
       - "docs/**"
       - "DadosAbertosBrasil/**"
+      - "mkdocs.yml"
       - "pyproject.toml"
       - "uv.lock"
       - ".github/workflows/docs.yml"
@@ -34,16 +35,16 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar dependências
-        run: uv sync --locked
+        run: uv sync --locked --group docs
 
       - name: Gerar documentação
-        run: uv run python -m sphinx -b html docs docs/_build/html
+        run: uv run mkdocs build --strict
 
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/_build/html
+          path: site
 
   deploy:
     needs: build
