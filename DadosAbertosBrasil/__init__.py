@@ -19,7 +19,7 @@ Módulos
 Sobre
 -----
 - **Página Oficial:** `<https://github.com/GusFurtado/DadosAbertosBrasil>`_
-- **Documentação:** `<https://www.gustavofurtado.com/dab/index.html>`_
+- **Documentação:** `<https://www.gustavofurtado.com/DadosAbertosBrasil>`_
 
 Instalação
 ----------

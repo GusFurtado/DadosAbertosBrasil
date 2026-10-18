@@ -51,7 +51,7 @@ polars = ["polars>=1.0.0"]
 
 [project.urls]
 Homepage = "https://github.com/GusFurtado/DadosAbertosBrasil"
-Documentation = "https://www.gustavofurtado.com/dab/index.html"
+Documentation = "https://www.gustavofurtado.com/DadosAbertosBrasil"
 Download = "https://github.com/GusFurtado/DadosAbertosBrasil/archive/2.2.0.tar.gz"
 
 [tool.setuptools.packages.find]
