@@ -18,7 +18,7 @@ Módulos
 
 Sobre
 -----
-- **Página Oficial:** `<https://www.gustavofurtado.com/dab.html>`_
+- **Página Oficial:** `<https://github.com/GusFurtado/DadosAbertosBrasil>`_
 - **Documentação:** `<https://www.gustavofurtado.com/DadosAbertosBrasil>`_
 
 Instalação
