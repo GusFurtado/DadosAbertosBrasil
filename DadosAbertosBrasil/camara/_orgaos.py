@@ -3,6 +3,7 @@ from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
+from ..utils.errors import alias_descontinuado
 from ..utils.modelos import com_params
 from ..utils.objeto import Objeto
 from ..utils.typing import Formato, Saida
@@ -83,7 +84,7 @@ class Orgao(Objeto):
     uri : str
         Endereço para coleta de dados direta pela API do órgão.
 
-    urlWebsite : str
+    website : str
         URL para acessar o website do órgão.
 
     Methods
@@ -113,6 +114,8 @@ class Orgao(Objeto):
         self.cod = cod
         self.verify = verificar_certificado
         self._carregar(requisicao(["orgaos", cod], verificar_certificado=verificar_certificado))
+
+    urlWebsite = alias_descontinuado("urlWebsite", "website")
 
     def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: Órgão {self.nome}"

@@ -3,6 +3,7 @@ from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
+from ..utils.errors import alias_descontinuado
 from ..utils.modelos import com_params
 from ..utils.objeto import Objeto
 from ..utils.typing import Formato, Saida
@@ -47,7 +48,7 @@ class Votacao(Objeto):
     data : str
         Data da votação.
 
-    data_regitro : str
+    data_registro : str
         Data e horário de registro da votação.
 
     data_ultima_abertura : str
@@ -102,6 +103,8 @@ class Votacao(Objeto):
         self.cod = cod
         self.verify = verificar_certificado
         self._carregar(requisicao(["votacoes", cod], verificar_certificado=verificar_certificado))
+
+    data_regitro = alias_descontinuado("data_regitro", "data_registro")
 
     def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: Votação {self.cod}"

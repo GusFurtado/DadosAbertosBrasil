@@ -84,8 +84,8 @@ def test_excecoes_tem_base_comum():
     assert issubclass(dab.DABDataError, TypeError)
 
 
-def test_dab_deprecation_error_avisa():
-    with pytest.warns(DeprecationWarning, match="removido"):
+def test_dab_deprecation_error_removido():
+    with pytest.raises(AttributeError):
         dab.DAB_DeprecationError  # noqa: B018
 
 
