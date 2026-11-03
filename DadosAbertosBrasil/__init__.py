@@ -15,6 +15,7 @@ Módulos
 - ``DadosAbertosBrasil.bacen``
 - ``DadosAbertosBrasil.favoritos``
 - ``DadosAbertosBrasil.uf``
+- ``DadosAbertosBrasil.wiki``
 
 Sobre
 -----
@@ -43,7 +44,7 @@ Licença
 
 """
 
-from . import bacen, camara, ibge, ipea, senado, uf
+from . import bacen, camara, ibge, ipea, senado, uf, wiki
 from ._config import config
 from .favoritos import (
     bandeira,
@@ -79,6 +80,7 @@ __all__ = [
     "ipea",
     "senado",
     "uf",
+    "wiki",
     "config",
     "bandeira",
     "brasao",

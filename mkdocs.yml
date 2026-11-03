@@ -51,6 +51,7 @@ nav:
       - camara: referencia/camara.md
       - senado: referencia/senado.md
       - favoritos: referencia/favoritos.md
+      - wiki: referencia/wiki.md
       - uf: referencia/uf.md
       - Configuração e erros: referencia/configuracao.md
   - Exemplos: https://github.com/GusFurtado/DadosAbertosBrasil-wiki/tree/2.x/exemplos
