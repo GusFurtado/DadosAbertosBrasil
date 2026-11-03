@@ -51,6 +51,13 @@ def removida(funcao: str, motivo: str) -> DABFuncaoRemovidaError:
     return DABFuncaoRemovidaError(f"`{funcao}` foi removida no DadosAbertosBrasil 3.0. {motivo} Veja {GUIA_MIGRACAO}")
 
 
+class DABDadosWarning(UserWarning):
+    """Aviso de um arquivo do repositório de dados num formato mais novo que o suportado.
+
+    Atualize o pacote: `pip install -U DadosAbertosBrasil`.
+    """
+
+
 class DABFormatoWarning(UserWarning):
     """Aviso de que a função foi chamada sem `formato` e sem `config.formato`.
 
