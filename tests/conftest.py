@@ -17,13 +17,24 @@ def _status(erro: BaseException) -> int | None:
     return None
 
 
-def api_indisponivel(erro: BaseException) -> bool:
+def api_indisponivel(erro: BaseException | None) -> bool:
     """Indica se o erro vem da rede ou do serviço fora do ar.
 
     Erros 4xx (exceto 408 e 429), JSON inesperado e asserts continuam sendo
     falhas: são eles que os testes online existem para pegar.
+
+    Segue a cadeia de exceções porque o pandas embrulha o erro de rede: o
+    `pd.read_json(url)` relança um `URLError` como `FileNotFoundError`.
     """
 
+    while erro is not None:
+        if _erro_de_rede(erro):
+            return True
+        erro = erro.__cause__ or erro.__context__
+    return False
+
+
+def _erro_de_rede(erro: BaseException) -> bool:
     status = _status(erro)
     if status is not None:
         return status in STATUS_INDISPONIVEL
