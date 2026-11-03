@@ -6,10 +6,10 @@ resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'win32'",
-    "python_full_version < '3.12' and sys_platform == 'win32'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
-    "python_full_version < '3.12' and sys_platform == 'emscripten'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.12' and sys_platform == 'win32'",
+    "python_full_version < '3.12' and sys_platform == 'emscripten'",
     "python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
@@ -255,13 +255,15 @@ name = "dadosabertosbrasil"
 version = "2.3.0"
 source = { editable = "." }
 dependencies = [
-    { name = "pandas" },
     { name = "pydantic" },
     { name = "requests" },
     { name = "urllib3" },
 ]
 
 [package.optional-dependencies]
+pandas = [
+    { name = "pandas" },
+]
 polars = [
     { name = "polars" },
 ]
@@ -281,13 +283,13 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "pandas", specifier = ">=2.0.0" },
+    { name = "pandas", marker = "extra == 'pandas'", specifier = ">=2.0.0" },
     { name = "polars", marker = "extra == 'polars'", specifier = ">=1.0.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "requests", specifier = ">=2.3.3" },
     { name = "urllib3", specifier = ">=2.8.0" },
 ]
-provides-extras = ["polars"]
+provides-extras = ["pandas", "polars"]
 
 [package.metadata.requires-dev]
 dev = [

@@ -1,7 +1,9 @@
 import pytest
-import pandas as pd
+
 from DadosAbertosBrasil import senado
 from DadosAbertosBrasil.senado._senadores import lista_senadores
+
+pd = pytest.importorskip("pandas")
 
 pytestmark = pytest.mark.online
 

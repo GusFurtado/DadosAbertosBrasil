@@ -21,7 +21,7 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar dependências
-        run: uv sync --locked --extra polars
+        run: uv sync --locked --extra pandas --extra polars
 
       - name: Testes que consultam as APIs
         # Erros de rede ou serviço fora do ar viram `skip` na última tentativa

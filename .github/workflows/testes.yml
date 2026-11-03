@@ -31,7 +31,30 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Instalar dependências
-        run: uv sync --locked --extra polars
+        run: uv sync --locked --extra pandas --extra polars
+
+      - name: Testes offline
+        run: uv run pytest -m "not online"
+
+  extras:
+    # pandas e polars são opcionais: o pacote tem de funcionar com cada um,
+    # com os dois e sem nenhum.
+    name: pytest (${{ matrix.extras || 'sem DataFrames' }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        extras: ["pandas", "polars", ""]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+
+      - name: Instalar dependências
+        run: uv sync --locked ${{ matrix.extras && format('--extra {0}', matrix.extras) || '' }}
 
       - name: Testes offline
         run: uv run pytest -m "not online"

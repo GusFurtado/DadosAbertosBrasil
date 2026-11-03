@@ -23,20 +23,18 @@ def nivel_fora_do_pacote() -> int:
 
 
 def _avisar_formato() -> None:
-    """Avisa, uma vez por sessão, que o formato padrão muda no 3.0."""
+    """Avisa, uma vez por sessão, que o formato não foi escolhido."""
     global _formato_avisado
     if _formato_avisado:
         return
     # Import local: `utils` importa este módulo.
-    from .utils.errors import GUIA_MIGRACAO, DABFormatoWarning
+    from .utils.errors import DABFormatoWarning
 
     _formato_avisado = True
     warnings.warn(
-        "No DadosAbertosBrasil 3.0, as funções chamadas sem `formato` passam a "
-        "retornar 'json' (lista de registros) em vez de um DataFrame pandas, e o "
-        "pandas vira dependência opcional (`pip install DadosAbertosBrasil[pandas]`). "
-        'Defina `DadosAbertosBrasil.config.formato = "pandas"` (ou "polars") para '
-        f"manter o retorno atual e silenciar este aviso. Guia de migração: {GUIA_MIGRACAO}",
+        "Sem `formato`, as funções retornam 'json': uma lista de registros (dicionários). "
+        'Para escolher o formato padrão e silenciar este aviso, defina `DadosAbertosBrasil.config.formato = "pandas"`, '
+        '"polars" ou "json".',
         DABFormatoWarning,
         stacklevel=nivel_fora_do_pacote(),
     )
@@ -54,12 +52,12 @@ class Config(BaseModel):
     verificar_certificado : bool, default=True
         Verifica o certificado SSL das requisições. Defina como `False` em caso
         de falha na verificação do certificado.
-    formato : {"pandas", "polars"}, default="pandas"
-        Biblioteca usada nos DataFrames retornados pelas funções quando o
-        argumento `formato` não é informado. Requer `polars` instalado para
-        `"polars"` (`pip install DadosAbertosBrasil[polars]`). Enquanto não for
-        definido, as funções avisam (uma vez por sessão, com
-        `DABFormatoWarning`) que o padrão muda para `"json"` no 3.0.
+    formato : {"json", "bruto", "pydantic", "pandas", "polars"}, optional
+        Formato retornado pelas funções quando o argumento `formato` não é
+        informado. Se não for definido, as funções retornam `"json"` e avisam
+        uma vez por sessão (`DABFormatoWarning`); defini-lo, inclusive como
+        `"json"`, silencia o aviso. `"pandas"` e `"polars"` exigem a biblioteca
+        instalada (`pip install DadosAbertosBrasil[pandas]` ou `[polars]`).
 
     Examples
     --------
@@ -72,7 +70,7 @@ class Config(BaseModel):
     model_config = ConfigDict(validate_assignment=True, extra="forbid")
 
     verificar_certificado: bool = True
-    formato: Literal["pandas", "polars"] = "pandas"
+    formato: Literal["json", "bruto", "pydantic", "pandas", "polars"] | None = None
 
     def resolver_certificado(self, valor: bool | None) -> bool:
         """Retorna `valor` se informado, ou a configuração global."""
@@ -82,8 +80,9 @@ class Config(BaseModel):
         """Retorna `valor` se informado, ou o formato global."""
         if valor is not None:
             return valor
-        if "formato" not in self.model_fields_set:
+        if self.formato is None:
             _avisar_formato()
+            return "json"
         return self.formato
 
 

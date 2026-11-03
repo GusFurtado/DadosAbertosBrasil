@@ -51,10 +51,11 @@ def removida(funcao: str, motivo: str) -> DABFuncaoRemovidaError:
     return DABFuncaoRemovidaError(f"`{funcao}` foi removida no DadosAbertosBrasil 3.0. {motivo} Veja {GUIA_MIGRACAO}")
 
 
-class DABFormatoWarning(FutureWarning):
-    """Aviso de que o formato padrão de retorno muda no DadosAbertosBrasil 3.0.
+class DABFormatoWarning(UserWarning):
+    """Aviso de que a função foi chamada sem `formato` e sem `config.formato`.
 
-    Para silenciar, defina `DadosAbertosBrasil.config.formato`.
+    Nesse caso o retorno é `"json"`. Para silenciar, defina
+    `DadosAbertosBrasil.config.formato`.
     """
 
 

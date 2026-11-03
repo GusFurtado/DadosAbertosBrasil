@@ -116,3 +116,13 @@ def api(monkeypatch):
     formato = dab.config.formato
     yield definir
     dab.config.formato = formato
+
+
+@pytest.fixture(autouse=True)
+def formato_pandas_nos_testes_online(request, monkeypatch):
+    """Os testes online verificam DataFrames pandas (`df.empty`)."""
+    if request.node.get_closest_marker("online") is not None:
+        pytest.importorskip("pandas")
+        import DadosAbertosBrasil as dab
+
+        monkeypatch.setattr(dab.config, "formato", "pandas")

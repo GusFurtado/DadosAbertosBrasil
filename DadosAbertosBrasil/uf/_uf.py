@@ -555,8 +555,8 @@ class UF:
 
         if self.extinto:
             raise DABUFError("Método `municipios` indisponível para UFs extintas.")
-        df = ibge.localidades("municipios", index=True, formato="pandas")
-        return df.loc[df["UF_id"] == self.cod, "nome"].to_dict()
+        municipios = ibge.localidades("estados", divisoes="municipios", localidade=self.cod, formato="pydantic")
+        return {municipio.id: municipio.nome for municipio in municipios}
 
     @property
     def populacao(self) -> int:

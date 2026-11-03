@@ -1,8 +1,9 @@
 import datetime as dt
 
-import pandas as pd
-import polars as pl
 import pytest
+
+pd = pytest.importorskip("pandas")
+pl = pytest.importorskip("polars")
 
 import DadosAbertosBrasil as dab
 from DadosAbertosBrasil import bacen, favoritos, ibge, ipea

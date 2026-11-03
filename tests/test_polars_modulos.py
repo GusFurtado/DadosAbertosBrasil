@@ -1,6 +1,7 @@
-import pandas as pd
-import polars as pl
 import pytest
+
+pd = pytest.importorskip("pandas")
+pl = pytest.importorskip("polars")
 
 import DadosAbertosBrasil as dab
 from DadosAbertosBrasil import bacen, camara, ipea, senado
@@ -112,7 +113,8 @@ def test_lista_orcamentos_ano_materia(api, formato):
     assert list(df["materia_ano"]) == [2021]
 
 
-def test_temas_default_retorna_dataframe(api, monkeypatch):
+def test_temas_sem_formato_retorna_json(api, monkeypatch):
     monkeypatch.setattr(camara.Proposicao, "__init__", lambda self, cod: setattr(self, "cod", cod) or setattr(self, "verify", None))
     api({"dados": [{"codTema": 1, "tema": "Saúde", "relevancia": 0}]})
-    assert isinstance(camara.Proposicao(1).temas(), pd.DataFrame)
+    monkeypatch.setattr(dab.config, "formato", None)
+    assert camara.Proposicao(1).temas() == [{"codigo": 1, "tema": "Saúde", "relevancia": 0}]
