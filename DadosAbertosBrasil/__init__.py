@@ -31,7 +31,7 @@ Para instalar, utilize o seguinte comando:
 
 Dependências
 ------------
-- `Python 3.10 ou superior <https://www.python.org/>`_
+- `Python 3.11 ou superior <https://www.python.org/>`_
 - `Pandas <https://pandas.pydata.org/>`_
 - `Pydantic <https://docs.pydantic.dev/latest/>`_
 - `Requests <https://requests.readthedocs.io/en/master/>`_

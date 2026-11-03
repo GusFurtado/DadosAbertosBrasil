@@ -4,7 +4,7 @@
 pip install DadosAbertosBrasil
 ```
 
-Requer Python 3.10 ou superior. As dependências são [Pandas](https://pandas.pydata.org/),
+Requer Python 3.11 ou superior. As dependências são [Pandas](https://pandas.pydata.org/),
 [Pydantic](https://docs.pydantic.dev/latest/) e [Requests](https://requests.readthedocs.io/).
 
 ## Polars
