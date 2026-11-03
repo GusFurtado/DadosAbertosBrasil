@@ -53,8 +53,6 @@ demográficas e estatísticas.
 
 ::: DadosAbertosBrasil.ibge.Historia
 
-::: DadosAbertosBrasil.ibge.coordenadas
-
 ::: DadosAbertosBrasil.ibge.localidades
 
 ::: DadosAbertosBrasil.ibge.malha

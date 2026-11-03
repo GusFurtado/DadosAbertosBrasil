@@ -7,7 +7,6 @@ from DadosAbertosBrasil import (
     catalogo,
     codigos_municipios,
     ipca,
-    perfil_eleitorado,
     pib,
     rentabilidade_poupanca,
     reservas_internacionais,
@@ -52,11 +51,6 @@ def test_ipca():
 
     df = ipca(inicio="2024-01-01", fim="2024-02-01")
     assert df.shape == (2, 3)  # data, datafim e valor
-
-
-def test_perfil_eleitorado():
-    df = perfil_eleitorado()
-    assert not df.empty
 
 
 def test_pib():

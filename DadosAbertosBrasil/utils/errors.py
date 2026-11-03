@@ -38,6 +38,19 @@ class DABUFError(DABError, ValueError):
     """Erro gerado quando o usuário insere um valor inválido para a UF."""
 
 
+class DABFuncaoRemovidaError(DABError, NotImplementedError):
+    """Erro gerado ao chamar uma função removida no 3.0.
+
+    A mensagem explica o motivo, a alternativa (se houver) e aponta para o
+    guia de migração.
+    """
+
+
+def removida(funcao: str, motivo: str) -> DABFuncaoRemovidaError:
+    """Erro de uma função removida, com o link do guia de migração."""
+    return DABFuncaoRemovidaError(f"`{funcao}` foi removida no DadosAbertosBrasil 3.0. {motivo} Veja {GUIA_MIGRACAO}")
+
+
 class DABFormatoWarning(FutureWarning):
     """Aviso de que o formato padrão de retorno muda no DadosAbertosBrasil 3.0.
 

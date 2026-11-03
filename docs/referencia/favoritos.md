@@ -23,8 +23,6 @@ dab.selic()
 
 ::: DadosAbertosBrasil.favoritos.ipca
 
-::: DadosAbertosBrasil.favoritos.perfil_eleitorado
-
 ::: DadosAbertosBrasil.favoritos.pib
 
 ::: DadosAbertosBrasil.favoritos.rentabilidade_poupanca
