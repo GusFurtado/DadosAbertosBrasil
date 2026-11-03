@@ -1,5 +1,6 @@
 import json
 import socket
+from pathlib import Path
 import urllib.error
 
 import pytest
@@ -126,3 +127,23 @@ def formato_pandas_nos_testes_online(request, monkeypatch):
         import DadosAbertosBrasil as dab
 
         monkeypatch.setattr(dab.config, "formato", "pandas")
+
+
+FIXTURES_WIKI = Path(__file__).parent / "fixtures" / "wiki"
+
+
+def envelope_wiki(dataset: str) -> dict:
+    return json.loads((FIXTURES_WIKI / f"{dataset}.json").read_text())
+
+
+def servir_wiki(url: str):
+    """Arquivo de tests/fixtures/wiki correspondente à URL do repositório de dados."""
+    if "DadosAbertosBrasil-wiki" in url:
+        return envelope_wiki(url.rsplit("/", 1)[-1].removesuffix(".json"))
+    return None
+
+
+@pytest.fixture
+def repositorio(api):
+    """Serve os arquivos de tests/fixtures/wiki no lugar do GitHub."""
+    api(servir_wiki)

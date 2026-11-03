@@ -1,26 +1,14 @@
 """Módulo wiki, com os arquivos publicados no DadosAbertosBrasil-wiki como fixtures."""
 
-import json
-from pathlib import Path
-
 import pytest
 from pydantic import ValidationError
 
 from DadosAbertosBrasil import wiki
 from DadosAbertosBrasil.utils.errors import DABDadosWarning
 
-FIXTURES = Path(__file__).parent / "fixtures" / "wiki"
-DATASETS = sorted(p.stem for p in FIXTURES.glob("*.json"))
+from .conftest import FIXTURES_WIKI, envelope_wiki as _envelope
 
-
-def _envelope(dataset: str) -> dict:
-    return json.loads((FIXTURES / f"{dataset}.json").read_text())
-
-
-@pytest.fixture
-def repositorio(api):
-    """Serve os arquivos de tests/fixtures/wiki no lugar do GitHub."""
-    api(lambda url: _envelope(url.rsplit("/", 1)[-1].removesuffix(".json")))
+DATASETS = sorted(p.stem for p in FIXTURES_WIKI.glob("*.json"))
 
 
 @pytest.mark.parametrize("dataset", DATASETS)

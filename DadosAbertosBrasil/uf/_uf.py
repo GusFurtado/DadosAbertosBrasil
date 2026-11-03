@@ -5,16 +5,52 @@ Serve como um consolidador por UF de diversar funções do pacote DadosAbertosBr
 """
 
 from datetime import date
-from typing import Optional, Literal
+from typing import Literal, Optional
 
-from ._governador import Governador
-from .. import favoritos, ibge
+from .. import favoritos, ibge, wiki
 from ..camara import lista_deputados
 from ..senado import lista_senadores
 from ..utils import parse
-from ..utils.requisicao import Requisicao
-from ..utils.typing import Formato, Saida
 from ..utils.errors import DABUFError
+from ..utils.typing import Formato, Saida
+from ._governador import Governador
+
+# O Brasil e as UFs extintas não estão em `wiki.ufs()`.
+_FORA_DO_WIKI = {
+    "BR": {
+        "nome": "Brasil",
+        "cod": 1,
+        "area": 8510295.914,
+        "capital": "Brasília",
+        "extinto": False,
+        "gentilico": ["brasileiro", "brasileira"],
+        "lema": "Ordem e Progresso",
+        "regiao": None,
+        "coordenadas": None,
+    },
+    "FN": {
+        "nome": "Fernando de Noronha",
+        "cod": 20,
+        "area": 18.609,
+        "capital": "Fernando de Noronha",
+        "extinto": True,
+        "gentilico": ["noronhense"],
+        "lema": None,
+        "regiao": "Nordeste",
+        "coordenadas": None,
+    },
+    "GB": {
+        "nome": "Guanabara",
+        "cod": 34,
+        "area": 1356,
+        "capital": "Rio de Janeiro",
+        "extinto": True,
+        "gentilico": None,
+        "lema": None,
+        "regiao": "Sudeste",
+        "coordenadas": None,
+    },
+}
 
 
 class UF:
@@ -49,8 +85,8 @@ class UF:
     extinto : bool
         True, caso UF tenha sido extinta (Fernando de Noronha ou Guanabara).
 
-    gentilico : set
-        Conjunto de gentílicos e variações.
+    gentilico : list[str]
+        Gentílicos e variações.
 
     lema : str
         Lema da UF.
@@ -60,6 +96,15 @@ class UF:
 
     coordenadas : dict[str, float]
         Dicionário contendo latitude e longitude.
+
+    wikidata : str
+        Identificador do item no Wikidata (só para as 27 UFs atuais).
+
+    artigo : str
+        Título do artigo na Wikipedia (só para as 27 UFs atuais).
+
+    registro : DadosAbertosBrasil.wiki.modelos.UF | None
+        Registro completo de `wiki.ufs()`; None para o Brasil e as UFs extintas.
 
     Properties
     ----------
@@ -79,7 +124,10 @@ class UF:
         Lista de municípios.
 
     populacao : int
-        População projetada pelo IBGE.
+        População residente estimada pelo IBGE (tabela 6579 do SIDRA).
+
+    prefeito : DadosAbertosBrasil.wiki.modelos.PrefeitoCapital
+        Prefeito em exercício da capital.
 
     Methods
     -------
@@ -103,6 +151,7 @@ class UF:
     def __init__(self, uf: str, verificar_certificado: bool | None = None):
         self.sigla = parse.uf(uf=uf, extintos=True)
         self.verify = verificar_certificado
+        self.registro = None
         data = self._get_data()
         for attr in data:
             setattr(self, attr, data[attr])
@@ -116,8 +165,24 @@ class UF:
     def _get_data(self) -> dict:
         """Buscar dados de UFs no DadosAbertosBrasil-wiki."""
 
-        data = Requisicao("wiki", ["ufs.json"], verificar_certificado=self.verify).json()
-        return data[self.sigla]
+        if self.sigla in _FORA_DO_WIKI:
+            return dict(_FORA_DO_WIKI[self.sigla])
+        registros = wiki.ufs(formato="pydantic", verificar_certificado=self.verify)
+        self.registro = next(r for r in registros if r.sigla == self.sigla)
+        r = self.registro
+        return {
+            "nome": r.nome,
+            "cod": r.codigo_ibge,
+            "area": r.area_km2,
+            "capital": r.capital,
+            "extinto": False,
+            "gentilico": r.gentilicos,
+            "lema": r.lema,
+            "regiao": r.regiao,
+            "coordenadas": {"latitude": r.latitude, "longitude": r.longitude},
+            "wikidata": r.wikidata,
+            "artigo": r.artigo,
+        }
 
     def bandeira(self, tamanho: int = 100) -> str:
         """Gera a URL da WikiMedia para a bandeira do estado.
@@ -182,7 +247,7 @@ class UF:
     def densidade(self) -> float:
         """Densidade populacional (hab/km²) da UF.
 
-        É a razão entre a população projetada pelo IBGE (habitantes) e a área
+        É a razão entre a população estimada pelo IBGE (habitantes) e a área
         territorial da UF (quilómetros quadrados).
 
         Returns
@@ -197,8 +262,8 @@ class UF:
 
         See Also
         --------
-        DadosAbertosBrasil.ibge.populacao
-            Função utilizada para projetar a população da UF.
+        UF.populacao
+            População estimada da UF.
 
         Examples
         --------
@@ -210,8 +275,7 @@ class UF:
 
         if self.extinto:
             raise DABUFError("Método `densidade` indisponível para UFs extintas.")
-        pop = ibge.populacao(projecao="populacao", localidade=self.cod)
-        return pop / self.area
+        return self.populacao / self.area
 
     def deputados(
         self,
@@ -383,18 +447,10 @@ class UF:
     def governador(self) -> Governador:
         """Informações básicas do governador da UF.
 
-        Attributes
-        ----------
-        uf : str
-        nome : str
-        nome_completo : str
-        ano_eleicao : int
-        mandato_inicio : datetime.date
-        mandato_fim : datetime.date
-        partido : str
-        partido_sigla : str
-        cargo_anterior : str
-        vice_governador : str
+        Returns
+        -------
+        DadosAbertosBrasil.uf.Governador
+            Governador em exercício, a partir de `wiki.governadores()`.
 
         Raises
         ------
@@ -406,11 +462,8 @@ class UF:
         if self.cod == 1:
             raise DABUFError("Propriedade `governador` indisponível para 'Brasil'.")
         if self.extinto:
-            raise DABUFError(
-                "Propriedade `governador` indisponível para UFs extintas."
-            )
-
-        return Governador(self.sigla)
+            raise DABUFError("Propriedade `governador` indisponível para UFs extintas.")
+        return Governador(self.sigla, verificar_certificado=self.verify)
 
     @property
     def historia(self) -> ibge.Historia:
@@ -560,12 +613,15 @@ class UF:
 
     @property
     def populacao(self) -> int:
-        """População projetada pelo IBGE.
+        """População residente estimada pelo IBGE.
+
+        Usa a estimativa mais recente da tabela 6579 do SIDRA. A API de
+        projeções populacionais do IBGE, usada até o 2.x, saiu do ar.
 
         Returns
         -------
         int
-            População projetada.
+            População residente estimada.
 
         Raises
         ------
@@ -574,8 +630,8 @@ class UF:
 
         See Also
         --------
-        DadosAbertosBrasil.ibge.populacao
-            Função original.
+        DadosAbertosBrasil.ibge.sidra
+            Função usada, com a tabela 6579.
 
         Examples
         --------
@@ -587,7 +643,36 @@ class UF:
 
         if self.extinto:
             raise DABUFError("Método `populacao` indisponível para UFs extintas.")
-        return ibge.populacao(projecao="populacao", localidade=self.cod)
+        nivel = {1: "all"} if self.cod == 1 else {3: self.cod}
+        estimativa = ibge.sidra(6579, variaveis=9324, localidades=nivel, formato="bruto",
+                                verificar_certificado=self.verify)
+        return int(estimativa[1]["V"])
+
+    @property
+    def prefeito(self) -> wiki.modelos.PrefeitoCapital:
+        """Prefeito em exercício da capital da UF.
+
+        Returns
+        -------
+        DadosAbertosBrasil.wiki.modelos.PrefeitoCapital
+            Registro de `wiki.prefeitos_capitais()`.
+
+        Raises
+        ------
+        DABUFError
+            Caso seja o Brasil, o Distrito Federal (sem prefeitura) ou uma UF
+            extinta.
+
+        Examples
+        --------
+        >>> UF("SC").prefeito.nome
+
+        """
+
+        if self.registro is None or self.sigla == "DF":
+            raise DABUFError("Propriedade `prefeito` indisponível para esta UF.")
+        prefeitos = wiki.prefeitos_capitais(uf=self.sigla, formato="pydantic", verificar_certificado=self.verify)
+        return prefeitos[0]
 
     def senadores(
         self,
