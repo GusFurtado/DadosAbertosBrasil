@@ -1,6 +1,8 @@
 import pytest
 from DadosAbertosBrasil.uf import UF, Governador
 
+# Só online até o 3.0.0rc1: a `main` do DadosAbertosBrasil-wiki ainda está no formato
+# do 2.x (#45). O caminho offline está em test_uf_wiki.py.
 pytestmark = pytest.mark.online
 
 

@@ -1,7 +1,7 @@
 import pytest
 from DadosAbertosBrasil import ibge
 
-pytestmark = pytest.mark.online
+pytestmark = pytest.mark.vcr
 
 
 def test_Galeria():
@@ -15,7 +15,7 @@ def test_Historia():
 
 
 def test_localidades():
-    df = ibge.localidades()
+    df = ibge.localidades("estados")
     assert not df.empty
 
 
@@ -24,10 +24,6 @@ def test_malha():
     assert malha
 
 
-# API aparentemente descontinuada
-# def test_populacao():
-#     pop = ibge.populacao()
-#     assert pop
 
 
 def test_nomes():

@@ -24,6 +24,9 @@ jobs:
         run: uv sync --locked --extra pandas --extra polars
 
       - name: Testes que consultam as APIs
+        # Os testes gravados (vcr) rodam aqui contra as APIs reais, sem gravar:
+        # é a verificação de contrato. Para regravar depois de uma mudança na API,
+        # veja tests/conftest.py.
         # Erros de rede ou serviço fora do ar viram `skip` na última tentativa
         # (tests/conftest.py); falhas de verdade continuam vermelhas.
-        run: uv run pytest -m online --reruns 2 --reruns-delay 30 -rs
+        run: uv run pytest -m "online or vcr" --disable-recording --reruns 2 --reruns-delay 30 -rs

@@ -5,7 +5,7 @@ from DadosAbertosBrasil.senado._senadores import lista_senadores
 
 pd = pytest.importorskip("pandas")
 
-pytestmark = pytest.mark.online
+pytestmark = pytest.mark.vcr
 
 
 def test_lista_blocos():

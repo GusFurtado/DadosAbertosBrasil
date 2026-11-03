@@ -3,7 +3,7 @@
   "dataset": "ufs",
   "descricao": "As 27 unidades federativas, com capital, área, coordenadas, gentílico, lema, bandeira e brasão.",
   "licenca": "CC BY-SA 4.0 (conteúdo derivado da Wikipedia)",
-  "gerado_em": "2026-11-01T21:31:27Z",
+  "gerado_em": "2026-11-03T02:44:04Z",
   "fontes": [
     {
       "titulo": "Wikidata",
@@ -103,8 +103,8 @@
       "latitude": -12.52,
       "longitude": -41.69,
       "gentilicos": [
-        "baiano",
-        "baiana"
+        "baiana",
+        "baiano"
       ],
       "lema": "Per ardua surgo",
       "bandeira": "Bandeira da Bahia.svg",

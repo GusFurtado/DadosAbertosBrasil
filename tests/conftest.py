@@ -54,6 +54,14 @@ def _erro_de_rede(erro: BaseException) -> bool:
     )
 
 
+def _usa_rede(item) -> bool:
+    """Teste que consulta a API real: `online`, ou `vcr` com a gravação desligada."""
+    if item.get_closest_marker("online") is not None:
+        return True
+    gravacao_desligada = item.config.getoption("--disable-recording", False)
+    return item.get_closest_marker("vcr") is not None and gravacao_desligada
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     """Transforma em `skip` os testes online que falharam por indisponibilidade.
@@ -68,7 +76,7 @@ def pytest_runtest_makereport(item, call):
     if (
         report.when != "call"
         or not report.failed
-        or item.get_closest_marker("online") is None
+        or not _usa_rede(item)
         or call.excinfo is None
         or not api_indisponivel(call.excinfo.value)
     ):
@@ -121,8 +129,9 @@ def api(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def formato_pandas_nos_testes_online(request, monkeypatch):
-    """Os testes online verificam DataFrames pandas (`df.empty`)."""
-    if request.node.get_closest_marker("online") is not None:
+    """Os testes dos módulos (gravados ou online) verificam DataFrames pandas (`df.empty`)."""
+    no = request.node
+    if no.get_closest_marker("online") is not None or no.get_closest_marker("vcr") is not None:
         pytest.importorskip("pandas")
         import DadosAbertosBrasil as dab
 
@@ -147,3 +156,66 @@ def servir_wiki(url: str):
 def repositorio(api):
     """Serve os arquivos de tests/fixtures/wiki no lugar do GitHub."""
     api(servir_wiki)
+
+
+# Respostas gravadas (pytest-recording / VCR.py) ----------------------------
+#
+# Os testes marcados com `vcr` usam as respostas de tests/cassettes/, sem rede.
+# Para regravar depois de uma mudança na API:
+#     uv run pytest -m vcr --record-mode=rewrite tests/test_camara.py
+# Para conferir contra as APIs reais, sem gravar (job testes-online.yml):
+#     uv run pytest -m vcr --disable-recording
+
+
+class _PersisterGzip:
+    """Guarda as gravações em YAML comprimido (`.yaml.gz`)."""
+
+    @staticmethod
+    def _caminho(cassette_path) -> Path:
+        caminho = Path(cassette_path)
+        return caminho if caminho.suffix == ".gz" else caminho.with_name(caminho.name + ".gz")
+
+    @classmethod
+    def load_cassette(cls, cassette_path, serializer):
+        import gzip
+
+        from vcr.serialize import deserialize
+
+        caminho = cls._caminho(cassette_path)
+        if not caminho.exists():
+            from vcr.persisters.filesystem import CassetteNotFoundError
+
+            raise CassetteNotFoundError()
+        return deserialize(gzip.decompress(caminho.read_bytes()).decode(), serializer)
+
+    @classmethod
+    def save_cassette(cls, cassette_path, cassette_dict, serializer):
+        import gzip
+
+        from vcr.serialize import serialize
+
+        caminho = cls._caminho(cassette_path)
+        caminho.parent.mkdir(parents=True, exist_ok=True)
+        caminho.write_bytes(gzip.compress(serialize(cassette_dict, serializer).encode(), mtime=0))
+
+
+def pytest_recording_configure(config, vcr):
+    vcr.register_persister(_PersisterGzip)
+
+
+def _sem_cookies(response):
+    """Remove os cookies que as APIs mandam na resposta (`filter_headers` só vale para a requisição)."""
+    headers = response.get("headers", {})
+    for nome in [n for n in headers if n.lower() == "set-cookie"]:
+        del headers[nome]
+    return response
+
+
+@pytest.fixture(scope="module")
+def vcr_config():
+    return {
+        "decode_compressed_response": True,
+        "filter_headers": ["User-Agent", "Cookie", "Authorization"],
+        "before_record_response": _sem_cookies,
+        "match_on": ["method", "scheme", "host", "port", "path", "query"],
+    }
