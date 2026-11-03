@@ -1,3 +1,4 @@
+import json
 import socket
 import urllib.error
 
@@ -82,3 +83,36 @@ def pytest_runtest_makereport(item, call):
         item.location[1],
         f"API indisponível: {type(call.excinfo.value).__name__}: {call.excinfo.value}",
     )
+
+
+class RespostaFalsa:
+    """Resposta HTTP mínima para testes offline (`requests.Session.get`)."""
+
+    headers = {"Content-Type": "application/json"}
+
+    def __init__(self, conteudo, texto: str | None = None):
+        self.conteudo = conteudo
+        self.text = texto if texto is not None else json.dumps(conteudo)
+        self.content = self.text.encode()
+
+    def raise_for_status(self):
+        pass
+
+    def json(self):
+        return self.conteudo
+
+
+@pytest.fixture
+def api(monkeypatch):
+    """Faz as consultas devolverem `resposta` (ou `resposta(url)`) sem rede."""
+    import DadosAbertosBrasil as dab
+
+    def definir(resposta):
+        def get(self, url, **kwargs):
+            return RespostaFalsa(resposta(url) if callable(resposta) else resposta)
+
+        monkeypatch.setattr(requests.Session, "get", get)
+
+    formato = dab.config.formato
+    yield definir
+    dab.config.formato = formato

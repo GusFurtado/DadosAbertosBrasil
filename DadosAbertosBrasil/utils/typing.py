@@ -1,7 +1,4 @@
-from typing import TYPE_CHECKING, Literal, Union
-
-from pandas import DataFrame
-
+from typing import TYPE_CHECKING, Any, Literal, Union
 
 Expectativa = Literal[
     "mensal",
@@ -11,10 +8,19 @@ Expectativa = Literal[
     "inflacao",
     "top5mensal",
     "top5anual",
-    "instituicoes",
 ]
 
-Formato = Literal["json", "pandas", "polars", "url"]
+Formato = Literal["json", "bruto", "pydantic", "pandas", "polars", "url"]
+"""Formatos de retorno das funções com dados tabulares.
+
+- "json": lista de registros normalizados (`list[dict]`), com os mesmos nomes e
+  tipos das colunas dos DataFrames;
+- "bruto": JSON original da API, como veio;
+- "pydantic": lista de modelos Pydantic (`list[Registro]`);
+- "pandas": `pandas.DataFrame`;
+- "polars": `polars.DataFrame`;
+- "url": endereço da consulta.
+"""
 
 NivelTerritorial = Literal[
     "distritos",
@@ -29,9 +35,14 @@ NivelTerritorial = Literal[
 ]
 
 if TYPE_CHECKING:
+    import pandas as pd
     import polars as pl
 
-    Output = Union[DataFrame, pl.DataFrame, str, dict, list[dict]]
+    from .modelos import Registro
+
+    Saida = Union[list[dict[str, Any]], list[Registro], "pd.DataFrame", "pl.DataFrame", str, dict, list]
 else:
-    # polars é opcional: fora do type checking, o tipo não pode referenciá-lo.
-    Output = Union[DataFrame, str, dict, list[dict]]
+    # pandas e polars são opcionais: fora do type checking, o tipo não pode referenciá-los.
+    Saida = Any
+
+Output = Saida

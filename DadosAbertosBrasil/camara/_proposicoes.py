@@ -1,12 +1,47 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import validate_call, PositiveInt
+from pydantic import Field, PositiveInt, computed_field, validate_call
 
-from ..utils import Base, Get, parse, Formato, Output
+from ..utils.modelos import SiglaUF, com_params
+from ..utils.objeto import Objeto
+from ..utils.typing import Formato, Saida
+from . import modelos as m
+from ._comum import Ordenacao, ParamsCamara, Periodo, consultar_camara, requisicao
 
 
-class Proposicao(Base):
+class _ParamsTramitacoes(Periodo):
+    pass
+
+
+class _ParamsVotacoesProposicao(ParamsCamara):
+    asc: bool = Field(True, exclude=True)
+    ordenar_por: str | None = Field(None, serialization_alias="ordenarPor")
+
+    @computed_field
+    @property
+    def ordem(self) -> str:
+        return "asc" if self.asc else "desc"
+
+
+class _ParamsProposicoes(Ordenacao, Periodo):
+    tipo: str | None = Field(None, serialization_alias="siglaTipo")
+    numero: int | None = None
+    ano: PositiveInt | None = None
+    autor_cod: int | None = Field(None, serialization_alias="idDeputadoAutor")
+    autor_nome: str | None = Field(None, serialization_alias="autor")
+    partido_sigla: str | None = Field(None, serialization_alias="siglaPartidoAutor")
+    partido_cod: PositiveInt | None = Field(None, serialization_alias="idPartidoAutor")
+    autor_uf: SiglaUF = Field(None, serialization_alias="siglaUfAutor")
+    keyword: str | None = Field(None, serialization_alias="keywords")
+    tramitacao_senado: bool | None = Field(None, serialization_alias="tramitacaoSenado")
+    apresentacao_inicio: date | None = Field(None, serialization_alias="dataApresentacaoInicio")
+    apresentacao_fim: date | None = Field(None, serialization_alias="dataApresentacaoFim")
+    situacao: int | None = Field(None, serialization_alias="codSituacao")
+    tema: int | None = Field(None, serialization_alias="codTema")
+
+
+class Proposicao(Objeto):
     """Informações detalhadas sobre uma proposição específica.
 
     Parameters
@@ -131,52 +166,13 @@ class Proposicao(Base):
 
     """
 
+    modelo = m.ProposicaoDetalhes
+    chave_obrigatoria = "statusProposicao"
+
     def __init__(self, cod: int, verificar_certificado: bool | None = None):
         self.cod = cod
         self.verify = verificar_certificado
-        atributos = {
-            "uri": ["uri"],
-            "tipo_sigla": ["siglaTipo"],
-            "tipo_codigo": ["codTipo"],
-            "numero": ["numero"],
-            "ano": ["ano"],
-            "ementa": ["ementa"],
-            "apresentacao": ["dataApresentacao"],
-            "uri_orgao_numerador": ["uriOrgaoNumerador"],
-            "ultima_atualizacao": ["statusProposicao", "dataHora"],
-            "sequencia": ["statusProposicao", "sequencia"],
-            "sigla_orgao": ["statusProposicao", "siglaOrgao"],
-            "uri_orgao": ["statusProposicao", "uriOrgao"],
-            "uri_ultimo_relator": ["statusProposicao", "uriUltimoRelator"],
-            "regime": ["statusProposicao", "regime"],
-            "descricao_tramitacao": ["statusProposicao", "descricaoTramitacao"],
-            "cod_tipo_tramitacao": ["statusProposicao", "codTipoTramitacao"],
-            "descricao_situacao": ["statusProposicao", "descricaoSituacao"],
-            "cod_situacao": ["statusProposicao", "codSituacao"],
-            "despacho": ["statusProposicao", "despacho"],
-            "url": ["statusProposicao", "url"],
-            "ambito": ["statusProposicao", "ambito"],
-            "uri_autores": ["uriAutores"],
-            "descricao_tipo": ["descricaoTipo"],
-            "ementa_detalhada": ["ementaDetalhada"],
-            "keywords": ["keywords"],
-            "uri_proposicao_principal": ["uriPropPrincipal"],
-            "uri_proposicao_anterior": ["uriPropAnterior"],
-            "uri_proposicao_posterior": ["uriPropPosterior"],
-            "url_inteiro_teor": ["urlInteiroTeor"],
-            "urn_final": ["urnFinal"],
-            "texto": ["texto"],
-            "justificativa": ["justificativa"],
-        }
-
-        super().__init__(
-            endpoint="camara",
-            path=["proposicoes", str(cod)],
-            unpack_keys=["dados"],
-            error_key="statusProposicao",
-            atributos=atributos,
-            verify=self.verify,
-        )
+        self._carregar(requisicao(["proposicoes", cod], verificar_certificado=verificar_certificado))
 
     def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: Proposição {self.cod}"
@@ -188,7 +184,7 @@ class Proposicao(Base):
         self,
         url: bool = True,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Lista pessoas e/ou entidades autoras da proposição.
 
         Retorna uma lista em que cada item identifica uma pessoa ou entidade
@@ -205,50 +201,43 @@ class Proposicao(Base):
 
         Parameters
         ----------
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Lista pessoas e/ou entidades autoras da proposição.
 
         """
 
-        cols_to_rename = {
-            "nome": "nome",
-            "uri": "uri",
-            "codTipo": "tipo_codigo",
-            "tipo": "tipo",
-            "ordemAssinatura": "ordem_assinatura",
-            "proponente": "proponente",
-        }
-
-        return Get(
-            endpoint="camara",
-            path=["proposicoes", str(self.cod), "autores"],
-            unpack_keys=["dados"],
-            cols_to_rename=cols_to_rename,
-            url_cols=["uri"],
-            remover_url=not url,
-            verify=self.verify,
-        ).get(formato)
+        return consultar_camara(
+            ["proposicoes", self.cod, "autores"],
+            None,
+            m.Autor,
+            formato,
+            url=url,
+            verificar_certificado=self.verify,
+        )
 
     def relacionadas(
         self,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Uma lista de proposições relacionadas a uma em especial.
 
         Lista de informações básicas sobre proposições que de alguma forma se
@@ -257,55 +246,45 @@ class Proposicao(Base):
 
         Parameters
         ----------
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Uma lista de proposições relacionadas a uma em especial.
 
         """
 
-        cols_to_rename = {
-            "id": "codigo",
-            "uri": "uri",
-            "siglaTipo": "tipo_sigla",
-            "codTipo": "tipo_codigo",
-            "numero": "numero",
-            "ano": "ano",
-            "ementa": "ementa",
-        }
-
-        return Get(
-            endpoint="camara",
-            path=["proposicoes", str(self.cod), "relacionadas"],
-            unpack_keys=["dados"],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=["tipo_codigo", "numero", "ano"],
-            url_cols=["uri"],
-            remover_url=not url,
+        return consultar_camara(
+            ["proposicoes", self.cod, "relacionadas"],
+            None,
+            m.ProposicaoRelacionada,
+            formato,
+            url=url,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
 
     def temas(
         self, index: bool = False, formato: Formato | None = None
-    ) -> Output:
+    ) -> Saida:
         """Lista de áreas temáticas de uma proposição.
 
         Lista em que cada item traz informações sobre uma área temática à qual
@@ -316,39 +295,36 @@ class Proposicao(Base):
         ----------
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Lista de áreas temáticas de uma proposição.
 
         """
 
-        cols_to_rename = {
-            "codTema": "codigo",
-            "tema": "tema",
-            "relevancia": "relevancia",
-        }
-
-        return Get(
-            endpoint="camara",
-            path=["proposicoes", str(self.cod), "temas"],
-            unpack_keys=["dados"],
-            cols_to_rename=cols_to_rename,
+        return consultar_camara(
+            ["proposicoes", self.cod, "temas"],
+            None,
+            m.Tema,
+            formato,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
 
+    @com_params(_ParamsTramitacoes)
     def tramitacoes(
         self,
         inicio: Optional[date] = None,
@@ -356,7 +332,7 @@ class Proposicao(Base):
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """O histórico de passos na tramitação de uma proposta.
 
         Lista que traz, como cada item, um “retrato” de informações que podem
@@ -372,67 +348,44 @@ class Proposicao(Base):
         fim : datetime.datetime or str, optional
             Data de término da tramitação, no formato `'AAAA-MM-DD'`.
 
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `sequencia` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             O histórico de passos na tramitação de uma proposta.
 
         """
 
-        params = {}
-        if inicio is not None:
-            params["dataInicio"] = parse.data(inicio, "camara")
-        if fim is not None:
-            params["dataFim"] = parse.data(fim, "camara")
-
-        cols_to_rename = {
-            "dataHora": "data",
-            "sequencia": "sequencia",
-            "siglaOrgao": "orgao",
-            "uriOrgao": "orgao_uri",
-            "uriUltimoRelator": "ultimo_relator_uri",
-            "regime": "regime",
-            "descricaoTramitacao": "tramitacao",
-            "codTipoTramitacao": "tramitacao_codigo",
-            "descricaoSituacao": "situacao",
-            "codSituacao": "situacao_codigo",
-            "despacho": "despacho",
-            "url": "url",
-            "ambito": "ambito",
-        }
-
-        return Get(
-            endpoint="camara",
-            path=["proposicoes", str(self.cod), "tramitacoes"],
-            params=params,
-            unpack_keys=["dados"],
-            cols_to_rename=cols_to_rename,
-            cols_to_date=["data"],
-            cols_to_int=["tramitacao_codigo", "situacao_codigo"],
-            url_cols=["orgao_uri", "ultimo_relator_uri", "url"],
-            remover_url=not url,
-            index_col="sequencia",
+        return consultar_camara(
+            ["proposicoes", self.cod, "tramitacoes"],
+            _ParamsTramitacoes.de_locais(locals()),
+            m.Tramitacao,
+            formato,
+            url=url,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            index_col="sequencia",
+            verificar_certificado=self.verify,
+        )
 
+    @com_params(_ParamsVotacoesProposicao)
     def votacoes(
         self,
         asc: bool = False,
@@ -440,7 +393,7 @@ class Proposicao(Base):
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Informações detalhadas de votações sobre a proposição.
 
         Retorna uma lista de identificadores básicos sobre as votações na
@@ -459,62 +412,45 @@ class Proposicao(Base):
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
 
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Informações detalhadas de votações sobre a proposição.
 
         """
 
-        params = {"ordem": "asc" if asc else "desc", "ordenarPor": ordenar_por}
-
-        cols_to_rename = {
-            "id": "codigo",
-            "aprovacao": "aprovacao",
-            "data": "data",
-            "dataHoraRegistro": "data_registro",
-            "descricao": "descricao",
-            "proposicaoObjeto": "proposicao",
-            "siglaOrgao": "orgao",
-            "uri": "uri",
-            "uriEvento": "evento_uri",
-            "uriOrgao": "orgao_uri",
-            "uriProposicaoObjeto": "proposicao_uri",
-        }
-
-        return Get(
-            endpoint="camara",
-            path=["proposicoes", str(self.cod), "votacoes"],
-            params=params,
-            unpack_keys=["dados"],
-            cols_to_rename=cols_to_rename,
-            cols_to_date=["data"],
-            cols_to_int=["tramitacao_codigo", "situacao_codigo"],
-            url_cols=["uri", "evento_uri", "orgao_uri", "proposicao_uri"],
-            remover_url=not url,
+        return consultar_camara(
+            ["proposicoes", self.cod, "votacoes"],
+            _ParamsVotacoesProposicao.de_locais(locals()),
+            m.Votacao,
+            formato,
+            url=url,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
 
 
 @validate_call
+@com_params(_ParamsProposicoes)
 def lista_proposicoes(
     tipo: Optional[str] = None,
     numero: Optional[int] = None,
@@ -540,7 +476,7 @@ def lista_proposicoes(
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Lista de proposições na Câmara.
 
     Lista de informações básicas sobre projetos de lei, resoluções, medidas
@@ -647,21 +583,23 @@ def lista_proposicoes(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
 
-    url : bool, default=False
+    url : bool, default=True
         Se False, remove as colunas contendo URI, URL e e-mails.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Vale para os formatos 'json', 'pandas' e 'polars'.
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -670,69 +608,17 @@ def lista_proposicoes(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista de proposições na Câmara.
 
     """
 
-    params = {
-        "pagina": pagina,
-        "ordem": "asc" if asc else "desc",
-        "ordenarPor": ordenar_por,
-    }
-    if tipo is not None:
-        params["siglaTipo"] = tipo
-    if numero is not None:
-        params["numero"] = numero
-    if ano is not None:
-        params["ano"] = ano
-    if autor_cod is not None:
-        params["idDeputadoAutor"] = autor_cod
-    if autor_nome is not None:
-        params["autor"] = autor_nome
-    if partido_sigla is not None:
-        params["siglaPartidoAutor"] = partido_sigla
-    if partido_cod is not None:
-        params["idPartidoAutor"] = partido_cod
-    if autor_uf is not None:
-        params["siglaUfAutor"] = parse.uf(autor_uf)
-    if keyword is not None:
-        params["keywords"] = keyword
-    if tramitacao_senado is not None:
-        params["tramitacaoSenado"] = "true" if tramitacao_senado else "false"
-    if apresentacao_inicio is not None:
-        params["dataApresentacaoInicio"] = str(apresentacao_inicio)
-    if apresentacao_fim is not None:
-        params["dataApresentacaoFim"] = str(apresentacao_fim)
-    if situacao is not None:
-        params["codSituacao"] = situacao
-    if tema is not None:
-        params["codTema"] = tema
-    if inicio is not None:
-        params["dataInicio"] = parse.data(inicio, "camara")
-    if fim is not None:
-        params["dataFim"] = parse.data(fim, "camara")
-    if itens is not None:
-        params["itens"] = itens
-
-    cols_to_rename = {
-        "id": "codigo",
-        "uri": "uri",
-        "siglaTipo": "tipo",
-        "codTipo": "tipo_codigo",
-        "numero": "numero",
-        "ano": "ano",
-        "ementa": "ementa",
-    }
-
-    return Get(
-        endpoint="camara",
-        path=["proposicoes"],
-        params=params,
-        unpack_keys=["dados"],
-        cols_to_rename=cols_to_rename,
-        url_cols=["uri"],
-        remover_url=not url,
+    return consultar_camara(
+        ["proposicoes"],
+        _ParamsProposicoes.de_locais(locals()),
+        m.Proposicao,
+        formato,
+        url=url,
         index=index,
-        verify=verificar_certificado,
-    ).get(formato)
+        verificar_certificado=verificar_certificado,
+    )

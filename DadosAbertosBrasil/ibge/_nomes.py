@@ -1,21 +1,63 @@
 from typing import Literal, Optional
 
-import pandas as pd
-from pydantic import validate_call, PositiveInt
-import requests
+from pydantic import Field, PositiveInt, computed_field, field_validator, validate_call
 
-from .._config import config
-from ..utils import parse, Formato, Output, converter
+from ..utils.modelos import Maiusculo, Params, com_params, validar
+from ..utils.requisicao import Requisicao
+from ..utils.saida import resolver_formato, tabela
+from ..utils.typing import Formato, Saida
+from . import modelos as m
+
+
+class _ParamsNomes(Params):
+    nomes: list[str] | str = Field(exclude=True)
+    sexo: Literal["f", "m"] | None = None
+    localidade: PositiveInt | None = None
+
+
+class _ParamsNomesUF(Params):
+    nome: str = Field(exclude=True)
+
+    @computed_field
+    @property
+    def groupBy(self) -> str:  # noqa: N802
+        return "UF"
+
+
+class _ParamsRanking(Params):
+    decada: PositiveInt | None = None
+    sexo: Maiusculo = None
+    localidade: PositiveInt | None = None
+
+    @field_validator("decada")
+    @classmethod
+    def _decada(cls, decada: int | None) -> int | None:
+        if decada is not None and decada % 10 != 0:
+            raise ValueError("O argumento 'decada' deve ser um número inteiro múltiplo de 10.")
+        return decada
+
+
+def _entregar(requisicao: Requisicao, formato: str | None, montar, index_col: str) -> Saida:
+    """Consulta com tabela montada por `montar(bruto) -> (modelo, linhas)`."""
+    formato = resolver_formato(formato)
+    if formato == "url":
+        return requisicao.url
+    bruto = requisicao.bruto()
+    if formato == "bruto":
+        return bruto
+    modelo, linhas = montar(bruto)
+    return tabela(validar(modelo, linhas), modelo, formato, index=formato == "pandas", index_col=index_col)
 
 
 @validate_call
+@com_params(_ParamsNomes)
 def nomes(
     nomes: list[str] | str,
     sexo: Optional[Literal["f", "m"]] = None,
     localidade: Optional[PositiveInt] = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Obtém a frequência de nascimentos por década dos nomes consultados.
 
     Defina o campo `nomes` com um string ou uma lista de string.
@@ -38,12 +80,15 @@ def nomes(
         Utilize a função `ibge.localidade` para encontrar a localidade
         desejada.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -52,7 +97,7 @@ def nomes(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Frequência de nascimentos por década para os nomes consultados.
 
     Raises
@@ -95,38 +140,34 @@ def nomes(
 
     """
 
+    params = _ParamsNomes.de_locais(locals())
     if isinstance(nomes, list):
         nomes = "|".join(nomes)
+    requisicao = Requisicao(
+        "https://servicodados.ibge.gov.br/api/v2/",
+        ["censos", "nomes", nomes],
+        params.para_api(),
+        verificar_certificado=verificar_certificado,
+    )
 
-    params = {}
-    if sexo is not None:
-        params["sexo"] = sexo
-    if localidade is not None:
-        params["localidade"] = parse.localidade(localidade)
+    def montar(bruto):
+        colunas = [item["nome"] for item in bruto]
+        linhas: dict[str, dict] = {}
+        for item in bruto:
+            for valor in item["res"]:
+                linhas.setdefault(valor["periodo"], {"periodo": valor["periodo"]})[item["nome"]] = valor["frequencia"]
+        return m.modelo_nomes(colunas), list(linhas.values())
 
-    formato = config.resolver_formato(formato)
-    url = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nomes}"
-    if formato == "url":
-        return url
-
-    data = requests.get(url, params=params, verify=config.resolver_certificado(verificar_certificado)).json()
-    if formato == "json":
-        return data
-
-    json = pd.DataFrame(data)
-    dfs = [pd.DataFrame(json.res[i]).set_index("periodo") for i in json.index]
-    df = pd.concat(dfs, axis=1)
-    df.columns = json.nome
-
-    return converter(df, formato)
+    return _entregar(requisicao, formato, montar, "periodo")
 
 
 @validate_call
+@com_params(_ParamsNomesUF)
 def nomes_uf(
     nome: str,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Obtém a frequência de nascimentos por UF para o nome consultado.
 
     Parameters
@@ -134,12 +175,15 @@ def nomes_uf(
     nome : str
         Nome que se deseja pesquisar.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -148,7 +192,7 @@ def nomes_uf(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Frequência de nascimentos do nome pesquisado, agrupado por Unidade da Federação.
 
     Examples
@@ -165,35 +209,29 @@ def nomes_uf(
 
     """
 
-    formato = config.resolver_formato(formato)
-    if formato == "json":
-        raise NotImplementedError(
-            "Formato `json` temporariamente indisponível. Escolha formato `url`, `pandas` ou `polars`."
-        )
-
-    url = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nome}?groupBy=UF"
-    if formato == "url":
-        return url
-
-    json = pd.read_json(url)
-    df = pd.DataFrame(
-        [json[json.localidade == i].res.values[0][0] for i in json.localidade]
+    requisicao = Requisicao(
+        "https://servicodados.ibge.gov.br/api/v2/",
+        ["censos", "nomes", nome],
+        _ParamsNomesUF.de_locais(locals()).para_api(),
+        verificar_certificado=verificar_certificado,
     )
 
-    df.index = json.localidade
-    df.sort_index(inplace=True)
+    def montar(bruto):
+        linhas = [{"localidade": item["localidade"], **item["res"][0]} for item in bruto]
+        return m.NomeUF, sorted(linhas, key=lambda linha: int(linha["localidade"]))
 
-    return converter(df, formato)
+    return _entregar(requisicao, formato, montar, "localidade")
 
 
 @validate_call
+@com_params(_ParamsRanking)
 def nomes_ranking(
     decada: Optional[PositiveInt] = None,
     sexo: Optional[Literal["f", "m"]] = None,
     localidade: Optional[PositiveInt] = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Obtém o ranking dos nomes segundo a frequência de nascimentos por década.
 
     Parameters
@@ -213,12 +251,15 @@ def nomes_ranking(
         Utilize a função `ibge.localidade` para encontrar a localidade
         desejada.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -227,7 +268,7 @@ def nomes_ranking(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Nomes mais populadores dentro do universo de parâmetros pesquisados.
 
     Raises
@@ -261,42 +302,10 @@ def nomes_ranking(
 
     """
 
-    query = "https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking"
-    params = []
-
-    if decada is not None:
-        decada_error = "O argumento 'decada' deve ser um número inteiro multiplo de 10."
-        if isinstance(decada, int):
-            if decada % 10 == 0:
-                params.append(f"decada={decada}")
-            else:
-                raise ValueError(decada_error)
-        else:
-            raise TypeError(decada_error)
-
-    if localidade is not None:
-        params.append(f"localidade={parse.localidade(localidade)}")
-
-    if sexo is not None:
-        if sexo in ["M", "m", "F", "f"]:
-            params.append(f"sexo={sexo.upper()}")
-        else:
-            raise ValueError(
-                "O argumento 'sexo' deve ser um tipo 'string' igual a 'M' para masculino ou 'F' para feminino."
-            )
-
-    params = "&".join(params)
-    if params != "":
-        query += f"?{params}"
-
-    match config.resolver_formato(formato):
-        case "url":
-            return query
-        case "json":
-            raise NotImplementedError(
-                "Formato `json` temporariamente indisponível. Escolha formato `url`, `pandas` ou `polars`."
-            )
-        case "pandas":
-            return pd.DataFrame(pd.read_json(query).res[0]).set_index("ranking")
-        case "polars":
-            return converter(pd.DataFrame(pd.read_json(query).res[0]), "polars")
+    requisicao = Requisicao(
+        "https://servicodados.ibge.gov.br/api/v2/",
+        ["censos", "nomes", "ranking"],
+        _ParamsRanking.de_locais(locals()).para_api(),
+        verificar_certificado=verificar_certificado,
+    )
+    return _entregar(requisicao, formato, lambda bruto: (m.RankingNome, bruto[0]["res"]), "ranking")

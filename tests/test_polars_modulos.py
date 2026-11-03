@@ -1,28 +1,9 @@
 import pandas as pd
 import polars as pl
 import pytest
-import requests
 
 import DadosAbertosBrasil as dab
 from DadosAbertosBrasil import bacen, camara, ipea, senado
-
-
-@pytest.fixture
-def api(monkeypatch):
-    """Faz a API devolver `resposta` em vez de consultar a rede."""
-
-    def definir(resposta):
-        class _Resposta:
-            def raise_for_status(self):
-                pass
-
-            def json(self):
-                return resposta
-
-        monkeypatch.setattr(requests.Session, "get", lambda self, url, **kw: _Resposta())
-
-    yield definir
-    dab.config.formato = "pandas"
 
 
 def _senador(cod, nome, completo, sexo, partido):
@@ -70,9 +51,16 @@ def test_lista_senadores_formato_global_aplica_filtros(api):
     assert df["codigo"].to_list() == [3]
 
 
-def test_lista_senadores_json_sem_filtro(api):
+def test_lista_senadores_json_aplica_filtro(api):
     api(SENADORES)
-    assert senado.lista_senadores(sexo="m", formato="json") == SENADORES
+    registros = senado.lista_senadores(sexo="m", formato="json")
+    assert [r["codigo"] for r in registros] == [3]
+    assert registros[0]["nome_parlamentar"] == "Caio"
+
+
+def test_lista_senadores_bruto_sem_filtro(api):
+    api(SENADORES)
+    assert senado.lista_senadores(sexo="m", formato="bruto") == SENADORES
 
 
 EVENTOS = [
@@ -86,9 +74,9 @@ def test_lista_eventos_orgaos_pandas(api):
     api({"dados": EVENTOS})
     df = camara.lista_eventos(formato="pandas")
     assert isinstance(df, pd.DataFrame)
-    assert df["orgaos"].iloc[0] == 10
+    assert df["orgaos"].iloc[0] == [10]
     assert df["orgaos"].iloc[1] == [10, 20]
-    assert df["orgaos"].iloc[2] is None
+    assert df["orgaos"].iloc[2] == []
 
 
 def test_lista_eventos_orgaos_polars(api):

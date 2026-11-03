@@ -1,11 +1,15 @@
 from typing import Optional
 
-from pydantic import validate_call, PositiveInt
+from pydantic import Field, PositiveInt, validate_call
 
-from ..utils import Base, Get, Formato, Output
+from ..utils.modelos import com_params
+from ..utils.objeto import Objeto
+from ..utils.typing import Formato, Saida
+from . import modelos as m
+from ._comum import Ordenacao, consultar_camara, requisicao
 
 
-class Bloco(Base):
+class Bloco(Objeto):
     """Informações sobre um bloco partidário específico.
 
     Parameters
@@ -43,19 +47,13 @@ class Bloco(Base):
 
     """
 
+    modelo = m.BlocoDetalhes
+    chave_obrigatoria = "nome"
+
     def __init__(self, cod: int, verificar_certificado: bool | None = None):
         self.cod = cod
         self.verify = verificar_certificado
-        atributos = {"legislatura": ["idLegislatura"], "nome": ["nome"], "uri": ["uri"]}
-
-        super().__init__(
-            endpoint="camara",
-            path=["blocos", str(cod)],
-            unpack_keys=["dados"],
-            error_key="nome",
-            atributos=atributos,
-            verify=self.verify,
-        )
+        self._carregar(requisicao(["blocos", cod], verificar_certificado=verificar_certificado))
 
     def __repr__(self) -> str:
         return f"<DadosAbertosBrasil.camara: Bloco {self.nome}>"
@@ -64,7 +62,12 @@ class Bloco(Base):
         return f"Bloco {self.nome}"
 
 
+class _ParamsBlocos(Ordenacao):
+    legislatura: PositiveInt | None = Field(None, serialization_alias="idLegislatura")
+
+
 @validate_call
+@com_params(_ParamsBlocos)
 def lista_blocos(
     legislatura: Optional[PositiveInt] = None,
     pagina: PositiveInt = 1,
@@ -75,7 +78,7 @@ def lista_blocos(
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Lista de dados sobre os blocos partidários.
 
     Nas atividades parlamentares, partidos podem se juntar em blocos
@@ -112,21 +115,23 @@ def lista_blocos(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
 
-    url : bool, default=False
+    url : bool, default=True
         Se False, remove as colunas contendo URI, URL e e-mails.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Vale para os formatos 'json', 'pandas' e 'polars'.
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -135,37 +140,17 @@ def lista_blocos(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista de blocos partidários.
 
     """
 
-    params = {
-        "pagina": pagina,
-        "ordem": "asc" if asc else "desc",
-        "ordenarPor": ordenar_por,
-    }
-    if legislatura is not None:
-        params["idLegislatura"] = legislatura
-    if itens is not None:
-        params["itens"] = itens
-
-    cols_to_rename = {
-        "id": "codigo",
-        "uri": "uri",
-        "nome": "nome",
-        "idLegislatura": "legislatura",
-    }
-
-    return Get(
-        endpoint="camara",
-        path=["blocos"],
-        params=params,
-        unpack_keys=["dados"],
-        cols_to_rename=cols_to_rename,
-        cols_to_int=["codigo", "legislatura"],
-        url_cols=["uri"],
-        remover_url=not url,
+    return consultar_camara(
+        ["blocos"],
+        _ParamsBlocos.de_locais(locals()),
+        m.Bloco,
+        formato,
+        url=url,
         index=index,
-        verify=verificar_certificado,
-    ).get(formato)
+        verificar_certificado=verificar_certificado,
+    )

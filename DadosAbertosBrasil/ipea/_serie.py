@@ -1,33 +1,30 @@
 from typing import Literal, Optional
 
-import pandas as pd
-from pydantic import validate_call
+from pydantic import Field, validate_call
 
-from .._config import config
-from ..utils import Get, Formato, Output, converter
+from ..utils.modelos import Params, com_params, validar
+from ..utils.requisicao import Requisicao
+from ..utils.saida import consultar, tabela
+from ..utils.typing import Formato, Saida
+from . import modelos as m
 
 
-_RENOMEAR_COLUNAS = {
-    "SERCODIGO": "codigo",
-    "SERNOME": "nome",
-    "SERCOMENTARIO": "comentario",
-    "SERATUALIZACAO": "ultima_atualizacao",
-    "BASNOME": "base",
-    "FNTSIGLA": "fonte_sigla",
-    "FNTNOME": "fonte_nome",
-    "FNTURL": "fonte_url",
-    "PERNOME": "periodo",
-    "UNINOME": "unidade",
-    "MULNOME": "multiplicador",
-    "SERSTATUS": "ativo",
-    "TEMCODIGO": "tema",
-    "PAICODIGO": "codigo_pai",
-    "SERNUMERICA": "numerica",
-    "VALDATA": "data",
-    "VALVALOR": "valor",
-    "NIVNOME": "nivel",
-    "TERCODIGO": "territorio",
-}
+def _valores(cod: str, verificar_certificado: bool | None) -> Requisicao:
+    return Requisicao(
+        "ipea", [f"Metadados(SERCODIGO='{cod}')", "Valores"], chaves=["value"], verificar_certificado=verificar_certificado
+    )
+
+
+class _ParamsSeries(Params):
+    contendo: str | None = Field(None, exclude=True)
+    excluindo: str | list[str] | None = Field(None, exclude=True)
+    fonte: str | None = Field(None, exclude=True)
+    ativo: bool | None = Field(None, exclude=True)
+    numerica: bool | None = Field(None, exclude=True)
+
+
+class _ParamsSerie(Params):
+    cod: str = Field(exclude=True)
 
 
 class Serie:
@@ -48,22 +45,21 @@ class Serie:
         Defina como `False` em caso de falha na verificação do certificado
         SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
-    formato : {"pandas", "polars"}, optional
-        Biblioteca dos DataFrames `valores` e `metadados`.
-        Se omitido, usa `DadosAbertosBrasil.config.formato`.
+    formato : {"json", "pydantic", "pandas", "polars"}, default="pandas"
+        Formato dos atributos `valores` e `metadados`.
 
     Attributes
     ---------
     cod : str
         Código da série escolhida.
 
-    valores : pandas.core.frame.DataFrame | polars.DataFrame
+    valores : list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame
         Dados históricos da série escolhida. Alias de `dados`.
 
-    dados : pandas.core.frame.DataFrame | polars.DataFrame
+    dados : list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame
         Dados históricos da série escolhida. Alias de `valores`.
 
-    metadados : pandas.core.frame.DataFrame | polars.DataFrame
+    metadados : list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame
         Metadados da série escolhida.
 
     base : str
@@ -160,47 +156,37 @@ class Serie:
         cod: str,
         index: bool = False,
         verificar_certificado: bool | None = None,
-        formato: Literal["pandas", "polars"] | None = None,
+        formato: Literal["json", "pydantic", "pandas", "polars"] | None = None,
     ):
-        formato = config.resolver_formato(formato)
-        valores = Get(
-            endpoint="ipea",
-            path=[f"Metadados(SERCODIGO='{cod}')", "Valores"],
-            verify=verificar_certificado,
-            cols_to_rename=_RENOMEAR_COLUNAS,
-            unpack_keys=["value"],
-        ).pandas
-
-        if "data" in valores.columns:
-            valores["data"] = pd.to_datetime(valores["data"], utc=True).dt.date
-            self.valores = converter(valores, formato, index, "data")
-        else:
-            self.valores = converter(valores, formato)
-
-        # Atributos
+        formato = formato or "pandas"
+        valores = validar(m.ValorSerie, _valores(cod, verificar_certificado).json())
+        self.valores = tabela(valores, m.ValorSerie, formato, index=index, index_col="data")
         self.dados = self.valores
         self.cod = cod
-        self.metadados = Get(
-            endpoint="ipea",
-            path=[f"Metadados('{cod}')"],
-            verify=verificar_certificado,
-            unpack_keys=["value"],
-        ).pandas
-        self.base = self.metadados.loc[0, "BASNOME"]
-        self.fonte_nome = self.metadados.loc[0, "FNTNOME"]
-        self.fonte_sigla = self.metadados.loc[0, "FNTSIGLA"]
-        self.fonte_url = self.metadados.loc[0, "FNTURL"]
-        self.multiplicador = self.metadados.loc[0, "MULNOME"]
-        self.periodo = self.metadados.loc[0, "PERNOME"]
-        self.ultima_atualizacao = self.metadados.loc[0, "SERATUALIZACAO"]
-        self.comentario = self.metadados.loc[0, "SERCOMENTARIO"]
-        self.nome = self.metadados.loc[0, "SERNOME"]
-        self.unidade = self.metadados.loc[0, "UNINOME"]
-        self.ativo = self.metadados.loc[0, "SERSTATUS"]
-        self.tema = self.metadados.loc[0, "TEMCODIGO"]
-        self.pais = self.metadados.loc[0, "PAICODIGO"]
-        self.numerica = self.metadados.loc[0, "SERNUMERICA"]
-        self.metadados = converter(self.metadados, formato)
+
+        metadados = validar(
+            m.Metadados,
+            Requisicao(
+                "ipea", [f"Metadados('{cod}')"], chaves=["value"], verificar_certificado=verificar_certificado
+            ).json(),
+        )
+        registro = metadados[0]
+        self.registro = registro
+        self.base = registro.base
+        self.fonte_nome = registro.fonte_nome
+        self.fonte_sigla = registro.fonte_sigla
+        self.fonte_url = registro.fonte_url
+        self.multiplicador = registro.multiplicador
+        self.periodo = registro.periodo
+        self.ultima_atualizacao = registro.ultima_atualizacao
+        self.comentario = registro.comentario
+        self.nome = registro.nome
+        self.unidade = registro.unidade
+        self.ativo = registro.ativo
+        self.tema = registro.tema
+        self.pais = registro.codigo_pai
+        self.numerica = registro.numerica
+        self.metadados = tabela(metadados, m.Metadados, formato)
 
     def __repr__(self) -> str:
         return f"<DadosAbertosBrasil.ipea: Dados da série '{self.cod}'>"
@@ -210,6 +196,7 @@ class Serie:
 
 
 @validate_call
+@com_params(_ParamsSeries)
 def lista_series(
     contendo: Optional[str] = None,
     excluindo: Optional[str | list[str]] = None,
@@ -219,7 +206,7 @@ def lista_series(
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Registros de metadados de todas as séries do IPEA.
 
     Parameters
@@ -248,12 +235,15 @@ def lista_series(
         Se True, define a coluna 'codigo' como index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -262,7 +252,7 @@ def lista_series(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista de séries do IPEA.
 
     Example
@@ -293,55 +283,40 @@ def lista_series(
 
     """
 
-    formato = config.resolver_formato(formato)
-    get = Get(
-        endpoint="ipea",
-        path=["Metadados"],
-        unpack_keys=["value"],
-        cols_to_rename=_RENOMEAR_COLUNAS,
-        verify=verificar_certificado,
+    termos = [excluindo] if isinstance(excluindo, str) else (excluindo or [])
+
+    def contem(texto: str | None, termo: str) -> bool:
+        return isinstance(texto, str) and termo.upper() in texto.upper()
+
+    def filtro(serie: m.Metadados) -> bool:
+        if contendo is not None and not (contem(serie.nome, contendo) or contem(serie.comentario, contendo)):
+            return False
+        if any(contem(serie.nome, termo) for termo in termos):
+            return False
+        if fonte is not None and not (contem(serie.fonte_sigla, fonte) or contem(serie.fonte_nome, fonte)):
+            return False
+        if ativo is not None and serie.ativo != ativo:
+            return False
+        return numerica is None or serie.numerica == numerica
+
+    _ParamsSeries.de_locais(locals())
+    return consultar(
+        Requisicao("ipea", ["Metadados"], chaves=["value"], verificar_certificado=verificar_certificado, cacheavel=True),
+        m.Metadados,
+        formato,
+        index=index,
+        filtro=filtro,
     )
-    if formato not in ("pandas", "polars"):
-        return get.get(formato)
-
-    data = get.pandas
-    if contendo is not None:
-        contendo = contendo.upper()
-        f1 = data["nome"].str.upper().str.contains(contendo)
-        f2 = data["comentario"].str.upper().str.contains(contendo)
-        data = data[f1 | f2]
-
-    if excluindo is not None:
-        if isinstance(excluindo, str):
-            excluindo = [excluindo]
-        for termo in excluindo:
-            data = data[~data["nome"].str.upper().str.contains(termo.upper())]
-
-    if fonte is not None:
-        fonte = fonte.upper()
-        f1 = data["fonte_sigla"].str.upper().str.contains(fonte)
-        f2 = data["fonte_nome"].str.upper().str.contains(fonte)
-        data = data[f1 | f2]
-
-    if ativo is not None:
-        status = "A" if ativo else "I"
-        data = data[data["ativo"] == status]
-
-    if numerica is not None:
-        data = data[data["numerica"] == numerica]
-
-    data = data.assign(ativo=data["ativo"].map({"A": True, "I": False}).astype(bool))
-
-    return converter(data, formato, index, "codigo")
 
 
 @validate_call
+@com_params(_ParamsSerie)
 def serie(
     cod: str,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Valores de uma série IPEA.
 
     Parameters
@@ -355,12 +330,15 @@ def serie(
         Se True, define a coluna 'data' como index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -369,7 +347,7 @@ def serie(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Valores de uma série temporal do Ipeadata.
 
     Example
@@ -397,19 +375,5 @@ def serie(
 
     """
 
-    formato = config.resolver_formato(formato)
-    get = Get(
-        endpoint="ipea",
-        path=[f"Metadados(SERCODIGO='{cod}')", "Valores"],
-        unpack_keys=["value"],
-        cols_to_rename=_RENOMEAR_COLUNAS,
-        verify=verificar_certificado,
-    )
-    if formato not in ("pandas", "polars"):
-        return get.get(formato)
-
-    df = get.pandas
-    if "data" not in df.columns:
-        return converter(df, formato)
-    df["data"] = pd.to_datetime(df["data"], utc=True).dt.date
-    return converter(df, formato, index, "data")
+    _ParamsSerie.de_locais(locals())
+    return consultar(_valores(cod, verificar_certificado), m.ValorSerie, formato, index=index, index_col="data")

@@ -11,7 +11,9 @@ from ._governador import Governador
 from .. import favoritos, ibge
 from ..camara import lista_deputados
 from ..senado import lista_senadores
-from ..utils import Get, parse, Formato, Output
+from ..utils import parse
+from ..utils.requisicao import Requisicao
+from ..utils.typing import Formato, Saida
 from ..utils.errors import DABUFError
 
 
@@ -114,11 +116,7 @@ class UF:
     def _get_data(self) -> dict:
         """Buscar dados de UFs no DadosAbertosBrasil-wiki."""
 
-        data = Get(
-            endpoint="wiki",
-            path=["ufs.json"],
-            verify=self.verify,
-        ).json
+        data = Requisicao("wiki", ["ufs.json"], verificar_certificado=self.verify).json()
         return data[self.sigla]
 
     def bandeira(self, tamanho: int = 100) -> str:
@@ -231,7 +229,7 @@ class UF:
         index: bool = False,
         formato: Formato | None = None,
         verificar_certificado: bool | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Lista dos deputados federais da UF em exercício.
 
         Retorna uma lista de dados básicos sobre deputados que estiveram em
@@ -282,21 +280,23 @@ class UF:
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
 
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         verificar_certificado : bool, optional
@@ -305,7 +305,7 @@ class UF:
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Tabela com informações básicas dos deputados federais.
 
         Raises
@@ -600,7 +600,7 @@ class UF:
         index: bool = False,
         formato: Formato | None = None,
         verificar_certificado: bool | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Lista de senadores da república desta UF.
 
         Parameters
@@ -623,21 +623,23 @@ class UF:
         excluindo : str, optional
             Exclui da consulta senadores contendo esse texto no nome.
 
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         verificar_certificado : bool, optional
@@ -646,7 +648,7 @@ class UF:
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Lista de senadores.
 
         See Also

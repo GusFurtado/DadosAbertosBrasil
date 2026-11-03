@@ -1,24 +1,29 @@
 from pydantic import validate_call
 
-from .._config import config
-from ..utils import Get, Formato, Output
+from ..utils.requisicao import Requisicao
+from ..utils.saida import consultar
+from ..utils.typing import Formato, Saida
+from . import modelos as m
 
 
 @validate_call
 def moedas(
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Obtém os nomes e símbolos das principais moedas internacionais.
 
     Parameters
     ----------
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -27,7 +32,7 @@ def moedas(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Nomes e símbolos das principais moedas internacionais.
 
     See Also
@@ -70,15 +75,9 @@ def moedas(
 
     """
 
-    formato = config.resolver_formato(formato)
-    data = Get(
-        endpoint="bacen",
-        path=["Moedas"],
-        unpack_keys=["value"],
-        verify=verificar_certificado,
-    ).get(formato)
-
-    if formato in ("pandas", "polars"):
-        data.columns = ["simbolo", "nome", "tipo"]
-
-    return data
+    return consultar(
+        Requisicao("bacen", ["Moedas"], chaves=["value"], verificar_certificado=verificar_certificado, cacheavel=True),
+        m.Moeda,
+        formato,
+        index_col=None,
+    )

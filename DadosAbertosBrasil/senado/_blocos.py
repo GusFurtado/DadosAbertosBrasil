@@ -1,6 +1,8 @@
 from pydantic import validate_call
 
-from ..utils import Get, Formato, Output
+from ..utils.typing import Formato, Saida
+from . import modelos as m
+from ._comum import consultar_senado
 
 
 @validate_call
@@ -8,7 +10,7 @@ def lista_blocos(
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Obtém a lista e a composição dos Blocos Parlamentares no
     Congresso Nacional.
 
@@ -16,15 +18,17 @@ def lista_blocos(
     ----------
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -33,26 +37,17 @@ def lista_blocos(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista de Blocos Parlamentares no Congresso Nacional.
 
     """
 
-    cols_to_rename = {
-        "CodigoBloco": "codigo",
-        "NomeBloco": "nome",
-        "NomeApelido": "apelido",
-        "SiglaBloco": "sigla",
-        "DataCriacao": "data_criacao",
-    }
-
-    return Get(
-        endpoint="senado",
-        path=["blocoParlamentar", "lista"],
-        unpack_keys=["ListaBlocoParlamentar", "Blocos", "Bloco"],
-        cols_to_rename=cols_to_rename,
-        cols_to_int=["codigo"],
-        cols_to_date=["data_criacao"],
+    return consultar_senado(
+        ["blocoParlamentar", "lista"],
+        ["ListaBlocoParlamentar", "Blocos", "Bloco"],
+        None,
+        m.Bloco,
+        formato,
         index=index,
-        verify=verificar_certificado,
-    ).get(formato)
+        verificar_certificado=verificar_certificado,
+    )
