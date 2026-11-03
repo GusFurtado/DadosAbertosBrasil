@@ -11,8 +11,8 @@ def test_lista_blocos():
     assert not df.empty
 
 
-def test_lista_legislatura():
-    df = senado.lista_legislatura(inicio=56)
+def test_lista_legislaturas():
+    df = senado.lista_legislaturas(inicio=56)
     assert not df.empty
 
 
@@ -31,8 +31,8 @@ def test_lista_senadores():
     assert not df.empty
 
 
-def test_lista_uso_palavra():
-    df = senado.lista_uso_palavra(ativos=True)
+def test_lista_tipos_uso_palavra():
+    df = senado.lista_tipos_uso_palavra(ativos=True)
     assert not df.empty
 
 

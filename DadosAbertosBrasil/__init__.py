@@ -61,13 +61,15 @@ from .favoritos import (
     taxa_referencial,
 )
 from .utils.errors import (
-    DAB_DataError,
-    DAB_DeprecationError,
-    DAB_InputError,
-    DAB_LocalidadeError,
-    DAB_MoedaError,
-    DAB_UFError,
+    DABDataError,
+    DABError,
+    DABFormatoWarning,
+    DABInputError,
+    DABLocalidadeError,
+    DABMoedaError,
+    DABUFError,
 )
+from .utils.errors import nome_antigo as _nome_antigo
 
 __all__ = [
     "bacen",
@@ -90,13 +92,22 @@ __all__ = [
     "salario_minimo",
     "selic",
     "taxa_referencial",
-    "DAB_DataError",
-    "DAB_InputError",
-    "DAB_LocalidadeError",
-    "DAB_MoedaError",
-    "DAB_UFError",
-    "DAB_DeprecationError",
+    "DABDataError",
+    "DABError",
+    "DABFormatoWarning",
+    "DABInputError",
+    "DABLocalidadeError",
+    "DABMoedaError",
+    "DABUFError",
 ]
 
 __author__ = "Gustavo Furtado da Silva"
-__version__ = "2.2.0"
+__version__ = "2.3.0"
+
+
+def __getattr__(nome: str):
+    # Nomes antigos das exceções (`DAB_UFError` etc.), com aviso.
+    classe = _nome_antigo(nome)
+    if classe is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {nome!r}")
+    return classe

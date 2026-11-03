@@ -37,7 +37,7 @@ def data(data: datetime | date | str, modulo: str) -> str:
         try:
             data = datetime.strptime(data, "%Y-%m-%d")
         except ValueError:
-            raise errors.DAB_DataError(
+            raise errors.DABDataError(
                 "Formato de data inválido.\n"
                 "Se você está tentando inserir um string com padrão de data, "
                 "utilize o formato ISO-8601: 'AAAA-MM-DD'."
@@ -54,7 +54,7 @@ def data(data: datetime | date | str, modulo: str) -> str:
             return data.strftime("%d/%m/%Y")
 
     except AttributeError:
-        raise errors.DAB_DataError(
+        raise errors.DABDataError(
             "Formato de data inválido.\n"
             "Insira uma data no formato datetime.datetime, datetime.date ou str."
         )
@@ -161,7 +161,7 @@ def uf(uf: str | int, extintos: bool = False) -> str:
         try:
             return UFS[_uf]
         except KeyError:
-            raise errors.DAB_UFError(
+            raise errors.DABUFError(
                 f"UF {uf} não identificada.\n" "Insira uma UF válida."
             )
 
@@ -198,13 +198,13 @@ def localidade(localidade: str, brasil=1, on_error="raise") -> str:
             return localidade
 
     if on_error == "raise":
-        raise errors.DAB_LocalidadeError(
+        raise errors.DABLocalidadeError(
             "O código da localidade não está em um formato numérico."
         )
     elif on_error == "brasil":
         return brasil
     else:
-        raise errors.DAB_LocalidadeError(
+        raise errors.DABLocalidadeError(
             "Valor incorreto para o argumento `on_error`:\n"
             "  - 'raise': Gera um erro quando o valor não for válido;\n"
             "  - 'brasil': Retorna o valor Brasil quando o valor não for válido."
@@ -233,11 +233,11 @@ def moeda(moedas: str | list[str]) -> list[str]:
     parsed = []
     for moeda in moedas:
         if not isinstance(moeda, str):
-            raise errors.DAB_MoedaError(
+            raise errors.DABMoedaError(
                 "Tipo inválido.\n" "Insira apenas valores do tipo string para moedas."
             )
         elif len(moeda) != 3:
-            raise errors.DAB_MoedaError(
+            raise errors.DABMoedaError(
                 "Código inválido.\n" "O código das moedas possuem três caracteres."
             )
 

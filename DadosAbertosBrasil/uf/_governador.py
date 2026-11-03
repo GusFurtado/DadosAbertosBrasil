@@ -7,6 +7,7 @@ Serve como um consolidador por UF de diversar funções do pacote DadosAbertosBr
 from datetime import datetime
 
 from ..utils import Get, parse
+from ..utils.errors import descontinuado
 
 
 class Governador:
@@ -69,17 +70,30 @@ class Governador:
         self.uf = parse.uf(uf)
 
         data = Get(
-            endpoint="github",
-            path=["GusFurtado", "dab_assets", "main", "data", "governadores.json"],
+            endpoint="wiki",
+            path=["governadores.json"],
             verify=verificar_certificado,
         ).json
         data = data[self._UFS[self.uf]]
 
         # Criar atributos
         for key in data:
-            setattr(self, key, data[key])
+            setattr(self, "_nome_completo" if key == "nome_completo" else key, data[key])
         self.mandato_inicio = datetime.strptime(self.mandato_inicio, "%Y-%m-%d").date()
         self.mandato_fim = datetime.strptime(self.mandato_fim, "%Y-%m-%d").date()
+
+    @property
+    def nome_completo(self) -> str:
+        """Nome completo do governador.
+
+        Descontinuado: o atributo deixa de existir no DadosAbertosBrasil 3.0.
+        """
+        descontinuado(
+            "`Governador.nome_completo` deixa de existir no DadosAbertosBrasil 3.0, "
+            "cujos dados de governadores trazem `nome` e `artigo` (título do artigo "
+            "na Wikipedia)."
+        )
+        return self._nome_completo
 
     def __str__(self) -> str:
         return self.nome

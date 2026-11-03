@@ -1,10 +1,13 @@
+import functools
+
 from pydantic import validate_call
 
-from ..utils import Get, Formato, Output
+from ..utils import Formato, Get, Output
+from ..utils.errors import descontinuado
 
 
 @validate_call
-def lista_uso_palavra(
+def lista_tipos_uso_palavra(
     ativos: bool = False,
     index: bool = False,
     formato: Formato | None = None,
@@ -61,3 +64,16 @@ def lista_uso_palavra(
         index=index,
         verify=verificar_certificado,
     ).get(formato)
+
+
+@functools.wraps(lista_tipos_uso_palavra)
+def lista_uso_palavra(*args, **kwargs):
+    """Nome antigo de `lista_tipos_uso_palavra`.
+
+    Descontinuado: use `senado.lista_tipos_uso_palavra`.
+    """
+    descontinuado(
+        "`senado.lista_uso_palavra` foi renomeada para `senado.lista_tipos_uso_palavra` e o nome "
+        "antigo deixa de existir em uma versão futura do 3.x."
+    )
+    return lista_tipos_uso_palavra(*args, **kwargs)

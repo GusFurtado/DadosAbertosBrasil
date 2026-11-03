@@ -19,6 +19,8 @@ from pydantic import validate_call, PositiveInt
 from .. import bacen, ipea
 from .._config import config
 from ..utils import Get, parse, Formato, Output, converter
+from ..utils.endpoints import ENDPOINTS
+from ..utils.errors import descontinuado
 
 
 @validate_call
@@ -40,7 +42,7 @@ def bandeira(uf: str, tamanho: PositiveInt = 100) -> str:
 
     Raises
     ------
-    DAB_UFError
+    DABUFError
         Caso seja inserida uma UF inválida.
 
     Examples
@@ -110,7 +112,7 @@ def brasao(uf: str, tamanho: PositiveInt = 100) -> str:
 
     Raises
     ------
-    DAB_UFError
+    DABUFError
         Caso seja inserida uma UF inválida.
 
     Examples
@@ -358,6 +360,10 @@ def perfil_eleitorado(
 ) -> Output:
     """Tabela com perfil do eleitorado por município.
 
+    !!! warning "Descontinuada"
+        Esta função é removida no DadosAbertosBrasil 3.0, sem substituto:
+        dados eleitorais deixam de fazer parte do pacote.
+
     Parameters
     ----------
     formato : {"pandas", "polars", "url"}, optional
@@ -382,7 +388,11 @@ def perfil_eleitorado(
 
     """
 
-    URL = r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/eleitorado.csv"
+    descontinuado(
+        "`favoritos.perfil_eleitorado` é removida no DadosAbertosBrasil 3.0, sem "
+        "substituto: dados eleitorais deixam de fazer parte do pacote."
+    )
+    URL = ENDPOINTS["wiki"] + "eleitorado.csv"
 
     match config.resolver_formato(formato):
         case "url":

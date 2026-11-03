@@ -17,7 +17,7 @@ Mini-Tutorial
 .. code-block:: python
 
     senado.lista_senadores(...)
-	senado.lista_legislatura(...)
+    senado.lista_legislaturas(...)
 
 Instancie um objeto `Senador` para acessar informações do parlamentar:
 
@@ -30,7 +30,7 @@ Utilize os métodos da classe `Senador` para obter mais detalhes:
 .. code-block:: python
 
     sen.cargos(...)
-	sen.votacoes(...)
+    sen.votacoes(...)
 
 API Original
 ------------ 
@@ -40,8 +40,8 @@ API Original
 """
 
 from ._blocos import lista_blocos
-from ._legislaturas import lista_legislatura
+from ._legislaturas import lista_legislatura, lista_legislaturas
 from ._orcamentos import lista_orcamentos
 from ._partidos import lista_partidos
 from ._senadores import Senador, lista_senadores
-from ._usos_palavras import lista_uso_palavra
+from ._usos_palavras import lista_tipos_uso_palavra, lista_uso_palavra

@@ -11,7 +11,7 @@ from urllib3.util.retry import Retry
 
 from .._config import config
 from .endpoints import ENDPOINTS
-from .errors import DAB_InputError
+from .errors import DABInputError
 from .typing import Formato, Output
 
 if TYPE_CHECKING:
@@ -194,7 +194,7 @@ class Get(BaseModel):
                 if data is not None and key in data:
                     data = data[key]
         if data is None:
-            raise DAB_InputError(
+            raise DABInputError(
                 "Nenhum dado encontrado. Verifique os parâmetros da consulta."
             )
 
@@ -316,7 +316,7 @@ class Base:
 
     Raises
     ------
-    DadosAbertosBrasil._utils.errors.DAB_InputError
+    DadosAbertosBrasil._utils.errors.DABInputError
         Quando os dados do Senador não forem encontrado, por qualquer que seja
         o motivo.
 
@@ -339,7 +339,7 @@ class Base:
         ).json
 
         if error_key not in self.dados:
-            raise DAB_InputError("Dados não encontrados.")
+            raise DABInputError("Dados não encontrados.")
 
         for attr in atributos:
             self._set_attribute(attr, atributos)

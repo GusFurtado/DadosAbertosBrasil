@@ -57,7 +57,7 @@ def nomes(
 
     Raises
     ------
-    DAB_LocalidadeError
+    DABLocalidadeError
         Caso o código da localidade seja inválido.
 
     Examples
@@ -232,7 +232,7 @@ def nomes_ranking(
 
     Raises
     ------
-    DAB_LocalidadeError
+    DABLocalidadeError
         Caso o código da localidade seja inválido.
 
     Examples

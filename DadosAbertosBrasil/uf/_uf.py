@@ -12,7 +12,7 @@ from .. import favoritos, ibge
 from ..camara import lista_deputados
 from ..senado import lista_senadores
 from ..utils import Get, parse, Formato, Output
-from ..utils.errors import DAB_UFError
+from ..utils.errors import DABUFError
 
 
 class UF:
@@ -112,11 +112,11 @@ class UF:
         return self.nome
 
     def _get_data(self) -> dict:
-        """Buscar dados de UFs em `dab_assets`."""
+        """Buscar dados de UFs no DadosAbertosBrasil-wiki."""
 
         data = Get(
-            endpoint="github",
-            path=["GusFurtado", "dab_assets", "main", "data", "ufs.json"],
+            endpoint="wiki",
+            path=["ufs.json"],
             verify=self.verify,
         ).json
         return data[self.sigla]
@@ -194,7 +194,7 @@ class UF:
 
         Raises
         ------
-        DAB_UFError
+        DABUFError
             Caso seja uma UF extinta.
 
         See Also
@@ -211,7 +211,7 @@ class UF:
         """
 
         if self.extinto:
-            raise DAB_UFError("Método `densidade` indisponível para UFs extintas.")
+            raise DABUFError("Método `densidade` indisponível para UFs extintas.")
         pop = ibge.populacao(projecao="populacao", localidade=self.cod)
         return pop / self.area
 
@@ -310,7 +310,7 @@ class UF:
 
         Raises
         ------
-        DAB_UFError
+        DABUFError
             Caso seja uma UF extinta.
 
         See Also
@@ -326,7 +326,7 @@ class UF:
         """
 
         if self.extinto:
-            raise DAB_UFError("Método `deputados` indisponível para UFs extintas.")
+            raise DABUFError("Método `deputados` indisponível para UFs extintas.")
 
         return lista_deputados(
             nome=nome,
@@ -340,7 +340,7 @@ class UF:
             itens=itens,
             asc=asc,
             ordenar_por=ordenar_por,
-            remover_url=not url,
+            url=url,
             index=index,
             formato=formato,
             verificar_certificado=verificar_certificado,
@@ -376,7 +376,7 @@ class UF:
         """
 
         if self.extinto:
-            raise DAB_UFError("Método `galeria` indisponível para UFs extintas.")
+            raise DABUFError("Método `galeria` indisponível para UFs extintas.")
         return ibge.Galeria(self.cod)
 
     @property
@@ -398,15 +398,15 @@ class UF:
 
         Raises
         ------
-        DAB_UFError
+        DABUFError
             Caso seja uma UF extinta.
 
         """
 
         if self.cod == 1:
-            raise DAB_UFError("Propriedade `governador` indisponível para 'Brasil'.")
+            raise DABUFError("Propriedade `governador` indisponível para 'Brasil'.")
         if self.extinto:
-            raise DAB_UFError(
+            raise DABUFError(
                 "Propriedade `governador` indisponível para UFs extintas."
             )
 
@@ -438,7 +438,7 @@ class UF:
         """
 
         if self.sigla == "GB":
-            raise DAB_UFError("Método `historia` indisponível para a UF Guanabara.")
+            raise DABUFError("Método `historia` indisponível para a UF Guanabara.")
         elif self.sigla == "FN":
             return ibge.Historia(localidade=260545)
         else:
@@ -483,7 +483,7 @@ class UF:
 
         Raises
         ------
-        DAB_LocalidadeError
+        DABLocalidadeError
             Caso o nível geográfico seja inválido.
 
         Notes
@@ -520,7 +520,7 @@ class UF:
         """
 
         if self.extinto:
-            raise DAB_UFError("Método `malha` indisponível para UFs extintas.")
+            raise DABUFError("Método `malha` indisponível para UFs extintas.")
         return ibge.malha(
             localidade=self.cod,
             nivel=nivel,
@@ -542,7 +542,7 @@ class UF:
 
         Raises
         ------
-        DAB_UFError
+        DABUFError
             Caso seja uma UF extinta.
 
         Examples
@@ -554,8 +554,8 @@ class UF:
         """
 
         if self.extinto:
-            raise DAB_UFError("Método `municipios` indisponível para UFs extintas.")
-        df = ibge.localidades("municipios", index=True)
+            raise DABUFError("Método `municipios` indisponível para UFs extintas.")
+        df = ibge.localidades("municipios", index=True, formato="pandas")
         return df.loc[df["UF_id"] == self.cod, "nome"].to_dict()
 
     @property
@@ -569,7 +569,7 @@ class UF:
 
         Raises
         ------
-        DAB_UFError
+        DABUFError
             Caso seja uma UF extinta.
 
         See Also
@@ -586,7 +586,7 @@ class UF:
         """
 
         if self.extinto:
-            raise DAB_UFError("Método `populacao` indisponível para UFs extintas.")
+            raise DABUFError("Método `populacao` indisponível para UFs extintas.")
         return ibge.populacao(projecao="populacao", localidade=self.cod)
 
     def senadores(
@@ -667,7 +667,7 @@ class UF:
         """
 
         if self.extinto:
-            raise DAB_UFError("Método `senadores` indisponível para UFs extintas.")
+            raise DABUFError("Método `senadores` indisponível para UFs extintas.")
 
         return lista_senadores(
             uf=self.sigla,
@@ -676,7 +676,7 @@ class UF:
             partido=partido,
             contendo=contendo,
             excluindo=excluindo,
-            remover_url=not url,
+            url=url,
             index=index,
             formato=formato,
             verificar_certificado=verificar_certificado,

@@ -41,4 +41,4 @@ pip install "DadosAbertosBrasil[polars]"
 - **`uf`**: a classe `UF`, que reúne os dados de um estado num só objeto.
 
 Veja a [referência](https://www.gustavofurtado.com/DadosAbertosBrasil/referencia/ibge/) de cada
-módulo e os [exemplos](https://github.com/GusFurtado/dab_assets/tree/main/exemplos).
+módulo e os [exemplos](https://github.com/GusFurtado/DadosAbertosBrasil-wiki/tree/2.x/exemplos).

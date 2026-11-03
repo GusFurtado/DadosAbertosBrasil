@@ -19,9 +19,21 @@ dab.config.verificar_certificado = False
 ## Erros
 
 As exceções do pacote podem ser importadas direto de `DadosAbertosBrasil`, como
-`from DadosAbertosBrasil import DAB_UFError`.
+`from DadosAbertosBrasil import DABUFError`. Todas herdam de `DABError`.
+
+Na versão 2.3, as exceções ganharam nomes no padrão do PEP 8. Os nomes antigos (`DAB_UFError`,
+`DAB_InputError` etc.) continuam funcionando, com `DeprecationWarning`, e deixam de existir em uma
+versão futura do 3.x.
 
 ::: DadosAbertosBrasil.utils.errors
     options:
       show_root_heading: false
       show_root_toc_entry: false
+      members:
+        - DABError
+        - DABDataError
+        - DABInputError
+        - DABLocalidadeError
+        - DABMoedaError
+        - DABUFError
+        - DABFormatoWarning

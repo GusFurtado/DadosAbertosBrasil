@@ -53,7 +53,7 @@ nav:
       - favoritos: referencia/favoritos.md
       - uf: referencia/uf.md
       - Configuração e erros: referencia/configuracao.md
-  - Exemplos: https://github.com/GusFurtado/dab_assets/tree/main/exemplos
+  - Exemplos: https://github.com/GusFurtado/DadosAbertosBrasil-wiki/tree/2.x/exemplos
 
 plugins:
   - search
