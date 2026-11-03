@@ -50,7 +50,7 @@ Se precisar apenas dos dados, sem os metadados, esta é uma forma mais simples e
 API Original
 ------------
 
-- **IpeaData:** `<http://www.ipeadata.gov.br/api/>`_
+- **IpeaData:** `<https://www.ipeadata.gov.br/api/>`_
 
 """
 

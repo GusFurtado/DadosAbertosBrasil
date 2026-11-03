@@ -414,7 +414,7 @@ def sidra(
 
     """
 
-    path = f"http://api.sidra.ibge.gov.br/values/t/{tabela}"
+    path = f"https://apisidra.ibge.gov.br/values/t/{tabela}"
 
     if periodos is not None:
         if isinstance(periodos, list):
