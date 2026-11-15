@@ -112,6 +112,22 @@ Os nomes antigos continuam funcionando com `DeprecationWarning` e saem numa vers
 `DAB_DeprecationError`, que não era usado pelo pacote, foi removido. Todas as exceções herdam de
 `DABError` e continuam herdando de `ValueError` ou `TypeError`, como antes.
 
+## `ibge.malha` e `UF.malha`
+
+No 2.x, o `formato` da malha era o tipo de arquivo. No 3.0, o tipo de arquivo vai em `tipo` e `formato`
+tem o mesmo sentido do resto do pacote: `"bruto"` (o padrão) retorna o conteúdo da malha e `"url"`, o
+endereço. A malha não é uma tabela, então `dab.config.formato` não se aplica a ela.
+
+| 2.x | 3.0 |
+|---|---|
+| `formato="geojson"` (padrão) | `tipo="geojson"` (padrão) |
+| `formato="json"` (TopoJSON) | `tipo="topojson"` |
+| `formato="svg"` (retornava a URL) | `tipo="svg", formato="url"`; com `formato="bruto"`, retorna o SVG |
+
+Os valores antigos de `formato` continuam funcionando, com o resultado do 2.x e `DeprecationWarning`, e
+deixam de existir numa versão futura do 3.x. `localidade` passa a aceitar texto, como `"BR"` com
+`nivel="paises"`, e `ibge.malha` ganha `verificar_certificado`.
+
 ## Classes de objeto
 
 `camara.Deputado(cod)`, `camara.Partido(cod)`, `senado.Senador(cod)` e as demais mantêm a interface:

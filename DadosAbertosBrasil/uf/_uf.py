@@ -142,7 +142,7 @@ class UF:
     deputados(nome, legislatura, partido, sexo, inicio, fim, pagina, itens...)
         Lista dos deputados federais em exercício.
 
-    malha(nivel, divisoes, periodo, formato, qualidade)
+    malha(nivel, divisoes, periodo, tipo, qualidade, formato)
         Obtém a URL para a malha referente à UF.
 
     senadores(tipo, sexo, partido, contendo, excluindo, url, index, formato)
@@ -623,10 +623,11 @@ class UF:
         nivel: str = "estados",
         divisoes: str | None = None,
         periodo: int = 2020,
-        formato: str = "geojson",
-        qualidade: str = "minima",
-    ) -> dict | str:
-        """Obtém a malha referente à UF.
+        tipo: Literal["geojson", "topojson", "svg"] = "geojson",
+        qualidade: Literal["minima", "intermediaria", "maxima"] = "minima",
+        formato: Literal["bruto", "url", "svg", "json", "geojson"] = "bruto",
+    ) -> dict[str, Any] | str:
+        """Malha territorial da UF, em GeoJSON, TopoJSON ou SVG.
 
         Parameters
         ----------
@@ -634,31 +635,39 @@ class UF:
             Nível geográfico dos dados.
 
         divisoes : str, optional
-            Subdiviões intrarregionais do nível.
-            Se None, apresenta a malha sem subdivisões.
+            Subdivisões intrarregionais da malha, como 'municipio' ou
+            'microrregiao'. Se None, apresenta a malha sem subdivisões.
 
         periodo : int, default=2020
             Ano da revisão da malha.
 
-        formato : {'svg', 'json', 'geojson'}, default='geojson'
-            Formato dos dados da malha.
+        tipo : {'geojson', 'topojson', 'svg'}, default='geojson'
+            Tipo de arquivo da malha.
 
         qualidade : {'minima', 'intermediaria', 'maxima'}, default='minima'
-            Qualidade de imagem da malha.
+            Qualidade (nível de detalhe) da malha.
+
+        formato : {'bruto', 'url'}, default='bruto'
+            - "bruto": o conteúdo da malha: `dict` para GeoJSON e TopoJSON,
+              `str` com o SVG;
+            - "url": endereço da malha.
+            Os valores antigos 'geojson', 'json' e 'svg' continuam funcionando
+            com `DeprecationWarning`; use `tipo`.
 
         Returns
         -------
+        dict
+            Malha em GeoJSON ou TopoJSON, com `formato='bruto'`.
         str
-            Se formato='svg', retorna a URL da malha da localidade desejada.
-        dict
-            Se formato='json', retorna a malha em formato TopoJSON.
-        dict
-            Se formato='geojson', retorna a malha em formato GeoJSON.
+            SVG da malha, com `tipo='svg'`, ou endereço da malha, com
+            `formato='url'`.
 
         Raises
         ------
+        DABUFError
+            Caso seja uma UF extinta.
         DABLocalidadeError
-            Caso o nível geográfico seja inválido.
+            Caso o nível geográfico ou a subdivisão sejam inválidos.
 
         Notes
         -----
@@ -671,25 +680,20 @@ class UF:
 
         Examples
         --------
-        Captura a malha do Distrito Federal (localidade=53) em formato GeoJSON.
+        Malha do Distrito Federal em GeoJSON.
 
         >>> df = dab.UF('DF')
-        >>> df.malha(formato='geojson')
+        >>> df.malha()
         {'type': 'FeatureCollection',
             'features': [{'type': 'Feature',
                 'geometry': {'type': 'Polygon',
                     'coordinates': [[[-47.31, -16.0363], ...
 
-        Captura a malha de Alagoas em formato SVG com qualidade mínima com
-        subdivisões municipais.
+        SVG de Alagoas com as divisas dos municípios.
 
         >>> al = dab.UF('alagoas')
-        >>> al.malha(
-        ...     nivel = 'municipios',
-        ...     formato = 'svg',
-        ...     qualidade = 'minima'
-        ... )
-        'https://servicodados.ibge.gov.br/api/v3/malhas/...'
+        >>> al.malha(divisoes='municipio', tipo='svg')
+        '<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" ...'
 
         """
 
@@ -700,8 +704,9 @@ class UF:
             nivel=nivel,
             divisoes=divisoes,
             periodo=periodo,
-            formato=formato,
+            tipo=tipo,
             qualidade=qualidade,
+            formato=formato,
         )
 
     @property

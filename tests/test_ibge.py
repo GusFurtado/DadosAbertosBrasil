@@ -1,5 +1,7 @@
 import pytest
 from DadosAbertosBrasil import ibge
+from DadosAbertosBrasil.utils.errors import DABInputError, DABLocalidadeError
+from DadosAbertosBrasil.utils.requisicao import Requisicao
 
 pytestmark = pytest.mark.vcr
 
@@ -21,7 +23,49 @@ def test_localidades():
 
 def test_malha():
     malha = ibge.malha(localidade=35, qualidade="minima")
-    assert malha
+    assert malha["type"] == "FeatureCollection"
+
+
+def test_malha_topojson_do_brasil():
+    malha = ibge.malha(localidade="BR", nivel="paises", divisoes="uf", tipo="topojson")
+    assert malha["type"] == "Topology"
+
+
+def test_malha_svg():
+    malha = ibge.malha(localidade=4209102, nivel="municipios", tipo="svg")
+    assert isinstance(malha, str)
+    assert "<svg" in malha
+
+
+def test_malha_url():
+    url = ibge.malha(localidade=53, tipo="svg", formato="url")
+    assert url.startswith("https://servicodados.ibge.gov.br/api/v3/malhas/estados/53?")
+    assert "formato=image%2Fsvg%2Bxml" in url
+
+
+@pytest.mark.parametrize(
+    "antigo, tipo",
+    [("geojson", "application%2Fvnd.geo%2Bjson"), ("json", "application%2Fjson"), ("svg", "image%2Fsvg%2Bxml")],
+)
+def test_malha_formato_antigo(monkeypatch, antigo, tipo):
+    """No 2.x, `formato` era o tipo de arquivo; `formato='svg'` retornava a URL."""
+    urls = []
+    monkeypatch.setattr(Requisicao, "bruto", lambda self: urls.append(self.url) or {"type": "Topology"})
+    with pytest.warns(DeprecationWarning, match="tipo=") as avisos:
+        resultado = ibge.malha(localidade=53, formato=antigo)
+    assert avisos[0].filename == __file__
+    url = resultado if antigo == "svg" else urls[0]
+    assert f"formato={tipo}" in url
+
+
+def test_malha_formato_antigo_conflita_com_tipo():
+    with pytest.raises(DABInputError, match="conflita"):
+        ibge.malha(localidade=53, tipo="svg", formato="json")
+
+
+def test_malha_nivel_invalido():
+    with pytest.raises(DABLocalidadeError):
+        ibge.malha(localidade=53, nivel="bairros", formato="url")
 
 
 

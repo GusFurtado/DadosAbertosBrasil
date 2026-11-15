@@ -3,7 +3,7 @@ from typing import Any, Literal, overload
 from pydantic import Field, PositiveInt, validate_call
 
 from ..utils import parse
-from ..utils.errors import DABLocalidadeError, removida
+from ..utils.errors import DABInputError, DABLocalidadeError, descontinuado, removida
 from ..utils.modelos import Params, com_params, validar
 from ..utils.requisicao import Requisicao
 from ..utils.saida import resolver_formato, tabela
@@ -290,52 +290,109 @@ def localidades(
     return tabela(validar(modelo, linhas), modelo, formato, index=index, index_col="id")
 
 
+TipoMalha = Literal["geojson", "topojson", "svg"]
+
+_TIPOS_MALHA = {
+    "geojson": "application/vnd.geo+json",
+    "topojson": "application/json",
+    "svg": "image/svg+xml",
+}
+
+# `formato` do 2.x, que era o tipo de arquivo: valor antigo -> `tipo`.
+_FORMATOS_ANTIGOS_MALHA = {"geojson": "geojson", "json": "topojson", "svg": "svg"}
+
+_NIVEIS_MALHA = {
+    "estados",
+    "mesorregioes",
+    "microrregioes",
+    "municipios",
+    "regioes-imediatas",
+    "regioes-intermediarias",
+    "regioes",
+    "paises",
+}
+
+_DIVISOES_MALHA = {
+    "uf",
+    "mesorregiao",
+    "microrregiao",
+    "municipio",
+    "regiao-imediata",
+    "regiao-intermediaria",
+    "regiao",
+}
+
+
 @validate_call
 def malha(
-    localidade: PositiveInt,
+    localidade: PositiveInt | str,
     nivel: str = "estados",
     divisoes: str | None = None,
     periodo: PositiveInt = 2020,
-    formato: Literal["svg", "json", "geojson"] = "geojson",
+    tipo: TipoMalha = "geojson",
     qualidade: Literal["minima", "intermediaria", "maxima"] = "minima",
-) -> str | dict:
-    """Obtém a URL para a malha referente ao identificador da localidade.
+    formato: Literal["bruto", "url", "svg", "json", "geojson"] = "bruto",
+    verificar_certificado: bool | None = None,
+) -> dict[str, Any] | str:
+    """Malha territorial de uma localidade, em GeoJSON, TopoJSON ou SVG.
 
     Parameters
     ----------
-    localidade : int
-        Código da localidade desejada.
+    localidade : int or str
+        Código da localidade desejada, como `53` (Distrito Federal),
+        `4209102` (Joinville) ou `'BR'` (Brasil, com `nivel='paises'`).
         Utilize a função `ibge.localidades` para identificar a localidade.
 
     nivel : str, default='estados'
-        Nível geográfico dos dados.
+        Nível geográfico da localidade: 'estados', 'mesorregioes',
+        'microrregioes', 'municipios', 'regioes-imediatas',
+        'regioes-intermediarias', 'regioes' ou 'paises'.
 
     divisoes : str, optional
-        Subdiviões intrarregionais do nível.
+        Subdivisões intrarregionais da malha: 'uf', 'mesorregiao',
+        'microrregiao', 'municipio', 'regiao-imediata',
+        'regiao-intermediaria' ou 'regiao'.
         Se None, apresenta a malha sem subdivisões.
 
     periodo : int, default=2020
         Ano da revisão da malha.
 
-    formato : {'svg', 'json', 'geojson'}, default='svg'
-        Formato dos dados da malha.
+    tipo : {'geojson', 'topojson', 'svg'}, default='geojson'
+        Tipo de arquivo da malha.
 
     qualidade : {'minima', 'intermediaria', 'maxima'}, default='minima'
-        Qualidade de imagem da malha.
+        Qualidade (nível de detalhe) da malha.
+
+    formato : {'bruto', 'url'}, default='bruto'
+        - "bruto": o conteúdo da malha: `dict` para GeoJSON e TopoJSON, `str`
+          com o SVG;
+        - "url": endereço da malha.
+        A malha não é uma tabela: `DadosAbertosBrasil.config.formato` não se
+        aplica.
+
+        !!! warning "Valores antigos"
+            No 2.x, `formato` era o tipo de arquivo. `formato='geojson'`,
+            `'json'` (TopoJSON) e `'svg'` (que retornava a URL) continuam
+            funcionando com `DeprecationWarning` e deixam de existir em uma
+            versão futura do 3.x. Use `tipo`.
+
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
+    dict
+        Malha em GeoJSON ou TopoJSON, com `formato='bruto'`.
     str
-        Se formato='svg', retorna a URL da malha da localidade desejada.
-    dict
-        Se formato='json', retorna a malha em formato TopoJSON.
-    dict
-        Se formato='geojson', retorna a malha em formato GeoJSON.
+        SVG da malha, com `tipo='svg'`, ou endereço da malha, com `formato='url'`.
 
     Raises
     ------
     DABLocalidadeError
-        Caso o nível geográfico seja inválido.
+        Caso o nível geográfico ou a subdivisão sejam inválidos.
+    DABInputError
+        Caso `tipo` e um valor antigo de `formato` peçam tipos diferentes.
 
     Notes
     -----
@@ -344,87 +401,82 @@ def malha(
 
     Examples
     --------
-    Captura a malha do Distrito Federal (localidade=53) em formato GeoJSON.
+    Malha do Distrito Federal (localidade=53) em GeoJSON.
 
-    >>> ibge.malha(localidade=53, formato='geojson')
+    >>> ibge.malha(localidade=53)
     {'type': 'FeatureCollection',
         'features': [{'type': 'Feature',
             'geometry': {'type': 'Polygon',
                 'coordinates': [[[-47.31, -16.0363], ...
 
-    Captura a malha de Joinville em formato SVG com qualidade mínima.
+    Endereço da malha de Joinville em SVG.
 
     >>> ibge.malha(
-    ...     nivel = 'municipios',
-    ...     localidade = 4209102,
-    ...     formato = 'svg',
-    ...     qualidade = 'minima'
+    ...     nivel='municipios',
+    ...     localidade=4209102,
+    ...     tipo='svg',
+    ...     formato='url',
     ... )
     'https://servicodados.ibge.gov.br/api/v3/malhas/municipios/4209102?...'
 
-    Captura a malha do Brasil subdividido por UF em formato TopoJSON.
+    Malha do Brasil subdividido por UF em TopoJSON.
 
     >>> ibge.malha(
-    ...     nivel = 'paises',
-    ...     localidade = 'BR',
-    ...     divisoes = 'uf',
-    ...     formato = 'json'
+    ...     nivel='paises',
+    ...     localidade='BR',
+    ...     divisoes='uf',
+    ...     tipo='topojson',
     ... )
     {'type': 'Topology',
-        'arcs': [[[32967, 111009], [-821, 372]],
-            [[32146, 111381],
-            [133, 124],
-            [15, 106], ...
+        'arcs': [[[32967, 111009], [-821, 372]], ...
 
     """
 
-    FORMATOS = {
-        "svg": "image/svg+xml",
-        "geojson": "application/vnd.geo+json",
-        "json": "application/json",
-    }
-
-    NIVEIS = {
-        "estados",
-        "mesorregioes",
-        "microrregioes",
-        "municipios",
-        "regioes-imediatas",
-        "regioes-intermediarias",
-        "regioes",
-        "paises",
-    }
-
-    DIVISOES = {
-        "uf",
-        "mesorregiao",
-        "microrregiao",
-        "municipio",
-        "regiao-imediata",
-        "regiao-intermediaria",
-        "regiao",
-    }
+    url_antiga = False
+    if formato in _FORMATOS_ANTIGOS_MALHA:
+        antigo = _FORMATOS_ANTIGOS_MALHA[formato]
+        if tipo != "geojson" and tipo != antigo:
+            raise DABInputError(
+                f"`formato={formato!r}` é o nome antigo de `tipo={antigo!r}` e conflita com `tipo={tipo!r}`. "
+                "Use só `tipo`."
+            )
+        sugestao = f"`tipo={antigo!r}" + (", formato='url'`" if formato == "svg" else "`")
+        descontinuado(
+            f"Em `ibge.malha`, `formato={formato!r}` agora é {sugestao}: `formato` passou a ser "
+            "'bruto' (conteúdo) ou 'url'."
+        )
+        tipo = antigo
+        # No 2.x, `formato='svg'` retornava a URL.
+        url_antiga = formato == "svg"
 
     nivel = nivel.lower()
-    if nivel not in NIVEIS:
+    if nivel not in _NIVEIS_MALHA:
         raise DABLocalidadeError(
-            f"Nível inválido. Preencha o argumento `nivel` com um dos seguintes valores: {sorted(NIVEIS)}"
+            f"Nível inválido. Preencha o argumento `nivel` com um dos seguintes valores: {sorted(_NIVEIS_MALHA)}"
         )
 
-    params = {"periodo": periodo, "qualidade": qualidade, "formato": FORMATOS[formato]}
+    params = {"periodo": periodo, "qualidade": qualidade, "formato": _TIPOS_MALHA[tipo]}
     if divisoes is not None:
         divisoes = divisoes.lower()
-        if divisoes not in DIVISOES:
+        if divisoes not in _DIVISOES_MALHA:
             raise DABLocalidadeError(
-                f"Subdivisão inválida. Preencha o argumento `divisoes` com um dos seguintes valores: {sorted(DIVISOES)}"
+                "Subdivisão inválida. Preencha o argumento `divisoes` com um dos seguintes valores: "
+                f"{sorted(_DIVISOES_MALHA)}"
             )
         if nivel != divisoes:
             params["intrarregiao"] = divisoes
 
-    requisicao = Requisicao("sidra", ["malhas", nivel, localidade], params)
-    if formato.endswith("json"):
-        return requisicao.bruto()
-    return requisicao.url
+    requisicao = Requisicao(
+        "sidra",
+        ["malhas", nivel, localidade],
+        params,
+        verificar_certificado=verificar_certificado,
+    )
+    if formato == "url" or url_antiga:
+        return requisicao.url
+    if tipo == "svg":
+        return requisicao.texto()
+    return requisicao.bruto()
 
 
 def coordenadas(*args, **kwargs):
