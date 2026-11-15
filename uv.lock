@@ -252,7 +252,7 @@ toml = [
 
 [[package]]
 name = "dadosabertosbrasil"
-version = "2.3.0"
+version = "3.0.0rc1"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },

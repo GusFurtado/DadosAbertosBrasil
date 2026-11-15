@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "DadosAbertosBrasil"
-version = "2.3.0"
+version = "3.0.0rc1"
 description = "Pacote Python para acesso a dados abertos e APIs do governo brasileiro."
 readme = "README.md"
 license = {text = "MIT"}

@@ -106,7 +106,7 @@ __all__ = [
 ]
 
 __author__ = "Gustavo Furtado da Silva"
-__version__ = "2.3.0"
+__version__ = "3.0.0rc1"
 
 
 def __getattr__(nome: str):
