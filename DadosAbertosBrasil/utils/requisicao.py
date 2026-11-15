@@ -75,8 +75,20 @@ class Requisicao:
         return f"{url}?{urlencode(self.params, doseq=True, quote_via=quote)}"
 
     def texto(self) -> str:
-        """Corpo da resposta."""
+        """Corpo da resposta, do cache local quando possível (`config.cache`)."""
+        from . import cache
+
         url = self.url
+        if self.cacheavel:
+            guardado = cache.ler(url)
+            if guardado is not None:
+                return guardado
+        texto = self._baixar(url)
+        if self.cacheavel:
+            cache.gravar(url, texto)
+        return texto
+
+    def _baixar(self, url: str) -> str:
         response = sessao().get(
             url=url,
             verify=config.resolver_certificado(self.verificar_certificado),

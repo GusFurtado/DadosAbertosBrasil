@@ -1,5 +1,7 @@
 import sys
 import warnings
+from contextlib import AbstractContextManager
+from datetime import timedelta
 from pathlib import Path
 from typing import Literal
 
@@ -58,12 +60,24 @@ class Config(BaseModel):
         uma vez por sessão (`DABFormatoWarning`); defini-lo, inclusive como
         `"json"`, silencia o aviso. `"pandas"` e `"polars"` exigem a biblioteca
         instalada (`pip install DadosAbertosBrasil[pandas]` ou `[polars]`).
+    cache : bool, default=False
+        Guarda localmente as respostas de dados que mudam pouco (localidades
+        do IBGE, referências da Câmara, arquivos do módulo `wiki`...).
+    cache_validade : datetime.timedelta, default=1 dia
+        Por quanto tempo uma resposta guardada vale. Aceita segundos (`int`).
+    cache_pasta : pathlib.Path, optional
+        Pasta do cache. Se omitida, usa a pasta de cache do usuário
+        (`~/.cache/DadosAbertosBrasil` ou `%LOCALAPPDATA%\\DadosAbertosBrasil`).
 
     Examples
     --------
     >>> import DadosAbertosBrasil as dab
     >>> dab.config.verificar_certificado = False
     >>> dab.config.formato = "polars"
+    >>> dab.config.cache = True
+    >>> with dab.config.sem_cache():
+    ...     dab.ibge.localidades("estados")  # consulta a API mesmo com cache
+    >>> dab.config.limpar_cache()
 
     """
 
@@ -71,6 +85,21 @@ class Config(BaseModel):
 
     verificar_certificado: bool = True
     formato: Literal["json", "bruto", "pydantic", "pandas", "polars"] | None = None
+    cache: bool = False
+    cache_validade: timedelta = timedelta(days=1)
+    cache_pasta: Path | None = None
+
+    def limpar_cache(self) -> int:
+        """Apaga as respostas guardadas no cache e retorna quantas eram."""
+        from .utils import cache
+
+        return cache.limpar()
+
+    def sem_cache(self) -> AbstractContextManager[None]:
+        """Ignora o cache dentro de um bloco `with`."""
+        from .utils import cache
+
+        return cache.sem_cache()
 
     def resolver_certificado(self, valor: bool | None) -> bool:
         """Retorna `valor` se informado, ou a configuração global."""
