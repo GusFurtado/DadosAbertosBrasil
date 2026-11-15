@@ -1,35 +1,43 @@
 from typing import Optional
 
-from pydantic import validate_call, PositiveInt
+from pydantic import Field, PositiveInt, validate_call
 
-from .._config import config
-from ..utils import Get, Formato, Output, filtrar
+from ..utils.modelos import Params, com_params
+from ..utils.requisicao import Requisicao
+from ..utils.saida import consultar
+from ..utils.typing import Formato, Saida
+from . import modelos as m
 
 
-_RENOMEAR_COLUNAS = {
-    "TEMCODIGO": "codigo",
-    "TEMCODIGO_PAI": "pai",
-    "TEMNOME": "nome",
-    "NIVNOME": "nivel",
-    "TERCODIGO": "codigo",
-    "TERNOME": "nome",
-    "TERNOMEPADRAO": "nome_padrao",
-    "TERCAPITAL": "capital",
-    "TERAREA": "area",
-    "NIVAMC": "amc",
-    "PAICODIGO": "codigo",
-    "PAINOME": "nome",
-}
+class _ParamsTemas(Params):
+    cod: PositiveInt | None = Field(None, exclude=True)
+    pai: PositiveInt | None = Field(None, exclude=True)
+
+
+class _ParamsPaises(Params):
+    cod: str | None = Field(None, exclude=True)
+
+
+class _ParamsTerritorios(Params):
+    capital: bool | None = Field(None, exclude=True)
+    amc: bool | None = Field(None, exclude=True)
+    cod: int | None = Field(None, exclude=True)
+    nivel: str | None = Field(None, exclude=True)
+
+
+def _ipea(path: str, verificar_certificado: bool | None) -> Requisicao:
+    return Requisicao("ipea", [path], chaves=["value"], verificar_certificado=verificar_certificado, cacheavel=True)
 
 
 @validate_call
+@com_params(_ParamsTemas)
 def lista_temas(
     cod: Optional[PositiveInt] = None,
     pai: Optional[PositiveInt] = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Registros de todos os temas cadastrados.
 
     Parameters
@@ -42,15 +50,17 @@ def lista_temas(
 
     index : bool, default=False
         Se True, define a coluna 'codigo' como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -59,7 +69,7 @@ def lista_temas(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Registros de todos os temas das séries do IPEA.
 
     Examples
@@ -100,29 +110,24 @@ def lista_temas(
 
     """
 
-    formato = config.resolver_formato(formato)
-    data = Get(
-        endpoint="ipea",
-        path=["Temas" if cod is None else f"Temas({cod})"],
-        unpack_keys=["value"],
-        cols_to_rename=_RENOMEAR_COLUNAS,
+    _ParamsTemas.de_locais(locals())
+    return consultar(
+        _ipea("Temas" if cod is None else f"Temas({cod})", verificar_certificado),
+        m.Tema,
+        formato,
         index=index,
-        verify=verificar_certificado,
-    ).get(formato)
-
-    if pai is not None:
-        data = filtrar(data, formato, "pai", pai)
-
-    return data
+        filtro=None if pai is None else (lambda tema: tema.pai == pai),
+    )
 
 
 @validate_call
+@com_params(_ParamsPaises)
 def lista_paises(
     cod: Optional[str] = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Registros de todos os países cadastrados.
 
     Parameters
@@ -133,15 +138,17 @@ def lista_paises(
 
     index : bool, default=False
         Se True, define a coluna 'codigo' como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -150,7 +157,7 @@ def lista_paises(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         DataFrame contendo um registro de todos os países das séries do IPEA.
 
     Examples
@@ -181,17 +188,17 @@ def lista_paises(
 
     """
 
-    return Get(
-        endpoint="ipea",
-        path=["Paises" if cod is None else f"Paises('{cod.upper()}')"],
-        unpack_keys=["value"],
-        cols_to_rename=_RENOMEAR_COLUNAS,
+    _ParamsPaises.de_locais(locals())
+    return consultar(
+        _ipea("Paises" if cod is None else f"Paises('{cod.upper()}')", verificar_certificado),
+        m.Pais,
+        formato,
         index=index,
-        verify=verificar_certificado,
-    ).get(formato)
+    )
 
 
 @validate_call
+@com_params(_ParamsTerritorios)
 def lista_territorios(
     capital: Optional[bool] = None,
     amc: Optional[bool] = None,
@@ -199,7 +206,7 @@ def lista_territorios(
     nivel: Optional[str] = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Registros de todos os territórios brasileiros cadastrados.
 
     Parameters
@@ -223,12 +230,15 @@ def lista_territorios(
         Utilize a função `ipea.niveis_territoriais` para verificar
         as opções disponíveis.
     
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -237,7 +247,7 @@ def lista_territorios(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Registros de todos os territórios das séries do IPEA.
 
     Notes
@@ -275,27 +285,19 @@ def lista_territorios(
 
     """
 
+    _ParamsTerritorios.de_locais(locals())
     if (cod is None) or (nivel is None):
         path = "Territorios"
     else:
         n = "Municipios" if nivel == "Municípios" else nivel
         path = f"Territorios(TERCODIGO='{cod}',NIVNOME='{n}')"
 
-    formato = config.resolver_formato(formato)
-    data = Get(
-        endpoint="ipea",
-        path=[path],
-        unpack_keys=["value"],
-        cols_to_rename=_RENOMEAR_COLUNAS,
-        verify=verificar_certificado,
-    ).get(formato)
+    def filtro(territorio: m.Territorio) -> bool:
+        if capital is not None and territorio.capital != capital:
+            return False
+        return amc is None or territorio.amc == amc
 
-    if capital is not None:
-        data = filtrar(data, formato, "capital", capital)
-    if amc is not None:
-        data = filtrar(data, formato, "amc", amc)
-
-    return data
+    return consultar(_ipea(path, verificar_certificado), m.Territorio, formato, filtro=filtro)
 
 
 def lista_niveis() -> list[str]:

@@ -48,10 +48,10 @@ def test_codigos_municipios():
 
 def test_ipca():
     df = ipca(ultimos=10, index=True)
-    assert df.shape == (10, 1)
+    assert df.shape == (10, 2)  # datafim e valor
 
     df = ipca(inicio="2024-01-01", fim="2024-02-01")
-    assert df.shape == (2, 2)
+    assert df.shape == (2, 3)  # data, datafim e valor
 
 
 def test_perfil_eleitorado():

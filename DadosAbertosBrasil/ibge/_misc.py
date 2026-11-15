@@ -1,13 +1,25 @@
 from typing import Literal, Optional
 
 import pandas as pd
-from pydantic import validate_call, PositiveInt
-import requests
+from pydantic import Field, PositiveInt, validate_call
 
 from .._config import config
-from ..utils import Get, parse, Formato, NivelTerritorial, Output, converter
+from ..utils import parse
 from ..utils.endpoints import ENDPOINTS
 from ..utils.errors import DABLocalidadeError, descontinuado
+from ..utils.get import converter
+from ..utils.modelos import Params, com_params, validar
+from ..utils.requisicao import Requisicao
+from ..utils.saida import resolver_formato, tabela
+from ..utils.typing import Formato, NivelTerritorial, Saida
+from . import modelos as m
+
+
+class _ParamsLocalidades(Params):
+    nivel: NivelTerritorial = Field(exclude=True)
+    divisoes: NivelTerritorial | None = Field(None, exclude=True)
+    localidade: PositiveInt | str | list[PositiveInt | str] | None = Field(None, exclude=True)
+    ordenar_por: str | None = Field(None, serialization_alias="orderBy")
 
 
 @validate_call
@@ -70,9 +82,7 @@ def populacao(
     """
 
     localidade = parse.localidade(localidade, "")
-    query = f"https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/{localidade}"
-
-    r = requests.get(query, verify=config.verificar_certificado).json()
+    r = Requisicao("ibge", ["projecoes", "populacao", localidade]).json()
 
     if projecao is None:
         return r
@@ -82,19 +92,12 @@ def populacao(
         return r["projecao"]["periodoMedio"]["nascimento"]
     elif projecao == "obito":
         return r["projecao"]["periodoMedio"]["obito"]
-    elif projecao == "incremento":
-        return r["projecao"]["periodoMedio"]["incrementoPopulacional"]
     else:
-        raise ValueError(
-            """O argumento 'projecao' deve ser um dos seguintes valores tipo string:
-            - 'populacao';
-            - 'nascimento';
-            - 'obito';
-            - 'incremento'."""
-        )
+        return r["projecao"]["periodoMedio"]["incrementoPopulacional"]
 
 
 @validate_call
+@com_params(_ParamsLocalidades)
 def localidades(
     nivel: NivelTerritorial = "distritos",
     divisoes: Optional[NivelTerritorial] = None,
@@ -103,7 +106,7 @@ def localidades(
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Obtém o conjunto de localidades do Brasil e suas intrarregiões.
 
     Parameters
@@ -125,12 +128,15 @@ def localidades(
         Se True, defina a coluna `"id"` como index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -139,7 +145,7 @@ def localidades(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Localidades desejadas.
 
     Raises
@@ -190,38 +196,27 @@ def localidades(
 
     """
 
+    params = _ParamsLocalidades.de_locais(locals())
     path = ["localidades", nivel]
-    params = {}
-
     if localidade is not None:
         if isinstance(localidade, list):
             localidade = "|".join([str(loc) for loc in localidade])
         path.append(localidade)
-
     if (divisoes is not None) and (nivel != divisoes):
         path.append(divisoes)
 
-    if ordenar_por is not None:
-        params["orderBy"] = ordenar_por
-
-    formato = config.resolver_formato(formato)
-    get = Get(
-        endpoint="ibge",
-        path=path,
-        params=params,
-        verify=verificar_certificado,
+    requisicao = Requisicao(
+        "ibge", path, params.para_api(), verificar_certificado=verificar_certificado, cacheavel=True
     )
-    if formato not in ("pandas", "polars"):
-        return get.get(formato)
-
-    def _loc_columns(x: str) -> str:
-        y = x.replace("-", "_").split(".")
-        return f"{y[-2]}_{y[-1]}" if len(y) > 1 else y[0]
-
-    data = get.pandas
-    data.columns = data.columns.map(_loc_columns)
-    data = data.loc[:, ~data.columns.duplicated()]
-    return converter(data, formato, index, "id")
+    formato = resolver_formato(formato)
+    if formato == "url":
+        return requisicao.url
+    bruto = requisicao.bruto()
+    if formato == "bruto":
+        return bruto
+    linhas = m.preparar_localidades(bruto)
+    modelo = m.modelo_localidades(linhas)
+    return tabela(validar(modelo, linhas), modelo, formato, index=index, index_col="id")
 
 
 @validate_call
@@ -342,45 +337,29 @@ def malha(
     nivel = nivel.lower()
     if nivel not in NIVEIS:
         raise DABLocalidadeError(
-            f"""Nível inválido:
-        Preencha o argumento `nivel` com um dos seguintes valores:
-        {NIVEIS}"""
+            f"Nível inválido. Preencha o argumento `nivel` com um dos seguintes valores: {sorted(NIVEIS)}"
         )
 
-    path = ["malhas", nivel, localidade]
-
-    params = {
-        "periodo": periodo,
-        "qualidade": qualidade,
-        "formato": FORMATOS[formato],
-    }
-
+    params = {"periodo": periodo, "qualidade": qualidade, "formato": FORMATOS[formato]}
     if divisoes is not None:
         divisoes = divisoes.lower()
         if divisoes not in DIVISOES:
             raise DABLocalidadeError(
-                f"""Subdivisões inválida:
-            Preencha o argumento `divisoes` com um dos seguintes valores:
-            {DIVISOES}"""
+                f"Subdivisão inválida. Preencha o argumento `divisoes` com um dos seguintes valores: {sorted(DIVISOES)}"
             )
         if nivel != divisoes:
             params["intrarregiao"] = divisoes
 
-    url = "https://servicodados.ibge.gov.br/api/v3/"
-    url += "/".join([str(p) for p in path])
-
-    data = requests.get(url=url, params=params, verify=config.verificar_certificado)
-
-    if formato.lower().endswith("json"):
-        return data.json()
-    else:
-        return data.url
+    requisicao = Requisicao("sidra", ["malhas", nivel, localidade], params)
+    if formato.endswith("json"):
+        return requisicao.bruto()
+    return requisicao.url
 
 
 @validate_call
 def coordenadas(
     formato: Literal["pandas", "polars", "url"] | None = None,
-) -> Output:
+) -> Saida:
     """Obtém as coordenadas de todas as localidades brasileiras, incluindo
     latitude, longitude e altitude.
 
@@ -391,16 +370,20 @@ def coordenadas(
 
     Parameters
     ----------
-    formato : {"pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço do arquivo CSV.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Coordenadas de todas as localidade brasileiras.
 
     Examples

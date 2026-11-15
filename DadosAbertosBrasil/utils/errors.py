@@ -45,6 +45,13 @@ class DABFormatoWarning(FutureWarning):
     """
 
 
+class DABValidacaoWarning(UserWarning):
+    """Aviso de um valor da API que não corresponde ao modelo de saída.
+
+    Quase sempre indica que a API mudou. O valor é mantido como veio.
+    """
+
+
 class _DABDeprecationError(DeprecationWarning):
     """Erro gerado quando o usuário chama uma função depreciada."""
 

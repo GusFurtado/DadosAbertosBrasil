@@ -6,7 +6,8 @@ Serve como um consolidador por UF de diversar funções do pacote DadosAbertosBr
 
 from datetime import datetime
 
-from ..utils import Get, parse
+from ..utils import parse
+from ..utils.requisicao import Requisicao
 from ..utils.errors import descontinuado
 
 
@@ -69,11 +70,7 @@ class Governador:
     def __init__(self, uf: str, verificar_certificado: bool | None = None):
         self.uf = parse.uf(uf)
 
-        data = Get(
-            endpoint="wiki",
-            path=["governadores.json"],
-            verify=verificar_certificado,
-        ).json
+        data = Requisicao("wiki", ["governadores.json"], verificar_certificado=verificar_certificado).json()
         data = data[self._UFS[self.uf]]
 
         # Criar atributos

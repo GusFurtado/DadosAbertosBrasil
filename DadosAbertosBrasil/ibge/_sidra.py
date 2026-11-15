@@ -1,14 +1,62 @@
-from typing import Optional, Literal
+from typing import Literal, Optional
 
-import pandas as pd
-from pydantic import validate_call
-import requests
+from pydantic import Field, validate_call
 
-from .._config import config
-from ..utils import Get, Formato, Output, converter
+from ..utils.modelos import Params, com_params, validar
+from ..utils.requisicao import Requisicao
+from ..utils.saida import consultar, resolver_formato
+from ..utils.saida import tabela as _tabela
+from ..utils.typing import Formato, Saida
+from . import modelos as m
+
+
+def _periodicidade(p: int | float | str) -> str:
+    if isinstance(p, (int, float)):
+        p = f"P{int(p)}"
+    return p.upper()
+
+
+class _ParamsTabelas(Params):
+    contendo: str | None = Field(None, exclude=True)
+    excluindo: str | list[str] | None = Field(None, exclude=True)
+    assunto: int | str | None = None
+    classificacao: int | str | None = None
+    periodo: dict | str | None = None
+    periodicidade: int | str | None = None
+    nivel: int | str | None = None
+    pesquisa: str | None = Field(None, exclude=True)
+
+    def para_api(self) -> dict:
+        params = super().para_api()
+        periodo = self.periodo
+        if isinstance(periodo, dict):
+            for p in periodo:
+                periodo = f"{_periodicidade(p)}[{[periodo[p]]}]"
+            params["periodo"] = periodo
+        if self.periodicidade is not None:
+            params["periodicidade"] = _periodicidade(self.periodicidade)
+        if self.nivel is not None:
+            nivel = f"N{self.nivel}" if isinstance(self.nivel, int) else self.nivel
+            params["nivel"] = nivel.upper()
+        return params
+
+
+class _ParamsSidra(Params):
+    tabela: int = Field(exclude=True)
+    periodos: list | int | str = Field("last", exclude=True)
+    variaveis: list | int | str = Field("allxp", exclude=True)
+    localidades: dict = Field(exclude=True)
+    classificacoes: dict | None = Field(None, exclude=True)
+    ufs_extintas: bool = Field(False, exclude=True)
+    decimais: int | None = Field(None, exclude=True)
+
+
+class _ParamsReferencias(Params):
+    cod: str = Field(exclude=True)
 
 
 @validate_call
+@com_params(_ParamsTabelas)
 def lista_tabelas(
     contendo: Optional[str] = None,
     excluindo: Optional[str] = None,
@@ -21,7 +69,7 @@ def lista_tabelas(
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Lista de tabelas disponíveis no SIDRA.
 
     Parameters
@@ -81,12 +129,15 @@ def lista_tabelas(
         Se True, define a coluna 'tabela_id' como index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -95,7 +146,7 @@ def lista_tabelas(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista de tabelas disponíveis no SIDRA.
 
     Examples
@@ -135,72 +186,33 @@ def lista_tabelas(
 
     """
 
-    params = {}
+    params = _ParamsTabelas.de_locais(locals())
+    termos = [excluindo] if isinstance(excluindo, str) else (excluindo or [])
 
-    def parse_periodicidade(p):
-        if isinstance(p, int) or isinstance(p, float):
-            p = f"P{int(p)}"
-        return p.upper()
+    def filtro(t: m.Tabela) -> bool:
+        nome = (t.tabela_nome or "").upper()
+        if isinstance(contendo, str) and contendo.upper() not in nome:
+            return False
+        if any(termo.upper() in nome for termo in termos):
+            return False
+        return not isinstance(pesquisa, str) or (t.pesquisa_id or "").upper() == pesquisa.upper()
 
-    if assunto is not None:
-        params["assunto"] = assunto
-
-    if classificacao is not None:
-        params["classificacao"] = classificacao
-
-    if periodo is not None:
-        if isinstance(periodo, dict):
-            for p in periodo:
-                periodo = f"{parse_periodicidade(p)}[{[periodo[p]]}]"
-        params["periodo"] = periodo
-
-    if periodicidade is not None:
-        params["periodicidade"] = parse_periodicidade(periodicidade)
-
-    if nivel is not None:
-        if isinstance(nivel, int):
-            nivel = f"N{nivel}"
-        params["nivel"] = nivel.upper()
-
-    get_obj = Get(
-        endpoint="sidra",
-        path=["agregados"],
-        params=params,
-        verify=verificar_certificado,
+    requisicao = Requisicao("sidra", ["agregados"], params.para_api(), verificar_certificado=verificar_certificado)
+    return consultar(
+        requisicao,
+        m.Tabela,
+        formato,
+        index=index,
+        index_col="tabela_id",
+        preparar=m.preparar_tabelas,
+        filtro=filtro,
     )
-
-    formato = config.resolver_formato(formato)
-    if formato not in ("pandas", "polars"):
-        return get_obj.get(formato)
-
-    df = pd.json_normalize(
-        get_obj.json,
-        "agregados",
-        ["id", "nome"],
-        record_prefix="tabela_",
-        meta_prefix="pesquisa_",
-    )
-    df["tabela_id"] = pd.to_numeric(df["tabela_id"])
-
-    if isinstance(contendo, str):
-        df = df[df.tabela_nome.str.upper().str.contains(contendo.upper())]
-
-    if excluindo is not None:
-        if isinstance(excluindo, str):
-            excluindo = [excluindo]
-        for termo in excluindo:
-            df = df[~df["tabela_nome"].str.upper().str.contains(termo.upper())]
-
-    if isinstance(pesquisa, str):
-        df = df[df.pesquisa_id.str.upper() == pesquisa.upper()]
-
-    return converter(df, formato, index, "tabela_id")
 
 
 def lista_pesquisas(
     index: bool = False,
-    formato: Literal["pandas", "polars"] | None = None,
-) -> Output:
+    formato: Formato | None = None,
+) -> Saida:
     """Lista de pesquisas disponíveis no SIDRA.
 
     Esta função é utilizada para identificar o código usado pela função
@@ -212,8 +224,15 @@ def lista_pesquisas(
         Se True, define a coluna 'pesquisa_id' como index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"pandas", "polars"}, optional
-        Biblioteca do DataFrame retornado.
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
+        Formato do dado que será retornado:
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     Returns
@@ -234,17 +253,18 @@ def lista_pesquisas(
 
     """
 
-    data = Get(endpoint="sidra", path=["agregados"]).json
-    df = pd.json_normalize(
-        data,
-        "agregados",
-        ["id", "nome"],
-        record_prefix="tabela_",
-        meta_prefix="pesquisa_",
-    )
-    df = df[["pesquisa_id", "pesquisa_nome"]].drop_duplicates().reset_index(drop=True)
+    def preparar(dados):
+        pesquisas = {p["id"]: {"pesquisa_id": p["id"], "pesquisa_nome": p["nome"]} for p in dados}
+        return list(pesquisas.values())
 
-    return converter(df, config.resolver_formato(formato), index, "pesquisa_id")
+    return consultar(
+        Requisicao("sidra", ["agregados"], cacheavel=True),
+        m.Pesquisa,
+        formato,
+        index=index,
+        index_col="pesquisa_id",
+        preparar=preparar,
+    )
 
 
 class Metadados:
@@ -301,7 +321,7 @@ class Metadados:
     """
 
     def __init__(self, tabela: int):
-        data = Get(endpoint="sidra", path=["agregados", str(tabela), "metadados"]).json
+        data = Requisicao("sidra", ["agregados", tabela, "metadados"]).json()
 
         self.dados = data
         self.cod = tabela
@@ -322,17 +342,18 @@ class Metadados:
 
 
 @validate_call
+@com_params(_ParamsSidra)
 def sidra(
     tabela: int,
     periodos: list | int | str = "last",
     variaveis: list | int | str = "allxp",
-    localidades: dict = {1: "all"},
+    localidades: dict = {1: "all"},  # noqa: B006
     classificacoes: Optional[dict] = None,
     ufs_extintas: bool = False,
     decimais: Optional[int] = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Função para captura de dados do SIDRA - Sistema IBGE de Recuperação
     Automática.
 
@@ -395,12 +416,15 @@ def sidra(
         Número de fixo de casas decimais do resultado, entre 0 e 9.
         Se None, utiliza o padrão de cada variável.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -409,55 +433,40 @@ def sidra(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Série de dados do SIDRA.
 
     """
 
-    path = f"https://apisidra.ibge.gov.br/values/t/{tabela}"
+    _ParamsSidra.de_locais(locals())
+    path = ["values", "t", tabela]
+
+    def juntar(valor) -> str:
+        return ",".join(str(i) for i in valor) if isinstance(valor, list) else str(valor)
 
     if periodos is not None:
-        if isinstance(periodos, list):
-            periodos = ",".join([str(i) for i in periodos])
-        path += f"/p/{periodos}"
-
+        path += ["p", juntar(periodos)]
     if variaveis is not None:
-        if isinstance(variaveis, list):
-            variaveis = ",".join([str(i) for i in variaveis])
-        path += f"/v/{variaveis}"
-
+        path += ["v", juntar(variaveis)]
     for n in localidades:
-        if isinstance(localidades[n], list):
-            valor = ",".join([str(i) for i in localidades[n]])
-        else:
-            valor = localidades[n]
-        path += f"/n{n}/{valor}"
+        path += [f"n{n}", juntar(localidades[n])]
+    for c in classificacoes or {}:
+        path += [f"c{c}", juntar(classificacoes[c])]
+    path += ["u", "y" if ufs_extintas else "n", "d", decimais or "s"]
 
-    if classificacoes is not None:
-        for c in classificacoes:
-            if isinstance(classificacoes[c], list):
-                valor = ",".join([str(i) for i in classificacoes[c]])
-            else:
-                valor = classificacoes[c]
-            path += f"/c{c}/{valor}"
-
-    u = "y" if ufs_extintas else "n"
-    path += f"/u/{u}/d/{decimais or 's'}"
-
-    formato = config.resolver_formato(formato)
+    requisicao = Requisicao("https://apisidra.ibge.gov.br/", path, verificar_certificado=verificar_certificado)
+    formato = resolver_formato(formato)
     if formato == "url":
-        return path
-
-    data = requests.get(path, verify=config.resolver_certificado(verificar_certificado)).json()
-    if formato == "json":
-        return data
-
-    df = pd.DataFrame(data[1:])
-    df.columns = data[0].values()
-    return converter(df, formato)
+        return requisicao.url
+    bruto = requisicao.bruto()
+    if formato == "bruto":
+        return bruto
+    modelo = m.modelo_sidra(bruto[0])
+    return _tabela(validar(modelo, bruto[1:]), modelo, formato)
 
 
 @validate_call
+@com_params(_ParamsReferencias)
 def referencias(
     cod: Literal[
         "assuntos",
@@ -471,7 +480,7 @@ def referencias(
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Obtém uma base de códigos para utilizar como argumento na busca do SIDRA.
 
     Parameters
@@ -490,12 +499,15 @@ def referencias(
         Defina True caso o campo `"cod"` deva ser o index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -504,7 +516,7 @@ def referencias(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Referências do código pesquisado.
 
     Examples
@@ -544,13 +556,13 @@ def referencias(
         "periodicidades": "E",
         "variaveis": "V",
     }
-
-    return Get(
-        endpoint="sidra",
-        path=["agregados"],
-        params={"acervo": CODIGOS[cod]},
-        cols_to_rename={"id": "cod", "literal": "referencia"},
+    _ParamsReferencias.de_locais(locals())
+    return consultar(
+        Requisicao(
+            "sidra", ["agregados"], {"acervo": CODIGOS[cod]}, verificar_certificado=verificar_certificado, cacheavel=True
+        ),
+        m.ReferenciaSidra,
+        formato,
         index=index,
         index_col="cod",
-        verify=verificar_certificado,
-    ).get(formato)
+    )

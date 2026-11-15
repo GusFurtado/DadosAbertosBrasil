@@ -1,18 +1,26 @@
 import functools
 
-from pydantic import validate_call
+from pydantic import Field, validate_call
 
-from ..utils import Formato, Get, Output
 from ..utils.errors import descontinuado
+from ..utils.modelos import com_params
+from ..utils.typing import Formato, Saida
+from . import modelos as m
+from ._comum import ParamsSenado, consultar_senado
+
+
+class _ParamsTiposUsoPalavra(ParamsSenado):
+    ativos: bool = Field(False, serialization_alias="indAtivos")
 
 
 @validate_call
+@com_params(_ParamsTiposUsoPalavra)
 def lista_tipos_uso_palavra(
     ativos: bool = False,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Lista os tipos de uso da palavra.
 
     Parameters
@@ -22,15 +30,17 @@ def lista_tipos_uso_palavra(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -39,31 +49,21 @@ def lista_tipos_uso_palavra(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista os tipos de uso da palavra.
 
     """
 
-    cols_to_rename = {
-        "Codigo": "codigo",
-        "Sigla": "sigla",
-        "Descricao": "descricao",
-        "IndicadorAtivo": "ativo",
-    }
-
-    return Get(
-        endpoint="senado",
-        path=["senador", "lista", "tiposUsoPalavra"],
-        params={"indAtivos": "S" if ativos else "N"},
-        unpack_keys=["ListaTiposUsoPalavra", "TiposUsoPalavra", "TipoUsoPalavra"],
-        cols_to_rename=cols_to_rename,
-        cols_to_int=["codigo"],
-        cols_to_bool=["ativo"],
-        true_value="S",
-        false_value="N",
+    return consultar_senado(
+        ["senador", "lista", "tiposUsoPalavra"],
+        ["ListaTiposUsoPalavra", "TiposUsoPalavra", "TipoUsoPalavra"],
+        _ParamsTiposUsoPalavra.de_locais(locals()),
+        m.TipoUsoPalavra,
+        formato,
         index=index,
-        verify=verificar_certificado,
-    ).get(formato)
+        verificar_certificado=verificar_certificado,
+        cacheavel=True,
+    )
 
 
 @functools.wraps(lista_tipos_uso_palavra)

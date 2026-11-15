@@ -1,14 +1,14 @@
-"""Subpacote `_utils` — Ferramentas auxiliares do pacote DadosAbertosBrasil.
+"""Ferramentas internas do DadosAbertosBrasil.
 
 Módulos
 -------
-
-- **errors**: Exceções personalizadas para as funções do pacote.
-- **get**: Função para captura de dados em formato JSON.
-- **parse**: Padronização de inputs das funções do pacote.
+- **errors**: exceções e avisos do pacote.
+- **requisicao**: requisições HTTP às APIs.
+- **modelos**: bases dos modelos Pydantic de entrada (`Params`) e saída (`Registro`).
+- **saida**: entrega dos dados no formato pedido.
+- **objeto**: base das classes de objeto (`camara.Partido(cod)`...).
+- **parse**: padronização de UF, datas, localidades e moedas.
 
 """
 
-from .filtros import codigos_orgaos, filtrar, filtrar_nome
-from .get import Base, Get, converter
-from .typing import Formato, Expectativa, NivelTerritorial, Output
+from .typing import Expectativa, Formato, NivelTerritorial, Output, Saida

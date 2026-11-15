@@ -1,12 +1,23 @@
+import re
 from typing import Optional
 
-from pydantic import validate_call, PositiveInt
+from pydantic import Field, PositiveInt, validate_call
 
-from .._config import config
-from ..utils import Get, Formato, Output, filtrar, filtrar_nome
+from ..utils.modelos import com_params
+from ..utils.typing import Formato, Saida
+from . import modelos as m
+from ._comum import ParamsSenado, consultar_senado
+
+
+class _ParamsOrcamentos(ParamsSenado):
+    autor: str | None = Field(None, exclude=True)
+    tipo: str | None = Field(None, exclude=True)
+    ano_execucao: int | None = Field(None, exclude=True)
+    ano_materia: int | None = Field(None, exclude=True)
 
 
 @validate_call
+@com_params(_ParamsOrcamentos)
 def lista_orcamentos(
     autor: Optional[str] = None,
     tipo: Optional[str] = None,
@@ -15,7 +26,7 @@ def lista_orcamentos(
     url: bool = True,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Obtém a lista dos lotes de emendas orçamentárias.
 
     Parameters
@@ -32,16 +43,19 @@ def lista_orcamentos(
     ano_materia : int, optional
         Ano da matéria.
 
-    url : bool, default=False
+    url : bool, default=True
         Se False, remove as colunas contendo URI, URL e e-mails.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Vale para os formatos 'json', 'pandas' e 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -50,7 +64,7 @@ def lista_orcamentos(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista dos lotes de emendas orçamentárias.
 
     Examples
@@ -72,52 +86,22 @@ def lista_orcamentos(
 
     """
 
-    cols_to_rename = {
-        "NomeAutorOrcamento": "autor_nome",
-        "IndicadorAtivo": "ativo",
-        "EmailAutorOrcamento": "autor_email",
-        "CodigoAutorOrcamento": "autor_codigo",
-        "DataOperacao": "data_operacao",
-        "QuantidadeEmendas": "quantidade_emendas",
-        "AnoExecucao": "ano_execucao",
-        "NumeroMateria": "materia_numero",
-        "AnoMateria": "materia_ano",
-        "SiglaTipoPlOrcamento": "tipo_sigla",
-        "DescricaoTipoPlOrcamento": "tipo_descricao",
-    }
+    def filtro(lote: m.LoteEmendas) -> bool:
+        if autor is not None and not (isinstance(lote.autor_nome, str) and re.search(autor, lote.autor_nome)):
+            return False
+        if tipo is not None and lote.tipo_sigla != tipo:
+            return False
+        if ano_execucao is not None and lote.ano_execucao != ano_execucao:
+            return False
+        return ano_materia is None or lote.materia_ano == ano_materia
 
-    formato = config.resolver_formato(formato)
-    data = Get(
-        endpoint="senado",
-        path=["orcamento", "lista"],
-        unpack_keys=[
-            "ListaLoteEmendas",
-            "LotesEmendasOrcamento",
-            "LoteEmendasOrcamento",
-        ],
-        cols_to_rename=cols_to_rename,
-        cols_to_int=[
-            "autor_codigo",
-            "quantidade_emendas",
-            "ano_execucao",
-            "materia_ano",
-        ],
-        cols_to_date=["data_operacao"],
-        cols_to_bool=["ativo"],
-        true_value="Sim",
-        false_value="Não",
-        url_cols=["autor_email"],
-        remover_url=not url,
-        verify=verificar_certificado,
-    ).get(formato)
-
-    if autor is not None:
-        data = filtrar_nome(data, formato, ["autor_nome"], contendo=autor)
-    if tipo is not None:
-        data = filtrar(data, formato, "tipo_sigla", tipo)
-    if ano_execucao is not None:
-        data = filtrar(data, formato, "ano_execucao", ano_execucao)
-    if ano_materia is not None:
-        data = filtrar(data, formato, "materia_ano", ano_materia)
-
-    return data
+    return consultar_senado(
+        ["orcamento", "lista"],
+        ["ListaLoteEmendas", "LotesEmendasOrcamento", "LoteEmendasOrcamento"],
+        _ParamsOrcamentos.de_locais(locals()),
+        m.LoteEmendas,
+        formato,
+        url=url,
+        filtro=filtro,
+        verificar_certificado=verificar_certificado,
+    )

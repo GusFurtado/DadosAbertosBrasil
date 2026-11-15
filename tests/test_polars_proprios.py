@@ -3,67 +3,14 @@ import datetime as dt
 import pandas as pd
 import polars as pl
 import pytest
-import requests
 
 import DadosAbertosBrasil as dab
 from DadosAbertosBrasil import bacen, favoritos, ibge, ipea
-from DadosAbertosBrasil.utils import converter
 
 
-class _Resposta:
-    def __init__(self, conteudo):
-        self.conteudo = conteudo
-
-    def raise_for_status(self):
-        pass
-
-    def json(self):
-        return self.conteudo
-
-
-@pytest.fixture
-def api(monkeypatch):
-    """Faz `Get` e `requests.get` devolverem `resposta(url)` sem acessar a rede."""
-
-    def definir(resposta):
-        monkeypatch.setattr(
-            requests.Session, "get", lambda self, url, **kw: _Resposta(resposta(url))
-        )
-        monkeypatch.setattr(requests, "get", lambda url, **kw: _Resposta(resposta(url)))
-
-    yield definir
-    dab.config.formato = "pandas"
-
-
-# converter
-
-
-def test_converter_pandas_aplica_index():
-    df = pd.DataFrame({"codigo": [1, 2], "nome": ["a", "b"]})
-    assert list(converter(df, "pandas", True, "codigo").index) == [1, 2]
-    assert isinstance(converter(df, "pandas").index, pd.RangeIndex)
-
-
-def test_converter_polars_sem_pyarrow_e_index_vira_coluna():
-    df = pd.DataFrame(
-        {"nome": ["a", None], "data": [dt.date(2020, 1, 1), None], "v": [1.5, float("nan")]},
-        index=pd.Index([10, 20], name="periodo"),
-    )
-    plf = converter(df, "polars")
-    assert plf.columns == ["periodo", "nome", "data", "v"]
-    assert plf["nome"].to_list() == ["a", None]
-    assert plf["data"].dtype == pl.Date
-    assert plf["v"].to_list() == [1.5, None]
-
-
-def test_converter_polars_ignora_index_sem_nome():
-    df = pd.DataFrame({"a": [1, 2, 3]})
-    assert converter(df[df["a"] > 1], "polars").columns == ["a"]
-
-
-def test_converter_polars_avisa_index():
-    with pytest.warns(UserWarning, match="polars"):
-        converter(pd.DataFrame({"a": [1]}), "polars", True, "a")
+def _datas(coluna) -> list[dt.date]:
+    """Datas de uma coluna pandas (datetime64) ou polars (Date)."""
+    return [d.date() if isinstance(d, dt.datetime) else d for d in coluna.to_list()]
 
 
 # bacen
@@ -76,20 +23,24 @@ SGS = [{"data": "01/01/2020", "valor": "1.5"}, {"data": "01/02/2020", "valor": "
 def test_bacen_serie(api, formato):
     api(lambda url: SGS)
     df = bacen.serie(432, formato=formato)
-    datas = df["data"].to_list() if formato == "polars" else list(df["data"])
-    assert [d.date() for d in datas] == [dt.date(2020, 1, 1), dt.date(2020, 2, 1)]
+    assert _datas(df["data"]) == [dt.date(2020, 1, 1), dt.date(2020, 2, 1)]
+    assert list(df["valor"]) == [1.5, 2.0]
 
 
 def test_bacen_serie_formato_global(api):
     api(lambda url: SGS)
     dab.config.formato = "polars"
     assert isinstance(bacen.serie(432), pl.DataFrame)
-    assert bacen.serie(432, formato="json") == SGS
+    assert bacen.serie(432, formato="bruto") == SGS
+    assert bacen.serie(432, formato="json") == [
+        {"data": dt.date(2020, 1, 1), "datafim": None, "valor": 1.5},
+        {"data": dt.date(2020, 2, 1), "datafim": None, "valor": 2.0},
+    ]
 
 
 def test_bacen_cambio_polars(api):
     def resposta(url):
-        if "'USD'" in url:
+        if "%27USD%27" in url:
             return {"value": [{"cotacaoCompra": 5.0, "dataHoraCotacao": "2021-01-04 13:00:00.0"}]}
         return {"value": [
             {"cotacaoCompra": 4.0, "dataHoraCotacao": "2021-01-04 13:00:00.0"},
@@ -112,7 +63,7 @@ def test_ipea_serie(api, formato):
         {"SERCODIGO": "X", "VALDATA": "1996-01-01T00:00:00-02:00", "VALVALOR": 1.0},
     ]})
     df = ipea.serie("X", formato=formato)
-    assert list(df["data"]) == [dt.date(1996, 1, 1)]
+    assert _datas(df["data"]) == [dt.date(1996, 1, 1)]
 
 
 @pytest.mark.parametrize("formato", ["pandas", "polars"])
@@ -215,5 +166,5 @@ def test_ipea_classe_serie(api, formato):
     tipo = pl.DataFrame if formato == "polars" else pd.DataFrame
     assert isinstance(s.valores, tipo)
     assert isinstance(s.metadados, tipo)
-    assert list(s.valores["data"]) == [dt.date(1996, 1, 1)]
+    assert _datas(s.valores["data"]) == [dt.date(1996, 1, 1)]
     assert s.nome == "PIB"

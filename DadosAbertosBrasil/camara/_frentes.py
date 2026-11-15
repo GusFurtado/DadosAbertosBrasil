@@ -1,11 +1,20 @@
 from typing import Optional
 
-from pydantic import validate_call, PositiveInt
+from pydantic import Field, PositiveInt, validate_call
 
-from ..utils import Base, Get, Formato, Output
+from ..utils.modelos import com_params
+from ..utils.objeto import Objeto
+from ..utils.typing import Formato, Saida
+from . import modelos as m
+from ._comum import ParamsCamara, consultar_camara, requisicao
 
 
-class Frente(Base):
+class _ParamsFrentes(ParamsCamara):
+    legislatura: PositiveInt | None = Field(None, serialization_alias="idLegislatura")
+    pagina: PositiveInt = 1
+
+
+class Frente(Objeto):
     """Informações detalhadas sobre uma frente parlamentar.
 
     Parameters
@@ -72,31 +81,13 @@ class Frente(Base):
 
     """
 
+    modelo = m.FrenteDetalhes
+    chave_obrigatoria = "titulo"
+
     def __init__(self, cod: int, verificar_certificado: bool | None = None):
         self.cod = cod
         self.verify = verificar_certificado
-        atributos = {
-            "coordenador": ["coordenador"],
-            "documento": ["urlDocumento"],
-            "email": ["email"],
-            "id_sitacao": ["idSituacao"],
-            "keywords": ["keywords"],
-            "legislatura": ["idLegislatura"],
-            "situacao": ["situacao"],
-            "telefone": ["telefone"],
-            "titulo": ["titulo"],
-            "uri": ["uri"],
-            "website": ["urlWebsite"],
-        }
-
-        super().__init__(
-            endpoint="camara",
-            path=["frentes", str(cod)],
-            unpack_keys=["dados"],
-            error_key="titulo",
-            atributos=atributos,
-            verify=self.verify,
-        )
+        self._carregar(requisicao(["frentes", cod], verificar_certificado=verificar_certificado))
 
     def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: {self.titulo}"
@@ -109,7 +100,7 @@ class Frente(Base):
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Os deputados que participam da frente parlamentar.
 
         Uma lista dos deputados participantes da frente parlamentar e os
@@ -120,60 +111,45 @@ class Frente(Base):
 
         Parameters
         ----------
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Os deputados que participam da frente parlamentar.
 
         """
 
-        cols_to_rename = {
-            "id": "codigo",
-            "uri": "uri",
-            "nome": "nome",
-            "siglaPartido": "partido",
-            "uriPartido": "partido_uri",
-            "siglaUf": "uf",
-            "idLegislatura": "legislatura",
-            "urlFoto": "foto",
-            "email": "email",
-            "titulo": "titulo",
-            "codTitulo": "titulo_codigo",
-            "dataInicio": "data_inicio",
-            "dataFim": "data_fim",
-        }
-
-        return Get(
-            endpoint="camara",
-            path=["frentes", str(self.cod), "membros"],
-            unpack_keys=["dados"],
-            cols_to_rename=cols_to_rename,
-            cols_to_date=["data_inicio", "data_fim"],
-            url_cols=["uri", "partido_uri", "foto", "email"],
-            remover_url=not url,
+        return consultar_camara(
+            ["frentes", self.cod, "membros"],
+            None,
+            m.MembroFrente,
+            formato,
+            url=url,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
 
 
 @validate_call
+@com_params(_ParamsFrentes)
 def lista_frentes(
     legislatura: Optional[PositiveInt] = None,
     pagina: PositiveInt = 1,
@@ -181,7 +157,7 @@ def lista_frentes(
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Lista de frentes parlamentares de uma ou mais legislaturas.
 
     Retorna uma lista de informações sobre uma frente parlamentar - um
@@ -202,21 +178,23 @@ def lista_frentes(
         obter com a requisição, contendo o número de itens definido
         pelo parâmetro `itens`. Se omitido, assume o valor 1.
 
-    url : bool, default=False
+    url : bool, default=True
         Se False, remove as colunas contendo URI, URL e e-mails.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Vale para os formatos 'json', 'pandas' e 'polars'.
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -225,31 +203,17 @@ def lista_frentes(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista de frentes parlamentares de uma ou mais legislaturas.
 
     """
 
-    params = {"pagina": pagina}
-    if legislatura is not None:
-        params["idLegislatura"] = legislatura
-
-    cols_to_rename = {
-        "id": "codigo",
-        "uri": "uri",
-        "titulo": "titulo",
-        "idLegislatura": "legislatura",
-    }
-
-    return Get(
-        endpoint="camara",
-        path=["frentes"],
-        params=params,
-        unpack_keys=["dados"],
-        cols_to_rename=cols_to_rename,
-        cols_to_date=["data_inicio", "date_fim"],
-        url_cols=["uri"],
-        remover_url=not url,
+    return consultar_camara(
+        ["frentes"],
+        _ParamsFrentes.de_locais(locals()),
+        m.Frente,
+        formato,
+        url=url,
         index=index,
-        verify=verificar_certificado,
-    ).get(formato)
+        verificar_certificado=verificar_certificado,
+    )
