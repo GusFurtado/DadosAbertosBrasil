@@ -1,12 +1,12 @@
 from datetime import date
-from typing import Optional
+from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, validate_call
 
 from ..utils.errors import alias_descontinuado
 from ..utils.modelos import com_params
 from ..utils.objeto import Objeto
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 from ._comum import Ordenacao, Paginacao, Periodo, consultar_camara, requisicao
 
@@ -123,14 +123,109 @@ class Orgao(Objeto):
     def __str__(self) -> str:
         return f"Órgão {self.nome}"
 
+    @overload
+    def eventos(
+        self,
+        tipo_evento: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def eventos(
+        self,
+        tipo_evento: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def eventos(
+        self,
+        tipo_evento: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.EventoOrgao]: ...
+
+    @overload
+    def eventos(
+        self,
+        tipo_evento: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def eventos(
+        self,
+        tipo_evento: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def eventos(
+        self,
+        tipo_evento: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
     @com_params(_ParamsEventosOrgao)
     def eventos(
         self,
-        tipo_evento: Optional[str] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        tipo_evento: str | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: int = 1,
-        itens: Optional[int] = None,
+        itens: int | None = None,
         asc: bool = True,
         ordenar_por: str = "dataHoraInicio",
         url: bool = True,
@@ -210,13 +305,90 @@ class Orgao(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def membros(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def membros(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def membros(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Membro]: ...
+
+    @overload
+    def membros(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def membros(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def membros(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
     @com_params(_ParamsMembrosOrgao)
     def membros(
         self,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: PositiveInt = 1,
-        itens: Optional[PositiveInt] = None,
+        itens: PositiveInt | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
@@ -283,14 +455,109 @@ class Orgao(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def votacoes(
+        self,
+        proposicao: int | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def votacoes(
+        self,
+        proposicao: int | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def votacoes(
+        self,
+        proposicao: int | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Votacao]: ...
+
+    @overload
+    def votacoes(
+        self,
+        proposicao: int | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def votacoes(
+        self,
+        proposicao: int | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def votacoes(
+        self,
+        proposicao: int | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
     @com_params(_ParamsVotacoesOrgao)
     def votacoes(
         self,
-        proposicao: Optional[int] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        proposicao: int | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: int = 1,
-        itens: Optional[int] = None,
+        itens: int | None = None,
         asc: bool = False,
         ordenar_por: str = "dataHoraRegistro",
         url: bool = True,
@@ -382,15 +649,122 @@ class Orgao(Objeto):
         )
 
 
+@overload
+def lista_orgaos(
+    sigla: str | None = ...,
+    tipo: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_orgaos(
+    sigla: str | None = ...,
+    tipo: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_orgaos(
+    sigla: str | None = ...,
+    tipo: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Orgao]: ...
+
+
+@overload
+def lista_orgaos(
+    sigla: str | None = ...,
+    tipo: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_orgaos(
+    sigla: str | None = ...,
+    tipo: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_orgaos(
+    sigla: str | None = ...,
+    tipo: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsOrgaos)
 def lista_orgaos(
-    sigla: Optional[str] = None,
-    tipo: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    sigla: str | None = None,
+    tipo: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[PositiveInt] = None,
+    itens: PositiveInt | None = None,
     asc: bool = True,
     ordenar_por: str = "id",
     url: bool = True,

@@ -1,11 +1,12 @@
-from typing import Optional
+
+from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, validate_call
 
 from ..utils.errors import alias_descontinuado
 from ..utils.modelos import com_params
 from ..utils.objeto import Objeto
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 from ._comum import ParamsCamara, consultar_camara, requisicao
 
@@ -98,6 +99,24 @@ class Frente(Objeto):
     def __str__(self) -> str:
         return self.titulo
 
+    @overload
+    def membros(self, url: bool = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def membros(self, url: bool = ..., index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def membros(self, url: bool = ..., index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.MembroFrente]: ...
+
+    @overload
+    def membros(self, url: bool = ..., index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def membros(self, url: bool = ..., index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def membros(self, url: bool = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def membros(
         self,
         url: bool = True,
@@ -151,10 +170,81 @@ class Frente(Objeto):
         )
 
 
+@overload
+def lista_frentes(
+    legislatura: PositiveInt | None = ...,
+    pagina: PositiveInt = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_frentes(
+    legislatura: PositiveInt | None = ...,
+    pagina: PositiveInt = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_frentes(
+    legislatura: PositiveInt | None = ...,
+    pagina: PositiveInt = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Frente]: ...
+
+
+@overload
+def lista_frentes(
+    legislatura: PositiveInt | None = ...,
+    pagina: PositiveInt = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_frentes(
+    legislatura: PositiveInt | None = ...,
+    pagina: PositiveInt = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_frentes(
+    legislatura: PositiveInt | None = ...,
+    pagina: PositiveInt = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsFrentes)
 def lista_frentes(
-    legislatura: Optional[PositiveInt] = None,
+    legislatura: PositiveInt | None = None,
     pagina: PositiveInt = 1,
     url: bool = True,
     index: bool = False,

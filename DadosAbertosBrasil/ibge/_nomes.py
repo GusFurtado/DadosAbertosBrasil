@@ -1,11 +1,11 @@
-from typing import Literal, Optional
+from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, computed_field, field_validator, validate_call
 
 from ..utils.modelos import Maiusculo, Params, com_params, validar
 from ..utils.requisicao import Requisicao
 from ..utils.saida import resolver_formato, tabela
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 
 
@@ -49,12 +49,77 @@ def _entregar(requisicao: Requisicao, formato: str | None, montar, index_col: st
     return tabela(validar(modelo, linhas), modelo, formato, index=formato == "pandas", index_col=index_col)
 
 
+@overload
+def nomes(
+    nomes: list[str] | str,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def nomes(
+    nomes: list[str] | str,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def nomes(
+    nomes: list[str] | str,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.FrequenciaNomes]: ...
+
+
+@overload
+def nomes(
+    nomes: list[str] | str,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def nomes(
+    nomes: list[str] | str,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def nomes(
+    nomes: list[str] | str,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsNomes)
 def nomes(
     nomes: list[str] | str,
-    sexo: Optional[Literal["f", "m"]] = None,
-    localidade: Optional[PositiveInt] = None,
+    sexo: Literal["f", "m"] | None = None,
+    localidade: PositiveInt | None = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Saida:
@@ -161,6 +226,34 @@ def nomes(
     return _entregar(requisicao, formato, montar, "periodo")
 
 
+@overload
+def nomes_uf(nome: str, formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...) -> Any: ...
+
+
+@overload
+def nomes_uf(
+    nome: str, *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def nomes_uf(
+    nome: str, *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.NomeUF]: ...
+
+
+@overload
+def nomes_uf(nome: str, *, formato: Literal["pandas"], verificar_certificado: bool | None = ...) -> DataFramePandas: ...
+
+
+@overload
+def nomes_uf(nome: str, *, formato: Literal["polars"], verificar_certificado: bool | None = ...) -> DataFramePolars: ...
+
+
+@overload
+def nomes_uf(nome: str, *, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsNomesUF)
 def nomes_uf(
@@ -223,12 +316,77 @@ def nomes_uf(
     return _entregar(requisicao, formato, montar, "localidade")
 
 
+@overload
+def nomes_ranking(
+    decada: PositiveInt | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def nomes_ranking(
+    decada: PositiveInt | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def nomes_ranking(
+    decada: PositiveInt | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.RankingNome]: ...
+
+
+@overload
+def nomes_ranking(
+    decada: PositiveInt | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def nomes_ranking(
+    decada: PositiveInt | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def nomes_ranking(
+    decada: PositiveInt | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    localidade: PositiveInt | None = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsRanking)
 def nomes_ranking(
-    decada: Optional[PositiveInt] = None,
-    sexo: Optional[Literal["f", "m"]] = None,
-    localidade: Optional[PositiveInt] = None,
+    decada: PositiveInt | None = None,
+    sexo: Literal["f", "m"] | None = None,
+    localidade: PositiveInt | None = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Saida:

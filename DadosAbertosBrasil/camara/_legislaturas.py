@@ -1,11 +1,11 @@
 from datetime import date
-from typing import Optional
+from typing import Any, Literal, overload
 
 from pydantic import PositiveInt, validate_call
 
 from ..utils.modelos import com_params
 from ..utils.objeto import Objeto
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 from ._comum import Ordenacao, Periodo, consultar_camara, requisicao
 
@@ -77,11 +77,76 @@ class Legislatura(Objeto):
     def __str__(self) -> str:
         return f"Legislatura {self.cod}"
 
+    @overload
+    def mesa(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def mesa(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def mesa(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Membro]: ...
+
+    @overload
+    def mesa(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def mesa(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def mesa(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
     @com_params(_ParamsMesa)
     def mesa(
         self,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
@@ -141,12 +206,101 @@ class Legislatura(Objeto):
         )
 
 
+@overload
+def lista_legislaturas(
+    data: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_legislaturas(
+    data: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_legislaturas(
+    data: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Legislatura]: ...
+
+
+@overload
+def lista_legislaturas(
+    data: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_legislaturas(
+    data: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_legislaturas(
+    data: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsLegislaturas)
 def lista_legislaturas(
-    data: Optional[date] = None,
+    data: date | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[PositiveInt] = None,
+    itens: PositiveInt | None = None,
     asc: bool = False,
     ordenar_por: str = "id",
     url: bool = True,

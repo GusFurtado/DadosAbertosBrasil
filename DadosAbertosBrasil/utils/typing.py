@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Literal, Union
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, Union
 
 Expectativa = Literal[
     "mensal",
@@ -40,9 +40,13 @@ if TYPE_CHECKING:
 
     from .modelos import Registro
 
+    DataFramePandas: TypeAlias = pd.DataFrame
+    DataFramePolars: TypeAlias = pl.DataFrame
     Saida = Union[list[dict[str, Any]], list[Registro], "pd.DataFrame", "pl.DataFrame", str, dict, list]
 else:
-    # pandas e polars são opcionais: fora do type checking, o tipo não pode referenciá-los.
+    # pandas e polars são opcionais: fora do type checking, os tipos não podem referenciá-los.
+    DataFramePandas = Any
+    DataFramePolars = Any
     Saida = Any
 
 Output = Saida

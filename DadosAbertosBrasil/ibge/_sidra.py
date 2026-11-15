@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Any, Literal, overload
 
 from pydantic import Field, validate_call
 
@@ -6,7 +6,7 @@ from ..utils.modelos import Params, com_params, validar
 from ..utils.requisicao import Requisicao
 from ..utils.saida import consultar, resolver_formato
 from ..utils.saida import tabela as _tabela
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 
 
@@ -55,17 +55,118 @@ class _ParamsReferencias(Params):
     cod: str = Field(exclude=True)
 
 
+@overload
+def lista_tabelas(
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    assunto: int | str | None = ...,
+    classificacao: int | str | None = ...,
+    periodo: dict | str | None = ...,
+    periodicidade: int | str | None = ...,
+    nivel: int | str | None = ...,
+    pesquisa: str | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_tabelas(
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    assunto: int | str | None = ...,
+    classificacao: int | str | None = ...,
+    periodo: dict | str | None = ...,
+    periodicidade: int | str | None = ...,
+    nivel: int | str | None = ...,
+    pesquisa: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_tabelas(
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    assunto: int | str | None = ...,
+    classificacao: int | str | None = ...,
+    periodo: dict | str | None = ...,
+    periodicidade: int | str | None = ...,
+    nivel: int | str | None = ...,
+    pesquisa: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Tabela]: ...
+
+
+@overload
+def lista_tabelas(
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    assunto: int | str | None = ...,
+    classificacao: int | str | None = ...,
+    periodo: dict | str | None = ...,
+    periodicidade: int | str | None = ...,
+    nivel: int | str | None = ...,
+    pesquisa: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_tabelas(
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    assunto: int | str | None = ...,
+    classificacao: int | str | None = ...,
+    periodo: dict | str | None = ...,
+    periodicidade: int | str | None = ...,
+    nivel: int | str | None = ...,
+    pesquisa: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_tabelas(
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    assunto: int | str | None = ...,
+    classificacao: int | str | None = ...,
+    periodo: dict | str | None = ...,
+    periodicidade: int | str | None = ...,
+    nivel: int | str | None = ...,
+    pesquisa: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsTabelas)
 def lista_tabelas(
-    contendo: Optional[str] = None,
-    excluindo: Optional[str] = None,
-    assunto: Optional[int | str] = None,
-    classificacao: Optional[int | str] = None,
-    periodo: Optional[dict | str] = None,
-    periodicidade: Optional[int | str] = None,
-    nivel: Optional[int | str] = None,
-    pesquisa: Optional[str] = None,
+    contendo: str | None = None,
+    excluindo: str | None = None,
+    assunto: int | str | None = None,
+    classificacao: int | str | None = None,
+    periodo: dict | str | None = None,
+    periodicidade: int | str | None = None,
+    nivel: int | str | None = None,
+    pesquisa: str | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -209,6 +310,30 @@ def lista_tabelas(
     )
 
 
+@overload
+def lista_pesquisas(index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+
+@overload
+def lista_pesquisas(index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_pesquisas(index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Pesquisa]: ...
+
+
+@overload
+def lista_pesquisas(index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+
+@overload
+def lista_pesquisas(index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+
+@overload
+def lista_pesquisas(index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
+
 def lista_pesquisas(
     index: bool = False,
     formato: Formato | None = None,
@@ -341,6 +466,95 @@ class Metadados:
         return self.nome
 
 
+@overload
+def sidra(
+    tabela: int,
+    periodos: list | int | str = ...,
+    variaveis: list | int | str = ...,
+    localidades: dict = ...,
+    classificacoes: dict | None = ...,
+    ufs_extintas: bool = ...,
+    decimais: int | None = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def sidra(
+    tabela: int,
+    periodos: list | int | str = ...,
+    variaveis: list | int | str = ...,
+    localidades: dict = ...,
+    classificacoes: dict | None = ...,
+    ufs_extintas: bool = ...,
+    decimais: int | None = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def sidra(
+    tabela: int,
+    periodos: list | int | str = ...,
+    variaveis: list | int | str = ...,
+    localidades: dict = ...,
+    classificacoes: dict | None = ...,
+    ufs_extintas: bool = ...,
+    decimais: int | None = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.ValorSidra]: ...
+
+
+@overload
+def sidra(
+    tabela: int,
+    periodos: list | int | str = ...,
+    variaveis: list | int | str = ...,
+    localidades: dict = ...,
+    classificacoes: dict | None = ...,
+    ufs_extintas: bool = ...,
+    decimais: int | None = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def sidra(
+    tabela: int,
+    periodos: list | int | str = ...,
+    variaveis: list | int | str = ...,
+    localidades: dict = ...,
+    classificacoes: dict | None = ...,
+    ufs_extintas: bool = ...,
+    decimais: int | None = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def sidra(
+    tabela: int,
+    periodos: list | int | str = ...,
+    variaveis: list | int | str = ...,
+    localidades: dict = ...,
+    classificacoes: dict | None = ...,
+    ufs_extintas: bool = ...,
+    decimais: int | None = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsSidra)
 def sidra(
@@ -348,9 +562,9 @@ def sidra(
     periodos: list | int | str = "last",
     variaveis: list | int | str = "allxp",
     localidades: dict = {1: "all"},  # noqa: B006
-    classificacoes: Optional[dict] = None,
+    classificacoes: dict | None = None,
     ufs_extintas: bool = False,
-    decimais: Optional[int] = None,
+    decimais: int | None = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Saida:
@@ -463,6 +677,65 @@ def sidra(
         return bruto
     modelo = m.modelo_sidra(bruto[0])
     return _tabela(validar(modelo, bruto[1:]), modelo, formato)
+
+
+@overload
+def referencias(
+    cod: Literal["assuntos", "classificacoes", "niveis", "periodos", "periodicidades", "territorios", "variaveis"],
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def referencias(
+    cod: Literal["assuntos", "classificacoes", "niveis", "periodos", "periodicidades", "territorios", "variaveis"],
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def referencias(
+    cod: Literal["assuntos", "classificacoes", "niveis", "periodos", "periodicidades", "territorios", "variaveis"],
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.ReferenciaSidra]: ...
+
+
+@overload
+def referencias(
+    cod: Literal["assuntos", "classificacoes", "niveis", "periodos", "periodicidades", "territorios", "variaveis"],
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def referencias(
+    cod: Literal["assuntos", "classificacoes", "niveis", "periodos", "periodicidades", "territorios", "variaveis"],
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def referencias(
+    cod: Literal["assuntos", "classificacoes", "niveis", "periodos", "periodicidades", "territorios", "variaveis"],
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call

@@ -1,10 +1,10 @@
 import re
-from typing import Optional
+from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, validate_call
 
 from ..utils.modelos import com_params
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 from ._comum import ParamsSenado, consultar_senado
 
@@ -16,13 +16,90 @@ class _ParamsOrcamentos(ParamsSenado):
     ano_materia: int | None = Field(None, exclude=True)
 
 
+@overload
+def lista_orcamentos(
+    autor: str | None = ...,
+    tipo: str | None = ...,
+    ano_execucao: PositiveInt | None = ...,
+    ano_materia: PositiveInt | None = ...,
+    url: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_orcamentos(
+    autor: str | None = ...,
+    tipo: str | None = ...,
+    ano_execucao: PositiveInt | None = ...,
+    ano_materia: PositiveInt | None = ...,
+    url: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_orcamentos(
+    autor: str | None = ...,
+    tipo: str | None = ...,
+    ano_execucao: PositiveInt | None = ...,
+    ano_materia: PositiveInt | None = ...,
+    url: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.LoteEmendas]: ...
+
+
+@overload
+def lista_orcamentos(
+    autor: str | None = ...,
+    tipo: str | None = ...,
+    ano_execucao: PositiveInt | None = ...,
+    ano_materia: PositiveInt | None = ...,
+    url: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_orcamentos(
+    autor: str | None = ...,
+    tipo: str | None = ...,
+    ano_execucao: PositiveInt | None = ...,
+    ano_materia: PositiveInt | None = ...,
+    url: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_orcamentos(
+    autor: str | None = ...,
+    tipo: str | None = ...,
+    ano_execucao: PositiveInt | None = ...,
+    ano_materia: PositiveInt | None = ...,
+    url: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsOrcamentos)
 def lista_orcamentos(
-    autor: Optional[str] = None,
-    tipo: Optional[str] = None,
-    ano_execucao: Optional[PositiveInt] = None,
-    ano_materia: Optional[PositiveInt] = None,
+    autor: str | None = None,
+    tipo: str | None = None,
+    ano_execucao: PositiveInt | None = None,
+    ano_materia: PositiveInt | None = None,
     url: bool = True,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,

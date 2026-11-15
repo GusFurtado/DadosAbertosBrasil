@@ -71,6 +71,13 @@ gera `DABValidacaoWarning` e o valor fica como veio.
 Devolve uma lista de modelos Pydantic, um por registro, definidos em `<modulo>.modelos`
 (`camara.modelos.Deputado`, `wiki.modelos.Governador`...). Útil para type checking e autocomplete.
 
+### Tipo de retorno no editor
+
+As funções declaram o retorno de cada `formato`. Type checkers e IDEs (mypy, pyright, VS Code) sabem que
+`camara.lista_partidos(formato="pydantic")` é `list[camara.modelos.Partido]`, que `formato="polars"` é um
+`polars.DataFrame` e que `formato="url"` é `str`. Sem `formato`, o retorno depende de
+`dab.config.formato` e é declarado como `Any`.
+
 ## Funções removidas
 
 Viram stubs que levantam `DABFuncaoRemovidaError` com o motivo. Os stubs saem de vez numa versão

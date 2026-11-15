@@ -1,11 +1,11 @@
 import functools
-from typing import Literal, Optional
+from typing import Any, Literal, overload
 
 from pydantic import Field, validate_call
 
 from ..utils.errors import descontinuado
 from ..utils.modelos import SiglaUF, com_params
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 from ._comum import ParamsSenado, consultar_senado, filtro_parlamentares
 
@@ -28,18 +28,131 @@ class _ParamsLegislaturas(ParamsSenado):
         return params
 
 
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Senador]: ...
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsLegislaturas)
 def lista_legislaturas(
     inicio: int,
-    fim: Optional[int] = None,
-    exercicio: Optional[bool] = None,
-    participacao: Optional[Literal["titulares", "suplentes"]] = None,
-    uf: Optional[str] = None,
-    sexo: Optional[Literal["f", "m"]] = None,
-    partido: Optional[str] = None,
-    contendo: Optional[str] = None,
-    excluindo: Optional[str] = None,
+    fim: int | None = None,
+    exercicio: bool | None = None,
+    participacao: Literal["titulares", "suplentes"] | None = None,
+    uf: str | None = None,
+    sexo: Literal["f", "m"] | None = None,
+    partido: str | None = None,
+    contendo: str | None = None,
+    excluindo: str | None = None,
     url: bool = True,
     index: bool = False,
     formato: Formato | None = None,

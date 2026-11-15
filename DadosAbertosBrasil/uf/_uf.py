@@ -5,14 +5,16 @@ Serve como um consolidador por UF de diversar funções do pacote DadosAbertosBr
 """
 
 from datetime import date
-from typing import Literal, Optional
+from typing import Any, Literal, overload
 
 from .. import favoritos, ibge, wiki
 from ..camara import lista_deputados
+from ..camara.modelos import Deputado
 from ..senado import lista_senadores
+from ..senado.modelos import Senador
 from ..utils import parse
 from ..utils.errors import DABUFError
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from ._governador import Governador
 
 # O Brasil e as UFs extintas não estão em `wiki.ufs()`.
@@ -277,16 +279,135 @@ class UF:
             raise DABUFError("Método `densidade` indisponível para UFs extintas.")
         return self.populacao / self.area
 
+    @overload
     def deputados(
         self,
-        nome: Optional[str] = None,
-        legislatura: Optional[int] = None,
-        partido: Optional[str] = None,
-        sexo: Optional[str] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+        verificar_certificado: bool | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+        verificar_certificado: bool | None = ...,
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+        verificar_certificado: bool | None = ...,
+    ) -> list[Deputado]: ...
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+        verificar_certificado: bool | None = ...,
+    ) -> DataFramePandas: ...
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+        verificar_certificado: bool | None = ...,
+    ) -> DataFramePolars: ...
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+        verificar_certificado: bool | None = ...,
+    ) -> str: ...
+
+    def deputados(
+        self,
+        nome: str | None = None,
+        legislatura: int | None = None,
+        partido: str | None = None,
+        sexo: str | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: int = 1,
-        itens: Optional[int] = None,
+        itens: int | None = None,
         asc: bool = True,
         ordenar_por: str = "nome",
         url: bool = True,
@@ -500,7 +621,7 @@ class UF:
     def malha(
         self,
         nivel: str = "estados",
-        divisoes: Optional[str] = None,
+        divisoes: str | None = None,
         periodo: int = 2020,
         formato: str = "geojson",
         qualidade: str = "minima",
@@ -674,13 +795,102 @@ class UF:
         prefeitos = wiki.prefeitos_capitais(uf=self.sigla, formato="pydantic", verificar_certificado=self.verify)
         return prefeitos[0]
 
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+        verificar_certificado: bool | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+        verificar_certificado: bool | None = ...,
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+        verificar_certificado: bool | None = ...,
+    ) -> list[Senador]: ...
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+        verificar_certificado: bool | None = ...,
+    ) -> DataFramePandas: ...
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+        verificar_certificado: bool | None = ...,
+    ) -> DataFramePolars: ...
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+        verificar_certificado: bool | None = ...,
+    ) -> str: ...
+
     def senadores(
         self,
         tipo: Literal["atual", "titulares", "suplentes", "afastados"] = "atual",
-        sexo: Optional[str] = None,
-        partido: Optional[str] = None,
-        contendo: Optional[str] = None,
-        excluindo: Optional[str] = None,
+        sexo: str | None = None,
+        partido: str | None = None,
+        contendo: str | None = None,
+        excluindo: str | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,

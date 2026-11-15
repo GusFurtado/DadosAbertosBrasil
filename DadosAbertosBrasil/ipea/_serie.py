@@ -1,11 +1,11 @@
-from typing import Literal, Optional
+from typing import Any, Literal, overload
 
 from pydantic import Field, validate_call
 
 from ..utils.modelos import Params, com_params, validar
 from ..utils.requisicao import Requisicao
 from ..utils.saida import consultar, resolver_formato, tabela
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 
 
@@ -198,14 +198,97 @@ class Serie:
         return self.nome
 
 
+@overload
+def lista_series(
+    contendo: str | None = ...,
+    excluindo: str | list[str] | None = ...,
+    fonte: str | None = ...,
+    ativo: bool | None = ...,
+    numerica: bool | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_series(
+    contendo: str | None = ...,
+    excluindo: str | list[str] | None = ...,
+    fonte: str | None = ...,
+    ativo: bool | None = ...,
+    numerica: bool | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_series(
+    contendo: str | None = ...,
+    excluindo: str | list[str] | None = ...,
+    fonte: str | None = ...,
+    ativo: bool | None = ...,
+    numerica: bool | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Metadados]: ...
+
+
+@overload
+def lista_series(
+    contendo: str | None = ...,
+    excluindo: str | list[str] | None = ...,
+    fonte: str | None = ...,
+    ativo: bool | None = ...,
+    numerica: bool | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_series(
+    contendo: str | None = ...,
+    excluindo: str | list[str] | None = ...,
+    fonte: str | None = ...,
+    ativo: bool | None = ...,
+    numerica: bool | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_series(
+    contendo: str | None = ...,
+    excluindo: str | list[str] | None = ...,
+    fonte: str | None = ...,
+    ativo: bool | None = ...,
+    numerica: bool | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsSeries)
 def lista_series(
-    contendo: Optional[str] = None,
-    excluindo: Optional[str | list[str]] = None,
-    fonte: Optional[str] = None,
-    ativo: Optional[bool] = None,
-    numerica: Optional[bool] = None,
+    contendo: str | None = None,
+    excluindo: str | list[str] | None = None,
+    fonte: str | None = None,
+    ativo: bool | None = None,
+    numerica: bool | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -310,6 +393,40 @@ def lista_series(
         index=index,
         filtro=filtro,
     )
+
+
+@overload
+def serie(
+    cod: str, index: bool = ..., formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...
+) -> Any: ...
+
+
+@overload
+def serie(
+    cod: str, index: bool = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def serie(
+    cod: str, index: bool = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.ValorSerie]: ...
+
+
+@overload
+def serie(
+    cod: str, index: bool = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
+) -> DataFramePandas: ...
+
+
+@overload
+def serie(
+    cod: str, index: bool = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
+) -> DataFramePolars: ...
+
+
+@overload
+def serie(cod: str, index: bool = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
 
 
 @validate_call

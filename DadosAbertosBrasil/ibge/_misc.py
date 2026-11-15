@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -7,7 +7,7 @@ from ..utils.errors import DABLocalidadeError, removida
 from ..utils.modelos import Params, com_params, validar
 from ..utils.requisicao import Requisicao
 from ..utils.saida import resolver_formato, tabela
-from ..utils.typing import Formato, NivelTerritorial, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, NivelTerritorial, Saida
 from . import modelos as m
 
 
@@ -20,10 +20,8 @@ class _ParamsLocalidades(Params):
 
 @validate_call
 def populacao(
-    projecao: Optional[
-        Literal["populacao", "nascimento", "obito", "incremento"]
-    ] = None,
-    localidade: Optional[PositiveInt] = None,
+    projecao: Literal["populacao", "nascimento", "obito", "incremento"] | None = None,
+    localidade: PositiveInt | None = None,
 ) -> dict | int:
     """Obtém a projecao da população referente ao Brasil.
 
@@ -92,13 +90,90 @@ def populacao(
         return r["projecao"]["periodoMedio"]["incrementoPopulacional"]
 
 
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Localidade]: ...
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsLocalidades)
 def localidades(
     nivel: NivelTerritorial = "distritos",
-    divisoes: Optional[NivelTerritorial] = None,
+    divisoes: NivelTerritorial | None = None,
     localidade: PositiveInt | str | list[PositiveInt | str] = None,
-    ordenar_por: Optional[str] = None,
+    ordenar_por: str | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -219,7 +294,7 @@ def localidades(
 def malha(
     localidade: PositiveInt,
     nivel: str = "estados",
-    divisoes: Optional[str] = None,
+    divisoes: str | None = None,
     periodo: PositiveInt = 2020,
     formato: Literal["svg", "json", "geojson"] = "geojson",
     qualidade: Literal["minima", "intermediaria", "maxima"] = "minima",
