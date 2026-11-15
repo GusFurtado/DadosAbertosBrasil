@@ -1,0 +1,966 @@
+{
+  "schema_version": 1,
+  "dataset": "tribunais",
+  "descricao": "Composição atual do STF, STJ, TST, STM e TCU.",
+  "licenca": "CC BY-SA 4.0 (conteúdo derivado da Wikipedia)",
+  "gerado_em": "2026-10-19T17:09:13Z",
+  "fontes": [
+    {
+      "titulo": "Lista de ministros do Supremo Tribunal Federal",
+      "revid": 73027183,
+      "url": "https://pt.wikipedia.org/w/index.php?oldid=73027183"
+    },
+    {
+      "titulo": "Superior Tribunal de Justiça",
+      "revid": 73164749,
+      "url": "https://pt.wikipedia.org/w/index.php?oldid=73164749"
+    },
+    {
+      "titulo": "Tribunal Superior do Trabalho",
+      "revid": 72221530,
+      "url": "https://pt.wikipedia.org/w/index.php?oldid=72221530"
+    },
+    {
+      "titulo": "Superior Tribunal Militar",
+      "revid": 73214440,
+      "url": "https://pt.wikipedia.org/w/index.php?oldid=73214440"
+    },
+    {
+      "titulo": "Tribunal de Contas da União",
+      "revid": 73216208,
+      "url": "https://pt.wikipedia.org/w/index.php?oldid=73216208"
+    }
+  ],
+  "dados": [
+    {
+      "tribunal": "STF",
+      "nome": "Alexandre de Moraes",
+      "artigo": "Alexandre de Moraes",
+      "posse": "2017-03-22",
+      "ano_aposentadoria_compulsoria": 2043,
+      "indicado_por": "Michel Temer",
+      "vaga": "19",
+      "uf_origem": "SP"
+    },
+    {
+      "tribunal": "STF",
+      "nome": "André Mendonça",
+      "artigo": "André Mendonça",
+      "posse": "2021-12-16",
+      "ano_aposentadoria_compulsoria": 2047,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "4",
+      "uf_origem": "SP"
+    },
+    {
+      "tribunal": "STF",
+      "nome": "Cristiano Zanin",
+      "artigo": "Cristiano Zanin",
+      "posse": "2023-08-03",
+      "ano_aposentadoria_compulsoria": 2050,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "16",
+      "uf_origem": "SP"
+    },
+    {
+      "tribunal": "STF",
+      "nome": "Cármen Lúcia",
+      "artigo": "Cármen Lúcia",
+      "posse": "2006-06-21",
+      "ano_aposentadoria_compulsoria": 2029,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "2",
+      "uf_origem": "MG"
+    },
+    {
+      "tribunal": "STF",
+      "nome": "Dias Toffoli",
+      "artigo": "Dias Toffoli",
+      "posse": "2009-10-23",
+      "ano_aposentadoria_compulsoria": 2042,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "17",
+      "uf_origem": "SP"
+    },
+    {
+      "tribunal": "STF",
+      "nome": "Edson Fachin",
+      "artigo": "Edson Fachin",
+      "posse": "2015-06-16",
+      "ano_aposentadoria_compulsoria": 2033,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "18",
+      "uf_origem": "RS"
+    },
+    {
+      "tribunal": "STF",
+      "nome": "Flávio Dino",
+      "artigo": "Flávio Dino",
+      "posse": "2024-02-22",
+      "ano_aposentadoria_compulsoria": 2043,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "20",
+      "uf_origem": "MA"
+    },
+    {
+      "tribunal": "STF",
+      "nome": "Gilmar Mendes",
+      "artigo": "Gilmar Mendes",
+      "posse": "2002-06-20",
+      "ano_aposentadoria_compulsoria": 2030,
+      "indicado_por": "Fernando Henrique Cardoso",
+      "vaga": "12",
+      "uf_origem": "MT"
+    },
+    {
+      "tribunal": "STF",
+      "nome": "Luiz Fux",
+      "artigo": "Luiz Fux",
+      "posse": "2011-03-02",
+      "ano_aposentadoria_compulsoria": 2028,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "7",
+      "uf_origem": "RJ"
+    },
+    {
+      "tribunal": "STF",
+      "nome": "Nunes Marques",
+      "artigo": "Nunes Marques",
+      "posse": "2020-11-05",
+      "ano_aposentadoria_compulsoria": 2047,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "3",
+      "uf_origem": "PI"
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Antonio Carlos Ferreira",
+      "artigo": "Antonio Carlos Ferreira",
+      "posse": "2011-06-13",
+      "ano_aposentadoria_compulsoria": 2032,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "OAB",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Antonio Herman de Vasconcellos e Benjamin",
+      "artigo": "Herman Benjamin",
+      "posse": "2006-09-06",
+      "ano_aposentadoria_compulsoria": 2032,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "MP",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Benedito Gonçalves",
+      "artigo": "Benedito Gonçalves",
+      "posse": "2008-09-17",
+      "ano_aposentadoria_compulsoria": 2029,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Carlos Augusto Pires Brandão",
+      "artigo": "Carlos Pires Brandão",
+      "posse": "2025-09-04",
+      "ano_aposentadoria_compulsoria": 2038,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Daniela Rodrigues Teixeira",
+      "artigo": "Daniela Teixeira",
+      "posse": "2023-11-22",
+      "ano_aposentadoria_compulsoria": 2047,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "OAB",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Francisco Cândido de Melo Falcão Neto",
+      "artigo": "Francisco Falcão",
+      "posse": "1999-06-30",
+      "ano_aposentadoria_compulsoria": 2027,
+      "indicado_por": "Fernando Henrique Cardoso",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Fátima Nancy Andrighi",
+      "artigo": "Nancy Andrighi",
+      "posse": "1999-10-27",
+      "ano_aposentadoria_compulsoria": 2027,
+      "indicado_por": "Fernando Henrique Cardoso",
+      "vaga": "TJ",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Geraldo Og Nicéas Marques Fernandes",
+      "artigo": "Og Fernandes",
+      "posse": "2008-06-17",
+      "ano_aposentadoria_compulsoria": 2026,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "TJ",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Humberto Eustáquio Soares Martins",
+      "artigo": "Humberto Martins (magistrado)",
+      "posse": "2006-06-14",
+      "ano_aposentadoria_compulsoria": 2031,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "TJ",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Joel Ilan Paciornik",
+      "artigo": "Joel Ilan Paciornik",
+      "posse": "2016-04-06",
+      "ano_aposentadoria_compulsoria": 2040,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "José Afrânio Vilela",
+      "artigo": "Afrânio Vilela",
+      "posse": "2023-11-22",
+      "ano_aposentadoria_compulsoria": 2036,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "TJ",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "João Otávio de Noronha",
+      "artigo": "João Otávio de Noronha",
+      "posse": "2002-12-03",
+      "ano_aposentadoria_compulsoria": 2031,
+      "indicado_por": "Fernando Henrique Cardoso",
+      "vaga": "OAB",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Luis Felipe Salomão",
+      "artigo": "Luis Felipe Salomão",
+      "posse": "2008-06-17",
+      "ano_aposentadoria_compulsoria": 2038,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "TJ",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Luiz Alberto Gurgel de Faria",
+      "artigo": "Gurgel de Faria",
+      "posse": "2014-09-09",
+      "ano_aposentadoria_compulsoria": 2044,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Marcelo Navarro Ribeiro Dantas",
+      "artigo": "Ribeiro Dantas (magistrado)",
+      "posse": "2015-09-30",
+      "ano_aposentadoria_compulsoria": 2038,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Marco Aurélio Bellizze Oliveira",
+      "artigo": "Marco Aurélio Bellizze",
+      "posse": "2011-09-05",
+      "ano_aposentadoria_compulsoria": 2039,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "TJ",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Marco Aurélio Gastaldi Buzzi",
+      "artigo": "Marco Buzzi",
+      "posse": "2011-09-05",
+      "ano_aposentadoria_compulsoria": 2033,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "TJ",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Maria Isabel Diniz Gallotti Rodrigues",
+      "artigo": "Isabel Gallotti",
+      "posse": "2010-08-10",
+      "ano_aposentadoria_compulsoria": 2038,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Maria Marluce Caldas Bezerra",
+      "artigo": "Marluce Caldas",
+      "posse": "2025-09-04",
+      "ano_aposentadoria_compulsoria": 2034,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "MP",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Maria Thereza Rocha de Assis Moura",
+      "artigo": "Maria Thereza de Assis Moura",
+      "posse": "2006-09-09",
+      "ano_aposentadoria_compulsoria": 2031,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "OAB",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Mauro Luiz Campbell Marques",
+      "artigo": "Mauro Campbell Marques",
+      "posse": "2008-06-17",
+      "ano_aposentadoria_compulsoria": 2038,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "MP",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Messod Azulay Neto",
+      "artigo": "Messod Azulay",
+      "posse": "2022-12-06",
+      "ano_aposentadoria_compulsoria": 2038,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Paulo Dias de Moura Ribeiro",
+      "artigo": "Moura Ribeiro",
+      "posse": "2013-09-28",
+      "ano_aposentadoria_compulsoria": 2028,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "TJ",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Paulo Sérgio Domingues",
+      "artigo": "Paulo Sérgio Domingues",
+      "posse": "2022-12-06",
+      "ano_aposentadoria_compulsoria": 2041,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Raul Araújo Filho",
+      "artigo": "Raul Araújo",
+      "posse": "2010-05-12",
+      "ano_aposentadoria_compulsoria": 2034,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "TJ",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Regina Helena Costa",
+      "artigo": "Regina Helena Costa",
+      "posse": "2013-08-28",
+      "ano_aposentadoria_compulsoria": 2036,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Reynaldo Soares da Fonseca",
+      "artigo": "Reynaldo Soares da Fonseca",
+      "posse": "2015-05-26",
+      "ano_aposentadoria_compulsoria": 2038,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "TRF",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Ricardo Villas Bôas Cueva",
+      "artigo": "Villas Bôas Cueva",
+      "posse": "2011-06-13",
+      "ano_aposentadoria_compulsoria": 2037,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "OAB",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Rogerio Schietti Machado Cruz",
+      "artigo": "Rogerio Schietti Cruz",
+      "posse": "2013-08-28",
+      "ano_aposentadoria_compulsoria": 2037,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "MP",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Sebastião Alves dos Reis Júnior",
+      "artigo": "Sebastião Reis Júnior",
+      "posse": "2011-06-13",
+      "ano_aposentadoria_compulsoria": 2040,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "OAB",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Sérgio Luíz Kukina",
+      "artigo": "Sérgio Kukina",
+      "posse": "2013-02-06",
+      "ano_aposentadoria_compulsoria": 2034,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "MP",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STJ",
+      "nome": "Teodoro Silva Santos",
+      "artigo": "Teodoro Silva Santos",
+      "posse": "2023-11-22",
+      "ano_aposentadoria_compulsoria": 2033,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "TJ",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Anisio David de Oliveira Junior",
+      "artigo": null,
+      "posse": "2025-12-05",
+      "ano_aposentadoria_compulsoria": 2038,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Exército",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Artur Vidigal de Oliveira",
+      "artigo": null,
+      "posse": "2010-05-11",
+      "ano_aposentadoria_compulsoria": 2035,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "OAB",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Carlos Augusto Amaral Oliveira",
+      "artigo": null,
+      "posse": "2020-10-19",
+      "ano_aposentadoria_compulsoria": 2035,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Aeronáutica",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Carlos Vuyk de Aquino",
+      "artigo": null,
+      "posse": "2018-11-27",
+      "ano_aposentadoria_compulsoria": 2031,
+      "indicado_por": "Michel Temer",
+      "vaga": "Aeronáutica",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Celso Luiz Nazareth",
+      "artigo": null,
+      "posse": "2020-10-02",
+      "ano_aposentadoria_compulsoria": 2032,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Marinha",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Cláudio Portugal de Viveiros",
+      "artigo": null,
+      "posse": "2021-08-05",
+      "ano_aposentadoria_compulsoria": 2034,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Marinha",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Flavio Marcus Lancia Barbosa",
+      "artigo": null,
+      "posse": "2025-12-09",
+      "ano_aposentadoria_compulsoria": 2039,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Exército",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Francisco Joseli Parente Camelo",
+      "artigo": "Francisco Joseli Parente Camelo",
+      "posse": "2015-05-07",
+      "ano_aposentadoria_compulsoria": 2028,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "Aeronáutica",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Guido Amin Naves",
+      "artigo": null,
+      "posse": "2025-02-24",
+      "ano_aposentadoria_compulsoria": 2037,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Exército",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "José Barroso Filho",
+      "artigo": null,
+      "posse": "2014-04-10",
+      "ano_aposentadoria_compulsoria": 2042,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "JMU",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Leonardo Puntel",
+      "artigo": null,
+      "posse": "2020-10-02",
+      "ano_aposentadoria_compulsoria": 2033,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Marinha",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Lourival Carvalho Silva",
+      "artigo": null,
+      "posse": "2022-08-17",
+      "ano_aposentadoria_compulsoria": 2033,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Exército",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Maria Elizabeth Rocha",
+      "artigo": "Maria Elizabeth Rocha",
+      "posse": "2007-03-27",
+      "ano_aposentadoria_compulsoria": 2035,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "OAB",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Péricles Aurélio Lima de Queiroz",
+      "artigo": null,
+      "posse": "2016-06-01",
+      "ano_aposentadoria_compulsoria": 2030,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "MPM",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "STM",
+      "nome": "Verônica Sterman",
+      "artigo": "Verônica Sterman",
+      "posse": "2025-09-30",
+      "ano_aposentadoria_compulsoria": 2059,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "OAB",
+      "uf_origem": null
+    },
+    {
+      "tribunal": "TCU",
+      "nome": "Antonio Anastasia",
+      "artigo": "Antonio Anastasia",
+      "posse": "2022-02-03",
+      "ano_aposentadoria_compulsoria": 2036,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Senado Federal",
+      "uf_origem": "MG"
+    },
+    {
+      "tribunal": "TCU",
+      "nome": "Augusto Nardes",
+      "artigo": "Augusto Nardes",
+      "posse": "2005-09-20",
+      "ano_aposentadoria_compulsoria": 2027,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Câmara dos Deputados",
+      "uf_origem": "RS"
+    },
+    {
+      "tribunal": "TCU",
+      "nome": "Benjamin Zymler",
+      "artigo": "Benjamin Zymler",
+      "posse": "2001-09-11",
+      "ano_aposentadoria_compulsoria": 2031,
+      "indicado_por": "Fernando Henrique Cardoso",
+      "vaga": "Auditores do TCU",
+      "uf_origem": "RJ"
+    },
+    {
+      "tribunal": "TCU",
+      "nome": "Jhonatan de Jesus",
+      "artigo": "Jhonatan de Jesus",
+      "posse": "2023-03-15",
+      "ano_aposentadoria_compulsoria": 2058,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Câmara dos Deputados",
+      "uf_origem": "RR"
+    },
+    {
+      "tribunal": "TCU",
+      "nome": "Jorge Oliveira",
+      "artigo": "Jorge Oliveira",
+      "posse": "2020-12-31",
+      "ano_aposentadoria_compulsoria": 2049,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Presidente da República",
+      "uf_origem": "RJ"
+    },
+    {
+      "tribunal": "TCU",
+      "nome": "Odair Cunha",
+      "artigo": "Odair Cunha",
+      "posse": "2026-05-20",
+      "ano_aposentadoria_compulsoria": 2046,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Câmara dos Deputados",
+      "uf_origem": "MG"
+    },
+    {
+      "tribunal": "TCU",
+      "nome": "Rodrigo Pacheco",
+      "artigo": "Rodrigo Pacheco",
+      "posse": "2026-09-30",
+      "ano_aposentadoria_compulsoria": 2051,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Senado Federal",
+      "uf_origem": "RO"
+    },
+    {
+      "tribunal": "TCU",
+      "nome": "Vital do Rêgo Filho",
+      "artigo": "Vital do Rêgo Filho",
+      "posse": "2014-12-22",
+      "ano_aposentadoria_compulsoria": 2038,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "Senado Federal",
+      "uf_origem": "PB"
+    },
+    {
+      "tribunal": "TCU",
+      "nome": "Walton Alencar Rodrigues",
+      "artigo": "Walton Alencar Rodrigues",
+      "posse": "1999-04-13",
+      "ano_aposentadoria_compulsoria": 2037,
+      "indicado_por": "Fernando Henrique Cardoso",
+      "vaga": "Ministério Público de Contas",
+      "uf_origem": "GO"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Alberto Bastos Balazeiro",
+      "artigo": null,
+      "posse": "2021-07-21",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "MPT",
+      "uf_origem": "BA"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Alexandre Luiz Ramos",
+      "artigo": null,
+      "posse": null,
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Michel Temer",
+      "vaga": "Carreira",
+      "uf_origem": "RS"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Alexandre de Souza Agra Belmonte",
+      "artigo": null,
+      "posse": "2012-07-16",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "Carreira",
+      "uf_origem": "RJ"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Amaury Rodrigues Pinto Junior",
+      "artigo": null,
+      "posse": "2021-07-21",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Carreira",
+      "uf_origem": "PR"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Antônio Fabrício de Matos Gonçalves",
+      "artigo": null,
+      "posse": "2024-07-02",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "OAB",
+      "uf_origem": "MG"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Augusto César Leite de Carvalho",
+      "artigo": null,
+      "posse": "2009-12-14",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Carreira",
+      "uf_origem": "SE"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Breno Medeiros",
+      "artigo": null,
+      "posse": "2017-11-09",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Michel Temer",
+      "vaga": "Carreira",
+      "uf_origem": "PR"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Cláudio Mascarenhas Brandão",
+      "artigo": null,
+      "posse": "2013-07-11",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "Carreira",
+      "uf_origem": "BA"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Delaíde Miranda Arantes",
+      "artigo": "Delaíde Miranda Arantes",
+      "posse": "2011-03-01",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "OAB",
+      "uf_origem": "GO"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Dora Maria da Costa",
+      "artigo": "Dora Maria da Costa",
+      "posse": "2007-05-17",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Carreira",
+      "uf_origem": "MG"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Douglas Alencar Rodrigues",
+      "artigo": null,
+      "posse": "2014-04-22",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "Carreira",
+      "uf_origem": "GO"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Evandro Pereira Valadão Lopes",
+      "artigo": null,
+      "posse": null,
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Carreira",
+      "uf_origem": "RJ"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Guilherme Augusto Caputo Bastos",
+      "artigo": null,
+      "posse": "2007-10-04",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Carreira",
+      "uf_origem": "MG"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Hugo Carlos Scheuermann",
+      "artigo": null,
+      "posse": "2012-07-16",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "Carreira",
+      "uf_origem": "RS"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Ives Gandra Martins Filho",
+      "artigo": "Ives Gandra Martins Filho",
+      "posse": "1999-10-14",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Fernando Henrique Cardoso",
+      "vaga": "MPT",
+      "uf_origem": "SP"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "José Roberto Freire Pimenta",
+      "artigo": null,
+      "posse": "2010-09-03",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Carreira",
+      "uf_origem": "MG"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Kátia Magalhães Arruda",
+      "artigo": "Kátia Magalhães Arruda",
+      "posse": "2008-03-27",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Carreira",
+      "uf_origem": "CE"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Lelio Bentes Corrêa",
+      "artigo": null,
+      "posse": "2003-07-29",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "MPT",
+      "uf_origem": "RJ"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Liana Chaib",
+      "artigo": null,
+      "posse": "2022-12-16",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Carreira",
+      "uf_origem": "PI"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Luiz José Dezena da Silva",
+      "artigo": null,
+      "posse": null,
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Michel Temer",
+      "vaga": "Carreira",
+      "uf_origem": "SP"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Luiz Philippe Vieira de Mello Filho",
+      "artigo": null,
+      "posse": "2006-02-21",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Carreira",
+      "uf_origem": "MG"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Margareth Rodrigues Costa",
+      "artigo": null,
+      "posse": "2026-05-07",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Carreira",
+      "uf_origem": "BA"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Maria Cristina Peduzzi",
+      "artigo": "Maria Cristina Peduzzi",
+      "posse": "2001-06-21",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Fernando Henrique Cardoso",
+      "vaga": "OAB",
+      "uf_origem": "RS"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Maria Helena Mallmann",
+      "artigo": null,
+      "posse": "2014-12-23",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Dilma Rousseff",
+      "vaga": "Carreira",
+      "uf_origem": "RS"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Maurício Godinho Delgado",
+      "artigo": "Maurício Godinho Delgado",
+      "posse": null,
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Luiz Inácio Lula da Silva",
+      "vaga": "Carreira",
+      "uf_origem": "MG"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Morgana de Almeida Richa",
+      "artigo": null,
+      "posse": "2021-12-22",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Carreira",
+      "uf_origem": "PR"
+    },
+    {
+      "tribunal": "TST",
+      "nome": "Sergio Pinto Martins",
+      "artigo": null,
+      "posse": "2022-05-19",
+      "ano_aposentadoria_compulsoria": null,
+      "indicado_por": "Jair Bolsonaro",
+      "vaga": "Carreira",
+      "uf_origem": "SP"
+    }
+  ]
+}
