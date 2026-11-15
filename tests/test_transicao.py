@@ -1,4 +1,4 @@
-"""Avisos da versão de transição 2.3 para o 3.0."""
+"""Formato padrão, nomes antigos e funções removidas no 3.0."""
 
 import sys
 import warnings
@@ -19,19 +19,20 @@ def config_limpa(monkeypatch):
     return _config.config
 
 
-def test_aviso_formato_uma_vez_por_sessao(config_limpa):
+def test_sem_formato_retorna_json_e_avisa_uma_vez(config_limpa):
     with pytest.warns(dab.DABFormatoWarning, match="json"):
-        assert config_limpa.resolver_formato(None) == "pandas"
+        assert config_limpa.resolver_formato(None) == "json"
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        assert config_limpa.resolver_formato(None) == "pandas"
+        assert config_limpa.resolver_formato(None) == "json"
 
 
-def test_definir_formato_silencia_aviso(config_limpa):
-    config_limpa.formato = "pandas"
+@pytest.mark.parametrize("formato", ["json", "pandas", "polars"])
+def test_definir_formato_silencia_aviso(config_limpa, formato):
+    config_limpa.formato = formato
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        assert config_limpa.resolver_formato(None) == "pandas"
+        assert config_limpa.resolver_formato(None) == formato
 
 
 def test_formato_explicito_nao_avisa(config_limpa):
@@ -65,7 +66,7 @@ def test_aviso_formato_aponta_para_quem_chama(monkeypatch, funcao):
 
 
 def test_aviso_formato_filtravel():
-    assert issubclass(dab.DABFormatoWarning, Warning)
+    assert issubclass(dab.DABFormatoWarning, UserWarning)
 
 
 @pytest.mark.parametrize("antigo, novo", errors.NOMES_ANTIGOS.items())

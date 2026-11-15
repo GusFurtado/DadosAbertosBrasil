@@ -4,7 +4,7 @@ Dados Abertos Brasil
 
 Dados Abertos Brasil é uma iniciativa para facilitar o acesso a dados abertos e APIs do governo brasileiro.
 
-É um pacote open-source para Python e Pandas e a forma mais simples de acessar dados de instituições como IBGE, IPEA, Banco Central, etc.
+É um pacote open-source para Python e a forma mais simples de acessar dados de instituições como IBGE, IPEA, Banco Central, etc.
 
 Módulos
 -------
@@ -32,9 +32,9 @@ Para instalar, utilize o seguinte comando:
 Dependências
 ------------
 - `Python 3.11 ou superior <https://www.python.org/>`_
-- `Pandas <https://pandas.pydata.org/>`_
 - `Pydantic <https://docs.pydantic.dev/latest/>`_
 - `Requests <https://requests.readthedocs.io/en/master/>`_
+- Opcionais: `pandas <https://pandas.pydata.org/>`_ (``[pandas]``) e `polars <https://pola.rs/>`_ (``[polars]``)
 
 Licença
 -------

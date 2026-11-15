@@ -5,8 +5,6 @@ import inspect
 import sys
 import warnings
 
-import pandas as pd
-import polars as pl
 import pytest
 from pydantic import AliasPath, Field, ValidationError
 
@@ -34,6 +32,13 @@ BRUTO = {
         {"id": "2", "nome": "B", "ativo": "Não", "data": "2024-02-03T04:05:06", "dia": "", "uri": "http://x/2", "sub": {"k": "8,5"}},
     ]
 }
+
+
+def _requer(*formatos):
+    """Pula o teste se a biblioteca de algum formato não estiver instalada."""
+    for formato in formatos:
+        if formato in ("pandas", "polars"):
+            pytest.importorskip(formato)
 
 
 @pytest.fixture
@@ -74,12 +79,15 @@ def test_pydantic(requisicao):
 
 @pytest.mark.parametrize("formato", ["json", "pandas", "polars"])
 def test_url_false_remove_colunas_de_url(requisicao, formato):
+    _requer(formato)
     dados = consultar(requisicao, Modelo, formato, url=False)
     colunas = list(dados[0]) if formato == "json" else list(dados.columns)
     assert colunas == ["codigo", "nome", "ativo", "data", "dia", "k"]
 
 
 def test_pandas_e_polars_tem_os_mesmos_dados(requisicao):
+    pd = pytest.importorskip("pandas")  # noqa: F841
+    pl = pytest.importorskip("polars")
     pdf = consultar(requisicao, Modelo, "pandas")
     plf = consultar(requisicao, Modelo, "polars")
     assert list(pdf.columns) == plf.columns
@@ -92,6 +100,8 @@ def test_pandas_e_polars_tem_os_mesmos_dados(requisicao):
 
 
 def test_tabela_vazia_tem_colunas_e_tipos():
+    pd = pytest.importorskip("pandas")  # noqa: F841
+    pl = pytest.importorskip("polars")
     pdf = tabela([], Modelo, "pandas")
     plf = tabela([], Modelo, "polars")
     assert list(pdf.columns) == list(Modelo.model_fields)
@@ -100,6 +110,8 @@ def test_tabela_vazia_tem_colunas_e_tipos():
 
 
 def test_index_pandas_e_aviso_no_polars(requisicao):
+    pd = pytest.importorskip("pandas")  # noqa: F841
+    pl = pytest.importorskip("polars")
     assert list(consultar(requisicao, Modelo, "pandas", index=True).index) == [1, 2]
     with pytest.warns(UserWarning, match="polars"):
         consultar(requisicao, Modelo, "polars", index=True)
@@ -116,6 +128,8 @@ def test_formato_invalido(requisicao):
 
 
 def test_config_formato_global(requisicao):
+    pd = pytest.importorskip("pandas")  # noqa: F841
+    pl = pytest.importorskip("polars")
     antes = dab.config.formato
     try:
         dab.config.formato = "polars"
@@ -128,6 +142,14 @@ def test_config_formato_global(requisicao):
 def test_config_formato_invalido():
     with pytest.raises(ValidationError):
         dab.config.formato = "numpy"
+
+
+def test_sem_pandas_e_polars_json_funciona(requisicao, monkeypatch):
+    monkeypatch.setitem(sys.modules, "pandas", None)
+    monkeypatch.setitem(sys.modules, "polars", None)
+    assert consultar(requisicao, Modelo, "json")[0]["codigo"] == 1
+    with pytest.raises(ImportError, match="DadosAbertosBrasil\\[pandas\\]"):
+        consultar(requisicao, Modelo, "pandas")
 
 
 def test_polars_ausente(requisicao, monkeypatch):

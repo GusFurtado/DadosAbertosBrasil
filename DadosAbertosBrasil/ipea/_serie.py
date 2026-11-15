@@ -4,7 +4,7 @@ from pydantic import Field, validate_call
 
 from ..utils.modelos import Params, com_params, validar
 from ..utils.requisicao import Requisicao
-from ..utils.saida import consultar, tabela
+from ..utils.saida import consultar, resolver_formato, tabela
 from ..utils.typing import Formato, Saida
 from . import modelos as m
 
@@ -45,8 +45,9 @@ class Serie:
         Defina como `False` em caso de falha na verificação do certificado
         SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
-    formato : {"json", "pydantic", "pandas", "polars"}, default="pandas"
-        Formato dos atributos `valores` e `metadados`.
+    formato : {"json", "pydantic", "pandas", "polars"}, optional
+        Formato dos atributos `valores` e `metadados`. Se omitido, usa
+        `DadosAbertosBrasil.config.formato` ("json" se não definido).
 
     Attributes
     ---------
@@ -158,7 +159,9 @@ class Serie:
         verificar_certificado: bool | None = None,
         formato: Literal["json", "pydantic", "pandas", "polars"] | None = None,
     ):
-        formato = formato or "pandas"
+        formato = resolver_formato(formato)
+        if formato in ("bruto", "url"):
+            formato = "json"
         valores = validar(m.ValorSerie, _valores(cod, verificar_certificado).json())
         self.valores = tabela(valores, m.ValorSerie, formato, index=index, index_col="data")
         self.dados = self.valores

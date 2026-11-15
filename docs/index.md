@@ -8,15 +8,18 @@
 [![Licença](https://img.shields.io/pypi/l/DadosAbertosBrasil)](https://github.com/GusFurtado/DadosAbertosBrasil/blob/master/LICENSE.txt)
 
 Dados Abertos Brasil é um pacote open-source para Python que padroniza o acesso às APIs do IBGE,
-do Ipea, do Banco Central, da Câmara dos Deputados e do Senado Federal. As consultas devolvem
-DataFrames do Pandas (ou do Polars), prontos para análise.
+do Ipea, do Banco Central, da Câmara dos Deputados e do Senado Federal, além de dados da Wikipedia e
+do Wikidata. As consultas devolvem registros, modelos Pydantic ou DataFrames do pandas e do polars.
 
 ```python
 import DadosAbertosBrasil as dab
 
-dab.ipca()                                # inflação mensal
-dab.ibge.populacao(projecao="populacao")  # projeção da população brasileira
-dab.camara.lista_deputados(uf="SC")       # deputados federais de Santa Catarina
+dab.config.formato = "pandas"        # ou "polars", "json", "pydantic"
+
+dab.ipca()                           # inflação mensal
+dab.ibge.localidades("estados")      # as 27 UFs
+dab.camara.lista_deputados(uf="SC")  # deputados federais de Santa Catarina
+dab.wiki.governadores()              # governadores em exercício
 ```
 
 ## Por onde começar

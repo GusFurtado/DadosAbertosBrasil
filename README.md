@@ -19,15 +19,16 @@
 </p>
 
 Pacote open-source que padroniza o acesso às APIs do IBGE, do Ipea, do Banco Central, da Câmara
-dos Deputados e do Senado Federal. As consultas devolvem DataFrames do Pandas ou do Polars.
+dos Deputados e do Senado Federal, além de dados da Wikipedia e do Wikidata. As consultas devolvem
+registros (`json`), modelos Pydantic ou DataFrames do pandas e do polars.
 
 ## Instalação
 
 ```sh
 pip install DadosAbertosBrasil
 
-# Para resultados em Polars
-pip install "DadosAbertosBrasil[polars]"
+# Para resultados em DataFrames
+pip install "DadosAbertosBrasil[pandas]"   # ou [polars]
 ```
 
 ## Módulos
@@ -38,6 +39,7 @@ pip install "DadosAbertosBrasil[polars]"
 - **`camara`**: deputados, partidos, proposições, votações e eventos da Câmara.
 - **`senado`**: senadores, legislaturas, partidos e orçamentos do Senado.
 - **`favoritos`**: atalhos para as consultas mais comuns, como IPCA, Selic e PIB.
+- **`wiki`**: governadores, ministros, tribunais, partidos, UFs e municípios, da Wikipedia e do Wikidata.
 - **`uf`**: a classe `UF`, que reúne os dados de um estado num só objeto.
 
 Veja a [referência](https://www.gustavofurtado.com/DadosAbertosBrasil/referencia/ibge/) de cada
