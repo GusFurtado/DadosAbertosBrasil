@@ -108,12 +108,8 @@ def test_funcoes_renomeadas_do_senado(antigo, novo):
     assert url.startswith("https://") or url.startswith("http://")
 
 
-@pytest.mark.parametrize(
-    "funcao, arquivo",
-    [(favoritos.perfil_eleitorado, "eleitorado.csv"), (ibge.coordenadas, "coordenadas.csv")],
-)
-def test_funcoes_removidas_no_3_0_avisam(funcao, arquivo):
-    with pytest.warns(DeprecationWarning, match="3.0") as avisos:
-        url = funcao(formato="url")
-    assert avisos[0].filename == __file__
-    assert url == f"https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil-wiki/2.x/data/{arquivo}"
+@pytest.mark.parametrize("funcao", [favoritos.perfil_eleitorado, ibge.coordenadas])
+def test_funcoes_removidas_viram_stubs(funcao):
+    with pytest.raises(dab.DABFuncaoRemovidaError, match="migracao"):
+        funcao(formato="pandas")
+    assert issubclass(dab.DABFuncaoRemovidaError, NotImplementedError)

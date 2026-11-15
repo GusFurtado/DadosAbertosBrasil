@@ -1,13 +1,9 @@
 from typing import Literal, Optional
 
-import pandas as pd
 from pydantic import Field, PositiveInt, validate_call
 
-from .._config import config
 from ..utils import parse
-from ..utils.endpoints import ENDPOINTS
-from ..utils.errors import DABLocalidadeError, descontinuado
-from ..utils.get import converter
+from ..utils.errors import DABLocalidadeError, removida
 from ..utils.modelos import Params, com_params, validar
 from ..utils.requisicao import Requisicao
 from ..utils.saida import resolver_formato, tabela
@@ -356,58 +352,11 @@ def malha(
     return requisicao.url
 
 
-@validate_call
-def coordenadas(
-    formato: Literal["pandas", "polars", "url"] | None = None,
-) -> Saida:
-    """Obtém as coordenadas de todas as localidades brasileiras, incluindo
-    latitude, longitude e altitude.
+def coordenadas(*args, **kwargs):
+    """Removida no 3.0: o arquivo de coordenadas de setores e bairros saiu do repositório de dados.
 
-    !!! warning "Descontinuada"
-        Esta função é removida no DadosAbertosBrasil 3.0, sem substituto
-        equivalente. As coordenadas dos municípios passam a vir de
-        `wiki.municipios()`, que é outro dado.
-
-    Parameters
-    ----------
-    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
-        Formato do dado que será retornado:
-        - "json": lista de registros (`list[dict]`), com os mesmos campos e
-          tipos das colunas do DataFrame;
-        - "bruto": JSON original da API, como veio;
-        - "pydantic": lista de modelos Pydantic, um por registro;
-        - "pandas": DataFrame pandas;
-        - "polars": DataFrame polars;
-        - "url": endereço da consulta.
-        Se omitido, usa `DadosAbertosBrasil.config.formato`.
-
-    Returns
-    -------
-    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
-        Coordenadas de todas as localidade brasileiras.
-
-    Examples
-    --------
-    >>> ibge.coordenadas()
-           GM_PONTO     ID     CD_GEOCODIGO    TIPO   CD_GEOCODBA NM_BAIRRO  ...
-    0           NaN      1  110001505000001  URBANO  1.100015e+11   Redondo  ...
-    1           NaN      2  110001515000001  URBANO           NaN       NaN  ...
-    2           NaN      3  110001520000001  URBANO           NaN       NaN  ...
-    3           NaN      4  110001525000001  URBANO           NaN       NaN  ...
-    4           NaN      5  110001530000001  URBANO           NaN       NaN  ...
-    ..          ...     ..              ...     ...           ...       ...  ...
-
+    !!! danger "Removida"
+        Chamar esta função levanta `DABFuncaoRemovidaError`. O stub deixa de
+        existir em uma versão futura do 3.x; veja o guia de migração.
     """
-
-    descontinuado(
-        "`ibge.coordenadas` é removida no DadosAbertosBrasil 3.0, sem substituto "
-        "equivalente. As coordenadas dos municípios passam a vir de "
-        "`wiki.municipios()`, que é outro dado."
-    )
-    URL = ENDPOINTS["wiki"] + "coordenadas.csv"
-
-    match config.resolver_formato(formato):
-        case "url":
-            return URL
-        case formato:
-            return converter(pd.read_csv(URL, sep=";"), formato)
+    raise removida("ibge.coordenadas", "O arquivo de coordenadas de setores e bairros saiu do repositório de dados, sem substituto equivalente. Para coordenadas de municípios, use `wiki.municipios()`.")

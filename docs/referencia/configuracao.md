@@ -36,4 +36,6 @@ versão futura do 3.x.
         - DABLocalidadeError
         - DABMoedaError
         - DABUFError
+        - DABFuncaoRemovidaError
+        - DABValidacaoWarning
         - DABFormatoWarning

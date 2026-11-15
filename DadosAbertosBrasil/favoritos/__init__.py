@@ -14,15 +14,11 @@ import csv
 from datetime import date
 from typing import Literal, Optional
 
-import pandas as pd
 from pydantic import PositiveInt, validate_call
 
 from .. import bacen
-from .._config import config
 from ..utils import parse
-from ..utils.endpoints import ENDPOINTS
-from ..utils.errors import descontinuado
-from ..utils.get import converter
+from ..utils.errors import removida
 from ..utils.modelos import validar
 from ..utils.requisicao import Requisicao
 from ..utils.saida import consultar, resolver_formato, tabela
@@ -382,55 +378,14 @@ def ipca(
     )
 
 
-@validate_call
-def perfil_eleitorado(
-    formato: Literal["pandas", "polars", "url"] | None = None,
-) -> Saida:
-    """Tabela com perfil do eleitorado por município.
+def perfil_eleitorado(*args, **kwargs):
+    """Removida no 3.0: dados eleitorais deixaram de fazer parte do pacote.
 
-    !!! warning "Descontinuada"
-        Esta função é removida no DadosAbertosBrasil 3.0, sem substituto:
-        dados eleitorais deixam de fazer parte do pacote.
-
-    Parameters
-    ----------
-    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
-        Formato do dado que será retornado:
-        - "json": lista de registros (`list[dict]`), com os mesmos campos e
-          tipos das colunas do DataFrame;
-        - "bruto": JSON original da API, como veio;
-        - "pydantic": lista de modelos Pydantic, um por registro;
-        - "pandas": DataFrame pandas;
-        - "polars": DataFrame polars;
-        - "url": endereço da consulta.
-        Se omitido, usa `DadosAbertosBrasil.config.formato`.
-
-    Returns
-    -------
-    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
-        Perfil do eleitorado em todos os municípios.
-
-    Examples
-    --------
-    >>> favoritos.perfil_eleitorado()
-          NR_ANO_ELEICAO  CD_PAIS NM_PAIS SG_REGIAO NM_REGIAO SG_UF     NM_UF  ...
-    0               2020        1  Brasil         N     Norte    AC      Acre  ...
-    1               2020        1  Brasil         N     Norte    AC      Acre  ...
-    ..               ...      ...     ...       ...       ...   ...       ...  ...
-
+    !!! danger "Removida"
+        Chamar esta função levanta `DABFuncaoRemovidaError`. O stub deixa de
+        existir em uma versão futura do 3.x; veja o guia de migração.
     """
-
-    descontinuado(
-        "`favoritos.perfil_eleitorado` é removida no DadosAbertosBrasil 3.0, sem "
-        "substituto: dados eleitorais deixam de fazer parte do pacote."
-    )
-    URL = ENDPOINTS["wiki"] + "eleitorado.csv"
-
-    match config.resolver_formato(formato):
-        case "url":
-            return URL
-        case formato:
-            return converter(pd.read_csv(URL, encoding="latin-1", sep=";"), formato)
+    raise removida("favoritos.perfil_eleitorado", "Dados eleitorais deixaram de fazer parte do pacote, e não há substituto.")
 
 
 @validate_call

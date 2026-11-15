@@ -14,11 +14,6 @@ def test_Historia():
     assert historia
 
 
-def test_coordenadas():
-    df = ibge.coordenadas()
-    assert not df.empty
-
-
 def test_localidades():
     df = ibge.localidades()
     assert not df.empty
