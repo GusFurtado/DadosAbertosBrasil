@@ -44,6 +44,7 @@ theme:
 nav:
   - Início: index.md
   - Instalação: instalacao.md
+  - Migração do 2.x: migracao.md
   - Referência:
       - ibge: referencia/ibge.md
       - ipea: referencia/ipea.md

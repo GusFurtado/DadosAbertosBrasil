@@ -31,6 +31,8 @@ pip install DadosAbertosBrasil
 pip install "DadosAbertosBrasil[pandas]"   # ou [polars]
 ```
 
+Vindo do 2.x? Veja o [guia de migração para o 3.0](https://www.gustavofurtado.com/DadosAbertosBrasil/migracao/).
+
 ## Módulos
 
 - **`ibge`**: localidades, malhas, população, nomes e tabelas do SIDRA.
