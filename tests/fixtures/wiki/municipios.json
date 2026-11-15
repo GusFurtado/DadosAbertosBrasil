@@ -1,0 +1,5606 @@
+{
+ "schema_version": 1,
+ "dataset": "municipios",
+ "descricao": "Os 5.570 municípios brasileiros com gentílico, fundação, aniversário, lema e coordenadas.",
+ "licenca": "CC BY-SA 4.0 (conteúdo derivado da Wikipedia)",
+ "gerado_em": "2026-11-03T02:43:50Z",
+ "fontes": [
+  {
+   "titulo": "Wikidata",
+   "url": "https://query.wikidata.org/",
+   "revid": null,
+   "consulta": "SELECT ?item ?ibge ?nome ?artigo\n  (GROUP_CONCAT(DISTINCT STR(?gentilico); separator=\"|\") AS ?gentilicos)\n  (SAMPLE(?fundacao_) AS ?fundacao) (SAMPLE(?precisao_) AS ?precisao) (SAMPLE(?lema_) AS ?lema)\n  (SAMPLE(?coordenadas_) AS ?coordenadas)\nWHERE {\n  ?item wdt:P31 wd:Q3184121; wdt:P1585 ?ibge .\n  OPTIONAL { ?item rdfs:label ?nome FILTER(LANG(?nome) = \"pt\") }\n  OPTIONAL { ?item wdt:P1549 ?gentilico FILTER(LANG(?gentilico) IN (\"pt\", \"pt-br\")) }\n  OPTIONAL { ?item p:P571/psv:P571 [wikibase:timeValue ?fundacao_; wikibase:timePrecision ?precisao_] }\n  OPTIONAL { ?item wdt:P1451 ?lema_ }\n  OPTIONAL { ?item wdt:P625 ?coordenadas_ }\n  OPTIONAL { ?a schema:about ?item; schema:isPartOf <https://pt.wikipedia.org/>; schema:name ?artigo }\n}\nGROUP BY ?item ?ibge ?nome ?artigo"
+  },
+  {
+   "titulo": "Wikipedia: infoboxes de 5570 artigos",
+   "url": "https://pt.wikipedia.org/",
+   "revid": null,
+   "consulta": null
+  }
+ ],
+ "dados": [
+  {
+   "codigo_ibge": 1400027,
+   "nome": "Amajari",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1646965",
+   "artigo": "Amajari",
+   "gentilicos": [
+    "amajariense"
+   ],
+   "fundacao": "1995-10-17",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": 3.654166666,
+   "longitude": -61.416944444
+  },
+  {
+   "codigo_ibge": 1400050,
+   "nome": "Alto Alegre",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1763240",
+   "artigo": "Alto Alegre (Roraima)",
+   "gentilicos": [
+    "alto-alegrense"
+   ],
+   "fundacao": "1982-06-01",
+   "ano_fundacao": 1982,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Paz e riquezas naturais",
+   "latitude": 2.987777777,
+   "longitude": -61.304444444
+  },
+  {
+   "codigo_ibge": 1400100,
+   "nome": "Boa Vista",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q181056",
+   "artigo": "Boa Vista (Roraima)",
+   "gentilicos": [
+    "boa-vistense"
+   ],
+   "fundacao": "1890-07-09",
+   "ano_fundacao": 1890,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Segurança, desenvolvimento e integração",
+   "latitude": 2.82,
+   "longitude": -60.671944444
+  },
+  {
+   "codigo_ibge": 1400159,
+   "nome": "Bonfim",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1763254",
+   "artigo": "Bonfim (Roraima)",
+   "gentilicos": [
+    "bonfinense"
+   ],
+   "fundacao": "1982-07-01",
+   "ano_fundacao": 1982,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": 3.36,
+   "longitude": -59.832777777
+  },
+  {
+   "codigo_ibge": 1400175,
+   "nome": "Cantá",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1646914",
+   "artigo": "Cantá",
+   "gentilicos": [
+    "cantaense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1950,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": 2.61,
+   "longitude": -60.596944444
+  },
+  {
+   "codigo_ibge": 1400209,
+   "nome": "Caracaraí",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q772563",
+   "artigo": "Caracaraí",
+   "gentilicos": [
+    "caracaraiense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1955,
+   "aniversario_dia": 27,
+   "aniversario_mes": 5,
+   "lema": null,
+   "latitude": 1.815833333,
+   "longitude": -61.127777777
+  },
+  {
+   "codigo_ibge": 1400233,
+   "nome": "Caroebe",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q748315",
+   "artigo": "Caroebe",
+   "gentilicos": [
+    "caroebense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1994,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": 0.883888888,
+   "longitude": -59.695833333
+  },
+  {
+   "codigo_ibge": 1400282,
+   "nome": "Iracema",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1786374",
+   "artigo": "Iracema (Roraima)",
+   "gentilicos": [
+    "iracemense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1997,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": 2.181944444,
+   "longitude": -61.040833333
+  },
+  {
+   "codigo_ibge": 1400308,
+   "nome": "Mucajaí",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1637423",
+   "artigo": "Mucajaí",
+   "gentilicos": [
+    "mucajaiense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1982,
+   "aniversario_dia": 1,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": 2.43,
+   "longitude": -60.9
+  },
+  {
+   "codigo_ibge": 1400407,
+   "nome": "Normandia",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1750038",
+   "artigo": "Normandia (Roraima)",
+   "gentilicos": [
+    "normandiense"
+   ],
+   "fundacao": "1982-07-01",
+   "ano_fundacao": 1982,
+   "aniversario_dia": 1,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": 3.880833333,
+   "longitude": -59.622777777
+  },
+  {
+   "codigo_ibge": 1400456,
+   "nome": "Pacaraima",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1647045",
+   "artigo": "Pacaraima",
+   "gentilicos": [
+    "pacaraimense"
+   ],
+   "fundacao": "1995-10-17",
+   "ano_fundacao": 1995,
+   "aniversario_dia": 17,
+   "aniversario_mes": 10,
+   "lema": null,
+   "latitude": 4.430833333,
+   "longitude": -61.145833333
+  },
+  {
+   "codigo_ibge": 1400472,
+   "nome": "Rorainópolis",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1646932",
+   "artigo": "Rorainópolis",
+   "gentilicos": [
+    "rorainopolitano"
+   ],
+   "fundacao": "1995-10-17",
+   "ano_fundacao": 1995,
+   "aniversario_dia": 17,
+   "aniversario_mes": 10,
+   "lema": null,
+   "latitude": 0.945833333,
+   "longitude": -60.417777777
+  },
+  {
+   "codigo_ibge": 1400506,
+   "nome": "São João da Baliza",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1646960",
+   "artigo": "São João da Baliza",
+   "gentilicos": [
+    "baliziense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1982,
+   "aniversario_dia": 1,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": 0.950833333,
+   "longitude": -59.910833333
+  },
+  {
+   "codigo_ibge": 1400605,
+   "nome": "São Luiz do Anauá",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1751337",
+   "artigo": "São Luiz do Anauá",
+   "gentilicos": [
+    "são-luizense"
+   ],
+   "fundacao": "1982-07-01",
+   "ano_fundacao": 1982,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": 1.005,
+   "longitude": -60.158888888
+  },
+  {
+   "codigo_ibge": 1400704,
+   "nome": "Uiramutã",
+   "uf": "RR",
+   "regiao": "Norte",
+   "wikidata": "Q1637434",
+   "artigo": "Uiramutã",
+   "gentilicos": [
+    "uiramutansense"
+   ],
+   "fundacao": "1995-10-17",
+   "ano_fundacao": 1995,
+   "aniversario_dia": 17,
+   "aniversario_mes": 10,
+   "lema": "O Brasil começa aqui",
+   "latitude": 4.595833333,
+   "longitude": -60.167777777
+  },
+  {
+   "codigo_ibge": 4200051,
+   "nome": "Abdon Batista",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1637414",
+   "artigo": "Abdon Batista (Santa Catarina)",
+   "gentilicos": [
+    "abdonense"
+   ],
+   "fundacao": "1989-04-26",
+   "ano_fundacao": 1989,
+   "aniversario_dia": 26,
+   "aniversario_mes": 4,
+   "lema": null,
+   "latitude": -27.610833333,
+   "longitude": -51.022777777
+  },
+  {
+   "codigo_ibge": 4200101,
+   "nome": "Abelardo Luz",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1637506",
+   "artigo": "Abelardo Luz",
+   "gentilicos": [
+    "abelardo-lusense"
+   ],
+   "fundacao": "1958-07-27",
+   "ano_fundacao": 1958,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.565,
+   "longitude": -52.327777777
+  },
+  {
+   "codigo_ibge": 4200200,
+   "nome": "Agrolândia",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q397387",
+   "artigo": "Agrolândia",
+   "gentilicos": [
+    "agrolandense"
+   ],
+   "fundacao": "1962-07-25",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 25,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -27.411944444,
+   "longitude": -49.825833333
+  },
+  {
+   "codigo_ibge": 4200309,
+   "nome": "Agronômica",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1754594",
+   "artigo": "Agronômica",
+   "gentilicos": [
+    "agronomense"
+   ],
+   "fundacao": "1964-06-06",
+   "ano_fundacao": 1964,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.265,
+   "longitude": -49.710833333
+  },
+  {
+   "codigo_ibge": 4200408,
+   "nome": "Água Doce",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1750762",
+   "artigo": "Água Doce (Santa Catarina)",
+   "gentilicos": [
+    "água-docense"
+   ],
+   "fundacao": "1958-06-21",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 25,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.997777777,
+   "longitude": -51.555833333
+  },
+  {
+   "codigo_ibge": 4200507,
+   "nome": "Águas de Chapecó",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1750761",
+   "artigo": "Águas de Chapecó",
+   "gentilicos": [
+    "aguense"
+   ],
+   "fundacao": "1962-12-14",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 14,
+   "aniversario_mes": 12,
+   "lema": "Estímulo-Trabalho-Progresso!",
+   "latitude": -27.07,
+   "longitude": -52.986944444
+  },
+  {
+   "codigo_ibge": 4200556,
+   "nome": "Águas Frias",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1796824",
+   "artigo": "Águas Frias (Santa Catarina)",
+   "gentilicos": [
+    "águasfriense"
+   ],
+   "fundacao": "1991-12-12",
+   "ano_fundacao": 1991,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.88,
+   "longitude": -52.858888888
+  },
+  {
+   "codigo_ibge": 4200606,
+   "nome": "Águas Mornas",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q249844",
+   "artigo": "Águas Mornas",
+   "gentilicos": [
+    "águas-mornense"
+   ],
+   "fundacao": "1961-12-29",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.693888888,
+   "longitude": -48.823888888
+  },
+  {
+   "codigo_ibge": 4200705,
+   "nome": "Alfredo Wagner",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1754557",
+   "artigo": "Alfredo Wagner",
+   "gentilicos": [
+    "alfredense"
+   ],
+   "fundacao": "1961-12-21",
+   "ano_fundacao": 1961,
+   "aniversario_dia": 29,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -27.7,
+   "longitude": -49.333888888
+  },
+  {
+   "codigo_ibge": 4200754,
+   "nome": "Alto Bela Vista",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758023",
+   "artigo": "Alto Bela Vista",
+   "gentilicos": [
+    "bela-vistense"
+   ],
+   "fundacao": "1995-07-04",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.457777777,
+   "longitude": -51.878888888
+  },
+  {
+   "codigo_ibge": 4200804,
+   "nome": "Anchieta",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1935710",
+   "artigo": "Anchieta (Santa Catarina)",
+   "gentilicos": [
+    "anchietense"
+   ],
+   "fundacao": "1963-03-23",
+   "ano_fundacao": 1963,
+   "aniversario_dia": 23,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -26.533888888,
+   "longitude": -53.330833333
+  },
+  {
+   "codigo_ibge": 4200903,
+   "nome": "Angelina",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q22063988",
+   "artigo": "Angelina",
+   "gentilicos": [
+    "angelinense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1860,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Angelina, Vale das Graças",
+   "latitude": -27.572913796,
+   "longitude": -48.984116267
+  },
+  {
+   "codigo_ibge": 4201000,
+   "nome": "Anita Garibaldi",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q617657",
+   "artigo": "Anita Garibaldi (Santa Catarina)",
+   "gentilicos": [
+    "anita-garibaldense"
+   ],
+   "fundacao": "1961-07-17",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.688888888,
+   "longitude": -51.13
+  },
+  {
+   "codigo_ibge": 4201109,
+   "nome": "Anitápolis",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q22063986",
+   "artigo": "Anitápolis",
+   "gentilicos": [
+    "anitapolitano"
+   ],
+   "fundacao": "1961-12-29",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.901944444,
+   "longitude": -49.128888888
+  },
+  {
+   "codigo_ibge": 4201208,
+   "nome": "Antônio Carlos",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q22063985",
+   "artigo": "Antônio Carlos (Santa Catarina)",
+   "gentilicos": [
+    "antônio-carlense"
+   ],
+   "fundacao": "1963-11-06",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.516944444,
+   "longitude": -48.767777777
+  },
+  {
+   "codigo_ibge": 4201257,
+   "nome": "Apiúna",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758008",
+   "artigo": "Apiúna",
+   "gentilicos": [
+    "apiunense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.035833333,
+   "longitude": -49.39
+  },
+  {
+   "codigo_ibge": 4201273,
+   "nome": "Arabutã",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q374753",
+   "artigo": "Arabutã",
+   "gentilicos": [
+    "arabutanense"
+   ],
+   "fundacao": "1991-12-12",
+   "ano_fundacao": 1991,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.16,
+   "longitude": -52.141944444
+  },
+  {
+   "codigo_ibge": 4201307,
+   "nome": "Araquari",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q607184",
+   "artigo": "Araquari",
+   "gentilicos": [
+    "araquariense"
+   ],
+   "fundacao": "1876-04-05",
+   "ano_fundacao": 1876,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.37,
+   "longitude": -48.721944444
+  },
+  {
+   "codigo_ibge": 4201406,
+   "nome": "Araranguá",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q626231",
+   "artigo": "Araranguá",
+   "gentilicos": [
+    "araranguaense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1880,
+   "aniversario_dia": 3,
+   "aniversario_mes": 4,
+   "lema": "A Mudança Certa",
+   "latitude": -28.935,
+   "longitude": -49.485833333
+  },
+  {
+   "codigo_ibge": 4201505,
+   "nome": "Armazém",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764990",
+   "artigo": "Armazém (Santa Catarina)",
+   "gentilicos": [
+    "armazenense"
+   ],
+   "fundacao": "1958-12-19",
+   "ano_fundacao": 1958,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.261944444,
+   "longitude": -49.017777777
+  },
+  {
+   "codigo_ibge": 4201604,
+   "nome": "Arroio Trinta",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758088",
+   "artigo": "Arroio Trinta",
+   "gentilicos": [
+    "arroio-trintense"
+   ],
+   "fundacao": "1961-12-15",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.932777777,
+   "longitude": -51.338888888
+  },
+  {
+   "codigo_ibge": 4201653,
+   "nome": "Arvoredo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758063",
+   "artigo": "Arvoredo",
+   "gentilicos": [
+    "arvoredense"
+   ],
+   "fundacao": "1992-01-09",
+   "ano_fundacao": 1992,
+   "aniversario_dia": 9,
+   "aniversario_mes": 1,
+   "lema": null,
+   "latitude": -27.073888888,
+   "longitude": -52.455833333
+  },
+  {
+   "codigo_ibge": 4201703,
+   "nome": "Ascurra",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758057",
+   "artigo": "Ascurra",
+   "gentilicos": [
+    "ascurrense"
+   ],
+   "fundacao": "1963-04-01",
+   "ano_fundacao": 1963,
+   "aniversario_dia": 7,
+   "aniversario_mes": 4,
+   "lema": null,
+   "latitude": -26.955,
+   "longitude": -49.375833333
+  },
+  {
+   "codigo_ibge": 4201802,
+   "nome": "Atalanta",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815704",
+   "artigo": "Atalanta",
+   "gentilicos": [
+    "atalantense"
+   ],
+   "fundacao": "1964-12-27",
+   "ano_fundacao": 1964,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.42,
+   "longitude": -49.780833333
+  },
+  {
+   "codigo_ibge": 4201901,
+   "nome": "Aurora",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2012016",
+   "artigo": "Aurora (Santa Catarina)",
+   "gentilicos": [
+    "aurorense"
+   ],
+   "fundacao": "1964-06-06",
+   "ano_fundacao": 1964,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.315,
+   "longitude": -49.637777777
+  },
+  {
+   "codigo_ibge": 4201950,
+   "nome": "Balneário Arroio do Silva",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758002",
+   "artigo": "Balneário Arroio do Silva",
+   "gentilicos": [
+    "arroio-silvense"
+   ],
+   "fundacao": "1995-12-29",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.983888888,
+   "longitude": -49.412777777
+  },
+  {
+   "codigo_ibge": 4202008,
+   "nome": "Balneário Camboriú",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q598016",
+   "artigo": "Balneário Camboriú",
+   "gentilicos": [
+    "balneocamboriuense"
+   ],
+   "fundacao": "1964-07-20",
+   "ano_fundacao": 1964,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Balneário Camboriú, capital catarinense do turismo",
+   "latitude": -26.990833333,
+   "longitude": -48.635
+  },
+  {
+   "codigo_ibge": 4202057,
+   "nome": "Balneário Barra do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764948",
+   "artigo": "Balneário Barra do Sul",
+   "gentilicos": [
+    "barrassulense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.455833333,
+   "longitude": -48.611944444
+  },
+  {
+   "codigo_ibge": 4202073,
+   "nome": "Balneário Gaivota",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757752",
+   "artigo": "Balneário Gaivota",
+   "gentilicos": [
+    "gaivotense"
+   ],
+   "fundacao": "1995-12-29",
+   "ano_fundacao": 1995,
+   "aniversario_dia": 29,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -29.156944444,
+   "longitude": -49.578888888
+  },
+  {
+   "codigo_ibge": 4202081,
+   "nome": "Bandeirante",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q941669",
+   "artigo": "Bandeirante (Santa Catarina)",
+   "gentilicos": [
+    "bandeirantense"
+   ],
+   "fundacao": "1995-09-29",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.768888888,
+   "longitude": -53.637777777
+  },
+  {
+   "codigo_ibge": 4202099,
+   "nome": "Barra Bonita",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815639",
+   "artigo": "Barra Bonita (Santa Catarina)",
+   "gentilicos": [
+    "barrabonitense"
+   ],
+   "fundacao": "1960-12-19",
+   "ano_fundacao": 1960,
+   "aniversario_dia": 29,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -26.653888888,
+   "longitude": -53.44
+  },
+  {
+   "codigo_ibge": 4202107,
+   "nome": "Barra Velha",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q808787",
+   "artigo": "Barra Velha",
+   "gentilicos": [
+    "barra-velhense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1812,
+   "aniversario_dia": 7,
+   "aniversario_mes": 12,
+   "lema": "Porque aqui a vida é mais",
+   "latitude": -26.631944444,
+   "longitude": -48.685
+  },
+  {
+   "codigo_ibge": 4202131,
+   "nome": "Bela Vista do Toldo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765028",
+   "artigo": "Bela Vista do Toldo",
+   "gentilicos": [
+    "bela vistense"
+   ],
+   "fundacao": "1994-04-16",
+   "ano_fundacao": 1994,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.272777777,
+   "longitude": -50.463888888
+  },
+  {
+   "codigo_ibge": 4202156,
+   "nome": "Belmonte",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799364",
+   "artigo": "Belmonte (Santa Catarina)",
+   "gentilicos": [
+    "belmontense"
+   ],
+   "fundacao": "1992-01-09",
+   "ano_fundacao": 1992,
+   "aniversario_dia": 9,
+   "aniversario_mes": 1,
+   "lema": null,
+   "latitude": -26.840833333,
+   "longitude": -53.575833333
+  },
+  {
+   "codigo_ibge": 4202206,
+   "nome": "Benedito Novo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q817098",
+   "artigo": "Benedito Novo",
+   "gentilicos": [
+    "benedito-novense"
+   ],
+   "fundacao": "1961-12-29",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.782777777,
+   "longitude": -49.363888888
+  },
+  {
+   "codigo_ibge": 4202305,
+   "nome": "Biguaçu",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1754582",
+   "artigo": "Biguaçu",
+   "gentilicos": [
+    "biguaçuense"
+   ],
+   "fundacao": "1747-08-09",
+   "ano_fundacao": 1747,
+   "aniversario_dia": 17,
+   "aniversario_mes": 5,
+   "lema": null,
+   "latitude": -27.493888888,
+   "longitude": -48.655833333
+  },
+  {
+   "codigo_ibge": 4202404,
+   "nome": "Blumenau",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q155557",
+   "artigo": "Blumenau",
+   "gentilicos": [
+    "blumenauense"
+   ],
+   "fundacao": "1852-08-08",
+   "ano_fundacao": 1852,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Pro Sancta Catharina Et Brasilia",
+   "latitude": -26.918888888,
+   "longitude": -49.065833333
+  },
+  {
+   "codigo_ibge": 4202438,
+   "nome": "Bocaina do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1750759",
+   "artigo": "Bocaina do Sul",
+   "gentilicos": [
+    "bocainense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1997,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.743888888,
+   "longitude": -49.943888888
+  },
+  {
+   "codigo_ibge": 4202453,
+   "nome": "Bombinhas",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q891934",
+   "artigo": "Bombinhas",
+   "gentilicos": [
+    "bombinense"
+   ],
+   "fundacao": "1992-03-30",
+   "ano_fundacao": 1992,
+   "aniversario_dia": 15,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -27.137777777,
+   "longitude": -48.516944444
+  },
+  {
+   "codigo_ibge": 4202503,
+   "nome": "Bom Jardim da Serra",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q939572",
+   "artigo": "Bom Jardim da Serra",
+   "gentilicos": [
+    "bom-jardinense"
+   ],
+   "fundacao": "1967-01-29",
+   "ano_fundacao": 1967,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.336944444,
+   "longitude": -49.625
+  },
+  {
+   "codigo_ibge": 4202537,
+   "nome": "Bom Jesus",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q769692",
+   "artigo": "Bom Jesus (Santa Catarina)",
+   "gentilicos": [
+    "bonjesuense"
+   ],
+   "fundacao": "1995-07-19",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.733888888,
+   "longitude": -52.393888888
+  },
+  {
+   "codigo_ibge": 4202578,
+   "nome": "Bom Jesus do Oeste",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q616028",
+   "artigo": "Bom Jesus do Oeste",
+   "gentilicos": [
+    "bonjesuense"
+   ],
+   "fundacao": "1995-07-19",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.69,
+   "longitude": -53.097777777
+  },
+  {
+   "codigo_ibge": 4202602,
+   "nome": "Bom Retiro",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q891740",
+   "artigo": "Bom Retiro",
+   "gentilicos": [
+    "bom-retirense"
+   ],
+   "fundacao": "1923-01-14",
+   "ano_fundacao": 1923,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.796944444,
+   "longitude": -49.488888888
+  },
+  {
+   "codigo_ibge": 4202701,
+   "nome": "Botuverá",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q894929",
+   "artigo": "Botuverá",
+   "gentilicos": [
+    "botuveraense"
+   ],
+   "fundacao": "1962-06-09",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 9,
+   "aniversario_mes": 6,
+   "lema": null,
+   "latitude": -27.198888888,
+   "longitude": -49.075
+  },
+  {
+   "codigo_ibge": 4202800,
+   "nome": "Braço do Norte",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q903373",
+   "artigo": "Braço do Norte",
+   "gentilicos": [
+    "braço-nortense"
+   ],
+   "fundacao": "1955-10-22",
+   "ano_fundacao": 1955,
+   "aniversario_dia": 22,
+   "aniversario_mes": 10,
+   "lema": null,
+   "latitude": -28.275,
+   "longitude": -49.165833333
+  },
+  {
+   "codigo_ibge": 4202859,
+   "nome": "Braço do Trombudo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784745",
+   "artigo": "Braço do Trombudo",
+   "gentilicos": [
+    "braço trombudense"
+   ],
+   "fundacao": "1991-09-26",
+   "ano_fundacao": 1991,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.357777777,
+   "longitude": -49.885833333
+  },
+  {
+   "codigo_ibge": 4202875,
+   "nome": "Brunópolis",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765062",
+   "artigo": "Brunópolis",
+   "gentilicos": [
+    "brunopolitense"
+   ],
+   "fundacao": "1995-12-29",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.305833333,
+   "longitude": -50.867777777
+  },
+  {
+   "codigo_ibge": 4202909,
+   "nome": "Brusque",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q329488",
+   "artigo": "Brusque",
+   "gentilicos": [
+    "brusquense"
+   ],
+   "fundacao": "1860-08-04",
+   "ano_fundacao": 1860,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.097777777,
+   "longitude": -48.917777777
+  },
+  {
+   "codigo_ibge": 4203006,
+   "nome": "Caçador",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q986540",
+   "artigo": "Caçador",
+   "gentilicos": [
+    "caçadorense"
+   ],
+   "fundacao": "1934-03-25",
+   "ano_fundacao": 1934,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.775,
+   "longitude": -51.015
+  },
+  {
+   "codigo_ibge": 4203105,
+   "nome": "Caibi",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758966",
+   "artigo": "Caibi",
+   "gentilicos": [
+    "caibiense"
+   ],
+   "fundacao": "1965-03-29",
+   "ano_fundacao": 1965,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.071944444,
+   "longitude": -53.247777777
+  },
+  {
+   "codigo_ibge": 4203154,
+   "nome": "Calmon",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784723",
+   "artigo": "Calmon",
+   "gentilicos": [
+    "calmonense"
+   ],
+   "fundacao": "1992-01-09",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.6,
+   "longitude": -51.096944444
+  },
+  {
+   "codigo_ibge": 4203204,
+   "nome": "Camboriú",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q744097",
+   "artigo": "Camboriú",
+   "gentilicos": [
+    "camboriuense"
+   ],
+   "fundacao": "1884-04-05",
+   "ano_fundacao": 1884,
+   "aniversario_dia": 5,
+   "aniversario_mes": 4,
+   "lema": "Uma cidade bonita por natureza",
+   "latitude": -27.025,
+   "longitude": -48.653888888
+  },
+  {
+   "codigo_ibge": 4203253,
+   "nome": "Capão Alto",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1112283",
+   "artigo": "Capão Alto",
+   "gentilicos": [
+    "capão altense"
+   ],
+   "fundacao": "1994-09-29",
+   "ano_fundacao": 1994,
+   "aniversario_dia": 29,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -27.936944444,
+   "longitude": -50.511944444
+  },
+  {
+   "codigo_ibge": 4203303,
+   "nome": "Campo Alegre",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2087030",
+   "artigo": "Campo Alegre (Santa Catarina)",
+   "gentilicos": [
+    "campo-alegrense"
+   ],
+   "fundacao": "1897-03-18",
+   "ano_fundacao": 1897,
+   "aniversario_dia": 18,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -26.192777777,
+   "longitude": -49.265833333
+  },
+  {
+   "codigo_ibge": 4203402,
+   "nome": "Campo Belo do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765051",
+   "artigo": "Campo Belo do Sul",
+   "gentilicos": [
+    "campo-belense"
+   ],
+   "fundacao": "1856-05-10",
+   "ano_fundacao": 1856,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.898888888,
+   "longitude": -50.760833333
+  },
+  {
+   "codigo_ibge": 4203501,
+   "nome": "Campo Erê",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757768",
+   "artigo": "Campo Erê",
+   "gentilicos": [
+    "campo-erense"
+   ],
+   "fundacao": "1958-07-11",
+   "ano_fundacao": 1958,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.393888888,
+   "longitude": -53.077777777
+  },
+  {
+   "codigo_ibge": 4203600,
+   "nome": "Campos Novos",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764972",
+   "artigo": "Campos Novos",
+   "gentilicos": [
+    "campos-novense"
+   ],
+   "fundacao": "1881-03-30",
+   "ano_fundacao": 1881,
+   "aniversario_dia": 30,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -27.401944444,
+   "longitude": -51.225
+  },
+  {
+   "codigo_ibge": 4203709,
+   "nome": "Canelinha",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q957908",
+   "artigo": "Canelinha",
+   "gentilicos": [
+    "canelense"
+   ],
+   "fundacao": "1962-12-23",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 23,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -27.265,
+   "longitude": -48.767777777
+  },
+  {
+   "codigo_ibge": 4203808,
+   "nome": "Canoinhas",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799304",
+   "artigo": "Canoinhas",
+   "gentilicos": [
+    "canoinhense"
+   ],
+   "fundacao": "1911-09-12",
+   "ano_fundacao": 1911,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Catharinensis semper",
+   "latitude": -26.176944444,
+   "longitude": -50.39
+  },
+  {
+   "codigo_ibge": 4203907,
+   "nome": "Capinzal",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q780452",
+   "artigo": "Capinzal",
+   "gentilicos": [
+    "capinzalense"
+   ],
+   "fundacao": "1949-02-17",
+   "ano_fundacao": 1949,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.343888888,
+   "longitude": -51.611944444
+  },
+  {
+   "codigo_ibge": 4203956,
+   "nome": "Capivari de Baixo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1750765",
+   "artigo": "Capivari de Baixo",
+   "gentilicos": [
+    "capivariense"
+   ],
+   "fundacao": "1992-03-30",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.445,
+   "longitude": -48.957777777
+  },
+  {
+   "codigo_ibge": 4204004,
+   "nome": "Catanduvas",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2087108",
+   "artigo": "Catanduvas (Santa Catarina)",
+   "gentilicos": [
+    "catanduvense"
+   ],
+   "fundacao": "1963-03-16",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.070833333,
+   "longitude": -51.661944444
+  },
+  {
+   "codigo_ibge": 4204103,
+   "nome": "Caxambu do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758980",
+   "artigo": "Caxambu do Sul",
+   "gentilicos": [
+    "caxambuense"
+   ],
+   "fundacao": "1962-12-14",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 14,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -27.160833333,
+   "longitude": -52.878888888
+  },
+  {
+   "codigo_ibge": 4204152,
+   "nome": "Celso Ramos",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1750758",
+   "artigo": "Celso Ramos (Santa Catarina)",
+   "gentilicos": [
+    "celso-ramense"
+   ],
+   "fundacao": "1989-04-26",
+   "ano_fundacao": 1989,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "União do povo de Celso Ramos",
+   "latitude": -27.633888888,
+   "longitude": -51.335833333
+  },
+  {
+   "codigo_ibge": 4204178,
+   "nome": "Cerro Negro",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799348",
+   "artigo": "Cerro Negro",
+   "gentilicos": [
+    "cerronegrense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": 26,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -27.795,
+   "longitude": -50.875833333
+  },
+  {
+   "codigo_ibge": 4204194,
+   "nome": "Chapadão do Lageado",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784522",
+   "artigo": "Chapadão do Lageado",
+   "gentilicos": [
+    "lageadense"
+   ],
+   "fundacao": "1995-11-29",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.590833333,
+   "longitude": -49.553888888
+  },
+  {
+   "codigo_ibge": 4204202,
+   "nome": "Chapecó",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q817387",
+   "artigo": "Chapecó",
+   "gentilicos": [
+    "chapecoense"
+   ],
+   "fundacao": "1917-08-25",
+   "ano_fundacao": 1917,
+   "aniversario_dia": 25,
+   "aniversario_mes": 8,
+   "lema": null,
+   "latitude": -27.095833333,
+   "longitude": -52.617777777
+  },
+  {
+   "codigo_ibge": 4204251,
+   "nome": "Cocal do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765012",
+   "artigo": "Cocal do Sul",
+   "gentilicos": [
+    "sul-cocalense"
+   ],
+   "fundacao": "1991-09-26",
+   "ano_fundacao": 1991,
+   "aniversario_dia": 26,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -28.600833333,
+   "longitude": -49.325833333
+  },
+  {
+   "codigo_ibge": 4204301,
+   "nome": "Concórdia",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q749798",
+   "artigo": "Concórdia",
+   "gentilicos": [
+    "concordiense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1934,
+   "aniversario_dia": 29,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -27.233888888,
+   "longitude": -52.027777777
+  },
+  {
+   "codigo_ibge": 4204350,
+   "nome": "Cordilheira Alta",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758999",
+   "artigo": "Cordilheira Alta",
+   "gentilicos": [
+    "cordilheiraltense"
+   ],
+   "fundacao": "1992-03-30",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.983888888,
+   "longitude": -52.606944444
+  },
+  {
+   "codigo_ibge": 4204400,
+   "nome": "Coronel Freitas",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758946",
+   "artigo": "Coronel Freitas",
+   "gentilicos": [
+    "freitense",
+    "freitano"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1961,
+   "aniversario_dia": 6,
+   "aniversario_mes": 10,
+   "lema": null,
+   "latitude": -26.908888888,
+   "longitude": -52.702777777
+  },
+  {
+   "codigo_ibge": 4204459,
+   "nome": "Coronel Martins",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784467",
+   "artigo": "Coronel Martins",
+   "gentilicos": [
+    "coronel martiense"
+   ],
+   "fundacao": "1992-03-30",
+   "ano_fundacao": 1992,
+   "aniversario_dia": 30,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -26.511944444,
+   "longitude": -52.668888888
+  },
+  {
+   "codigo_ibge": 4204509,
+   "nome": "Corupá",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1020408",
+   "artigo": "Corupá",
+   "gentilicos": [
+    "corupaense"
+   ],
+   "fundacao": "1897-07-07",
+   "ano_fundacao": 1897,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.425,
+   "longitude": -49.242777777
+  },
+  {
+   "codigo_ibge": 4204558,
+   "nome": "Correia Pinto",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764914",
+   "artigo": "Correia Pinto",
+   "gentilicos": [
+    "correia-pintense"
+   ],
+   "fundacao": "1982-05-10",
+   "ano_fundacao": 1982,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.585,
+   "longitude": -50.360833333
+  },
+  {
+   "codigo_ibge": 4204608,
+   "nome": "Criciúma",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1439157",
+   "artigo": "Criciúma",
+   "gentilicos": [
+    "criciumense"
+   ],
+   "fundacao": "1880-01-06",
+   "ano_fundacao": 1880,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.6775,
+   "longitude": -49.369722222
+  },
+  {
+   "codigo_ibge": 4204707,
+   "nome": "Cunha Porã",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758938",
+   "artigo": "Cunha Porã",
+   "gentilicos": [
+    "cunha-porense"
+   ],
+   "fundacao": "1958-07-20",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 20,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.893888888,
+   "longitude": -53.167777777
+  },
+  {
+   "codigo_ibge": 4204756,
+   "nome": "Cunhataí",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1759005",
+   "artigo": "Cunhataí",
+   "gentilicos": [
+    "cunhataiense"
+   ],
+   "fundacao": "1995-09-29",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.968888888,
+   "longitude": -53.092777777
+  },
+  {
+   "codigo_ibge": 4204806,
+   "nome": "Curitibanos",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765072",
+   "artigo": "Curitibanos",
+   "gentilicos": [
+    "curitibanense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": 11,
+   "aniversario_mes": 6,
+   "lema": "Minha terra, avante é o lema!",
+   "latitude": -27.282777777,
+   "longitude": -50.583888888
+  },
+  {
+   "codigo_ibge": 4204905,
+   "nome": "Descanso",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784557",
+   "artigo": "Descanso",
+   "gentilicos": [
+    "descansense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1956,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.8246854,
+   "longitude": -53.5017586
+  },
+  {
+   "codigo_ibge": 4205001,
+   "nome": "Dionísio Cerqueira",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757773",
+   "artigo": "Dionísio Cerqueira",
+   "gentilicos": [
+    "cerqueirense"
+   ],
+   "fundacao": "1953-12-30",
+   "ano_fundacao": 1953,
+   "aniversario_dia": 14,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -26.255,
+   "longitude": -53.64
+  },
+  {
+   "codigo_ibge": 4205100,
+   "nome": "Dona Emma",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q986564",
+   "artigo": "Dona Emma",
+   "gentilicos": [
+    "donemense"
+   ],
+   "fundacao": "1962-05-17",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.985,
+   "longitude": -49.725833333
+  },
+  {
+   "codigo_ibge": 4205159,
+   "nome": "Doutor Pedrinho",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784602",
+   "artigo": "Doutor Pedrinho",
+   "gentilicos": [
+    "pedrinhense"
+   ],
+   "fundacao": "1988-01-04",
+   "ano_fundacao": 1988,
+   "aniversario_dia": 1,
+   "aniversario_mes": 6,
+   "lema": null,
+   "latitude": -26.713888888,
+   "longitude": -49.482777777
+  },
+  {
+   "codigo_ibge": 4205175,
+   "nome": "Entre Rios",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815627",
+   "artigo": "Entre Rios (Santa Catarina)",
+   "gentilicos": [
+    "entrerriense"
+   ],
+   "fundacao": "1995-07-19",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.723888888,
+   "longitude": -52.560833333
+  },
+  {
+   "codigo_ibge": 4205191,
+   "nome": "Ermo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815677",
+   "artigo": "Ermo",
+   "gentilicos": [
+    "ermense"
+   ],
+   "fundacao": "1993-12-29",
+   "ano_fundacao": 1993,
+   "aniversario_dia": 19,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -28.982777777,
+   "longitude": -49.643888888
+  },
+  {
+   "codigo_ibge": 4205209,
+   "nome": "Erval Velho",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q927128",
+   "artigo": "Erval Velho",
+   "gentilicos": [
+    "ervalhense"
+   ],
+   "fundacao": "1963-06-18",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.26,
+   "longitude": -51.432222222
+  },
+  {
+   "codigo_ibge": 4205308,
+   "nome": "Faxinal dos Guedes",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799399",
+   "artigo": "Faxinal dos Guedes",
+   "gentilicos": [
+    "faxinalense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": 26,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.852777777,
+   "longitude": -52.26
+  },
+  {
+   "codigo_ibge": 4205357,
+   "nome": "Flor do Sertão",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758986",
+   "artigo": "Flor do Sertão",
+   "gentilicos": [
+    "flor-sertanense"
+   ],
+   "fundacao": "1995-09-29",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Energia que conduz uma nova era",
+   "latitude": -26.777777777,
+   "longitude": -53.346944444
+  },
+  {
+   "codigo_ibge": 4205407,
+   "nome": "Florianópolis",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q132997",
+   "artigo": "Florianópolis",
+   "gentilicos": [
+    "florianopolitano"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1726,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.593280555,
+   "longitude": -48.553047222
+  },
+  {
+   "codigo_ibge": 4205431,
+   "nome": "Formosa do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1759017",
+   "artigo": "Formosa do Sul",
+   "gentilicos": [
+    "formoense do sul"
+   ],
+   "fundacao": "1992-01-09",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.648611111,
+   "longitude": -52.796388888
+  },
+  {
+   "codigo_ibge": 4205456,
+   "nome": "Forquilhinha",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784729",
+   "artigo": "Forquilhinha",
+   "gentilicos": [
+    "forquilhinhense"
+   ],
+   "fundacao": "1989-04-26",
+   "ano_fundacao": 1989,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Linda de se viver",
+   "latitude": -28.746944444,
+   "longitude": -49.471944444
+  },
+  {
+   "codigo_ibge": 4205506,
+   "nome": "Fraiburgo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q543046",
+   "artigo": "Fraiburgo",
+   "gentilicos": [
+    "fraiburgense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1937,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.025833333,
+   "longitude": -50.920833333
+  },
+  {
+   "codigo_ibge": 4205555,
+   "nome": "Frei Rogério",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765020",
+   "artigo": "Frei Rogério",
+   "gentilicos": [
+    "frei rogeriense"
+   ],
+   "fundacao": "1995-07-20",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.175,
+   "longitude": -50.805
+  },
+  {
+   "codigo_ibge": 4205605,
+   "nome": "Galvão",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784498",
+   "artigo": "Galvão (Santa Catarina)",
+   "gentilicos": [
+    "galvãoense"
+   ],
+   "fundacao": "1963-04-07",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.455,
+   "longitude": -52.685833333
+  },
+  {
+   "codigo_ibge": 4205704,
+   "nome": "Garopaba",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q612191",
+   "artigo": "Garopaba",
+   "gentilicos": [
+    "garopabense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1846,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.05127,
+   "longitude": -48.6454
+  },
+  {
+   "codigo_ibge": 4205803,
+   "nome": "Garuva",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784623",
+   "artigo": "Garuva",
+   "gentilicos": [
+    "garuvense"
+   ],
+   "fundacao": "1963-12-20",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Paraíso Das Águas - Santa Catarina começa aqui!",
+   "latitude": -26.026944444,
+   "longitude": -48.855
+  },
+  {
+   "codigo_ibge": 4205902,
+   "nome": "Gaspar",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q856583",
+   "artigo": "Gaspar",
+   "gentilicos": [
+    "gasparense"
+   ],
+   "fundacao": "1934-03-18",
+   "ano_fundacao": 1934,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.930833333,
+   "longitude": -48.958888888
+  },
+  {
+   "codigo_ibge": 4206009,
+   "nome": "Governador Celso Ramos",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765043",
+   "artigo": "Governador Celso Ramos",
+   "gentilicos": [
+    "gancheiro"
+   ],
+   "fundacao": "1963-11-06",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Bom de se viver",
+   "latitude": -27.315,
+   "longitude": -48.558888888
+  },
+  {
+   "codigo_ibge": 4206108,
+   "nome": "Grão-Pará",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764998",
+   "artigo": "Grão-Pará (Santa Catarina)",
+   "gentilicos": [
+    "grão-paraense"
+   ],
+   "fundacao": "1958-07-20",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 20,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -28.185,
+   "longitude": -49.215
+  },
+  {
+   "codigo_ibge": 4206207,
+   "nome": "Gravatal",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764929",
+   "artigo": "Gravatal",
+   "gentilicos": [
+    "gravatalense"
+   ],
+   "fundacao": "1961-12-20",
+   "ano_fundacao": 1961,
+   "aniversario_dia": 29,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -28.330833333,
+   "longitude": -49.035
+  },
+  {
+   "codigo_ibge": 4206306,
+   "nome": "Guabiruba",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758034",
+   "artigo": "Guabiruba",
+   "gentilicos": [
+    "guabirubense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": 10,
+   "aniversario_mes": 6,
+   "lema": null,
+   "latitude": -27.085833333,
+   "longitude": -48.980833333
+  },
+  {
+   "codigo_ibge": 4206405,
+   "nome": "Guaraciaba",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799361",
+   "artigo": "Guaraciaba (Santa Catarina)",
+   "gentilicos": [
+    "guaraciabense"
+   ],
+   "fundacao": "1945-09-02",
+   "ano_fundacao": 1945,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.598888888,
+   "longitude": -53.517777777
+  },
+  {
+   "codigo_ibge": 4206504,
+   "nome": "Guaramirim",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799377",
+   "artigo": "Guaramirim",
+   "gentilicos": [
+    "guaramirense"
+   ],
+   "fundacao": "1886-06-29",
+   "ano_fundacao": 1886,
+   "aniversario_dia": 28,
+   "aniversario_mes": 8,
+   "lema": "Povo ordeiro e trabalhador",
+   "latitude": -26.472777777,
+   "longitude": -49.002777777
+  },
+  {
+   "codigo_ibge": 4206603,
+   "nome": "Guarujá do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q986566",
+   "artigo": "Guarujá do Sul",
+   "gentilicos": [
+    "guarujaense"
+   ],
+   "fundacao": "1961-07-25",
+   "ano_fundacao": 1961,
+   "aniversario_dia": 25,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.385,
+   "longitude": -53.527777777
+  },
+  {
+   "codigo_ibge": 4206652,
+   "nome": "Guatambu",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784804",
+   "artigo": "Guatambu",
+   "gentilicos": [
+    "guatumbuense"
+   ],
+   "fundacao": "1991-12-12",
+   "ano_fundacao": 1991,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.131944444,
+   "longitude": -52.787222222
+  },
+  {
+   "codigo_ibge": 4206702,
+   "nome": "Herval d'Oeste",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784481",
+   "artigo": "Herval d'Oeste",
+   "gentilicos": [
+    "hervalense"
+   ],
+   "fundacao": "1953-12-30",
+   "ano_fundacao": 1953,
+   "aniversario_dia": 25,
+   "aniversario_mes": 8,
+   "lema": null,
+   "latitude": -27.193888888,
+   "longitude": -51.495
+  },
+  {
+   "codigo_ibge": 4206751,
+   "nome": "Ibiam",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784512",
+   "artigo": "Ibiam",
+   "gentilicos": [
+    "ibianense"
+   ],
+   "fundacao": "1995-07-20",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Unidos pelo progresso",
+   "latitude": -27.180833333,
+   "longitude": -51.236944444
+  },
+  {
+   "codigo_ibge": 4206801,
+   "nome": "Ibicaré",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799339",
+   "artigo": "Ibicaré",
+   "gentilicos": [
+    "ibicareense"
+   ],
+   "fundacao": "1962-05-01",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.091944444,
+   "longitude": -51.365
+  },
+  {
+   "codigo_ibge": 4206900,
+   "nome": "Ibirama",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q747403",
+   "artigo": "Ibirama",
+   "gentilicos": [
+    "ibiramense"
+   ],
+   "fundacao": "1897-11-08",
+   "ano_fundacao": 1897,
+   "aniversario_dia": 11,
+   "aniversario_mes": 3,
+   "lema": "Trabalho e Progresso",
+   "latitude": -27.056944444,
+   "longitude": -49.517777777
+  },
+  {
+   "codigo_ibge": 4207007,
+   "nome": "Içara",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764963",
+   "artigo": "Içara",
+   "gentilicos": [
+    "içarense"
+   ],
+   "fundacao": "1961-12-30",
+   "ano_fundacao": 1961,
+   "aniversario_dia": 29,
+   "aniversario_mes": 12,
+   "lema": "Que vos torneis irrepreensíveis e sinceros",
+   "latitude": -28.712777777,
+   "longitude": -49.3
+  },
+  {
+   "codigo_ibge": 4207106,
+   "nome": "Ilhota",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799373",
+   "artigo": "Ilhota",
+   "gentilicos": [
+    "ilhotense"
+   ],
+   "fundacao": "1958-06-21",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 21,
+   "aniversario_mes": 6,
+   "lema": "O Encanto do Vale",
+   "latitude": -26.9,
+   "longitude": -48.826944444
+  },
+  {
+   "codigo_ibge": 4207205,
+   "nome": "Imaruí",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1750764",
+   "artigo": "Imaruí",
+   "gentilicos": [
+    "imaruense"
+   ],
+   "fundacao": "1890-08-27",
+   "ano_fundacao": 1890,
+   "aniversario_dia": 27,
+   "aniversario_mes": 8,
+   "lema": null,
+   "latitude": -28.340833333,
+   "longitude": -48.82
+  },
+  {
+   "codigo_ibge": 4207304,
+   "nome": "Imbituba",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q986545",
+   "artigo": "Imbituba",
+   "gentilicos": [
+    "imbitubense"
+   ],
+   "fundacao": "1958-06-21",
+   "ano_fundacao": 1958,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Imbituba, um mar de oportunidades",
+   "latitude": -28.24,
+   "longitude": -48.67
+  },
+  {
+   "codigo_ibge": 4207403,
+   "nome": "Imbuia",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815721",
+   "artigo": "Imbuia (Santa Catarina)",
+   "gentilicos": [
+    "imbuiense"
+   ],
+   "fundacao": "1962-09-10",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 10,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -27.492777777,
+   "longitude": -49.423888888
+  },
+  {
+   "codigo_ibge": 4207502,
+   "nome": "Indaial",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784570",
+   "artigo": "Indaial",
+   "gentilicos": [
+    "indaialense"
+   ],
+   "fundacao": "1934-03-21",
+   "ano_fundacao": 1934,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.897777777,
+   "longitude": -49.231944444
+  },
+  {
+   "codigo_ibge": 4207577,
+   "nome": "Iomerê",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784584",
+   "artigo": "Iomerê",
+   "gentilicos": [
+    "iomerense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1995,
+   "aniversario_dia": 20,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -27.003888888,
+   "longitude": -51.241944444
+  },
+  {
+   "codigo_ibge": 4207601,
+   "nome": "Ipira",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q968703",
+   "artigo": "Ipira",
+   "gentilicos": [
+    "ipirense"
+   ],
+   "fundacao": "1963-08-15",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.403888888,
+   "longitude": -51.772777777
+  },
+  {
+   "codigo_ibge": 4207650,
+   "nome": "Iporã do Oeste",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757758",
+   "artigo": "Iporã do Oeste",
+   "gentilicos": [
+    "iporã-oestino"
+   ],
+   "fundacao": "1988-01-04",
+   "ano_fundacao": 1988,
+   "aniversario_dia": 1,
+   "aniversario_mes": 6,
+   "lema": "Com empenho, justiça e trabalho implantaram eternos primores",
+   "latitude": -26.987777777,
+   "longitude": -53.535
+  },
+  {
+   "codigo_ibge": 4207684,
+   "nome": "Ipuaçu",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q647194",
+   "artigo": "Ipuaçu",
+   "gentilicos": [
+    "ipuaçuense"
+   ],
+   "fundacao": "1992-01-09",
+   "ano_fundacao": 1992,
+   "aniversario_dia": 31,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -26.630833333,
+   "longitude": -52.455
+  },
+  {
+   "codigo_ibge": 4207700,
+   "nome": "Ipumirim",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758047",
+   "artigo": "Ipumirim",
+   "gentilicos": [
+    "ipumiriense"
+   ],
+   "fundacao": "1963-04-07",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.076944444,
+   "longitude": -52.135833333
+  },
+  {
+   "codigo_ibge": 4207759,
+   "nome": "Iraceminha",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758989",
+   "artigo": "Iraceminha",
+   "gentilicos": [
+    "iraceminhense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.822777777,
+   "longitude": -53.273888888
+  },
+  {
+   "codigo_ibge": 4207809,
+   "nome": "Irani",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q732916",
+   "artigo": "Irani",
+   "gentilicos": [
+    "iraniense"
+   ],
+   "fundacao": "1963-09-11",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.025,
+   "longitude": -51.901944444
+  },
+  {
+   "codigo_ibge": 4207858,
+   "nome": "Irati",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q767579",
+   "artigo": "Irati (Santa Catarina)",
+   "gentilicos": [
+    "iratiense"
+   ],
+   "fundacao": "1992-01-09",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.655833333,
+   "longitude": -52.891944444
+  },
+  {
+   "codigo_ibge": 4207908,
+   "nome": "Irineópolis",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784615",
+   "artigo": "Irineópolis",
+   "gentilicos": [
+    "irineopolitense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1962,
+   "aniversario_dia": 22,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.238888888,
+   "longitude": -50.8
+  },
+  {
+   "codigo_ibge": 4208005,
+   "nome": "Itá",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1774437",
+   "artigo": "Itá (Santa Catarina)",
+   "gentilicos": [
+    "itaense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.290833333,
+   "longitude": -52.322777777
+  },
+  {
+   "codigo_ibge": 4208104,
+   "nome": "Itaiópolis",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1796811",
+   "artigo": "Itaiópolis",
+   "gentilicos": [
+    "itaiopolense"
+   ],
+   "fundacao": "1918-10-28",
+   "ano_fundacao": 1918,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Itaiópolis, aqui você tem valor!",
+   "latitude": -26.335833333,
+   "longitude": -49.905833333
+  },
+  {
+   "codigo_ibge": 4208203,
+   "nome": "Itajaí",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q842713",
+   "artigo": "Itajaí",
+   "gentilicos": [
+    "itajaiense"
+   ],
+   "fundacao": "1860-06-15",
+   "ano_fundacao": 1860,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.907777777,
+   "longitude": -48.661944444
+  },
+  {
+   "codigo_ibge": 4208302,
+   "nome": "Itapema",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1750776",
+   "artigo": "Itapema",
+   "gentilicos": [
+    "itapemense"
+   ],
+   "fundacao": "1962-04-21",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 21,
+   "aniversario_mes": 4,
+   "lema": null,
+   "latitude": -27.09,
+   "longitude": -48.610833333
+  },
+  {
+   "codigo_ibge": 4208401,
+   "nome": "Itapiranga",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q595033",
+   "artigo": "Itapiranga (Santa Catarina)",
+   "gentilicos": [
+    "itapiranguense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1953,
+   "aniversario_dia": 14,
+   "aniversario_mes": 2,
+   "lema": "Progresso e União",
+   "latitude": -27.168888888,
+   "longitude": -53.711944444
+  },
+  {
+   "codigo_ibge": 4208450,
+   "nome": "Itapoá",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758956",
+   "artigo": "Itapoá",
+   "gentilicos": [
+    "itapoaense"
+   ],
+   "fundacao": "1989-04-26",
+   "ano_fundacao": 1989,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Trabalho que Transforma. Futuro que Acontece",
+   "latitude": -26.116944444,
+   "longitude": -48.615833333
+  },
+  {
+   "codigo_ibge": 4208500,
+   "nome": "Ituporanga",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758267",
+   "artigo": "Ituporanga",
+   "gentilicos": [
+    "ituporanguense"
+   ],
+   "fundacao": "1948-02-14",
+   "ano_fundacao": 1948,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.413888888,
+   "longitude": -49.600833333
+  },
+  {
+   "codigo_ibge": 4208609,
+   "nome": "Jaborá",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q612795",
+   "artigo": "Jaborá",
+   "gentilicos": [
+    "jaboraense"
+   ],
+   "fundacao": "1963-09-11",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.175833333,
+   "longitude": -51.733888888
+  },
+  {
+   "codigo_ibge": 4208708,
+   "nome": "Jacinto Machado",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799312",
+   "artigo": "Jacinto Machado",
+   "gentilicos": [
+    "jacinto-machadense"
+   ],
+   "fundacao": "1958-06-21",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 23,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -28.996944444,
+   "longitude": -49.763888888
+  },
+  {
+   "codigo_ibge": 4208807,
+   "nome": "Jaguaruna",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764984",
+   "artigo": "Jaguaruna",
+   "gentilicos": [
+    "jaguarunense"
+   ],
+   "fundacao": "1891-01-06",
+   "ano_fundacao": 1891,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.615,
+   "longitude": -49.025833333
+  },
+  {
+   "codigo_ibge": 4208906,
+   "nome": "Jaraguá do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q849584",
+   "artigo": "Jaraguá do Sul",
+   "gentilicos": [
+    "jaraguaense"
+   ],
+   "fundacao": "1876-07-25",
+   "ano_fundacao": 1876,
+   "aniversario_dia": 25,
+   "aniversario_mes": 7,
+   "lema": "Grandeza pelo trabalho",
+   "latitude": -26.485833333,
+   "longitude": -49.066944444
+  },
+  {
+   "codigo_ibge": 4208955,
+   "nome": "Jardinópolis",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815648",
+   "artigo": "Jardinópolis (Santa Catarina)",
+   "gentilicos": [
+    "jardinopolense"
+   ],
+   "fundacao": "1992-03-20",
+   "ano_fundacao": 1992,
+   "aniversario_dia": 20,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -26.721944444,
+   "longitude": -52.86
+  },
+  {
+   "codigo_ibge": 4209003,
+   "nome": "Joaçaba",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758467",
+   "artigo": "Joaçaba",
+   "gentilicos": [
+    "joaçabense"
+   ],
+   "fundacao": "1917-08-25",
+   "ano_fundacao": 1917,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.177777777,
+   "longitude": -51.505
+  },
+  {
+   "codigo_ibge": 4209102,
+   "nome": "Joinville",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q156819",
+   "artigo": "Joinville",
+   "gentilicos": [
+    "joinvilense"
+   ],
+   "fundacao": "1851-03-09",
+   "ano_fundacao": 1851,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Mea autem brasiliæ magnitudo",
+   "latitude": -26.303888888,
+   "longitude": -48.845833333
+  },
+  {
+   "codigo_ibge": 4209151,
+   "nome": "José Boiteux",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784463",
+   "artigo": "José Boiteux",
+   "gentilicos": [
+    "josé-boatense"
+   ],
+   "fundacao": "1989-04-26",
+   "ano_fundacao": 1989,
+   "aniversario_dia": 26,
+   "aniversario_mes": 4,
+   "lema": "Não possui",
+   "latitude": -26.957777777,
+   "longitude": -49.627777777
+  },
+  {
+   "codigo_ibge": 4209177,
+   "nome": "Jupiá",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q664255",
+   "artigo": "Jupiá",
+   "gentilicos": [
+    "jupiaense"
+   ],
+   "fundacao": "1995-07-19",
+   "ano_fundacao": 1995,
+   "aniversario_dia": 19,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.397777777,
+   "longitude": -52.727777777
+  },
+  {
+   "codigo_ibge": 4209201,
+   "nome": "Lacerdópolis",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799404",
+   "artigo": "Lacerdópolis",
+   "gentilicos": [
+    "lacerdopolitano"
+   ],
+   "fundacao": "1963-11-11",
+   "ano_fundacao": 1963,
+   "aniversario_dia": 11,
+   "aniversario_mes": 11,
+   "lema": null,
+   "latitude": -27.26,
+   "longitude": -51.555833333
+  },
+  {
+   "codigo_ibge": 4209300,
+   "nome": "Lages",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q762009",
+   "artigo": "Lages",
+   "gentilicos": [
+    "lageano"
+   ],
+   "fundacao": "1766-11-22",
+   "ano_fundacao": 1766,
+   "aniversario_dia": 22,
+   "aniversario_mes": 11,
+   "lema": null,
+   "latitude": -27.815833333,
+   "longitude": -50.325833333
+  },
+  {
+   "codigo_ibge": 4209409,
+   "nome": "Laguna",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1615291",
+   "artigo": "Laguna (Santa Catarina)",
+   "gentilicos": [
+    "lagunense"
+   ],
+   "fundacao": "1676-07-29",
+   "ano_fundacao": 1676,
+   "aniversario_dia": 29,
+   "aniversario_mes": 7,
+   "lema": "Ad meridiem Brasiliam duxi",
+   "latitude": -28.482777777,
+   "longitude": -48.780833333
+  },
+  {
+   "codigo_ibge": 4209458,
+   "nome": "Lajeado Grande",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784377",
+   "artigo": "Lajeado Grande",
+   "gentilicos": [
+    "lajeado grandense"
+   ],
+   "fundacao": "1991-12-12",
+   "ano_fundacao": 1991,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "União, liberdade e justiça",
+   "latitude": -26.857777777,
+   "longitude": -52.566944444
+  },
+  {
+   "codigo_ibge": 4209508,
+   "nome": "Laurentino",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784534",
+   "artigo": "Laurentino",
+   "gentilicos": [
+    "laurentinense"
+   ],
+   "fundacao": "1962-06-12",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 12,
+   "aniversario_mes": 6,
+   "lema": null,
+   "latitude": -27.216944444,
+   "longitude": -49.732777777
+  },
+  {
+   "codigo_ibge": 4209607,
+   "nome": "Lauro Müller",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q651077",
+   "artigo": "Lauro Müller (Santa Catarina)",
+   "gentilicos": [
+    "lauro-milense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1956,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.392777777,
+   "longitude": -49.396944444
+  },
+  {
+   "codigo_ibge": 4209706,
+   "nome": "Lebon Régis",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799343",
+   "artigo": "Lebon Régis",
+   "gentilicos": [
+    "lebon-regense"
+   ],
+   "fundacao": "1934-06-26",
+   "ano_fundacao": 1934,
+   "aniversario_dia": 19,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -26.928888888,
+   "longitude": -50.695
+  },
+  {
+   "codigo_ibge": 4209805,
+   "nome": "Leoberto Leal",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765068",
+   "artigo": "Leoberto Leal (Santa Catarina)",
+   "gentilicos": [
+    "leobertense"
+   ],
+   "fundacao": "1962-12-12",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 12,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -27.506944444,
+   "longitude": -49.286944444
+  },
+  {
+   "codigo_ibge": 4209854,
+   "nome": "Lindóia do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757818",
+   "artigo": "Lindóia do Sul",
+   "gentilicos": [
+    "lindoiense"
+   ],
+   "fundacao": "1990-01-01",
+   "ano_fundacao": 1990,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Aqui é Bom de Se Viver",
+   "latitude": -27.052777777,
+   "longitude": -52.066944444
+  },
+  {
+   "codigo_ibge": 4209904,
+   "nome": "Lontras",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784684",
+   "artigo": "Lontras",
+   "gentilicos": [
+    "lontrense"
+   ],
+   "fundacao": "1961-12-31",
+   "ano_fundacao": 1961,
+   "aniversario_dia": 31,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -27.165833333,
+   "longitude": -49.541944444
+  },
+  {
+   "codigo_ibge": 4210001,
+   "nome": "Luiz Alves",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784358",
+   "artigo": "Luiz Alves",
+   "gentilicos": [
+    "luizalvense",
+    "luiz-alvense"
+   ],
+   "fundacao": "1958-07-18",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 18,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.720833333,
+   "longitude": -48.932777777
+  },
+  {
+   "codigo_ibge": 4210035,
+   "nome": "Luzerna",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758351",
+   "artigo": "Luzerna (Santa Catarina)",
+   "gentilicos": [
+    "luzernense"
+   ],
+   "fundacao": "1995-12-29",
+   "ano_fundacao": 1995,
+   "aniversario_dia": 25,
+   "aniversario_mes": 8,
+   "lema": null,
+   "latitude": -27.132777777,
+   "longitude": -51.466944444
+  },
+  {
+   "codigo_ibge": 4210050,
+   "nome": "Macieira",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815712",
+   "artigo": "Macieira (Santa Catarina)",
+   "gentilicos": [
+    "macieirense"
+   ],
+   "fundacao": "1992-03-30",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.855833333,
+   "longitude": -51.377777777
+  },
+  {
+   "codigo_ibge": 4210100,
+   "nome": "Mafra",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1020414",
+   "artigo": "Mafra (Santa Catarina)",
+   "gentilicos": [
+    "mafrense"
+   ],
+   "fundacao": "1917-09-08",
+   "ano_fundacao": 1917,
+   "aniversario_dia": 8,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -26.110833333,
+   "longitude": -49.805
+  },
+  {
+   "codigo_ibge": 4210209,
+   "nome": "Major Gercino",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765004",
+   "artigo": "Major Gercino",
+   "gentilicos": [
+    "majorense"
+   ],
+   "fundacao": "1961-11-03",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.417777777,
+   "longitude": -48.950833333
+  },
+  {
+   "codigo_ibge": 4210308,
+   "nome": "Major Vieira",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799281",
+   "artigo": "Major Vieira",
+   "gentilicos": [
+    "major-vieirense"
+   ],
+   "fundacao": "1961-01-23",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.367777777,
+   "longitude": -50.327777777
+  },
+  {
+   "codigo_ibge": 4210407,
+   "nome": "Maracajá",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799325",
+   "artigo": "Maracajá",
+   "gentilicos": [
+    "maracajaense"
+   ],
+   "fundacao": "1967-05-12",
+   "ano_fundacao": 1967,
+   "aniversario_dia": 12,
+   "aniversario_mes": 5,
+   "lema": null,
+   "latitude": -28.846944444,
+   "longitude": -49.452777777
+  },
+  {
+   "codigo_ibge": 4210506,
+   "nome": "Maravilha",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815756",
+   "artigo": "Maravilha (Santa Catarina)",
+   "gentilicos": [
+    "maravilhense"
+   ],
+   "fundacao": "1958-07-27",
+   "ano_fundacao": 1958,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Cidade das crianças",
+   "latitude": -26.77,
+   "longitude": -53.216666666
+  },
+  {
+   "codigo_ibge": 4210555,
+   "nome": "Marema",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815686",
+   "artigo": "Marema",
+   "gentilicos": [
+    "maremense"
+   ],
+   "fundacao": "1988-06-11",
+   "ano_fundacao": 1988,
+   "aniversario_dia": 11,
+   "aniversario_mes": 6,
+   "lema": null,
+   "latitude": -26.801944444,
+   "longitude": -52.625
+  },
+  {
+   "codigo_ibge": 4210605,
+   "nome": "Massaranduba",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q980131",
+   "artigo": "Massaranduba (Santa Catarina)",
+   "gentilicos": [
+    "massarandubense"
+   ],
+   "fundacao": "1961-11-11",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.610833333,
+   "longitude": -49.007777777
+  },
+  {
+   "codigo_ibge": 4210704,
+   "nome": "Matos Costa",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784736",
+   "artigo": "Matos Costa",
+   "gentilicos": [
+    "matos-costense"
+   ],
+   "fundacao": "1962-04-23",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.472777777,
+   "longitude": -51.147777777
+  },
+  {
+   "codigo_ibge": 4210803,
+   "nome": "Meleiro",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799434",
+   "artigo": "Meleiro",
+   "gentilicos": [
+    "meleirense"
+   ],
+   "fundacao": "1961-12-20",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.828888888,
+   "longitude": -49.635833333
+  },
+  {
+   "codigo_ibge": 4210852,
+   "nome": "Mirim Doce",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799318",
+   "artigo": "Mirim Doce",
+   "gentilicos": [
+    "mirindocense"
+   ],
+   "fundacao": "1991-09-26",
+   "ano_fundacao": 1991,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.195833333,
+   "longitude": -50.076944444
+  },
+  {
+   "codigo_ibge": 4210902,
+   "nome": "Modelo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1796806",
+   "artigo": "Modelo (Santa Catarina)",
+   "gentilicos": [
+    "modelense"
+   ],
+   "fundacao": "1961-12-30",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.777777777,
+   "longitude": -53.055
+  },
+  {
+   "codigo_ibge": 4211009,
+   "nome": "Mondaí",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758042",
+   "artigo": "Mondaí",
+   "gentilicos": [
+    "mondaiense"
+   ],
+   "fundacao": "1922-05-20",
+   "ano_fundacao": 1922,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.102777777,
+   "longitude": -53.401944444
+  },
+  {
+   "codigo_ibge": 4211058,
+   "nome": "Monte Carlo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815693",
+   "artigo": "Monte Carlo (Santa Catarina)",
+   "gentilicos": [
+    "montecarlense"
+   ],
+   "fundacao": "1991-09-26",
+   "ano_fundacao": 1991,
+   "aniversario_dia": 26,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -27.222777777,
+   "longitude": -50.98
+  },
+  {
+   "codigo_ibge": 4211108,
+   "nome": "Monte Castelo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2011999",
+   "artigo": "Monte Castelo (Santa Catarina)",
+   "gentilicos": [
+    "monte-castelense"
+   ],
+   "fundacao": "1962-05-15",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.461944444,
+   "longitude": -50.230833333
+  },
+  {
+   "codigo_ibge": 4211207,
+   "nome": "Morro da Fumaça",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758949",
+   "artigo": "Morro da Fumaça",
+   "gentilicos": [
+    "fumacense"
+   ],
+   "fundacao": "1962-05-20",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 20,
+   "aniversario_mes": 5,
+   "lema": null,
+   "latitude": -28.650833333,
+   "longitude": -49.21
+  },
+  {
+   "codigo_ibge": 4211256,
+   "nome": "Morro Grande",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784594",
+   "artigo": "Morro Grande",
+   "gentilicos": [
+    "morrograndense"
+   ],
+   "fundacao": "1992-03-30",
+   "ano_fundacao": 1992,
+   "aniversario_dia": 30,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -28.800833333,
+   "longitude": -49.720833333
+  },
+  {
+   "codigo_ibge": 4211306,
+   "nome": "Navegantes",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1010299",
+   "artigo": "Navegantes",
+   "gentilicos": [
+    "navegantino"
+   ],
+   "fundacao": "1962-08-26",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 26,
+   "aniversario_mes": 8,
+   "lema": null,
+   "latitude": -26.898888888,
+   "longitude": -48.653888888
+  },
+  {
+   "codigo_ibge": 4211405,
+   "nome": "Nova Erechim",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q955577",
+   "artigo": "Nova Erechim",
+   "gentilicos": [
+    "nova-erechinense"
+   ],
+   "fundacao": "1964-12-28",
+   "ano_fundacao": 1964,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.902777777,
+   "longitude": -52.905833333
+  },
+  {
+   "codigo_ibge": 4211454,
+   "nome": "Nova Itaberaba",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758973",
+   "artigo": "Nova Itaberaba",
+   "gentilicos": [
+    "nova itaberadense"
+   ],
+   "fundacao": "1991-09-26",
+   "ano_fundacao": 1991,
+   "aniversario_dia": 26,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -26.94,
+   "longitude": -52.811944444
+  },
+  {
+   "codigo_ibge": 4211504,
+   "nome": "Nova Trento",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1637513",
+   "artigo": "Nova Trento",
+   "gentilicos": [
+    "nova-trentino"
+   ],
+   "fundacao": "1892-08-08",
+   "ano_fundacao": 1892,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.286666666,
+   "longitude": -48.930277777
+  },
+  {
+   "codigo_ibge": 4211603,
+   "nome": "Nova Veneza",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q961509",
+   "artigo": "Nova Veneza (Santa Catarina)",
+   "gentilicos": [
+    "veneziano"
+   ],
+   "fundacao": "1891-10-28",
+   "ano_fundacao": 1891,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.636944444,
+   "longitude": -49.497777777
+  },
+  {
+   "codigo_ibge": 4211652,
+   "nome": "Novo Horizonte",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q926081",
+   "artigo": "Novo Horizonte (Santa Catarina)",
+   "gentilicos": [
+    "novo-horizontino"
+   ],
+   "fundacao": "1992-01-09",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.443888888,
+   "longitude": -52.833888888
+  },
+  {
+   "codigo_ibge": 4211702,
+   "nome": "Orleans",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784752",
+   "artigo": "Orleans (Santa Catarina)",
+   "gentilicos": [
+    "orleanense"
+   ],
+   "fundacao": "1913-08-30",
+   "ano_fundacao": 1913,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "União, trabalho e liberdade",
+   "latitude": -28.358888888,
+   "longitude": -49.290833333
+  },
+  {
+   "codigo_ibge": 4211751,
+   "nome": "Otacílio Costa",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q956998",
+   "artigo": "Otacílio Costa",
+   "gentilicos": [
+    "otaciliense"
+   ],
+   "fundacao": "1982-05-10",
+   "ano_fundacao": 1982,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.482777777,
+   "longitude": -50.121944444
+  },
+  {
+   "codigo_ibge": 4211801,
+   "nome": "Ouro",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784491",
+   "artigo": "Ouro (Santa Catarina)",
+   "gentilicos": [
+    "ourense"
+   ],
+   "fundacao": "1963-04-07",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.340833333,
+   "longitude": -51.617777777
+  },
+  {
+   "codigo_ibge": 4211850,
+   "nome": "Ouro Verde",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1994858",
+   "artigo": "Ouro Verde (Santa Catarina)",
+   "gentilicos": [
+    "ouro-verdense"
+   ],
+   "fundacao": "1992-01-09",
+   "ano_fundacao": 1992,
+   "aniversario_dia": 22,
+   "aniversario_mes": 8,
+   "lema": null,
+   "latitude": -26.693888888,
+   "longitude": -52.311944444
+  },
+  {
+   "codigo_ibge": 4211876,
+   "nome": "Paial",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758019",
+   "artigo": "Paial",
+   "gentilicos": [
+    "paialense"
+   ],
+   "fundacao": "1995-07-04",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.251944444,
+   "longitude": -52.497777777
+  },
+  {
+   "codigo_ibge": 4211892,
+   "nome": "Painel",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764975",
+   "artigo": "Painel",
+   "gentilicos": [
+    "painelense"
+   ],
+   "fundacao": "1994-08-07",
+   "ano_fundacao": 1994,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.928888888,
+   "longitude": -50.105
+  },
+  {
+   "codigo_ibge": 4211900,
+   "nome": "Palhoça",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q973513",
+   "artigo": "Palhoça",
+   "gentilicos": [
+    "palhocense"
+   ],
+   "fundacao": "1793-07-17",
+   "ano_fundacao": 1793,
+   "aniversario_dia": 24,
+   "aniversario_mes": 4,
+   "lema": null,
+   "latitude": -27.644444444,
+   "longitude": -48.667777777
+  },
+  {
+   "codigo_ibge": 4212007,
+   "nome": "Palma Sola",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799425",
+   "artigo": "Palma Sola",
+   "gentilicos": [
+    "palma-solense"
+   ],
+   "fundacao": "1961-12-30",
+   "ano_fundacao": 1961,
+   "aniversario_dia": 30,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -26.347777777,
+   "longitude": -53.277777777
+  },
+  {
+   "codigo_ibge": 4212056,
+   "nome": "Palmeira",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784383",
+   "artigo": "Palmeira (Santa Catarina)",
+   "gentilicos": [
+    "palmeirense"
+   ],
+   "fundacao": "1995-07-18",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.582777777,
+   "longitude": -50.158888888
+  },
+  {
+   "codigo_ibge": 4212106,
+   "nome": "Palmitos",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q588170",
+   "artigo": "Palmitos",
+   "gentilicos": [
+    "palmitense"
+   ],
+   "fundacao": "1926-10-25",
+   "ano_fundacao": 1926,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.067777777,
+   "longitude": -53.160833333
+  },
+  {
+   "codigo_ibge": 4212205,
+   "nome": "Papanduva",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1796797",
+   "artigo": "Papanduva",
+   "gentilicos": [
+    "papanduvense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.37,
+   "longitude": -50.143888888
+  },
+  {
+   "codigo_ibge": 4212239,
+   "nome": "Paraíso",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q428892",
+   "artigo": "Paraíso (Santa Catarina)",
+   "gentilicos": [
+    "paraisense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": 9,
+   "aniversario_mes": 1,
+   "lema": null,
+   "latitude": -26.613888888,
+   "longitude": -53.671944444
+  },
+  {
+   "codigo_ibge": 4212254,
+   "nome": "Passo de Torres",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799402",
+   "artigo": "Passo de Torres",
+   "gentilicos": [
+    "passotorrense"
+   ],
+   "fundacao": "1991-09-26",
+   "ano_fundacao": 1991,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -29.315833333,
+   "longitude": -49.723888888
+  },
+  {
+   "codigo_ibge": 4212270,
+   "nome": "Passos Maia",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799357",
+   "artigo": "Passos Maia",
+   "gentilicos": [
+    "passosmaiense"
+   ],
+   "fundacao": "1991-12-12",
+   "ano_fundacao": 1991,
+   "aniversario_dia": 12,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -26.78,
+   "longitude": -52.058888888
+  },
+  {
+   "codigo_ibge": 4212304,
+   "nome": "Paulo Lopes",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1750773",
+   "artigo": "Paulo Lopes",
+   "gentilicos": [
+    "paulo-lopense"
+   ],
+   "fundacao": "1961-12-20",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.961944444,
+   "longitude": -48.683888888
+  },
+  {
+   "codigo_ibge": 4212403,
+   "nome": "Pedras Grandes",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1121962",
+   "artigo": "Pedras Grandes",
+   "gentilicos": [
+    "pedras-grandense"
+   ],
+   "fundacao": "1961-12-29",
+   "ano_fundacao": 1961,
+   "aniversario_dia": 29,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -28.435833333,
+   "longitude": -49.185
+  },
+  {
+   "codigo_ibge": 4212502,
+   "nome": "Penha",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784611",
+   "artigo": "Penha (Santa Catarina)",
+   "gentilicos": [
+    "penhense"
+   ],
+   "fundacao": "1958-07-19",
+   "ano_fundacao": 1958,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.768888888,
+   "longitude": -48.645833333
+  },
+  {
+   "codigo_ibge": 4212601,
+   "nome": "Peritiba",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758031",
+   "artigo": "Peritiba",
+   "gentilicos": [
+    "peritibense"
+   ],
+   "fundacao": "1963-08-15",
+   "ano_fundacao": 1963,
+   "aniversario_dia": 15,
+   "aniversario_mes": 8,
+   "lema": null,
+   "latitude": -27.372777777,
+   "longitude": -51.903888888
+  },
+  {
+   "codigo_ibge": 4212650,
+   "nome": "Pescaria Brava",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q3136609",
+   "artigo": "Pescaria Brava",
+   "gentilicos": [
+    "bravense"
+   ],
+   "fundacao": "2003-10-25",
+   "ano_fundacao": 2003,
+   "aniversario_dia": 25,
+   "aniversario_mes": 10,
+   "lema": null,
+   "latitude": -28.38333333,
+   "longitude": -48.88333333
+  },
+  {
+   "codigo_ibge": 4212700,
+   "nome": "Petrolândia",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q747168",
+   "artigo": "Petrolândia (Santa Catarina)",
+   "gentilicos": [
+    "petrolandense"
+   ],
+   "fundacao": "1962-08-16",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.535,
+   "longitude": -49.697777777
+  },
+  {
+   "codigo_ibge": 4212809,
+   "nome": "Balneário Piçarras",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q285815",
+   "artigo": "Balneário Piçarras",
+   "gentilicos": [
+    "piçarrense"
+   ],
+   "fundacao": "1963-12-14",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.75,
+   "longitude": -48.666666666
+  },
+  {
+   "codigo_ibge": 4212908,
+   "nome": "Pinhalzinho",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2011993",
+   "artigo": "Pinhalzinho (Santa Catarina)",
+   "gentilicos": [
+    "pinhalense"
+   ],
+   "fundacao": "1961-12-07",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.847777777,
+   "longitude": -52.991944444
+  },
+  {
+   "codigo_ibge": 4213005,
+   "nome": "Pinheiro Preto",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799392",
+   "artigo": "Pinheiro Preto",
+   "gentilicos": [
+    "pinheirense"
+   ],
+   "fundacao": "1962-05-19",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.050833333,
+   "longitude": -51.230833333
+  },
+  {
+   "codigo_ibge": 4213104,
+   "nome": "Piratuba",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q952174",
+   "artigo": "Piratuba",
+   "gentilicos": [
+    "piratubense"
+   ],
+   "fundacao": "1949-02-18",
+   "ano_fundacao": 1949,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.42,
+   "longitude": -51.771944444
+  },
+  {
+   "codigo_ibge": 4213153,
+   "nome": "Planalto Alegre",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758995",
+   "artigo": "Planalto Alegre",
+   "gentilicos": [
+    "planaltoalegrense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": 12,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -27.07,
+   "longitude": -52.865833333
+  },
+  {
+   "codigo_ibge": 4213203,
+   "nome": "Pomerode",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q326651",
+   "artigo": "Pomerode",
+   "gentilicos": [
+    "pomerodense"
+   ],
+   "fundacao": "1959-01-21",
+   "ano_fundacao": 1959,
+   "aniversario_dia": 21,
+   "aniversario_mes": 1,
+   "lema": null,
+   "latitude": -26.740833333,
+   "longitude": -49.176944444
+  },
+  {
+   "codigo_ibge": 4213302,
+   "nome": "Ponte Alta",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764920",
+   "artigo": "Ponte Alta",
+   "gentilicos": [
+    "ponte-altense"
+   ],
+   "fundacao": "1964-09-20",
+   "ano_fundacao": 1964,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.483888888,
+   "longitude": -50.38
+  },
+  {
+   "codigo_ibge": 4213351,
+   "nome": "Ponte Alta do Norte",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1777271",
+   "artigo": "Ponte Alta do Norte",
+   "gentilicos": [
+    "norte pontealtense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.157777777,
+   "longitude": -50.463888888
+  },
+  {
+   "codigo_ibge": 4213401,
+   "nome": "Ponte Serrada",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784813",
+   "artigo": "Ponte Serrada",
+   "gentilicos": [
+    "ponte-serradense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1958,
+   "aniversario_dia": 27,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.871944444,
+   "longitude": -52.015833333
+  },
+  {
+   "codigo_ibge": 4213500,
+   "nome": "Porto Belo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799285",
+   "artigo": "Porto Belo",
+   "gentilicos": [
+    "porto-belense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1832,
+   "aniversario_dia": 13,
+   "aniversario_mes": 10,
+   "lema": null,
+   "latitude": -27.157777777,
+   "longitude": -48.552777777
+  },
+  {
+   "codigo_ibge": 4213609,
+   "nome": "Porto União",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784679",
+   "artigo": "Porto União",
+   "gentilicos": [
+    "porto-unionense"
+   ],
+   "fundacao": "1917-09-05",
+   "ano_fundacao": 1917,
+   "aniversario_dia": 5,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -26.237777777,
+   "longitude": -51.077777777
+  },
+  {
+   "codigo_ibge": 4213708,
+   "nome": "Pouso Redondo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1796818",
+   "artigo": "Pouso Redondo",
+   "gentilicos": [
+    "pouso-redondense"
+   ],
+   "fundacao": "1958-07-23",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 23,
+   "aniversario_mes": 7,
+   "lema": "Pouso Redondo, coração do estado de Santa Catarina",
+   "latitude": -27.257777777,
+   "longitude": -49.933888888
+  },
+  {
+   "codigo_ibge": 4213807,
+   "nome": "Praia Grande",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1822575",
+   "artigo": "Praia Grande (Santa Catarina)",
+   "gentilicos": [
+    "praia-grandense"
+   ],
+   "fundacao": "1958-07-19",
+   "ano_fundacao": 1958,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -29.196944444,
+   "longitude": -49.95
+  },
+  {
+   "codigo_ibge": 4213906,
+   "nome": "Presidente Castello Branco",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815669",
+   "artigo": "Presidente Castello Branco",
+   "gentilicos": [
+    "castelinense"
+   ],
+   "fundacao": "1963-11-11",
+   "ano_fundacao": 1963,
+   "aniversario_dia": 4,
+   "aniversario_mes": 2,
+   "lema": null,
+   "latitude": -27.222777777,
+   "longitude": -51.806944444
+  },
+  {
+   "codigo_ibge": 4214003,
+   "nome": "Presidente Getúlio",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757828",
+   "artigo": "Presidente Getúlio",
+   "gentilicos": [
+    "getulense"
+   ],
+   "fundacao": "1904-06-01",
+   "ano_fundacao": 1904,
+   "aniversario_dia": 1,
+   "aniversario_mes": 6,
+   "lema": null,
+   "latitude": -27.050833333,
+   "longitude": -49.622777777
+  },
+  {
+   "codigo_ibge": 4214102,
+   "nome": "Presidente Nereu",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799367",
+   "artigo": "Presidente Nereu",
+   "gentilicos": [
+    "nereusense"
+   ],
+   "fundacao": "1961-12-30",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Terra promissora",
+   "latitude": -27.276944444,
+   "longitude": -49.39
+  },
+  {
+   "codigo_ibge": 4214151,
+   "nome": "Princesa",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q960413",
+   "artigo": "Princesa (Santa Catarina)",
+   "gentilicos": [
+    "princesense"
+   ],
+   "fundacao": "1995-09-29",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.441944444,
+   "longitude": -53.597777777
+  },
+  {
+   "codigo_ibge": 4214201,
+   "nome": "Quilombo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2012005",
+   "artigo": "Quilombo (Santa Catarina)",
+   "gentilicos": [
+    "quilombense"
+   ],
+   "fundacao": "1961-10-06",
+   "ano_fundacao": 1961,
+   "aniversario_dia": 6,
+   "aniversario_mes": 10,
+   "lema": "Terra boa para viver, água boa pra beber!",
+   "latitude": -26.725833333,
+   "longitude": -52.720833333
+  },
+  {
+   "codigo_ibge": 4214300,
+   "nome": "Rancho Queimado",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764967",
+   "artigo": "Rancho Queimado",
+   "gentilicos": [
+    "rancho-queimadense"
+   ],
+   "fundacao": "1962-11-08",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.672777777,
+   "longitude": -49.021944444
+  },
+  {
+   "codigo_ibge": 4214409,
+   "nome": "Rio das Antas",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q606838",
+   "artigo": "Rio das Antas",
+   "gentilicos": [
+    "rio-antense"
+   ],
+   "fundacao": "1958-06-21",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 27,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.898888888,
+   "longitude": -51.073888888
+  },
+  {
+   "codigo_ibge": 4214508,
+   "nome": "Rio do Campo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784673",
+   "artigo": "Rio do Campo",
+   "gentilicos": [
+    "rio-campense"
+   ],
+   "fundacao": "1961-12-29",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.948888888,
+   "longitude": -50.140833333
+  },
+  {
+   "codigo_ibge": 4214607,
+   "nome": "Rio do Oeste",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q775857",
+   "artigo": "Rio do Oeste",
+   "gentilicos": [
+    "riense-do-oeste"
+   ],
+   "fundacao": "1958-06-21",
+   "ano_fundacao": 1958,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.192777777,
+   "longitude": -49.796944444
+  },
+  {
+   "codigo_ibge": 4214706,
+   "nome": "Rio dos Cedros",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784005",
+   "artigo": "Rio dos Cedros",
+   "gentilicos": [
+    "rio-cedrense"
+   ],
+   "fundacao": "1961-12-19",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.737777777,
+   "longitude": -49.273888888
+  },
+  {
+   "codigo_ibge": 4214805,
+   "nome": "Rio do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784001",
+   "artigo": "Rio do Sul",
+   "gentilicos": [
+    "riossulense"
+   ],
+   "fundacao": "1931-04-15",
+   "ano_fundacao": 1931,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.213888888,
+   "longitude": -49.642777777
+  },
+  {
+   "codigo_ibge": 4214904,
+   "nome": "Rio Fortuna",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765038",
+   "artigo": "Rio Fortuna",
+   "gentilicos": [
+    "rio-fortunense"
+   ],
+   "fundacao": "1958-06-21",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 21,
+   "aniversario_mes": 6,
+   "lema": "Rio Fortuna, terra das Riquezas Naturais",
+   "latitude": -28.130833333,
+   "longitude": -49.105
+  },
+  {
+   "codigo_ibge": 4215000,
+   "nome": "Rio Negrinho",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784714",
+   "artigo": "Rio Negrinho",
+   "gentilicos": [
+    "rio-negrinhense"
+   ],
+   "fundacao": "1880-04-24",
+   "ano_fundacao": 1880,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Trabalho e progresso",
+   "latitude": -26.253888888,
+   "longitude": -49.517777777
+  },
+  {
+   "codigo_ibge": 4215059,
+   "nome": "Rio Rufino",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765047",
+   "artigo": "Rio Rufino",
+   "gentilicos": [
+    "rio rufinense"
+   ],
+   "fundacao": "1991-12-12",
+   "ano_fundacao": 1991,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.860833333,
+   "longitude": -49.778888888
+  },
+  {
+   "codigo_ibge": 4215075,
+   "nome": "Riqueza",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q691288",
+   "artigo": "Riqueza (Santa Catarina)",
+   "gentilicos": [
+    "riquezense"
+   ],
+   "fundacao": "1991-12-12",
+   "ano_fundacao": 1991,
+   "aniversario_dia": 12,
+   "aniversario_mes": 12,
+   "lema": "Riqueza é ter você aqui",
+   "latitude": -27.066944444,
+   "longitude": -53.321944444
+  },
+  {
+   "codigo_ibge": 4215109,
+   "nome": "Rodeio",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2012010",
+   "artigo": "Rodeio (Santa Catarina)",
+   "gentilicos": [
+    "rodeiense"
+   ],
+   "fundacao": "1875-09-18",
+   "ano_fundacao": 1875,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.922777777,
+   "longitude": -49.365833333
+  },
+  {
+   "codigo_ibge": 4215208,
+   "nome": "Romelândia",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757763",
+   "artigo": "Romelândia",
+   "gentilicos": [
+    "romelandino"
+   ],
+   "fundacao": "1963-09-23",
+   "ano_fundacao": 1963,
+   "aniversario_dia": 23,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -26.675833333,
+   "longitude": -53.313888888
+  },
+  {
+   "codigo_ibge": 4215307,
+   "nome": "Salete",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784692",
+   "artigo": "Salete (Santa Catarina)",
+   "gentilicos": [
+    "saletense"
+   ],
+   "fundacao": "1961-12-29",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.98,
+   "longitude": -50.0
+  },
+  {
+   "codigo_ibge": 4215356,
+   "nome": "Saltinho",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2011982",
+   "artigo": "Saltinho (Santa Catarina)",
+   "gentilicos": [
+    "saltinhense"
+   ],
+   "fundacao": "1995-07-19",
+   "ano_fundacao": 1995,
+   "aniversario_dia": 19,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.608888888,
+   "longitude": -53.055833333
+  },
+  {
+   "codigo_ibge": 4215406,
+   "nome": "Salto Veloso",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q289981",
+   "artigo": "Salto Veloso",
+   "gentilicos": [
+    "velosoense"
+   ],
+   "fundacao": "1961-12-15",
+   "ano_fundacao": 1961,
+   "aniversario_dia": 15,
+   "aniversario_mes": 12,
+   "lema": "Pérola de Santa Catarina",
+   "latitude": -26.905,
+   "longitude": -51.405833333
+  },
+  {
+   "codigo_ibge": 4215455,
+   "nome": "Sangão",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q945132",
+   "artigo": "Sangão",
+   "gentilicos": [
+    "sangãoense"
+   ],
+   "fundacao": "1992-03-30",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.637777777,
+   "longitude": -49.128888888
+  },
+  {
+   "codigo_ibge": 4215505,
+   "nome": "Santa Cecília",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q931280",
+   "artigo": "Santa Cecília (Santa Catarina)",
+   "gentilicos": [
+    "ceciliense"
+   ],
+   "fundacao": "1958-06-21",
+   "ano_fundacao": 1958,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Exemplo e tradição!",
+   "latitude": -26.960833333,
+   "longitude": -50.426944444
+  },
+  {
+   "codigo_ibge": 4215554,
+   "nome": "Santa Helena",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2020284",
+   "artigo": "Santa Helena (Santa Catarina)",
+   "gentilicos": [
+    "santaelenense"
+   ],
+   "fundacao": "1992-01-09",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.937777777,
+   "longitude": -53.618888888
+  },
+  {
+   "codigo_ibge": 4215604,
+   "nome": "Santa Rosa de Lima",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q706547",
+   "artigo": "Santa Rosa de Lima (Santa Catarina)",
+   "gentilicos": [
+    "rosa-limense"
+   ],
+   "fundacao": "1962-05-10",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.038888888,
+   "longitude": -49.127777777
+  },
+  {
+   "codigo_ibge": 4215653,
+   "nome": "Santa Rosa do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799409",
+   "artigo": "Santa Rosa do Sul",
+   "gentilicos": [
+    "sul-santarrosense"
+   ],
+   "fundacao": "1988-01-04",
+   "ano_fundacao": 1988,
+   "aniversario_dia": 4,
+   "aniversario_mes": 1,
+   "lema": null,
+   "latitude": -29.135833333,
+   "longitude": -49.7
+  },
+  {
+   "codigo_ibge": 4215679,
+   "nome": "Santa Terezinha",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2314224",
+   "artigo": "Santa Terezinha (Santa Catarina)",
+   "gentilicos": [
+    "terezinhense"
+   ],
+   "fundacao": "1991-09-26",
+   "ano_fundacao": 1991,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.778888888,
+   "longitude": -50.007777777
+  },
+  {
+   "codigo_ibge": 4215687,
+   "nome": "Santa Terezinha do Progresso",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1759023",
+   "artigo": "Santa Terezinha do Progresso",
+   "gentilicos": [
+    "terezinhano"
+   ],
+   "fundacao": "1995-07-19",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.618888888,
+   "longitude": -53.201944444
+  },
+  {
+   "codigo_ibge": 4215695,
+   "nome": "Santiago do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758231",
+   "artigo": "Santiago do Sul",
+   "gentilicos": [
+    "santiaguense"
+   ],
+   "fundacao": "1994-04-16",
+   "ano_fundacao": 1994,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.638888888,
+   "longitude": -52.685
+  },
+  {
+   "codigo_ibge": 4215703,
+   "nome": "Santo Amaro da Imperatriz",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q327210",
+   "artigo": "Santo Amaro da Imperatriz",
+   "gentilicos": [
+    "santo-amarense"
+   ],
+   "fundacao": "1958-07-10",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 10,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -27.687777777,
+   "longitude": -48.778888888
+  },
+  {
+   "codigo_ibge": 4215752,
+   "nome": "São Bernardino",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758962",
+   "artigo": "São Bernardino",
+   "gentilicos": [
+    "bernardinense"
+   ],
+   "fundacao": "1995-07-19",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.475,
+   "longitude": -52.963888888
+  },
+  {
+   "codigo_ibge": 4215802,
+   "nome": "São Bento do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765057",
+   "artigo": "São Bento do Sul",
+   "gentilicos": [
+    "são-bentense"
+   ],
+   "fundacao": "1873-09-23",
+   "ano_fundacao": 1873,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.25,
+   "longitude": -49.378888888
+  },
+  {
+   "codigo_ibge": 4215901,
+   "nome": "São Bonifácio",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784638",
+   "artigo": "São Bonifácio (Santa Catarina)",
+   "gentilicos": [
+    "são-bonifacense"
+   ],
+   "fundacao": "1962-08-23",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.900833333,
+   "longitude": -48.928888888
+  },
+  {
+   "codigo_ibge": 4216008,
+   "nome": "São Carlos",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815617",
+   "artigo": "São Carlos (Santa Catarina)",
+   "gentilicos": [
+    "são-carlense"
+   ],
+   "fundacao": "1927-06-04",
+   "ano_fundacao": 1927,
+   "aniversario_dia": 24,
+   "aniversario_mes": 10,
+   "lema": null,
+   "latitude": -27.077777777,
+   "longitude": -53.003888888
+  },
+  {
+   "codigo_ibge": 4216057,
+   "nome": "São Cristóvão do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q639952",
+   "artigo": "São Cristóvão do Sul",
+   "gentilicos": [
+    "são-cristovense"
+   ],
+   "fundacao": "1992-03-30",
+   "ano_fundacao": 1992,
+   "aniversario_dia": 30,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -27.266666666,
+   "longitude": -50.440555555
+  },
+  {
+   "codigo_ibge": 4216107,
+   "nome": "São Domingos",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q617155",
+   "artigo": "São Domingos (Santa Catarina)",
+   "gentilicos": [
+    "dominguense"
+   ],
+   "fundacao": "1962-12-14",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 7,
+   "aniversario_mes": 4,
+   "lema": null,
+   "latitude": -26.557777777,
+   "longitude": -52.531944444
+  },
+  {
+   "codigo_ibge": 4216206,
+   "nome": "São Francisco do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q986536",
+   "artigo": "São Francisco do Sul",
+   "gentilicos": [
+    "francisquense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1658,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "In littore pro Brasilia-vigil",
+   "latitude": -26.242777777,
+   "longitude": -48.637777777
+  },
+  {
+   "codigo_ibge": 4216255,
+   "nome": "São João do Oeste",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q599623",
+   "artigo": "São João do Oeste",
+   "gentilicos": [
+    "são-joanense"
+   ],
+   "fundacao": "1932-09-22",
+   "ano_fundacao": 1932,
+   "aniversario_dia": 12,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -27.0981226,
+   "longitude": -53.5931513
+  },
+  {
+   "codigo_ibge": 4216305,
+   "nome": "São João Batista",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2023825",
+   "artigo": "São João Batista (Santa Catarina)",
+   "gentilicos": [
+    "batistense"
+   ],
+   "fundacao": "1958-07-19",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 19,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -27.275833333,
+   "longitude": -48.848888888
+  },
+  {
+   "codigo_ibge": 4216354,
+   "nome": "São João do Itaperiú",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799384",
+   "artigo": "São João do Itaperiú",
+   "gentilicos": [
+    "itaperiuense"
+   ],
+   "fundacao": "1992-03-29",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.617777777,
+   "longitude": -48.767777777
+  },
+  {
+   "codigo_ibge": 4216404,
+   "nome": "São João do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799427",
+   "artigo": "São João do Sul",
+   "gentilicos": [
+    "joão-sulense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1960,
+   "aniversario_dia": 20,
+   "aniversario_mes": 12,
+   "lema": "São João do Sul, terra hospitaleira, povo de fibra, gente forte e guerreira",
+   "latitude": -29.222777777,
+   "longitude": -49.81
+  },
+  {
+   "codigo_ibge": 4216503,
+   "nome": "São Joaquim",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q904782",
+   "artigo": "São Joaquim (Santa Catarina)",
+   "gentilicos": [
+    "joaquinense"
+   ],
+   "fundacao": "1887-05-07",
+   "ano_fundacao": 1887,
+   "aniversario_dia": 7,
+   "aniversario_mes": 5,
+   "lema": null,
+   "latitude": -28.293888888,
+   "longitude": -49.931944444
+  },
+  {
+   "codigo_ibge": 4216602,
+   "nome": "São José",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q173849",
+   "artigo": "São José (Santa Catarina)",
+   "gentilicos": [
+    "josefense"
+   ],
+   "fundacao": "1750-03-19",
+   "ano_fundacao": 1750,
+   "aniversario_dia": 19,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -27.615,
+   "longitude": -48.627777777
+  },
+  {
+   "codigo_ibge": 4216701,
+   "nome": "São José do Cedro",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q545508",
+   "artigo": "São José do Cedro",
+   "gentilicos": [
+    "cedrense"
+   ],
+   "fundacao": "1958-07-27",
+   "ano_fundacao": 1958,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.455,
+   "longitude": -53.493888888
+  },
+  {
+   "codigo_ibge": 4216800,
+   "nome": "São José do Cerrito",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764954",
+   "artigo": "São José do Cerrito",
+   "gentilicos": [
+    "cerritense"
+   ],
+   "fundacao": "1961-12-07",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Trabalha e Confia",
+   "latitude": -27.662777777,
+   "longitude": -50.58
+  },
+  {
+   "codigo_ibge": 4216909,
+   "nome": "São Lourenço do Oeste",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1759029",
+   "artigo": "São Lourenço do Oeste",
+   "gentilicos": [
+    "lourencense",
+    "lourenciano"
+   ],
+   "fundacao": "1958-06-21",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 26,
+   "aniversario_mes": 7,
+   "lema": null,
+   "latitude": -26.358888888,
+   "longitude": -52.850833333
+  },
+  {
+   "codigo_ibge": 4217006,
+   "nome": "São Ludgero",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2662610",
+   "artigo": "São Ludgero (Santa Catarina)",
+   "gentilicos": [
+    "são-ludgerense"
+   ],
+   "fundacao": "1962-06-12",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.325833333,
+   "longitude": -49.176666666
+  },
+  {
+   "codigo_ibge": 4217105,
+   "nome": "São Martinho",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2065307",
+   "artigo": "São Martinho (Santa Catarina)",
+   "gentilicos": [
+    "são-martinhense"
+   ],
+   "fundacao": "1962-11-14",
+   "ano_fundacao": 1962,
+   "aniversario_dia": 14,
+   "aniversario_mes": 11,
+   "lema": null,
+   "latitude": -28.165,
+   "longitude": -48.978888888
+  },
+  {
+   "codigo_ibge": 4217154,
+   "nome": "São Miguel da Boa Vista",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757994",
+   "artigo": "São Miguel da Boa Vista",
+   "gentilicos": [
+    "boa-vistense"
+   ],
+   "fundacao": "1992-01-09",
+   "ano_fundacao": 1992,
+   "aniversario_dia": 9,
+   "aniversario_mes": 1,
+   "lema": null,
+   "latitude": -26.69,
+   "longitude": -53.250833333
+  },
+  {
+   "codigo_ibge": 4217204,
+   "nome": "São Miguel do Oeste",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757748",
+   "artigo": "São Miguel do Oeste",
+   "gentilicos": [
+    "miguel-oestino"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1954,
+   "aniversario_dia": 15,
+   "aniversario_mes": 2,
+   "lema": null,
+   "latitude": -26.725,
+   "longitude": -53.517777777
+  },
+  {
+   "codigo_ibge": 4217253,
+   "nome": "São Pedro de Alcântara",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1750756",
+   "artigo": "São Pedro de Alcântara",
+   "gentilicos": [
+    "alcantarense"
+   ],
+   "fundacao": "1829-03-01",
+   "ano_fundacao": 1829,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.565833333,
+   "longitude": -48.805
+  },
+  {
+   "codigo_ibge": 4217303,
+   "nome": "Saudades",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757999",
+   "artigo": "Saudades (Santa Catarina)",
+   "gentilicos": [
+    "saudadense"
+   ],
+   "fundacao": "1961-12-07",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.923888888,
+   "longitude": -53.002777777
+  },
+  {
+   "codigo_ibge": 4217402,
+   "nome": "Schroeder",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q398844",
+   "artigo": "Schroeder",
+   "gentilicos": [
+    "cheredense"
+   ],
+   "fundacao": "1964-10-03",
+   "ano_fundacao": 1964,
+   "aniversario_dia": 3,
+   "aniversario_mes": 10,
+   "lema": null,
+   "latitude": -26.412777777,
+   "longitude": -49.072777777
+  },
+  {
+   "codigo_ibge": 4217501,
+   "nome": "Seara",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784472",
+   "artigo": "Seara (Santa Catarina)",
+   "gentilicos": [
+    "searaense"
+   ],
+   "fundacao": "1954-04-03",
+   "ano_fundacao": 1954,
+   "aniversario_dia": 3,
+   "aniversario_mes": 4,
+   "lema": null,
+   "latitude": -27.148888888,
+   "longitude": -52.310833333
+  },
+  {
+   "codigo_ibge": 4217550,
+   "nome": "Serra Alta",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1757812",
+   "artigo": "Serra Alta",
+   "gentilicos": [
+    "serra-altense"
+   ],
+   "fundacao": "1989-04-26",
+   "ano_fundacao": 1989,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.728888888,
+   "longitude": -53.041944444
+  },
+  {
+   "codigo_ibge": 4217600,
+   "nome": "Siderópolis",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1759010",
+   "artigo": "Siderópolis",
+   "gentilicos": [
+    "sideropolitano"
+   ],
+   "fundacao": "1958-12-19",
+   "ano_fundacao": 1958,
+   "aniversario_dia": 19,
+   "aniversario_mes": 12,
+   "lema": "Tendens ad Sidera",
+   "latitude": -28.597777777,
+   "longitude": -49.423888888
+  },
+  {
+   "codigo_ibge": 4217709,
+   "nome": "Sombrio",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784827",
+   "artigo": "Sombrio",
+   "gentilicos": [
+    "sombriense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1820,
+   "aniversario_dia": 30,
+   "aniversario_mes": 12,
+   "lema": null,
+   "latitude": -29.103888888,
+   "longitude": -49.628888888
+  },
+  {
+   "codigo_ibge": 4217758,
+   "nome": "Sul Brasil",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q549349",
+   "artigo": "Sul Brasil",
+   "gentilicos": [
+    "sul brasilense"
+   ],
+   "fundacao": "1991-09-26",
+   "ano_fundacao": 1991,
+   "aniversario_dia": 26,
+   "aniversario_mes": 9,
+   "lema": null,
+   "latitude": -26.735833333,
+   "longitude": -52.965
+  },
+  {
+   "codigo_ibge": 4217808,
+   "nome": "Taió",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1759213",
+   "artigo": "Taió",
+   "gentilicos": [
+    "taioense"
+   ],
+   "fundacao": "1949-02-12",
+   "ano_fundacao": 1949,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.115833333,
+   "longitude": -49.997777777
+  },
+  {
+   "codigo_ibge": 4217907,
+   "nome": "Tangará",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q22063771",
+   "artigo": "Tangará (Santa Catarina)",
+   "gentilicos": [
+    "tangaraense"
+   ],
+   "fundacao": "1948-12-30",
+   "ano_fundacao": 1948,
+   "aniversario_dia": 19,
+   "aniversario_mes": 2,
+   "lema": null,
+   "latitude": -27.105,
+   "longitude": -51.246944444
+  },
+  {
+   "codigo_ibge": 4217956,
+   "nome": "Tigrinhos",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758053",
+   "artigo": "Tigrinhos",
+   "gentilicos": [
+    "tigrinhense"
+   ],
+   "fundacao": "1995-09-29",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.687777777,
+   "longitude": -53.157777777
+  },
+  {
+   "codigo_ibge": 4218004,
+   "nome": "Tijucas",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q951660",
+   "artigo": "Tijucas",
+   "gentilicos": [
+    "tijuquense"
+   ],
+   "fundacao": "1860-06-13",
+   "ano_fundacao": 1860,
+   "aniversario_dia": 13,
+   "aniversario_mes": 6,
+   "lema": null,
+   "latitude": -27.240833333,
+   "longitude": -48.633888888
+  },
+  {
+   "codigo_ibge": 4218103,
+   "nome": "Timbé do Sul",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799417",
+   "artigo": "Timbé do Sul",
+   "gentilicos": [
+    "timbeense"
+   ],
+   "fundacao": "1967-09-23",
+   "ano_fundacao": 1967,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.83,
+   "longitude": -49.846944444
+  },
+  {
+   "codigo_ibge": 4218202,
+   "nome": "Timbó",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q773783",
+   "artigo": "Timbó (Santa Catarina)",
+   "gentilicos": [
+    "timboense"
+   ],
+   "fundacao": "1869-10-12",
+   "ano_fundacao": 1869,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": "Clara ex Stirpe (em português: Clara de Estoque)",
+   "latitude": -26.822777777,
+   "longitude": -49.271944444
+  },
+  {
+   "codigo_ibge": 4218251,
+   "nome": "Timbó Grande",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q614626",
+   "artigo": "Timbó Grande",
+   "gentilicos": [
+    "timbó-grandense"
+   ],
+   "fundacao": "1989-04-26",
+   "ano_fundacao": 1989,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.615,
+   "longitude": -50.673888888
+  },
+  {
+   "codigo_ibge": 4218301,
+   "nome": "Três Barras",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q22063767",
+   "artigo": "Três Barras",
+   "gentilicos": [
+    "três-barrense"
+   ],
+   "fundacao": "1961-01-23",
+   "ano_fundacao": 1961,
+   "aniversario_dia": 23,
+   "aniversario_mes": 1,
+   "lema": "Cidade empreendedora",
+   "latitude": -26.105833333,
+   "longitude": -50.321944444
+  },
+  {
+   "codigo_ibge": 4218350,
+   "nome": "Treviso",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q22063766",
+   "artigo": "Treviso (Santa Catarina)",
+   "gentilicos": [
+    "trevisano"
+   ],
+   "fundacao": "1995-07-08",
+   "ano_fundacao": 1995,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.515833333,
+   "longitude": -49.457777777
+  },
+  {
+   "codigo_ibge": 4218400,
+   "nome": "Treze de Maio",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1764936",
+   "artigo": "Treze de Maio",
+   "gentilicos": [
+    "treze-maioense"
+   ],
+   "fundacao": "1961-12-20",
+   "ano_fundacao": 1961,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.558888888,
+   "longitude": -49.147777777
+  },
+  {
+   "codigo_ibge": 4218509,
+   "nome": "Treze Tílias",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q339414",
+   "artigo": "Treze Tílias",
+   "gentilicos": [
+    "treze-tiliense"
+   ],
+   "fundacao": "1963-04-29",
+   "ano_fundacao": 1963,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.001944444,
+   "longitude": -51.405833333
+  },
+  {
+   "codigo_ibge": 4218608,
+   "nome": "Trombudo Central",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784066",
+   "artigo": "Trombudo Central",
+   "gentilicos": [
+    "trombudense"
+   ],
+   "fundacao": "1959-07-22",
+   "ano_fundacao": 1959,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.298888888,
+   "longitude": -49.79
+  },
+  {
+   "codigo_ibge": 4218707,
+   "nome": "Tubarão",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1815730",
+   "artigo": "Tubarão (Santa Catarina)",
+   "gentilicos": [
+    "tubaronense"
+   ],
+   "fundacao": "1870-05-27",
+   "ano_fundacao": 1870,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.466944444,
+   "longitude": -49.006944444
+  },
+  {
+   "codigo_ibge": 4218756,
+   "nome": "Tunápolis",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758036",
+   "artigo": "Tunápolis",
+   "gentilicos": [
+    "tunapolitano"
+   ],
+   "fundacao": "1951-09-20",
+   "ano_fundacao": 1951,
+   "aniversario_dia": 26,
+   "aniversario_mes": 4,
+   "lema": "Tunápolis, terra bendita",
+   "latitude": -26.968888888,
+   "longitude": -53.638888888
+  },
+  {
+   "codigo_ibge": 4218806,
+   "nome": "Turvo",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1833591",
+   "artigo": "Turvo (Santa Catarina)",
+   "gentilicos": [
+    "turvense"
+   ],
+   "fundacao": "1948-12-30",
+   "ano_fundacao": 1948,
+   "aniversario_dia": 20,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -28.925833333,
+   "longitude": -49.678888888
+  },
+  {
+   "codigo_ibge": 4218855,
+   "nome": "União do Oeste",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758015",
+   "artigo": "União do Oeste",
+   "gentilicos": [
+    "união-oestense"
+   ],
+   "fundacao": "1989-01-04",
+   "ano_fundacao": 1989,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.760833333,
+   "longitude": -52.855
+  },
+  {
+   "codigo_ibge": 4218905,
+   "nome": "Urubici",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1646925",
+   "artigo": "Urubici",
+   "gentilicos": [
+    "urubiciense"
+   ],
+   "fundacao": "1956-12-06",
+   "ano_fundacao": 1956,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.015,
+   "longitude": -49.591944444
+  },
+  {
+   "codigo_ibge": 4218954,
+   "nome": "Urupema",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1765034",
+   "artigo": "Urupema",
+   "gentilicos": [
+    "urupemense"
+   ],
+   "fundacao": "1988-01-04",
+   "ano_fundacao": 1988,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.293888888,
+   "longitude": -49.931666666
+  },
+  {
+   "codigo_ibge": 4219002,
+   "nome": "Urussanga",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q22063758",
+   "artigo": "Urussanga",
+   "gentilicos": [
+    "urussanguense"
+   ],
+   "fundacao": "1878-05-26",
+   "ano_fundacao": 1878,
+   "aniversario_dia": 26,
+   "aniversario_mes": 5,
+   "lema": "Omnia labor",
+   "latitude": -28.517777777,
+   "longitude": -49.320833333
+  },
+  {
+   "codigo_ibge": 4219101,
+   "nome": "Vargeão",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1758111",
+   "artigo": "Vargeão",
+   "gentilicos": [
+    "vargeonense"
+   ],
+   "fundacao": "1964-04-21",
+   "ano_fundacao": 1964,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.863888888,
+   "longitude": -52.155
+  },
+  {
+   "codigo_ibge": 4219150,
+   "nome": "Vargem",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q22063756",
+   "artigo": "Vargem (Santa Catarina)",
+   "gentilicos": [
+    "vargense"
+   ],
+   "fundacao": "1991-12-12",
+   "ano_fundacao": 1991,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.488888888,
+   "longitude": -50.975
+  },
+  {
+   "codigo_ibge": 4219176,
+   "nome": "Vargem Bonita",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q609989",
+   "artigo": "Vargem Bonita (Santa Catarina)",
+   "gentilicos": [
+    "vargembonitense"
+   ],
+   "fundacao": "1992-03-30",
+   "ano_fundacao": 1992,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.006944444,
+   "longitude": -51.74
+  },
+  {
+   "codigo_ibge": 4219200,
+   "nome": "Vidal Ramos",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784642",
+   "artigo": "Vidal Ramos (Santa Catarina)",
+   "gentilicos": [
+    "vidal-ramense"
+   ],
+   "fundacao": "1957-02-17",
+   "ano_fundacao": 1957,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.391944444,
+   "longitude": -49.355833333
+  },
+  {
+   "codigo_ibge": 4219309,
+   "nome": "Videira",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1799400",
+   "artigo": "Videira (Santa Catarina)",
+   "gentilicos": [
+    "videirense"
+   ],
+   "fundacao": "1944-03-01",
+   "ano_fundacao": 1944,
+   "aniversario_dia": 1,
+   "aniversario_mes": 3,
+   "lema": null,
+   "latitude": -27.007777777,
+   "longitude": -51.151944444
+  },
+  {
+   "codigo_ibge": 4219358,
+   "nome": "Vitor Meireles",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1784631",
+   "artigo": "Vitor Meireles (Santa Catarina)",
+   "gentilicos": [
+    "vitor-meirelense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": null,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.880833333,
+   "longitude": -49.832777777
+  },
+  {
+   "codigo_ibge": 4219408,
+   "nome": "Witmarsum",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1000671",
+   "artigo": "Witmarsum",
+   "gentilicos": [
+    "witmarsumense"
+   ],
+   "fundacao": "1962-06-15",
+   "ano_fundacao": 1962,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.925833333,
+   "longitude": -49.795833333
+  },
+  {
+   "codigo_ibge": 4219507,
+   "nome": "Xanxerê",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q22063751",
+   "artigo": "Xanxerê",
+   "gentilicos": [
+    "xanxerense"
+   ],
+   "fundacao": "1954-02-27",
+   "ano_fundacao": 1954,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.876944444,
+   "longitude": -52.403888888
+  },
+  {
+   "codigo_ibge": 4219606,
+   "nome": "Xavantina",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q923208",
+   "artigo": "Xavantina",
+   "gentilicos": [
+    "xavantinense"
+   ],
+   "fundacao": null,
+   "ano_fundacao": 1964,
+   "aniversario_dia": 2,
+   "aniversario_mes": 2,
+   "lema": null,
+   "latitude": -27.068888888,
+   "longitude": -52.341944444
+  },
+  {
+   "codigo_ibge": 4219705,
+   "nome": "Xaxim",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1751322",
+   "artigo": "Xaxim (Santa Catarina)",
+   "gentilicos": [
+    "xaxiense"
+   ],
+   "fundacao": "1954-02-20",
+   "ano_fundacao": 1954,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -26.961944444,
+   "longitude": -52.535
+  },
+  {
+   "codigo_ibge": 4219853,
+   "nome": "Zortéa",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q1648503",
+   "artigo": "Zortéa",
+   "gentilicos": [
+    "zorteense"
+   ],
+   "fundacao": "1997-01-01",
+   "ano_fundacao": 1997,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -27.450833333,
+   "longitude": -51.555
+  },
+  {
+   "codigo_ibge": 4220000,
+   "nome": "Balneário Rincão",
+   "uf": "SC",
+   "regiao": "Sul",
+   "wikidata": "Q2881477",
+   "artigo": "Balneário Rincão",
+   "gentilicos": [
+    "balneo-rinconense"
+   ],
+   "fundacao": "2003-10-03",
+   "ano_fundacao": 2003,
+   "aniversario_dia": null,
+   "aniversario_mes": null,
+   "lema": null,
+   "latitude": -28.83444444,
+   "longitude": -49.23611111
+  }
+ ]
+}

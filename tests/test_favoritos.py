@@ -16,7 +16,7 @@ from DadosAbertosBrasil import (
     taxa_referencial,
 )
 
-pytestmark = pytest.mark.online
+pytestmark = pytest.mark.vcr
 
 # A Wikimedia pede um User-Agent que identifique o cliente e limita primeiro os
 # genéricos: https://meta.wikimedia.org/wiki/User-Agent_policy

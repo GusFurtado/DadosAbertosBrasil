@@ -70,11 +70,14 @@ testpaths = ["tests"]
 markers = [
     "online: consulta APIs externas e depende de rede e da disponibilidade dos serviços",
 ]
+# Testes marcados com `vcr` usam as respostas gravadas em tests/cassettes/.
+addopts = "--record-mode=none"
 
 [dependency-groups]
 dev = [
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
+    "pytest-recording>=0.13",
     "pytest-rerunfailures>=16",
     "ruff>=0.15.20",
 ]

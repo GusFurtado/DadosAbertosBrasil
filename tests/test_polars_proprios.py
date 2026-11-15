@@ -145,9 +145,14 @@ def test_favoritos_pib(api, formato):
 
 
 def test_favoritos_catalogo_polars(monkeypatch):
-    monkeypatch.setattr(pd, "read_csv", lambda url, **kw: pd.DataFrame({"Título": ["X"]}))
+    from DadosAbertosBrasil.utils.requisicao import Requisicao
+
+    csv = "Título,URL,Município,UF,Esfera,Poder,Solução\nX,http://x,,SC,Estadual,Executivo,CKAN\n"
+    monkeypatch.setattr(Requisicao, "texto", lambda self: csv)
     df = favoritos.catalogo(formato="polars")
     assert isinstance(df, pl.DataFrame)
+    assert df["titulo"].to_list() == ["X"]
+    assert favoritos.catalogo(formato="bruto")[0]["UF"] == "SC"
     assert favoritos.catalogo(formato="url").startswith("https://")
 
 
