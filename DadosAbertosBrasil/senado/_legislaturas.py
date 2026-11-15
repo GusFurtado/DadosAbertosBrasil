@@ -1,13 +1,15 @@
+import functools
 from typing import Literal, Optional
 
 from pydantic import validate_call
 
 from .._config import config
-from ..utils import Get, parse, Formato, Output, filtrar, filtrar_nome
+from ..utils import Formato, Get, Output, filtrar, filtrar_nome, parse
+from ..utils.errors import descontinuado
 
 
 @validate_call
-def lista_legislatura(
+def lista_legislaturas(
     inicio: int,
     fim: int = None,
     exercicio: Optional[str] = None,
@@ -88,7 +90,7 @@ def lista_legislatura(
 
     Raises
     ------
-    DAB_UFError
+    DABUFError
         Caso seja inserida uma UF inválida no argumento `uf`.
 
     See Also
@@ -187,3 +189,16 @@ def lista_legislatura(
     )
 
     return data
+
+
+@functools.wraps(lista_legislaturas)
+def lista_legislatura(*args, **kwargs):
+    """Nome antigo de `lista_legislaturas`.
+
+    Descontinuado: use `senado.lista_legislaturas`.
+    """
+    descontinuado(
+        "`senado.lista_legislatura` foi renomeada para `senado.lista_legislaturas` e o nome "
+        "antigo deixa de existir em uma versão futura do 3.x."
+    )
+    return lista_legislaturas(*args, **kwargs)

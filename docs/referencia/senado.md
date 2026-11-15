@@ -10,7 +10,7 @@ Senadores, legislaturas, partidos, orçamentos e outros dados legislativos do Se
     from DadosAbertosBrasil import senado
 
     senado.lista_senadores(...)
-    senado.lista_legislatura(...)
+    senado.lista_legislaturas(...)
     ```
 
 2. Instancie um objeto `Senador` e use os métodos da classe para obter mais detalhes:
@@ -29,7 +29,7 @@ Senadores, legislaturas, partidos, orçamentos e outros dados legislativos do Se
 
 ::: DadosAbertosBrasil.senado.lista_blocos
 
-::: DadosAbertosBrasil.senado.lista_legislatura
+::: DadosAbertosBrasil.senado.lista_legislaturas
 
 ::: DadosAbertosBrasil.senado.lista_orcamentos
 
@@ -39,4 +39,4 @@ Senadores, legislaturas, partidos, orçamentos e outros dados legislativos do Se
 
 ::: DadosAbertosBrasil.senado.lista_senadores
 
-::: DadosAbertosBrasil.senado.lista_uso_palavra
+::: DadosAbertosBrasil.senado.lista_tipos_uso_palavra

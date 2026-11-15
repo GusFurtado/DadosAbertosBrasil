@@ -107,7 +107,7 @@ class Senador(Base):
 
     Raises
     ------
-    DadosAbertosBrasil._utils.errors.DAB_InputError
+    DadosAbertosBrasil._utils.errors.DABInputError
         Quando os dados do Senador não forem encontrado, por qualquer que seja
         o motivo.
 
@@ -1201,7 +1201,7 @@ def lista_senadores(
 
     Raises
     ------
-    DAB_UFError
+    DABUFError
         Caso seja inserida uma UF inválida no argumento `uf`.
 
     See Also

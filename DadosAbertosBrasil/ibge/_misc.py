@@ -6,7 +6,8 @@ import requests
 
 from .._config import config
 from ..utils import Get, parse, Formato, NivelTerritorial, Output, converter
-from ..utils.errors import DAB_LocalidadeError
+from ..utils.endpoints import ENDPOINTS
+from ..utils.errors import DABLocalidadeError, descontinuado
 
 
 @validate_call
@@ -40,7 +41,7 @@ def populacao(
 
     Raises
     ------
-    DAB_LocalidadeError
+    DABLocalidadeError
         Caso código da localidade seja inválido.
     ValueError
         Caso o argumento `projecao` seja inválido.
@@ -143,7 +144,7 @@ def localidades(
 
     Raises
     ------
-    DAB_LocalidadeError
+    DABLocalidadeError
         Caso o nível geográfico seja inválido.
 
     Examples
@@ -267,7 +268,7 @@ def malha(
 
     Raises
     ------
-    DAB_LocalidadeError
+    DABLocalidadeError
         Caso o nível geográfico seja inválido.
 
     Notes
@@ -340,7 +341,7 @@ def malha(
 
     nivel = nivel.lower()
     if nivel not in NIVEIS:
-        raise DAB_LocalidadeError(
+        raise DABLocalidadeError(
             f"""Nível inválido:
         Preencha o argumento `nivel` com um dos seguintes valores:
         {NIVEIS}"""
@@ -357,7 +358,7 @@ def malha(
     if divisoes is not None:
         divisoes = divisoes.lower()
         if divisoes not in DIVISOES:
-            raise DAB_LocalidadeError(
+            raise DABLocalidadeError(
                 f"""Subdivisões inválida:
             Preencha o argumento `divisoes` com um dos seguintes valores:
             {DIVISOES}"""
@@ -382,6 +383,11 @@ def coordenadas(
 ) -> Output:
     """Obtém as coordenadas de todas as localidades brasileiras, incluindo
     latitude, longitude e altitude.
+
+    !!! warning "Descontinuada"
+        Esta função é removida no DadosAbertosBrasil 3.0, sem substituto
+        equivalente. As coordenadas dos municípios passam a vir de
+        `wiki.municipios()`, que é outro dado.
 
     Parameters
     ----------
@@ -410,7 +416,12 @@ def coordenadas(
 
     """
 
-    URL = r"https://raw.githubusercontent.com/GusFurtado/dab_assets/main/data/coordenadas.csv"
+    descontinuado(
+        "`ibge.coordenadas` é removida no DadosAbertosBrasil 3.0, sem substituto "
+        "equivalente. As coordenadas dos municípios passam a vir de "
+        "`wiki.municipios()`, que é outro dado."
+    )
+    URL = ENDPOINTS["wiki"] + "coordenadas.csv"
 
     match config.resolver_formato(formato):
         case "url":

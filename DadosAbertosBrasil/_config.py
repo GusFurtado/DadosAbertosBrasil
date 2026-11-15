@@ -1,6 +1,29 @@
+import warnings
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
+
+_formato_avisado = False
+
+
+def _avisar_formato() -> None:
+    """Avisa, uma vez por sessão, que o formato padrão muda no 3.0."""
+    global _formato_avisado
+    if _formato_avisado:
+        return
+    # Import local: `utils` importa este módulo.
+    from .utils.errors import GUIA_MIGRACAO, DABFormatoWarning
+
+    _formato_avisado = True
+    warnings.warn(
+        "No DadosAbertosBrasil 3.0, as funções chamadas sem `formato` passam a "
+        "retornar 'json' (lista de registros) em vez de um DataFrame pandas, e o "
+        "pandas vira dependência opcional (`pip install DadosAbertosBrasil[pandas]`). "
+        'Defina `DadosAbertosBrasil.config.formato = "pandas"` (ou "polars") para '
+        f"manter o retorno atual e silenciar este aviso. Guia de migração: {GUIA_MIGRACAO}",
+        DABFormatoWarning,
+        stacklevel=4,
+    )
 
 
 class Config(BaseModel):
@@ -18,7 +41,9 @@ class Config(BaseModel):
     formato : {"pandas", "polars"}, default="pandas"
         Biblioteca usada nos DataFrames retornados pelas funções quando o
         argumento `formato` não é informado. Requer `polars` instalado para
-        `"polars"` (`pip install DadosAbertosBrasil[polars]`).
+        `"polars"` (`pip install DadosAbertosBrasil[polars]`). Enquanto não for
+        definido, as funções avisam (uma vez por sessão, com
+        `DABFormatoWarning`) que o padrão muda para `"json"` no 3.0.
 
     Examples
     --------
@@ -39,7 +64,11 @@ class Config(BaseModel):
 
     def resolver_formato(self, valor: str | None) -> str:
         """Retorna `valor` se informado, ou o formato global."""
-        return self.formato if valor is None else valor
+        if valor is not None:
+            return valor
+        if "formato" not in self.model_fields_set:
+            _avisar_formato()
+        return self.formato
 
 
 config = Config()

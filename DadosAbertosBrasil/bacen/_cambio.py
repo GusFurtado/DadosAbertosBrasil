@@ -68,10 +68,10 @@ def cambio(
 
     Raises
     ------
-    DAB_DataError
+    DABDataError
         Caso seja inserida uma data inválida.
 
-    DAB_MoedaError
+    DABMoedaError
         Caso seja inserida uma moeda inválida.
 
     See Also

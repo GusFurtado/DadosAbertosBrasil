@@ -226,7 +226,7 @@ class Historia:
 
     Raises
     ------
-    DAB_LocalidadeError
+    DABLocalidadeError
         Caso o código da localidade seja inválido.
 
     Examples

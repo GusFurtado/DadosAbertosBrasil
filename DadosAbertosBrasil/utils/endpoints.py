@@ -8,4 +8,7 @@ ENDPOINTS = {
     "ipea": r"http://www.ipeadata.gov.br/api/odata4/",
     "senado": r"http://legis.senado.gov.br/dadosabertos/",
     "sidra": r"https://servicodados.ibge.gov.br/api/v3/",
+    # Arquivos do repositório de dados. O 2.x lê do branch congelado `2.x`,
+    # que continua com o formato antigo depois do 3.0.
+    "wiki": r"https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil-wiki/2.x/data/",
 }

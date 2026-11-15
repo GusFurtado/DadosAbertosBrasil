@@ -23,7 +23,7 @@ dab.camara.lista_deputados(uf="SC")       # deputados federais de Santa Catarina
 
 - [Instalação](instalacao.md): o pacote, o extra do Polars e a configuração global
 - [Referência](referencia/ibge.md): cada módulo, com um mini-tutorial e todas as funções e classes
-- [Exemplos](https://github.com/GusFurtado/dab_assets/tree/main/exemplos): notebooks com casos de uso
+- [Exemplos](https://github.com/GusFurtado/DadosAbertosBrasil-wiki/tree/2.x/exemplos): notebooks com casos de uso
 
 ## Módulos
 
