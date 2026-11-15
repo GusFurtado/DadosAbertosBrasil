@@ -113,7 +113,7 @@ class Senador(Base):
 
     Notes
     -----
-    http://legis.senado.gov.br/dadosabertos/docs/
+    https://legis.senado.gov.br/dadosabertos/docs/
 
     Examples
     --------

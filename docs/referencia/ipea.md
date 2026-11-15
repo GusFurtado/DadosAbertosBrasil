@@ -33,7 +33,7 @@ Econômica Aplicada (Ipea).
 
 ## API oficial
 
-- [IpeaData](http://www.ipeadata.gov.br/api/)
+- [IpeaData](https://www.ipeadata.gov.br/api/)
 
 ## Referência
 

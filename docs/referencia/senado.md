@@ -23,7 +23,7 @@ Senadores, legislaturas, partidos, orçamentos e outros dados legislativos do Se
 
 ## API oficial
 
-- [Dados Abertos do Senado](http://legis.senado.gov.br/dadosabertos/docs/)
+- [Dados Abertos do Senado](https://legis.senado.gov.br/dadosabertos/docs/)
 
 ## Referência
 

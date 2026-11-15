@@ -61,7 +61,7 @@ APIs Originais
 
 - **IBGE Cidades:** `<https://cidades.ibge.gov.br/>`_
 - **Serviços IBGE:** `<https://servicodados.ibge.gov.br/api/docs>`_
-- **SIDRA:** `<http://api.sidra.ibge.gov.br/>`_
+- **SIDRA:** `<https://apisidra.ibge.gov.br/>`_
 
 """
 
