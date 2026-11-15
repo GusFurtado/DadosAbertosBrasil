@@ -5,4 +5,4 @@ incluindo informações sobre governadores e outras estatísticas por estado.
 
 """
 
-from ._uf import Governador, UF
+from ._uf import UF, Governador

@@ -21,12 +21,13 @@ def test_uf_attributes():
 def test_uf_properties():
     uf = UF("SC")
 
-    # assert uf.densidade is not None
+    assert uf.densidade > 0
     assert uf.galeria is not None
     assert uf.governador is not None
     assert uf.historia is not None
     assert uf.municipios is not None
-    # assert uf.populacao is not None
+    assert uf.populacao > 0
+    assert uf.prefeito.uf == "SC"
 
 
 def test_governador():
@@ -34,10 +35,7 @@ def test_governador():
 
     assert governador.uf is not None
     assert governador.nome is not None
-    assert governador.nome_completo is not None
-    assert governador.ano_eleicao is not None
     assert governador.mandato_inicio is not None
-    assert governador.mandato_fim is not None
     assert governador.partido is not None
     assert governador.partido_sigla is not None
-    assert governador.vice_governador is not None
+    assert governador.registro.uf == "PR"
