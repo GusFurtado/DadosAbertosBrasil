@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -19,10 +18,10 @@ class _ParamsOrcamentos(ParamsSenado):
 @validate_call
 @com_params(_ParamsOrcamentos)
 def lista_orcamentos(
-    autor: Optional[str] = None,
-    tipo: Optional[str] = None,
-    ano_execucao: Optional[PositiveInt] = None,
-    ano_materia: Optional[PositiveInt] = None,
+    autor: str | None = None,
+    tipo: str | None = None,
+    ano_execucao: PositiveInt | None = None,
+    ano_materia: PositiveInt | None = None,
     url: bool = True,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,

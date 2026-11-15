@@ -1,4 +1,3 @@
-from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -69,9 +68,9 @@ class _ParamsBlocos(Ordenacao):
 @validate_call
 @com_params(_ParamsBlocos)
 def lista_blocos(
-    legislatura: Optional[PositiveInt] = None,
+    legislatura: PositiveInt | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[PositiveInt] = None,
+    itens: PositiveInt | None = None,
     asc: bool = True,
     ordenar_por: str = "nome",
     url: bool = True,

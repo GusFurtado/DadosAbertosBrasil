@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -20,10 +20,8 @@ class _ParamsLocalidades(Params):
 
 @validate_call
 def populacao(
-    projecao: Optional[
-        Literal["populacao", "nascimento", "obito", "incremento"]
-    ] = None,
-    localidade: Optional[PositiveInt] = None,
+    projecao: Literal["populacao", "nascimento", "obito", "incremento"] | None = None,
+    localidade: PositiveInt | None = None,
 ) -> dict | int:
     """Obtém a projecao da população referente ao Brasil.
 
@@ -96,9 +94,9 @@ def populacao(
 @com_params(_ParamsLocalidades)
 def localidades(
     nivel: NivelTerritorial = "distritos",
-    divisoes: Optional[NivelTerritorial] = None,
+    divisoes: NivelTerritorial | None = None,
     localidade: PositiveInt | str | list[PositiveInt | str] = None,
-    ordenar_por: Optional[str] = None,
+    ordenar_por: str | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -219,7 +217,7 @@ def localidades(
 def malha(
     localidade: PositiveInt,
     nivel: str = "estados",
-    divisoes: Optional[str] = None,
+    divisoes: str | None = None,
     periodo: PositiveInt = 2020,
     formato: Literal["svg", "json", "geojson"] = "geojson",
     qualidade: Literal["minima", "intermediaria", "maxima"] = "minima",

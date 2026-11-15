@@ -12,7 +12,7 @@ rápidas.
 
 import csv
 from datetime import date
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import PositiveInt, validate_call
 
@@ -291,9 +291,9 @@ def codigos_municipios(
 
 @validate_call
 def ipca(
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -474,9 +474,9 @@ def pib(
 
 @validate_call
 def rentabilidade_poupanca(
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -566,9 +566,9 @@ def rentabilidade_poupanca(
 @validate_call
 def reservas_internacionais(
     periodo: Literal["diario", "mensal"] = "mensal",
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -807,9 +807,9 @@ def salario_minimo(
 def selic(
     periodo: Literal["diario", "mensal", "meta"] = "meta",
     anualizado: bool = True,
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -937,9 +937,9 @@ def selic(
 
 @validate_call
 def taxa_referencial(
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,

@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -179,12 +179,12 @@ class Deputado(Objeto):
     @com_params(_ParamsDespesas)
     def despesas(
         self,
-        legislatura: Optional[PositiveInt] = None,
-        ano: Optional[PositiveInt] = None,
-        mes: Optional[PositiveInt] = None,
-        fornecedor: Optional[int] = None,
+        legislatura: PositiveInt | None = None,
+        ano: PositiveInt | None = None,
+        mes: PositiveInt | None = None,
+        fornecedor: int | None = None,
         pagina: PositiveInt = 1,
-        itens: Optional[PositiveInt] = None,
+        itens: PositiveInt | None = None,
         asc: bool = True,
         ordenar_por: str = "ano",
         url: bool = True,
@@ -271,11 +271,11 @@ class Deputado(Objeto):
     @com_params(_ParamsDiscursos)
     def discursos(
         self,
-        legislatura: Optional[PositiveInt] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        legislatura: PositiveInt | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: PositiveInt = 1,
-        itens: Optional[PositiveInt] = None,
+        itens: PositiveInt | None = None,
         asc: bool = True,
         ordenar_por: str = "dataHoraInicio",
         url: bool = True,
@@ -353,11 +353,11 @@ class Deputado(Objeto):
     @com_params(_ParamsEventosDeputado)
     def eventos(
         self,
-        legislatura: Optional[PositiveInt] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        legislatura: PositiveInt | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: PositiveInt = 1,
-        itens: Optional[PositiveInt] = None,
+        itens: PositiveInt | None = None,
         asc: bool = True,
         ordenar_por: str = "dataHoraInicio",
         url: bool = True,
@@ -528,10 +528,10 @@ class Deputado(Objeto):
     @com_params(_ParamsOrgaosDeputado)
     def orgaos(
         self,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: PositiveInt = 1,
-        itens: Optional[PositiveInt] = None,
+        itens: PositiveInt | None = None,
         asc: bool = True,
         ordenar_por: str = "dataInicio",
         url: bool = True,
@@ -666,15 +666,15 @@ class Deputado(Objeto):
 @validate_call
 @com_params(_ParamsDeputados)
 def lista_deputados(
-    nome: Optional[str] = None,
-    legislatura: Optional[PositiveInt] = None,
-    uf: Optional[str] = None,
-    partido: Optional[str] = None,
-    sexo: Optional[Literal["f", "m"]] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    nome: str | None = None,
+    legislatura: PositiveInt | None = None,
+    uf: str | None = None,
+    partido: str | None = None,
+    sexo: Literal["f", "m"] | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[PositiveInt] = None,
+    itens: PositiveInt | None = None,
     asc: bool = True,
     ordenar_por: str = "nome",
     url: bool = True,

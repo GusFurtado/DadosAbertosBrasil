@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field, PositiveInt, computed_field, validate_call
 
@@ -233,12 +233,12 @@ class Senador(Objeto):
     @com_params(_ParamsPronunciamentos)
     def apartes(
         self,
-        casa: Optional[Literal["sf", "cd", "cn", "pr", "cr", "ac"]] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
-        numero_sessao: Optional[int] = None,
-        tipo_pronunciamento: Optional[str] = None,
-        tipo_sessao: Optional[str] = None,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
+        numero_sessao: int | None = None,
+        tipo_pronunciamento: str | None = None,
+        tipo_sessao: str | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
@@ -311,11 +311,11 @@ class Senador(Objeto):
     @com_params(_ParamsAutorias)
     def autorias(
         self,
-        ano: Optional[PositiveInt] = None,
-        numero: Optional[int] = None,
-        primeiro_autor: Optional[bool] = None,
-        sigla: Optional[str] = None,
-        tramitando: Optional[bool] = None,
+        ano: PositiveInt | None = None,
+        numero: int | None = None,
+        primeiro_autor: bool | None = None,
+        sigla: str | None = None,
+        tramitando: bool | None = None,
         index: bool = False,
         formato: Formato | None = None,
     ) -> Saida:
@@ -377,8 +377,8 @@ class Senador(Objeto):
     @com_params(_ParamsComissoes)
     def cargos(
         self,
-        comissao: Optional[str] = None,
-        ativos: Optional[bool] = None,
+        comissao: str | None = None,
+        ativos: bool | None = None,
         formato: Formato | None = None,
     ) -> Saida:
         """Obtém a relação de cargos que o senador ja ocupou.
@@ -423,8 +423,8 @@ class Senador(Objeto):
     @com_params(_ParamsComissoes)
     def comissoes(
         self,
-        comissao: Optional[str] = None,
-        ativos: Optional[bool] = None,
+        comissao: str | None = None,
+        ativos: bool | None = None,
         formato: Formato | None = None,
     ) -> Saida:
         """Obtém as comissões de que um senador é membro.
@@ -501,12 +501,12 @@ class Senador(Objeto):
     @com_params(_ParamsPronunciamentos)
     def discursos(
         self,
-        casa: Optional[Literal["sf", "cd", "cn", "pr", "cr", "ac"]] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
-        numero_sessao: Optional[int] = None,
-        tipo_pronunciamento: Optional[str] = None,
-        tipo_sessao: Optional[str] = None,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
+        numero_sessao: int | None = None,
+        tipo_pronunciamento: str | None = None,
+        tipo_sessao: str | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
@@ -711,7 +711,7 @@ class Senador(Objeto):
     @com_params(_ParamsLicencas)
     def licencas(
         self,
-        inicio: Optional[date] = None,
+        inicio: date | None = None,
         index: bool = False,
         formato: Formato | None = None,
     ) -> Saida:
@@ -789,11 +789,11 @@ class Senador(Objeto):
     @com_params(_ParamsRelatorias)
     def relatorias(
         self,
-        ano: Optional[PositiveInt] = None,
-        comissao: Optional[str] = None,
-        numero: Optional[int] = None,
-        sigla: Optional[str] = None,
-        tramitando: Optional[bool] = None,
+        ano: PositiveInt | None = None,
+        comissao: str | None = None,
+        numero: int | None = None,
+        sigla: str | None = None,
+        tramitando: bool | None = None,
         formato: Formato | None = None,
     ) -> Saida:
         """Obtém as matérias de relatoria de um senador.
@@ -847,10 +847,10 @@ class Senador(Objeto):
     @com_params(_ParamsMaterias)
     def votacoes(
         self,
-        ano: Optional[PositiveInt] = None,
-        numero: Optional[int] = None,
-        sigla: Optional[str] = None,
-        tramitando: Optional[bool] = None,
+        ano: PositiveInt | None = None,
+        numero: int | None = None,
+        sigla: str | None = None,
+        tramitando: bool | None = None,
         index: bool = False,
         formato: Formato | None = None,
     ) -> Saida:
@@ -909,11 +909,11 @@ class Senador(Objeto):
 @com_params(_ParamsSenadores)
 def lista_senadores(
     tipo: Literal["atual", "titulares", "suplentes", "afastados"] = "atual",
-    uf: Optional[str] = None,
-    sexo: Optional[Literal["f", "m"]] = None,
-    partido: Optional[str] = None,
-    contendo: Optional[str] = None,
-    excluindo: Optional[str] = None,
+    uf: str | None = None,
+    sexo: Literal["f", "m"] | None = None,
+    partido: str | None = None,
+    contendo: str | None = None,
+    excluindo: str | None = None,
     url: bool = True,
     index: bool = False,
     formato: Formato | None = None,

@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field, PositiveInt, computed_field, field_validator, validate_call
 
@@ -53,8 +53,8 @@ def _entregar(requisicao: Requisicao, formato: str | None, montar, index_col: st
 @com_params(_ParamsNomes)
 def nomes(
     nomes: list[str] | str,
-    sexo: Optional[Literal["f", "m"]] = None,
-    localidade: Optional[PositiveInt] = None,
+    sexo: Literal["f", "m"] | None = None,
+    localidade: PositiveInt | None = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Saida:
@@ -226,9 +226,9 @@ def nomes_uf(
 @validate_call
 @com_params(_ParamsRanking)
 def nomes_ranking(
-    decada: Optional[PositiveInt] = None,
-    sexo: Optional[Literal["f", "m"]] = None,
-    localidade: Optional[PositiveInt] = None,
+    decada: PositiveInt | None = None,
+    sexo: Literal["f", "m"] | None = None,
+    localidade: PositiveInt | None = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Saida:

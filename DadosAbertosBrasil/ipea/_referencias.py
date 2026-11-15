@@ -1,4 +1,3 @@
-from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -32,8 +31,8 @@ def _ipea(path: str, verificar_certificado: bool | None) -> Requisicao:
 @validate_call
 @com_params(_ParamsTemas)
 def lista_temas(
-    cod: Optional[PositiveInt] = None,
-    pai: Optional[PositiveInt] = None,
+    cod: PositiveInt | None = None,
+    pai: PositiveInt | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -123,7 +122,7 @@ def lista_temas(
 @validate_call
 @com_params(_ParamsPaises)
 def lista_paises(
-    cod: Optional[str] = None,
+    cod: str | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -200,10 +199,10 @@ def lista_paises(
 @validate_call
 @com_params(_ParamsTerritorios)
 def lista_territorios(
-    capital: Optional[bool] = None,
-    amc: Optional[bool] = None,
-    cod: Optional[int] = None,
-    nivel: Optional[str] = None,
+    capital: bool | None = None,
+    amc: bool | None = None,
+    cod: int | None = None,
+    nivel: str | None = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Saida:

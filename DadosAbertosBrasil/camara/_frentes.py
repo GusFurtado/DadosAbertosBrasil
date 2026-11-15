@@ -1,4 +1,3 @@
-from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -154,7 +153,7 @@ class Frente(Objeto):
 @validate_call
 @com_params(_ParamsFrentes)
 def lista_frentes(
-    legislatura: Optional[PositiveInt] = None,
+    legislatura: PositiveInt | None = None,
     pagina: PositiveInt = 1,
     url: bool = True,
     index: bool = False,

@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field, validate_call
 
@@ -38,7 +38,7 @@ class _ParamsCambio(Params):
 def cambio(
     moedas: list[str] | str = ["USD"],
     inicio: date = date(2000, 1, 1),
-    fim: Optional[date] = Field(default_factory=date.today),
+    fim: date | None = Field(default_factory=date.today),
     cotacao: Literal["compra", "venda"] = "compra",
     boletim: Literal["abertura", "fechamento", "intermediário"] = "fechamento",
     index: bool = False,

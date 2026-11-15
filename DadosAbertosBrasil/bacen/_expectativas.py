@@ -1,4 +1,3 @@
-from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -112,8 +111,8 @@ class _ParamsExpectativas(Params):
 @com_params(_ParamsExpectativas)
 def expectativas(
     expectativa: Expectativa,
-    indicador: Optional[str] = None,
-    top: Optional[PositiveInt] = None,
+    indicador: str | None = None,
+    top: PositiveInt | None = None,
     ordenar_por: str = "Data",
     asc: bool = False,
     formato: Formato | None = None,

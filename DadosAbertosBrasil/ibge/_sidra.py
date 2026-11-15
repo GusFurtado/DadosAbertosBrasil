@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field, validate_call
 
@@ -58,14 +58,14 @@ class _ParamsReferencias(Params):
 @validate_call
 @com_params(_ParamsTabelas)
 def lista_tabelas(
-    contendo: Optional[str] = None,
-    excluindo: Optional[str] = None,
-    assunto: Optional[int | str] = None,
-    classificacao: Optional[int | str] = None,
-    periodo: Optional[dict | str] = None,
-    periodicidade: Optional[int | str] = None,
-    nivel: Optional[int | str] = None,
-    pesquisa: Optional[str] = None,
+    contendo: str | None = None,
+    excluindo: str | None = None,
+    assunto: int | str | None = None,
+    classificacao: int | str | None = None,
+    periodo: dict | str | None = None,
+    periodicidade: int | str | None = None,
+    nivel: int | str | None = None,
+    pesquisa: str | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
@@ -348,9 +348,9 @@ def sidra(
     periodos: list | int | str = "last",
     variaveis: list | int | str = "allxp",
     localidades: dict = {1: "all"},  # noqa: B006
-    classificacoes: Optional[dict] = None,
+    classificacoes: dict | None = None,
     ufs_extintas: bool = False,
-    decimais: Optional[int] = None,
+    decimais: int | None = None,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
 ) -> Saida:

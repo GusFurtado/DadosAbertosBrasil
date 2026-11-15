@@ -1,4 +1,4 @@
-from typing import Iterator, Optional
+from typing import Iterator
 
 from ..utils import parse
 from ..utils.requisicao import Requisicao
@@ -70,8 +70,8 @@ class _Fotografia:
 
     def __call__(
         self,
-        altura: Optional[int] = None,
-        largura: Optional[int] = None,
+        altura: int | None = None,
+        largura: int | None = None,
     ) -> str:
         """Gera a URL da foto.
 

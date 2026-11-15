@@ -5,7 +5,7 @@ Serve como um consolidador por UF de diversar funções do pacote DadosAbertosBr
 """
 
 from datetime import date
-from typing import Literal, Optional
+from typing import Literal
 
 from .. import favoritos, ibge, wiki
 from ..camara import lista_deputados
@@ -279,14 +279,14 @@ class UF:
 
     def deputados(
         self,
-        nome: Optional[str] = None,
-        legislatura: Optional[int] = None,
-        partido: Optional[str] = None,
-        sexo: Optional[str] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        nome: str | None = None,
+        legislatura: int | None = None,
+        partido: str | None = None,
+        sexo: str | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: int = 1,
-        itens: Optional[int] = None,
+        itens: int | None = None,
         asc: bool = True,
         ordenar_por: str = "nome",
         url: bool = True,
@@ -500,7 +500,7 @@ class UF:
     def malha(
         self,
         nivel: str = "estados",
-        divisoes: Optional[str] = None,
+        divisoes: str | None = None,
         periodo: int = 2020,
         formato: str = "geojson",
         qualidade: str = "minima",
@@ -677,10 +677,10 @@ class UF:
     def senadores(
         self,
         tipo: Literal["atual", "titulares", "suplentes", "afastados"] = "atual",
-        sexo: Optional[str] = None,
-        partido: Optional[str] = None,
-        contendo: Optional[str] = None,
-        excluindo: Optional[str] = None,
+        sexo: str | None = None,
+        partido: str | None = None,
+        contendo: str | None = None,
+        excluindo: str | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,

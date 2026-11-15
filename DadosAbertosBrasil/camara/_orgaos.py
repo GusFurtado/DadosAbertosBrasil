@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -126,11 +125,11 @@ class Orgao(Objeto):
     @com_params(_ParamsEventosOrgao)
     def eventos(
         self,
-        tipo_evento: Optional[str] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        tipo_evento: str | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: int = 1,
-        itens: Optional[int] = None,
+        itens: int | None = None,
         asc: bool = True,
         ordenar_por: str = "dataHoraInicio",
         url: bool = True,
@@ -213,10 +212,10 @@ class Orgao(Objeto):
     @com_params(_ParamsMembrosOrgao)
     def membros(
         self,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: PositiveInt = 1,
-        itens: Optional[PositiveInt] = None,
+        itens: PositiveInt | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
@@ -286,11 +285,11 @@ class Orgao(Objeto):
     @com_params(_ParamsVotacoesOrgao)
     def votacoes(
         self,
-        proposicao: Optional[int] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        proposicao: int | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: int = 1,
-        itens: Optional[int] = None,
+        itens: int | None = None,
         asc: bool = False,
         ordenar_por: str = "dataHoraRegistro",
         url: bool = True,
@@ -385,12 +384,12 @@ class Orgao(Objeto):
 @validate_call
 @com_params(_ParamsOrgaos)
 def lista_orgaos(
-    sigla: Optional[str] = None,
-    tipo: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    sigla: str | None = None,
+    tipo: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[PositiveInt] = None,
+    itens: PositiveInt | None = None,
     asc: bool = True,
     ordenar_por: str = "id",
     url: bool = True,

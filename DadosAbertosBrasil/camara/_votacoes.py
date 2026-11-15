@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -230,13 +229,13 @@ class Votacao(Objeto):
 @validate_call
 @com_params(_ParamsVotacoes)
 def lista_votacoes(
-    proposicao: Optional[int] = None,
-    evento: Optional[int] = None,
-    orgao: Optional[int] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    proposicao: int | None = None,
+    evento: int | None = None,
+    orgao: int | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[PositiveInt] = None,
+    itens: PositiveInt | None = None,
     asc: bool = False,
     ordenar_por: str = "dataHoraRegistro",
     url: bool = True,

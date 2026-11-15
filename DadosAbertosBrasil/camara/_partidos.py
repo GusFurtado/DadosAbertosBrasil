@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -111,12 +110,12 @@ class Partido(Objeto):
     @com_params(_ParamsMembrosPartido)
     def membros(
         self,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
-        legislatura: Optional[PositiveInt] = None,
+        inicio: date | None = None,
+        fim: date | None = None,
+        legislatura: PositiveInt | None = None,
         pagina: PositiveInt = 1,
-        itens: Optional[PositiveInt] = None,
-        ordenar_por: Optional[str] = None,
+        itens: PositiveInt | None = None,
+        ordenar_por: str | None = None,
         asc: bool = True,
         url: bool = True,
         index: bool = False,
@@ -200,11 +199,11 @@ class Partido(Objeto):
 @validate_call
 @com_params(_ParamsPartidos)
 def lista_partidos(
-    legislatura: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    legislatura: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[PositiveInt] = None,
+    itens: PositiveInt | None = None,
     asc: bool = True,
     ordenar_por: str = "sigla",
     url: bool = True,

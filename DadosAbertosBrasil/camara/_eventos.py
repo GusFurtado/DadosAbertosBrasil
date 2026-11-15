@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -342,16 +341,16 @@ class Evento(Objeto):
 @validate_call
 @com_params(_ParamsEventos)
 def lista_eventos(
-    tipo_evento: Optional[PositiveInt] = None,
-    situacao: Optional[PositiveInt] = None,
-    tipo_orgao: Optional[PositiveInt] = None,
-    orgao: Optional[PositiveInt] = None,
+    tipo_evento: PositiveInt | None = None,
+    situacao: PositiveInt | None = None,
+    tipo_orgao: PositiveInt | None = None,
+    orgao: PositiveInt | None = None,
     inicio: date = None,
     fim: date = None,
-    hora_inicio: Optional[str] = None,
-    hora_fim: Optional[str] = None,
+    hora_inicio: str | None = None,
+    hora_fim: str | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[PositiveInt] = None,
+    itens: PositiveInt | None = None,
     asc: bool = True,
     ordenar_por: str = "dataHoraInicio",
     url: bool = True,

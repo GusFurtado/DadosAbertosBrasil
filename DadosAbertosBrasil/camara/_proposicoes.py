@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from pydantic import Field, PositiveInt, computed_field, validate_call
 
@@ -327,8 +326,8 @@ class Proposicao(Objeto):
     @com_params(_ParamsTramitacoes)
     def tramitacoes(
         self,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
@@ -452,24 +451,24 @@ class Proposicao(Objeto):
 @validate_call
 @com_params(_ParamsProposicoes)
 def lista_proposicoes(
-    tipo: Optional[str] = None,
-    numero: Optional[int] = None,
-    ano: Optional[PositiveInt] = None,
-    autor_cod: Optional[int] = None,
-    autor_nome: Optional[str] = None,
-    partido_sigla: Optional[str] = None,
-    partido_cod: Optional[PositiveInt] = None,
-    autor_uf: Optional[str] = None,
-    keyword: Optional[str] = None,
+    tipo: str | None = None,
+    numero: int | None = None,
+    ano: PositiveInt | None = None,
+    autor_cod: int | None = None,
+    autor_nome: str | None = None,
+    partido_sigla: str | None = None,
+    partido_cod: PositiveInt | None = None,
+    autor_uf: str | None = None,
+    keyword: str | None = None,
     tramitacao_senado: bool = None,
-    apresentacao_inicio: Optional[date] = None,
-    apresentacao_fim: Optional[date] = None,
-    situacao: Optional[int] = None,
-    tema: Optional[int] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    apresentacao_inicio: date | None = None,
+    apresentacao_fim: date | None = None,
+    situacao: int | None = None,
+    tema: int | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[int] = None,
+    itens: int | None = None,
     asc: bool = True,
     ordenar_por: str = "id",
     url: bool = True,

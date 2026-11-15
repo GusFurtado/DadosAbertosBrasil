@@ -1,5 +1,5 @@
 import functools
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field, validate_call
 
@@ -32,14 +32,14 @@ class _ParamsLegislaturas(ParamsSenado):
 @com_params(_ParamsLegislaturas)
 def lista_legislaturas(
     inicio: int,
-    fim: Optional[int] = None,
-    exercicio: Optional[bool] = None,
-    participacao: Optional[Literal["titulares", "suplentes"]] = None,
-    uf: Optional[str] = None,
-    sexo: Optional[Literal["f", "m"]] = None,
-    partido: Optional[str] = None,
-    contendo: Optional[str] = None,
-    excluindo: Optional[str] = None,
+    fim: int | None = None,
+    exercicio: bool | None = None,
+    participacao: Literal["titulares", "suplentes"] | None = None,
+    uf: str | None = None,
+    sexo: Literal["f", "m"] | None = None,
+    partido: str | None = None,
+    contendo: str | None = None,
+    excluindo: str | None = None,
     url: bool = True,
     index: bool = False,
     formato: Formato | None = None,

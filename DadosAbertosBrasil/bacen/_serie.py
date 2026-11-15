@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
@@ -23,9 +22,9 @@ class _ParamsSerie(Params):
 @com_params(_ParamsSerie)
 def serie(
     cod: PositiveInt,
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,

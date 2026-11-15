@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field, validate_call
 
@@ -201,11 +201,11 @@ class Serie:
 @validate_call
 @com_params(_ParamsSeries)
 def lista_series(
-    contendo: Optional[str] = None,
-    excluindo: Optional[str | list[str]] = None,
-    fonte: Optional[str] = None,
-    ativo: Optional[bool] = None,
-    numerica: Optional[bool] = None,
+    contendo: str | None = None,
+    excluindo: str | list[str] | None = None,
+    fonte: str | None = None,
+    ativo: bool | None = None,
+    numerica: bool | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,

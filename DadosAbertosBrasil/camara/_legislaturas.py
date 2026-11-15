@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from pydantic import PositiveInt, validate_call
 
@@ -80,8 +79,8 @@ class Legislatura(Objeto):
     @com_params(_ParamsMesa)
     def mesa(
         self,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
@@ -144,9 +143,9 @@ class Legislatura(Objeto):
 @validate_call
 @com_params(_ParamsLegislaturas)
 def lista_legislaturas(
-    data: Optional[date] = None,
+    data: date | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[PositiveInt] = None,
+    itens: PositiveInt | None = None,
     asc: bool = False,
     ordenar_por: str = "id",
     url: bool = True,
