@@ -1,11 +1,11 @@
 from datetime import date
-from typing import Literal
+from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, validate_call
 
 from ..utils.modelos import Maiusculo, SiglaUF, com_params
 from ..utils.objeto import Objeto
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 from ._comum import Ordenacao, Periodo, consultar_camara, requisicao
 
@@ -176,6 +176,107 @@ class Deputado(Objeto):
     def __str__(self) -> str:
         return self.nome
 
+    @overload
+    def despesas(
+        self,
+        legislatura: PositiveInt | None = ...,
+        ano: PositiveInt | None = ...,
+        mes: PositiveInt | None = ...,
+        fornecedor: int | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def despesas(
+        self,
+        legislatura: PositiveInt | None = ...,
+        ano: PositiveInt | None = ...,
+        mes: PositiveInt | None = ...,
+        fornecedor: int | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def despesas(
+        self,
+        legislatura: PositiveInt | None = ...,
+        ano: PositiveInt | None = ...,
+        mes: PositiveInt | None = ...,
+        fornecedor: int | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Despesa]: ...
+
+    @overload
+    def despesas(
+        self,
+        legislatura: PositiveInt | None = ...,
+        ano: PositiveInt | None = ...,
+        mes: PositiveInt | None = ...,
+        fornecedor: int | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def despesas(
+        self,
+        legislatura: PositiveInt | None = ...,
+        ano: PositiveInt | None = ...,
+        mes: PositiveInt | None = ...,
+        fornecedor: int | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def despesas(
+        self,
+        legislatura: PositiveInt | None = ...,
+        ano: PositiveInt | None = ...,
+        mes: PositiveInt | None = ...,
+        fornecedor: int | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
     @com_params(_ParamsDespesas)
     def despesas(
         self,
@@ -268,6 +369,95 @@ class Deputado(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def discursos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def discursos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def discursos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Discurso]: ...
+
+    @overload
+    def discursos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def discursos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def discursos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
     @com_params(_ParamsDiscursos)
     def discursos(
         self,
@@ -349,6 +539,101 @@ class Deputado(Objeto):
             url=url,
             verificar_certificado=self.verify,
         )
+
+    @overload
+    def eventos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def eventos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def eventos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.EventoDeputado]: ...
+
+    @overload
+    def eventos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def eventos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def eventos(
+        self,
+        legislatura: PositiveInt | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
 
     @com_params(_ParamsEventosDeputado)
     def eventos(
@@ -437,6 +722,24 @@ class Deputado(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def frentes(self, url: bool = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def frentes(self, url: bool = ..., index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def frentes(self, url: bool = ..., index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Frente]: ...
+
+    @overload
+    def frentes(self, url: bool = ..., index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def frentes(self, url: bool = ..., index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def frentes(self, url: bool = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def frentes(
         self,
         url: bool = True,
@@ -488,6 +791,24 @@ class Deputado(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def ocupacoes(self, formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def ocupacoes(self, *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def ocupacoes(self, *, formato: Literal["pydantic"]) -> list[m.Ocupacao]: ...
+
+    @overload
+    def ocupacoes(self, *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def ocupacoes(self, *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def ocupacoes(self, *, formato: Literal["url"]) -> str: ...
+
     def ocupacoes(
         self,
         formato: Formato | None = None,
@@ -524,6 +845,95 @@ class Deputado(Objeto):
             formato,
             verificar_certificado=self.verify,
         )
+
+    @overload
+    def orgaos(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def orgaos(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def orgaos(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.OrgaoDeputado]: ...
+
+    @overload
+    def orgaos(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def orgaos(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def orgaos(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: PositiveInt = ...,
+        itens: PositiveInt | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
 
     @com_params(_ParamsOrgaosDeputado)
     def orgaos(
@@ -612,6 +1022,24 @@ class Deputado(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def profissoes(self, url: bool = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def profissoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def profissoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Profissao]: ...
+
+    @overload
+    def profissoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def profissoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def profissoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def profissoes(
         self,
         url: bool = True,
@@ -661,6 +1089,131 @@ class Deputado(Objeto):
             index=index,
             verificar_certificado=self.verify,
         )
+
+
+@overload
+def lista_deputados(
+    nome: str | None = ...,
+    legislatura: PositiveInt | None = ...,
+    uf: str | None = ...,
+    partido: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_deputados(
+    nome: str | None = ...,
+    legislatura: PositiveInt | None = ...,
+    uf: str | None = ...,
+    partido: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_deputados(
+    nome: str | None = ...,
+    legislatura: PositiveInt | None = ...,
+    uf: str | None = ...,
+    partido: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Deputado]: ...
+
+
+@overload
+def lista_deputados(
+    nome: str | None = ...,
+    legislatura: PositiveInt | None = ...,
+    uf: str | None = ...,
+    partido: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_deputados(
+    nome: str | None = ...,
+    legislatura: PositiveInt | None = ...,
+    uf: str | None = ...,
+    partido: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_deputados(
+    nome: str | None = ...,
+    legislatura: PositiveInt | None = ...,
+    uf: str | None = ...,
+    partido: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call

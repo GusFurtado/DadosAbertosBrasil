@@ -1,12 +1,12 @@
 from collections.abc import Callable
-from typing import Literal
+from typing import Any, Literal, overload
 
 from pydantic import Field, validate_call
 
 from ..utils import repositorio
 from ..utils.modelos import Params, Registro, SiglaUF, com_params, validar
 from ..utils.saida import resolver_formato, tabela
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 
 Dataset = Literal["governadores", "prefeitos_capitais", "ministros", "tribunais", "partidos", "ufs", "municipios"]
@@ -74,6 +74,40 @@ def metadados(dataset: Dataset, verificar_certificado: bool | None = None) -> di
     return _metadados(repositorio.conferir_envelope(requisicao.bruto(), dataset))
 
 
+@overload
+def governadores(
+    uf: str | None = ..., formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...
+) -> Any: ...
+
+
+@overload
+def governadores(
+    uf: str | None = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def governadores(
+    uf: str | None = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.Governador]: ...
+
+
+@overload
+def governadores(
+    uf: str | None = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
+) -> DataFramePandas: ...
+
+
+@overload
+def governadores(
+    uf: str | None = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
+) -> DataFramePolars: ...
+
+
+@overload
+def governadores(uf: str | None = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsUF)
 def governadores(
@@ -120,6 +154,42 @@ def governadores(
     return _consultar("governadores", m.Governador, formato, verificar_certificado, _filtro_uf(uf))
 
 
+@overload
+def prefeitos_capitais(
+    uf: str | None = ..., formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...
+) -> Any: ...
+
+
+@overload
+def prefeitos_capitais(
+    uf: str | None = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def prefeitos_capitais(
+    uf: str | None = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.PrefeitoCapital]: ...
+
+
+@overload
+def prefeitos_capitais(
+    uf: str | None = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
+) -> DataFramePandas: ...
+
+
+@overload
+def prefeitos_capitais(
+    uf: str | None = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
+) -> DataFramePolars: ...
+
+
+@overload
+def prefeitos_capitais(
+    uf: str | None = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsUF)
 def prefeitos_capitais(
@@ -164,6 +234,42 @@ def prefeitos_capitais(
 
 class _ParamsMinistros(Params):
     em_exercicio: bool | None = Field(None, exclude=True)
+
+
+@overload
+def ministros(
+    em_exercicio: bool | None = ..., formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...
+) -> Any: ...
+
+
+@overload
+def ministros(
+    em_exercicio: bool | None = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def ministros(
+    em_exercicio: bool | None = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.Ministro]: ...
+
+
+@overload
+def ministros(
+    em_exercicio: bool | None = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
+) -> DataFramePandas: ...
+
+
+@overload
+def ministros(
+    em_exercicio: bool | None = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
+) -> DataFramePolars: ...
+
+
+@overload
+def ministros(
+    em_exercicio: bool | None = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...
+) -> str: ...
 
 
 @validate_call
@@ -213,6 +319,59 @@ class _ParamsTribunais(Params):
     tribunal: Literal["STF", "STJ", "TST", "STM", "TCU"] | None = Field(None, exclude=True)
 
 
+@overload
+def tribunais(
+    tribunal: Literal["STF", "STJ", "TST", "STM", "TCU"] | None = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def tribunais(
+    tribunal: Literal["STF", "STJ", "TST", "STM", "TCU"] | None = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def tribunais(
+    tribunal: Literal["STF", "STJ", "TST", "STM", "TCU"] | None = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.MinistroTribunal]: ...
+
+
+@overload
+def tribunais(
+    tribunal: Literal["STF", "STJ", "TST", "STM", "TCU"] | None = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def tribunais(
+    tribunal: Literal["STF", "STJ", "TST", "STM", "TCU"] | None = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def tribunais(
+    tribunal: Literal["STF", "STJ", "TST", "STM", "TCU"] | None = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsTribunais)
 def tribunais(
@@ -258,6 +417,42 @@ class _ParamsPartidos(Params):
     ativos: bool | None = Field(None, exclude=True)
 
 
+@overload
+def partidos(
+    ativos: bool | None = ..., formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...
+) -> Any: ...
+
+
+@overload
+def partidos(
+    ativos: bool | None = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def partidos(
+    ativos: bool | None = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.Partido]: ...
+
+
+@overload
+def partidos(
+    ativos: bool | None = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
+) -> DataFramePandas: ...
+
+
+@overload
+def partidos(
+    ativos: bool | None = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
+) -> DataFramePolars: ...
+
+
+@overload
+def partidos(
+    ativos: bool | None = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsPartidos)
 def partidos(
@@ -301,6 +496,30 @@ def partidos(
     return _consultar("partidos", m.Partido, formato, verificar_certificado, filtro)
 
 
+@overload
+def ufs(formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...) -> Any: ...
+
+
+@overload
+def ufs(*, formato: Literal["json"], verificar_certificado: bool | None = ...) -> list[dict[str, Any]]: ...
+
+
+@overload
+def ufs(*, formato: Literal["pydantic"], verificar_certificado: bool | None = ...) -> list[m.UF]: ...
+
+
+@overload
+def ufs(*, formato: Literal["pandas"], verificar_certificado: bool | None = ...) -> DataFramePandas: ...
+
+
+@overload
+def ufs(*, formato: Literal["polars"], verificar_certificado: bool | None = ...) -> DataFramePolars: ...
+
+
+@overload
+def ufs(*, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
+
+
 @validate_call
 def ufs(
     formato: Formato | None = None,
@@ -336,6 +555,40 @@ def ufs(
 
     """
     return _consultar("ufs", m.UF, formato, verificar_certificado)
+
+
+@overload
+def municipios(
+    uf: str | None = ..., formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...
+) -> Any: ...
+
+
+@overload
+def municipios(
+    uf: str | None = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def municipios(
+    uf: str | None = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.Municipio]: ...
+
+
+@overload
+def municipios(
+    uf: str | None = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
+) -> DataFramePandas: ...
+
+
+@overload
+def municipios(
+    uf: str | None = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
+) -> DataFramePolars: ...
+
+
+@overload
+def municipios(uf: str | None = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
 
 
 @validate_call

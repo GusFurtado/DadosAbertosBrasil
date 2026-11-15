@@ -1,11 +1,13 @@
 
+from typing import Any, Literal, overload
+
 from pydantic import Field, PositiveInt, validate_call
 
 from ..utils.errors import DABInputError
-from ..utils.modelos import Params, com_params
+from ..utils.modelos import Params, Registro, com_params
 from ..utils.requisicao import Requisicao
 from ..utils.saida import consultar
-from ..utils.typing import Expectativa, Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Expectativa, Formato, Saida
 from . import modelos as m
 
 _COMUNS = (
@@ -105,6 +107,83 @@ class _ParamsExpectativas(Params):
         if self.indicador is not None:
             params["$filter"] = f"Indicador eq '{self.indicador}'"
         return params | super().para_api()
+
+
+@overload
+def expectativas(
+    expectativa: Expectativa,
+    indicador: str | None = ...,
+    top: PositiveInt | None = ...,
+    ordenar_por: str = ...,
+    asc: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def expectativas(
+    expectativa: Expectativa,
+    indicador: str | None = ...,
+    top: PositiveInt | None = ...,
+    ordenar_por: str = ...,
+    asc: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def expectativas(
+    expectativa: Expectativa,
+    indicador: str | None = ...,
+    top: PositiveInt | None = ...,
+    ordenar_por: str = ...,
+    asc: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[Registro]: ...
+
+
+@overload
+def expectativas(
+    expectativa: Expectativa,
+    indicador: str | None = ...,
+    top: PositiveInt | None = ...,
+    ordenar_por: str = ...,
+    asc: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def expectativas(
+    expectativa: Expectativa,
+    indicador: str | None = ...,
+    top: PositiveInt | None = ...,
+    ordenar_por: str = ...,
+    asc: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def expectativas(
+    expectativa: Expectativa,
+    indicador: str | None = ...,
+    top: PositiveInt | None = ...,
+    ordenar_por: str = ...,
+    asc: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call

@@ -1,11 +1,12 @@
 from datetime import date
+from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, validate_call
 
 from ..utils.modelos import Params, com_params
 from ..utils.requisicao import Requisicao
 from ..utils.saida import consultar
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 
 
@@ -16,6 +17,83 @@ class _ParamsSerie(Params):
     ultimos: PositiveInt | None = Field(None, exclude=True)
     inicio: date | None = Field(None, serialization_alias="dataInicial")
     fim: date | None = Field(None, serialization_alias="dataFinal")
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.ValorSerie]: ...
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call

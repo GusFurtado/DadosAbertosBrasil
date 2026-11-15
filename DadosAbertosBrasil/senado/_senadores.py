@@ -1,11 +1,11 @@
 from datetime import date
-from typing import Literal
+from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, computed_field, validate_call
 
 from ..utils.modelos import Maiusculo, SiglaUF, com_params
 from ..utils.objeto import Objeto
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 from ._comum import ParamsSenado, consultar_senado, filtro_parlamentares, requisicao
 
@@ -230,6 +230,95 @@ class Senador(Objeto):
     def __str__(self) -> str:
         return self.nome_completo
 
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Aparte]: ...
+
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
     @com_params(_ParamsPronunciamentos)
     def apartes(
         self,
@@ -308,6 +397,83 @@ class Senador(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Autoria]: ...
+
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
     @com_params(_ParamsAutorias)
     def autorias(
         self,
@@ -374,6 +540,34 @@ class Senador(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def cargos(
+        self, comissao: str | None = ..., ativos: bool | None = ..., formato: Literal["bruto"] | None = ...
+    ) -> Any: ...
+
+    @overload
+    def cargos(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["json"]
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def cargos(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["pydantic"]
+    ) -> list[m.Cargo]: ...
+
+    @overload
+    def cargos(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["pandas"]
+    ) -> DataFramePandas: ...
+
+    @overload
+    def cargos(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["polars"]
+    ) -> DataFramePolars: ...
+
+    @overload
+    def cargos(self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["url"]) -> str: ...
+
     @com_params(_ParamsComissoes)
     def cargos(
         self,
@@ -419,6 +613,34 @@ class Senador(Objeto):
             formato,
             verificar_certificado=self.verify,
         )
+
+    @overload
+    def comissoes(
+        self, comissao: str | None = ..., ativos: bool | None = ..., formato: Literal["bruto"] | None = ...
+    ) -> Any: ...
+
+    @overload
+    def comissoes(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["json"]
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def comissoes(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["pydantic"]
+    ) -> list[m.MembroComissao]: ...
+
+    @overload
+    def comissoes(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["pandas"]
+    ) -> DataFramePandas: ...
+
+    @overload
+    def comissoes(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["polars"]
+    ) -> DataFramePolars: ...
+
+    @overload
+    def comissoes(self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["url"]) -> str: ...
 
     @com_params(_ParamsComissoes)
     def comissoes(
@@ -466,6 +688,24 @@ class Senador(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def cursos(self, formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def cursos(self, *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def cursos(self, *, formato: Literal["pydantic"]) -> list[m.Curso]: ...
+
+    @overload
+    def cursos(self, *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def cursos(self, *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def cursos(self, *, formato: Literal["url"]) -> str: ...
+
     def cursos(self, formato: Formato | None = None) -> Saida:
         """Obtém o histórico acadêmico de um senador.
 
@@ -497,6 +737,95 @@ class Senador(Objeto):
             formato,
             verificar_certificado=self.verify,
         )
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Discurso]: ...
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
 
     @com_params(_ParamsPronunciamentos)
     def discursos(
@@ -579,6 +908,24 @@ class Senador(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def filiacoes(self, index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def filiacoes(self, index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def filiacoes(self, index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Filiacao]: ...
+
+    @overload
+    def filiacoes(self, index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def filiacoes(self, index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def filiacoes(self, index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def filiacoes(
         self,
         index: bool = False,
@@ -635,6 +982,24 @@ class Senador(Objeto):
             ["senador", self.cod, "historico"], ["DetalheParlamentar", "Parlamentar"], verificar_certificado=self.verify
         ).json()
 
+    @overload
+    def mandatos(self, index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def mandatos(self, index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def mandatos(self, index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Mandato]: ...
+
+    @overload
+    def mandatos(self, index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def mandatos(self, index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def mandatos(self, index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def mandatos(
         self,
         index: bool = False,
@@ -676,6 +1041,24 @@ class Senador(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def liderancas(self, formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def liderancas(self, *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def liderancas(self, *, formato: Literal["pydantic"]) -> list[m.Lideranca]: ...
+
+    @overload
+    def liderancas(self, *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def liderancas(self, *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def liderancas(self, *, formato: Literal["url"]) -> str: ...
+
     def liderancas(self, formato: Formato | None = None) -> Saida:
         """Obtém os cargos de liderança de um senador.
 
@@ -707,6 +1090,32 @@ class Senador(Objeto):
             formato,
             verificar_certificado=self.verify,
         )
+
+    @overload
+    def licencas(self, inicio: date | None = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def licencas(
+        self, inicio: date | None = ..., index: bool = ..., *, formato: Literal["json"]
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def licencas(
+        self, inicio: date | None = ..., index: bool = ..., *, formato: Literal["pydantic"]
+    ) -> list[m.Licenca]: ...
+
+    @overload
+    def licencas(
+        self, inicio: date | None = ..., index: bool = ..., *, formato: Literal["pandas"]
+    ) -> DataFramePandas: ...
+
+    @overload
+    def licencas(
+        self, inicio: date | None = ..., index: bool = ..., *, formato: Literal["polars"]
+    ) -> DataFramePolars: ...
+
+    @overload
+    def licencas(self, inicio: date | None = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
 
     @com_params(_ParamsLicencas)
     def licencas(
@@ -754,6 +1163,24 @@ class Senador(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def profissoes(self, formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def profissoes(self, *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def profissoes(self, *, formato: Literal["pydantic"]) -> list[m.Profissao]: ...
+
+    @overload
+    def profissoes(self, *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def profissoes(self, *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def profissoes(self, *, formato: Literal["url"]) -> str: ...
+
     def profissoes(self, formato: Formato | None = None) -> Saida:
         """Obtém a(s) profissão(ões) de um senador.
 
@@ -785,6 +1212,77 @@ class Senador(Objeto):
             formato,
             verificar_certificado=self.verify,
         )
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Relatoria]: ...
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
 
     @com_params(_ParamsRelatorias)
     def relatorias(
@@ -843,6 +1341,77 @@ class Senador(Objeto):
             formato,
             verificar_certificado=self.verify,
         )
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Voto]: ...
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
 
     @com_params(_ParamsMaterias)
     def votacoes(
@@ -903,6 +1472,101 @@ class Senador(Objeto):
             index=index,
             verificar_certificado=self.verify,
         )
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Senador]: ...
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call

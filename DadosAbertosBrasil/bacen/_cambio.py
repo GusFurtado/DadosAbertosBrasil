@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Literal
+from typing import Any, Literal, overload
 
 from pydantic import Field, validate_call
 
@@ -8,7 +8,7 @@ from ..utils.errors import DABInputError
 from ..utils.modelos import Params, com_params, validar
 from ..utils.requisicao import Requisicao
 from ..utils.saida import resolver_formato, tabela
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 
 _COTACAO = "CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)"
@@ -31,6 +31,89 @@ class _ParamsCambio(Params):
             "$select": f"cotacao{self.cotacao.title()},dataHoraCotacao",
             "$format": "json",
         }
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Cotacao]: ...
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call

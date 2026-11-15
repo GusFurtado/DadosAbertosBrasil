@@ -1,11 +1,12 @@
 from datetime import date
+from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, validate_call
 
 from ..utils.errors import alias_descontinuado
 from ..utils.modelos import com_params
 from ..utils.objeto import Objeto
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 from ._comum import Ordenacao, Periodo, consultar_camara, requisicao
 
@@ -111,6 +112,26 @@ class Votacao(Objeto):
     def __str__(self) -> str:
         return f"Votação {self.cod}"
 
+    @overload
+    def orientacoes(self, url: bool = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def orientacoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def orientacoes(
+        self, url: bool = ..., index: bool = ..., *, formato: Literal["pydantic"]
+    ) -> list[m.Orientacao]: ...
+
+    @overload
+    def orientacoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def orientacoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def orientacoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def orientacoes(
         self,
         url: bool = True,
@@ -173,6 +194,24 @@ class Votacao(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def votos(self, url: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def votos(self, url: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def votos(self, url: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Voto]: ...
+
+    @overload
+    def votos(self, url: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def votos(self, url: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def votos(self, url: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def votos(
         self,
         url: bool = True,
@@ -224,6 +263,119 @@ class Votacao(Objeto):
             url=url,
             verificar_certificado=self.verify,
         )
+
+
+@overload
+def lista_votacoes(
+    proposicao: int | None = ...,
+    evento: int | None = ...,
+    orgao: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_votacoes(
+    proposicao: int | None = ...,
+    evento: int | None = ...,
+    orgao: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_votacoes(
+    proposicao: int | None = ...,
+    evento: int | None = ...,
+    orgao: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Votacao]: ...
+
+
+@overload
+def lista_votacoes(
+    proposicao: int | None = ...,
+    evento: int | None = ...,
+    orgao: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_votacoes(
+    proposicao: int | None = ...,
+    evento: int | None = ...,
+    orgao: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_votacoes(
+    proposicao: int | None = ...,
+    evento: int | None = ...,
+    orgao: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call

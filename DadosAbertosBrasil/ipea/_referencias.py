@@ -1,10 +1,12 @@
 
+from typing import Any, Literal, overload
+
 from pydantic import Field, PositiveInt, validate_call
 
 from ..utils.modelos import Params, com_params
 from ..utils.requisicao import Requisicao
 from ..utils.saida import consultar
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 
 
@@ -26,6 +28,71 @@ class _ParamsTerritorios(Params):
 
 def _ipea(path: str, verificar_certificado: bool | None) -> Requisicao:
     return Requisicao("ipea", [path], chaves=["value"], verificar_certificado=verificar_certificado, cacheavel=True)
+
+
+@overload
+def lista_temas(
+    cod: PositiveInt | None = ...,
+    pai: PositiveInt | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_temas(
+    cod: PositiveInt | None = ...,
+    pai: PositiveInt | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_temas(
+    cod: PositiveInt | None = ...,
+    pai: PositiveInt | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Tema]: ...
+
+
+@overload
+def lista_temas(
+    cod: PositiveInt | None = ...,
+    pai: PositiveInt | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_temas(
+    cod: PositiveInt | None = ...,
+    pai: PositiveInt | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_temas(
+    cod: PositiveInt | None = ...,
+    pai: PositiveInt | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
@@ -119,6 +186,45 @@ def lista_temas(
     )
 
 
+@overload
+def lista_paises(
+    cod: str | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_paises(
+    cod: str | None = ..., index: bool = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_paises(
+    cod: str | None = ..., index: bool = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.Pais]: ...
+
+
+@overload
+def lista_paises(
+    cod: str | None = ..., index: bool = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_paises(
+    cod: str | None = ..., index: bool = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_paises(
+    cod: str | None = ..., index: bool = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...
+) -> str: ...
+
+
 @validate_call
 @com_params(_ParamsPaises)
 def lista_paises(
@@ -194,6 +300,77 @@ def lista_paises(
         formato,
         index=index,
     )
+
+
+@overload
+def lista_territorios(
+    capital: bool | None = ...,
+    amc: bool | None = ...,
+    cod: int | None = ...,
+    nivel: str | None = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_territorios(
+    capital: bool | None = ...,
+    amc: bool | None = ...,
+    cod: int | None = ...,
+    nivel: str | None = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_territorios(
+    capital: bool | None = ...,
+    amc: bool | None = ...,
+    cod: int | None = ...,
+    nivel: str | None = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Territorio]: ...
+
+
+@overload
+def lista_territorios(
+    capital: bool | None = ...,
+    amc: bool | None = ...,
+    cod: int | None = ...,
+    nivel: str | None = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_territorios(
+    capital: bool | None = ...,
+    amc: bool | None = ...,
+    cod: int | None = ...,
+    nivel: str | None = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_territorios(
+    capital: bool | None = ...,
+    amc: bool | None = ...,
+    cod: int | None = ...,
+    nivel: str | None = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call

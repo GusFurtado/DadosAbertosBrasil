@@ -1,10 +1,11 @@
 from datetime import date
+from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, computed_field, validate_call
 
 from ..utils.modelos import SiglaUF, com_params
 from ..utils.objeto import Objeto
-from ..utils.typing import Formato, Saida
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
 from . import modelos as m
 from ._comum import Ordenacao, ParamsCamara, Periodo, consultar_camara, requisicao
 
@@ -179,6 +180,24 @@ class Proposicao(Objeto):
     def __str__(self) -> str:
         return f"Proposição {self.cod}"
 
+    @overload
+    def autores(self, url: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def autores(self, url: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def autores(self, url: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Autor]: ...
+
+    @overload
+    def autores(self, url: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def autores(self, url: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def autores(self, url: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def autores(
         self,
         url: bool = True,
@@ -231,6 +250,26 @@ class Proposicao(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def relacionadas(self, url: bool = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def relacionadas(self, url: bool = ..., index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def relacionadas(
+        self, url: bool = ..., index: bool = ..., *, formato: Literal["pydantic"]
+    ) -> list[m.ProposicaoRelacionada]: ...
+
+    @overload
+    def relacionadas(self, url: bool = ..., index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def relacionadas(self, url: bool = ..., index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def relacionadas(self, url: bool = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def relacionadas(
         self,
         url: bool = True,
@@ -281,6 +320,24 @@ class Proposicao(Objeto):
             verificar_certificado=self.verify,
         )
 
+    @overload
+    def temas(self, index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def temas(self, index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def temas(self, index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Tema]: ...
+
+    @overload
+    def temas(self, index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def temas(self, index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def temas(self, index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def temas(
         self, index: bool = False, formato: Formato | None = None
     ) -> Saida:
@@ -322,6 +379,71 @@ class Proposicao(Objeto):
             index=index,
             verificar_certificado=self.verify,
         )
+
+    @overload
+    def tramitacoes(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def tramitacoes(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def tramitacoes(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Tramitacao]: ...
+
+    @overload
+    def tramitacoes(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def tramitacoes(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def tramitacoes(
+        self,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
 
     @com_params(_ParamsTramitacoes)
     def tramitacoes(
@@ -383,6 +505,47 @@ class Proposicao(Objeto):
             index_col="sequencia",
             verificar_certificado=self.verify,
         )
+
+    @overload
+    def votacoes(
+        self,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def votacoes(
+        self, asc: bool = ..., ordenar_por: str = ..., url: bool = ..., index: bool = ..., *, formato: Literal["json"]
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def votacoes(
+        self,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Votacao]: ...
+
+    @overload
+    def votacoes(
+        self, asc: bool = ..., ordenar_por: str = ..., url: bool = ..., index: bool = ..., *, formato: Literal["pandas"]
+    ) -> DataFramePandas: ...
+
+    @overload
+    def votacoes(
+        self, asc: bool = ..., ordenar_por: str = ..., url: bool = ..., index: bool = ..., *, formato: Literal["polars"]
+    ) -> DataFramePolars: ...
+
+    @overload
+    def votacoes(
+        self, asc: bool = ..., ordenar_por: str = ..., url: bool = ..., index: bool = ..., *, formato: Literal["url"]
+    ) -> str: ...
 
     @com_params(_ParamsVotacoesProposicao)
     def votacoes(
@@ -446,6 +609,185 @@ class Proposicao(Objeto):
             index=index,
             verificar_certificado=self.verify,
         )
+
+
+@overload
+def lista_proposicoes(
+    tipo: str | None = ...,
+    numero: int | None = ...,
+    ano: PositiveInt | None = ...,
+    autor_cod: int | None = ...,
+    autor_nome: str | None = ...,
+    partido_sigla: str | None = ...,
+    partido_cod: PositiveInt | None = ...,
+    autor_uf: str | None = ...,
+    keyword: str | None = ...,
+    tramitacao_senado: bool = ...,
+    apresentacao_inicio: date | None = ...,
+    apresentacao_fim: date | None = ...,
+    situacao: int | None = ...,
+    tema: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: int | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_proposicoes(
+    tipo: str | None = ...,
+    numero: int | None = ...,
+    ano: PositiveInt | None = ...,
+    autor_cod: int | None = ...,
+    autor_nome: str | None = ...,
+    partido_sigla: str | None = ...,
+    partido_cod: PositiveInt | None = ...,
+    autor_uf: str | None = ...,
+    keyword: str | None = ...,
+    tramitacao_senado: bool = ...,
+    apresentacao_inicio: date | None = ...,
+    apresentacao_fim: date | None = ...,
+    situacao: int | None = ...,
+    tema: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: int | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_proposicoes(
+    tipo: str | None = ...,
+    numero: int | None = ...,
+    ano: PositiveInt | None = ...,
+    autor_cod: int | None = ...,
+    autor_nome: str | None = ...,
+    partido_sigla: str | None = ...,
+    partido_cod: PositiveInt | None = ...,
+    autor_uf: str | None = ...,
+    keyword: str | None = ...,
+    tramitacao_senado: bool = ...,
+    apresentacao_inicio: date | None = ...,
+    apresentacao_fim: date | None = ...,
+    situacao: int | None = ...,
+    tema: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: int | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Proposicao]: ...
+
+
+@overload
+def lista_proposicoes(
+    tipo: str | None = ...,
+    numero: int | None = ...,
+    ano: PositiveInt | None = ...,
+    autor_cod: int | None = ...,
+    autor_nome: str | None = ...,
+    partido_sigla: str | None = ...,
+    partido_cod: PositiveInt | None = ...,
+    autor_uf: str | None = ...,
+    keyword: str | None = ...,
+    tramitacao_senado: bool = ...,
+    apresentacao_inicio: date | None = ...,
+    apresentacao_fim: date | None = ...,
+    situacao: int | None = ...,
+    tema: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: int | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_proposicoes(
+    tipo: str | None = ...,
+    numero: int | None = ...,
+    ano: PositiveInt | None = ...,
+    autor_cod: int | None = ...,
+    autor_nome: str | None = ...,
+    partido_sigla: str | None = ...,
+    partido_cod: PositiveInt | None = ...,
+    autor_uf: str | None = ...,
+    keyword: str | None = ...,
+    tramitacao_senado: bool = ...,
+    apresentacao_inicio: date | None = ...,
+    apresentacao_fim: date | None = ...,
+    situacao: int | None = ...,
+    tema: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: int | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_proposicoes(
+    tipo: str | None = ...,
+    numero: int | None = ...,
+    ano: PositiveInt | None = ...,
+    autor_cod: int | None = ...,
+    autor_nome: str | None = ...,
+    partido_sigla: str | None = ...,
+    partido_cod: PositiveInt | None = ...,
+    autor_uf: str | None = ...,
+    keyword: str | None = ...,
+    tramitacao_senado: bool = ...,
+    apresentacao_inicio: date | None = ...,
+    apresentacao_fim: date | None = ...,
+    situacao: int | None = ...,
+    tema: int | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    pagina: PositiveInt = ...,
+    itens: int | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
