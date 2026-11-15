@@ -2,6 +2,7 @@ from typing import Optional
 
 from pydantic import Field, PositiveInt, validate_call
 
+from ..utils.errors import alias_descontinuado
 from ..utils.modelos import com_params
 from ..utils.objeto import Objeto
 from ..utils.typing import Formato, Saida
@@ -43,7 +44,7 @@ class Frente(Objeto):
     email : str
         E-mail de contato.
 
-    id_sitacao : int
+    id_situacao : int
         ID da situação da frente parlamentar.
 
     keywords : str
@@ -88,6 +89,8 @@ class Frente(Objeto):
         self.cod = cod
         self.verify = verificar_certificado
         self._carregar(requisicao(["frentes", cod], verificar_certificado=verificar_certificado))
+
+    id_sitacao = alias_descontinuado("id_sitacao", "id_situacao")
 
     def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: {self.titulo}"

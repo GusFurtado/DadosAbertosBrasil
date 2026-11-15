@@ -263,7 +263,7 @@ class FrenteDetalhes(Registro):
     coordenador: dict | None = None
     documento: Url = Field(None, validation_alias="urlDocumento")
     email: Url = None
-    id_sitacao: Inteiro = Field(None, validation_alias="idSituacao")
+    id_situacao: Inteiro = Field(None, validation_alias="idSituacao")
     keywords: Texto = None
     legislatura: Inteiro = Field(None, validation_alias="idLegislatura")
     situacao: Texto = None
@@ -354,7 +354,7 @@ class OrgaoDetalhes(Registro):
     sigla: Texto = None
     tipo: Texto = Field(None, validation_alias="tipoOrgao")
     uri: Url = None
-    urlWebsite: Url = None
+    website: Url = Field(None, validation_alias="urlWebsite")
 
 
 class EventoOrgao(Registro):
@@ -529,7 +529,7 @@ class VotacaoDetalhes(Registro):
 
     aprovacao: Inteiro = None
     data: Data = None
-    data_regitro: DataHora = Field(None, validation_alias="dataHoraRegistro")
+    data_registro: DataHora = Field(None, validation_alias="dataHoraRegistro")
     data_ultima_abertura: DataHora = Field(None, validation_alias="dataHoraUltimaAberturaVotacao")
     descricao: Texto = None
     efeitos_registrados: list | None = Field(None, validation_alias="efeitosRegistrados")

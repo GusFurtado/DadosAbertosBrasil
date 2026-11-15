@@ -65,8 +65,17 @@ class DABValidacaoWarning(UserWarning):
     """
 
 
-class _DABDeprecationError(DeprecationWarning):
-    """Erro gerado quando o usuário chama uma função depreciada."""
+def alias_descontinuado(antigo: str, novo: str) -> property:
+    """Atributo com nome antigo que lê o novo, com `DeprecationWarning`."""
+
+    def ler(self):
+        descontinuado(
+            f"`{type(self).__name__}.{antigo}` foi renomeado para `{novo}` e o nome antigo "
+            "deixa de existir em uma versão futura do 3.x."
+        )
+        return getattr(self, novo)
+
+    return property(ler, doc=f"Nome antigo de `{novo}`.")
 
 
 def descontinuado(mensagem: str, stacklevel: int | None = None) -> None:
@@ -104,12 +113,6 @@ def nome_antigo(nome: str):
             stacklevel=4,
         )
         return globals()[novo]
-    if nome == "DAB_DeprecationError":
-        descontinuado(
-            "`DAB_DeprecationError` não é usado pelo pacote e será removido no 3.0.",
-            stacklevel=4,
-        )
-        return _DABDeprecationError
     return None
 
 
