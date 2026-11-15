@@ -8,6 +8,8 @@ correspondente (`ValueError` ou `TypeError`).
 
 import warnings
 
+from .._config import nivel_fora_do_pacote
+
 GUIA_MIGRACAO = "https://www.gustavofurtado.com/DadosAbertosBrasil/migracao/"
 """Endereço do guia de migração do 2.x para o 3.0."""
 
@@ -47,12 +49,16 @@ class _DABDeprecationError(DeprecationWarning):
     """Erro gerado quando o usuário chama uma função depreciada."""
 
 
-def descontinuado(mensagem: str, stacklevel: int = 3) -> None:
-    """Emite um `DeprecationWarning` com o link do guia de migração."""
+def descontinuado(mensagem: str, stacklevel: int | None = None) -> None:
+    """Emite um `DeprecationWarning` com o link do guia de migração.
+
+    Se `stacklevel` for omitido, o aviso aponta para a primeira linha fora do
+    pacote, mesmo com `@validate_call` no meio.
+    """
     warnings.warn(
         f"{mensagem} Veja o guia de migração: {GUIA_MIGRACAO}",
         DeprecationWarning,
-        stacklevel=stacklevel,
+        stacklevel=stacklevel or nivel_fora_do_pacote(),
     )
 
 

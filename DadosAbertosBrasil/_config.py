@@ -1,9 +1,25 @@
+import sys
 import warnings
+from pathlib import Path
 from typing import Literal
 
+import pydantic
 from pydantic import BaseModel, ConfigDict
 
 _formato_avisado = False
+_PACOTE = str(Path(__file__).parent)
+# Frames do pydantic aparecem entre o usuário e o pacote (`@validate_call`).
+_INTERNOS = (_PACOTE, str(Path(pydantic.__file__).parent))
+
+
+def nivel_fora_do_pacote() -> int:
+    """`stacklevel` que aponta para o primeiro frame fora do DadosAbertosBrasil (e do pydantic)."""
+    frame = sys._getframe(1)
+    nivel = 1
+    while frame is not None and frame.f_code.co_filename.startswith(_INTERNOS):
+        frame = frame.f_back
+        nivel += 1
+    return nivel
 
 
 def _avisar_formato() -> None:
@@ -22,7 +38,7 @@ def _avisar_formato() -> None:
         'Defina `DadosAbertosBrasil.config.formato = "pandas"` (ou "polars") para '
         f"manter o retorno atual e silenciar este aviso. Guia de migração: {GUIA_MIGRACAO}",
         DABFormatoWarning,
-        stacklevel=4,
+        stacklevel=nivel_fora_do_pacote(),
     )
 
 

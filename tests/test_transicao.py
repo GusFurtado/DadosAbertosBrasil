@@ -1,8 +1,10 @@
 """Avisos da versão de transição 2.3 para o 3.0."""
 
+import sys
 import warnings
 
 import pytest
+import requests
 
 import DadosAbertosBrasil as dab
 from DadosAbertosBrasil import _config, favoritos, ibge, senado
@@ -36,6 +38,30 @@ def test_formato_explicito_nao_avisa(config_limpa):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         assert config_limpa.resolver_formato("polars") == "polars"
+
+
+class _SemRedeError(Exception):
+    pass
+
+
+@pytest.mark.parametrize("funcao", ["camara.lista_partidos", "bacen.moedas"])
+def test_aviso_formato_aponta_para_quem_chama(monkeypatch, funcao):
+    """O aviso indica a linha do usuário, não a do pacote ou do `validate_call`."""
+    # Os módulos guardam a própria referência a `config`: troca em todos.
+    antiga, nova = _config.config, _config.Config()
+    for modulo in list(sys.modules.values()):
+        if modulo.__name__.startswith("DadosAbertosBrasil") and getattr(modulo, "config", None) is antiga:
+            monkeypatch.setattr(modulo, "config", nova)
+    monkeypatch.setattr(_config, "_formato_avisado", False)
+
+    def sem_rede(*args, **kwargs):
+        raise _SemRedeError
+
+    monkeypatch.setattr(requests.Session, "get", sem_rede)
+    modulo, nome = funcao.split(".")
+    with pytest.warns(dab.DABFormatoWarning) as avisos, pytest.raises(_SemRedeError):
+        getattr(getattr(dab, modulo), nome)()
+    assert avisos[0].filename == __file__
 
 
 def test_aviso_formato_filtravel():
@@ -76,8 +102,9 @@ def test_nome_inexistente():
     ],
 )
 def test_funcoes_renomeadas_do_senado(antigo, novo):
-    with pytest.warns(DeprecationWarning, match=novo):
+    with pytest.warns(DeprecationWarning, match=novo) as avisos:
         url = antigo(**({"inicio": 56} if novo == "lista_legislaturas" else {}), formato="url")
+    assert avisos[0].filename == __file__
     assert url.startswith("https://") or url.startswith("http://")
 
 
@@ -86,6 +113,7 @@ def test_funcoes_renomeadas_do_senado(antigo, novo):
     [(favoritos.perfil_eleitorado, "eleitorado.csv"), (ibge.coordenadas, "coordenadas.csv")],
 )
 def test_funcoes_removidas_no_3_0_avisam(funcao, arquivo):
-    with pytest.warns(DeprecationWarning, match="3.0"):
+    with pytest.warns(DeprecationWarning, match="3.0") as avisos:
         url = funcao(formato="url")
+    assert avisos[0].filename == __file__
     assert url == f"https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil-wiki/2.x/data/{arquivo}"
