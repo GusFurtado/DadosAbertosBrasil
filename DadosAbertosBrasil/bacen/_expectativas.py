@@ -1,9 +1,9 @@
-
+from functools import wraps
 from typing import Any, Literal, overload
 
 from pydantic import Field, PositiveInt, validate_call
 
-from ..utils.errors import DABInputError
+from ..utils.errors import DABInputError, removida
 from ..utils.modelos import Params, Registro, com_params
 from ..utils.requisicao import Requisicao
 from ..utils.saida import consultar
@@ -93,6 +93,22 @@ _EXPECTATIVAS = {
         ),
     ),
 }
+
+
+def _sem_instituicoes(funcao):
+    """O conjunto "instituicoes" saiu no 3.0: explica em vez de só recusar o valor."""
+
+    @wraps(funcao)
+    def wrapper(*args, **kwargs):
+        if (args[0] if args else kwargs.get("expectativa")) == "instituicoes":
+            raise removida(
+                'bacen.expectativas("instituicoes")',
+                "O conjunto de expectativas por instituição não existe mais na API do Banco Central, e não há "
+                "substituto.",
+            )
+        return funcao(*args, **kwargs)
+
+    return wrapper
 
 
 class _ParamsExpectativas(Params):
@@ -186,6 +202,7 @@ def expectativas(
 ) -> str: ...
 
 
+@_sem_instituicoes
 @validate_call
 @com_params(_ParamsExpectativas)
 def expectativas(
