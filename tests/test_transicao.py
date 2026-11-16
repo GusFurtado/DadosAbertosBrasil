@@ -7,7 +7,7 @@ import pytest
 import requests
 
 import DadosAbertosBrasil as dab
-from DadosAbertosBrasil import _config, favoritos, ibge, senado
+from DadosAbertosBrasil import _config, bacen, favoritos, ibge, senado
 from DadosAbertosBrasil.utils import errors
 
 
@@ -114,3 +114,11 @@ def test_funcoes_removidas_viram_stubs(funcao):
     with pytest.raises(dab.DABFuncaoRemovidaError, match="migracao"):
         funcao(formato="pandas")
     assert issubclass(dab.DABFuncaoRemovidaError, NotImplementedError)
+
+
+@pytest.mark.parametrize(
+    "chamada", [lambda: bacen.expectativas("instituicoes"), lambda: bacen.expectativas(expectativa="instituicoes")]
+)
+def test_expectativas_instituicoes_removida(chamada):
+    with pytest.raises(dab.DABFuncaoRemovidaError, match="migracao"):
+        chamada()
