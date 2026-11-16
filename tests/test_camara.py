@@ -1,7 +1,7 @@
 import pytest
 from DadosAbertosBrasil import camara
 
-pytestmark = pytest.mark.online
+pytestmark = pytest.mark.vcr
 
 
 def test_lista_blocos():
@@ -40,7 +40,7 @@ def test_lista_partidos():
 
 
 def test_lista_proposicoes():
-    df = camara.lista_proposicoes()
+    df = camara.lista_proposicoes(tipo="PL", ano=2025, itens=5)
     assert not df.empty
 
 
@@ -51,11 +51,11 @@ def test_lista_votacoes():
 
 def test_referencias():
     df = camara.referencias("ufs")
-    return not df.empty
+    assert not df.empty
 
 
 def test_Bloco():
-    obj = camara.Bloco(586)
+    obj = camara.Bloco(584)
     assert obj.dados
 
 

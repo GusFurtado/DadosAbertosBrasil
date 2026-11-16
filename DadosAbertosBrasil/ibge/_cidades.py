@@ -1,6 +1,7 @@
-from typing import Iterator, Optional
+from typing import Iterator
 
-from ..utils import Get, parse
+from ..utils import parse
+from ..utils.requisicao import Requisicao
 
 
 class _Fotografia:
@@ -69,8 +70,8 @@ class _Fotografia:
 
     def __call__(
         self,
-        altura: Optional[int] = None,
-        largura: Optional[int] = None,
+        altura: int | None = None,
+        largura: int | None = None,
     ) -> str:
         """Gera a URL da foto.
 
@@ -169,17 +170,17 @@ class Galeria:
         return f"Galeria {self.localidade}"
 
     def _get_photos(self) -> dict:
-        return Get(
-            endpoint="ibge",
-            path=["biblioteca"],
-            params={
+        return Requisicao(
+            "ibge",
+            ["biblioteca"],
+            {
                 "codmun": self.localidade,
                 "aspas": "3",
                 "fotografias": "1",
                 "serie": "Acervo dos Trabalhos Geográficos de Campo|Acervo dos Municípios brasileiros",
             },
-            verify=self.verify,
-        ).json
+            verificar_certificado=self.verify,
+        ).json()
 
 
 class Historia:
@@ -263,12 +264,9 @@ class Historia:
         return f"História ({self.localidade})"
 
     def _get_historia(self) -> dict:
-        return Get(
-            endpoint="ibge",
-            path=["biblioteca"],
-            params={"aspas": "3", "codmun": self.localidade},
-            verify=self.verify,
-        ).json
+        return Requisicao(
+            "ibge", ["biblioteca"], {"aspas": "3", "codmun": self.localidade}, verificar_certificado=self.verify
+        ).json()
 
     def _set_attribs(self, d: dict) -> None:
         for attribs in d:

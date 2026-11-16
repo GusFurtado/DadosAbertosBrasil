@@ -7,7 +7,6 @@ from DadosAbertosBrasil import (
     catalogo,
     codigos_municipios,
     ipca,
-    perfil_eleitorado,
     pib,
     rentabilidade_poupanca,
     reservas_internacionais,
@@ -17,7 +16,7 @@ from DadosAbertosBrasil import (
     taxa_referencial,
 )
 
-pytestmark = pytest.mark.online
+pytestmark = pytest.mark.vcr
 
 # A Wikimedia pede um User-Agent que identifique o cliente e limita primeiro os
 # genéricos: https://meta.wikimedia.org/wiki/User-Agent_policy
@@ -48,15 +47,10 @@ def test_codigos_municipios():
 
 def test_ipca():
     df = ipca(ultimos=10, index=True)
-    assert df.shape == (10, 1)
+    assert df.shape == (10, 2)  # datafim e valor
 
     df = ipca(inicio="2024-01-01", fim="2024-02-01")
-    assert df.shape == (2, 2)
-
-
-def test_perfil_eleitorado():
-    df = perfil_eleitorado()
-    assert not df.empty
+    assert df.shape == (2, 3)  # data, datafim e valor
 
 
 def test_pib():

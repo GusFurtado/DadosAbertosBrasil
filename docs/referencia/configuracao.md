@@ -12,6 +12,23 @@ dab.config.formato = "polars"
 dab.config.verificar_certificado = False
 ```
 
+## Cache
+
+Dados que mudam pouco (localidades do IBGE, referências da Câmara e do Senado, listas do IPEA e os
+arquivos do módulo `wiki`) podem ser guardados localmente. O cache vem desligado:
+
+```python
+dab.config.cache = True
+dab.config.cache_validade = 7 * 24 * 3600   # uma semana (ou um timedelta)
+
+with dab.config.sem_cache():                # ignora o cache neste bloco
+    dab.ibge.localidades("municipios")
+
+dab.config.limpar_cache()                   # apaga tudo o que foi guardado
+```
+
+As demais consultas (séries, votações, despesas...) sempre vão à API.
+
 ::: DadosAbertosBrasil._config.Config
     options:
       show_root_full_path: false
@@ -36,4 +53,6 @@ versão futura do 3.x.
         - DABLocalidadeError
         - DABMoedaError
         - DABUFError
+        - DABFuncaoRemovidaError
+        - DABValidacaoWarning
         - DABFormatoWarning

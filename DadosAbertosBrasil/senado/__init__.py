@@ -35,7 +35,7 @@ Utilize os métodos da classe `Senador` para obter mais detalhes:
 API Original
 ------------ 
   
-- **Dados Abertos do Senado:** `<http://legis.senado.gov.br/dadosabertos/docs/>`_
+- **Dados Abertos do Senado:** `<https://legis.senado.gov.br/dadosabertos/docs/>`_
 
 """
 

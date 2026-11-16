@@ -1,23 +1,112 @@
 from datetime import date
-from typing import Optional
+from typing import Any, Literal, overload
 
-import pandas as pd
-from pydantic import validate_call, PositiveInt
+from pydantic import Field, PositiveInt, validate_call
 
-from .._config import config
-from ..utils import Get, parse, Formato, Output, converter
+from ..utils.modelos import Params, com_params
+from ..utils.requisicao import Requisicao
+from ..utils.saida import consultar
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from . import modelos as m
+
+
+class _ParamsSerie(Params):
+    formato_data = "%d/%m/%Y"
+
+    cod: PositiveInt = Field(exclude=True)
+    ultimos: PositiveInt | None = Field(None, exclude=True)
+    inicio: date | None = Field(None, serialization_alias="dataInicial")
+    fim: date | None = Field(None, serialization_alias="dataFinal")
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.ValorSerie]: ...
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def serie(
+    cod: PositiveInt,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
+@com_params(_ParamsSerie)
 def serie(
     cod: PositiveInt,
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Série do Sistema Gerenciador de Série Temporais (SGS) do Banco Central.
 
     Parameters
@@ -43,12 +132,15 @@ def serie(
         Define se a coluna `"data"` será o index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -57,7 +149,7 @@ def serie(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Valores da série temporal pesquisada.
 
     Raises
@@ -116,27 +208,14 @@ def serie(
 
     """
 
+    params = _ParamsSerie.de_locais(locals())
     path = ["dados", "serie", f"bcdata.sgs.{cod}", "dados"]
     if ultimos is not None:
-        path += ["ultimos", str(ultimos)]
-
-    params = []
-    if inicio is not None:
-        params.append(f"dataInicial={parse.data(inicio, modulo='sgs')}")
-    if fim is not None:
-        params.append(f"dataFinal={parse.data(fim, modulo='sgs')}")
-
-    if len(params) > 0:
-        path += [f'?{"&".join(params)}']
-
-    formato = config.resolver_formato(formato)
-    get = Get(endpoint="sgs", path=path, verify=verificar_certificado)
-    if formato not in ("pandas", "polars"):
-        return get.get(formato)
-
-    data = get.pandas
-    data["data"] = pd.to_datetime(data["data"], format="%d/%m/%Y")
-    if "datafim" in data.columns:
-        data["datafim"] = pd.to_datetime(data["datafim"], format="%d/%m/%Y")
-
-    return converter(data, formato, index, "data")
+        path += ["ultimos", ultimos]
+    return consultar(
+        Requisicao("sgs", path, params.para_api(), verificar_certificado=verificar_certificado),
+        m.ValorSerie,
+        formato,
+        index=index,
+        index_col="data",
+    )

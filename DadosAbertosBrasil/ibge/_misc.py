@@ -1,21 +1,27 @@
-from typing import Literal, Optional
+from typing import Any, Literal, overload
 
-import pandas as pd
-from pydantic import validate_call, PositiveInt
-import requests
+from pydantic import Field, PositiveInt, validate_call
 
-from .._config import config
-from ..utils import Get, parse, Formato, NivelTerritorial, Output, converter
-from ..utils.endpoints import ENDPOINTS
-from ..utils.errors import DABLocalidadeError, descontinuado
+from ..utils import parse
+from ..utils.errors import DABInputError, DABLocalidadeError, descontinuado, removida
+from ..utils.modelos import Params, com_params, validar
+from ..utils.requisicao import Requisicao
+from ..utils.saida import resolver_formato, tabela
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, NivelTerritorial, Saida
+from . import modelos as m
+
+
+class _ParamsLocalidades(Params):
+    nivel: NivelTerritorial = Field(exclude=True)
+    divisoes: NivelTerritorial | None = Field(None, exclude=True)
+    localidade: PositiveInt | str | list[PositiveInt | str] | None = Field(None, exclude=True)
+    ordenar_por: str | None = Field(None, serialization_alias="orderBy")
 
 
 @validate_call
 def populacao(
-    projecao: Optional[
-        Literal["populacao", "nascimento", "obito", "incremento"]
-    ] = None,
-    localidade: Optional[PositiveInt] = None,
+    projecao: Literal["populacao", "nascimento", "obito", "incremento"] | None = None,
+    localidade: PositiveInt | None = None,
 ) -> dict | int:
     """Obtém a projecao da população referente ao Brasil.
 
@@ -70,9 +76,7 @@ def populacao(
     """
 
     localidade = parse.localidade(localidade, "")
-    query = f"https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/{localidade}"
-
-    r = requests.get(query, verify=config.verificar_certificado).json()
+    r = Requisicao("ibge", ["projecoes", "populacao", localidade]).json()
 
     if projecao is None:
         return r
@@ -82,28 +86,98 @@ def populacao(
         return r["projecao"]["periodoMedio"]["nascimento"]
     elif projecao == "obito":
         return r["projecao"]["periodoMedio"]["obito"]
-    elif projecao == "incremento":
-        return r["projecao"]["periodoMedio"]["incrementoPopulacional"]
     else:
-        raise ValueError(
-            """O argumento 'projecao' deve ser um dos seguintes valores tipo string:
-            - 'populacao';
-            - 'nascimento';
-            - 'obito';
-            - 'incremento'."""
-        )
+        return r["projecao"]["periodoMedio"]["incrementoPopulacional"]
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Localidade]: ...
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def localidades(
+    nivel: NivelTerritorial = ...,
+    divisoes: NivelTerritorial | None = ...,
+    localidade: PositiveInt | str | list[PositiveInt | str] = ...,
+    ordenar_por: str | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
+@com_params(_ParamsLocalidades)
 def localidades(
     nivel: NivelTerritorial = "distritos",
-    divisoes: Optional[NivelTerritorial] = None,
+    divisoes: NivelTerritorial | None = None,
     localidade: PositiveInt | str | list[PositiveInt | str] = None,
-    ordenar_por: Optional[str] = None,
+    ordenar_por: str | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Obtém o conjunto de localidades do Brasil e suas intrarregiões.
 
     Parameters
@@ -125,12 +199,15 @@ def localidades(
         Se True, defina a coluna `"id"` como index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -139,7 +216,7 @@ def localidades(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Localidades desejadas.
 
     Raises
@@ -190,86 +267,132 @@ def localidades(
 
     """
 
+    params = _ParamsLocalidades.de_locais(locals())
     path = ["localidades", nivel]
-    params = {}
-
     if localidade is not None:
         if isinstance(localidade, list):
             localidade = "|".join([str(loc) for loc in localidade])
         path.append(localidade)
-
     if (divisoes is not None) and (nivel != divisoes):
         path.append(divisoes)
 
-    if ordenar_por is not None:
-        params["orderBy"] = ordenar_por
-
-    formato = config.resolver_formato(formato)
-    get = Get(
-        endpoint="ibge",
-        path=path,
-        params=params,
-        verify=verificar_certificado,
+    requisicao = Requisicao(
+        "ibge", path, params.para_api(), verificar_certificado=verificar_certificado, cacheavel=True
     )
-    if formato not in ("pandas", "polars"):
-        return get.get(formato)
+    formato = resolver_formato(formato)
+    if formato == "url":
+        return requisicao.url
+    bruto = requisicao.bruto()
+    if formato == "bruto":
+        return bruto
+    linhas = m.preparar_localidades(bruto)
+    modelo = m.modelo_localidades(linhas)
+    return tabela(validar(modelo, linhas), modelo, formato, index=index, index_col="id")
 
-    def _loc_columns(x: str) -> str:
-        y = x.replace("-", "_").split(".")
-        return f"{y[-2]}_{y[-1]}" if len(y) > 1 else y[0]
 
-    data = get.pandas
-    data.columns = data.columns.map(_loc_columns)
-    data = data.loc[:, ~data.columns.duplicated()]
-    return converter(data, formato, index, "id")
+TipoMalha = Literal["geojson", "topojson", "svg"]
+
+_TIPOS_MALHA = {
+    "geojson": "application/vnd.geo+json",
+    "topojson": "application/json",
+    "svg": "image/svg+xml",
+}
+
+# `formato` do 2.x, que era o tipo de arquivo: valor antigo -> `tipo`.
+_FORMATOS_ANTIGOS_MALHA = {"geojson": "geojson", "json": "topojson", "svg": "svg"}
+
+_NIVEIS_MALHA = {
+    "estados",
+    "mesorregioes",
+    "microrregioes",
+    "municipios",
+    "regioes-imediatas",
+    "regioes-intermediarias",
+    "regioes",
+    "paises",
+}
+
+_DIVISOES_MALHA = {
+    "uf",
+    "mesorregiao",
+    "microrregiao",
+    "municipio",
+    "regiao-imediata",
+    "regiao-intermediaria",
+    "regiao",
+}
 
 
 @validate_call
 def malha(
-    localidade: PositiveInt,
+    localidade: PositiveInt | str,
     nivel: str = "estados",
-    divisoes: Optional[str] = None,
+    divisoes: str | None = None,
     periodo: PositiveInt = 2020,
-    formato: Literal["svg", "json", "geojson"] = "geojson",
+    tipo: TipoMalha = "geojson",
     qualidade: Literal["minima", "intermediaria", "maxima"] = "minima",
-) -> str | dict:
-    """Obtém a URL para a malha referente ao identificador da localidade.
+    formato: Literal["bruto", "url", "svg", "json", "geojson"] = "bruto",
+    verificar_certificado: bool | None = None,
+) -> dict[str, Any] | str:
+    """Malha territorial de uma localidade, em GeoJSON, TopoJSON ou SVG.
 
     Parameters
     ----------
-    localidade : int
-        Código da localidade desejada.
+    localidade : int or str
+        Código da localidade desejada, como `53` (Distrito Federal),
+        `4209102` (Joinville) ou `'BR'` (Brasil, com `nivel='paises'`).
         Utilize a função `ibge.localidades` para identificar a localidade.
 
     nivel : str, default='estados'
-        Nível geográfico dos dados.
+        Nível geográfico da localidade: 'estados', 'mesorregioes',
+        'microrregioes', 'municipios', 'regioes-imediatas',
+        'regioes-intermediarias', 'regioes' ou 'paises'.
 
     divisoes : str, optional
-        Subdiviões intrarregionais do nível.
+        Subdivisões intrarregionais da malha: 'uf', 'mesorregiao',
+        'microrregiao', 'municipio', 'regiao-imediata',
+        'regiao-intermediaria' ou 'regiao'.
         Se None, apresenta a malha sem subdivisões.
 
     periodo : int, default=2020
         Ano da revisão da malha.
 
-    formato : {'svg', 'json', 'geojson'}, default='svg'
-        Formato dos dados da malha.
+    tipo : {'geojson', 'topojson', 'svg'}, default='geojson'
+        Tipo de arquivo da malha.
 
     qualidade : {'minima', 'intermediaria', 'maxima'}, default='minima'
-        Qualidade de imagem da malha.
+        Qualidade (nível de detalhe) da malha.
+
+    formato : {'bruto', 'url'}, default='bruto'
+        - "bruto": o conteúdo da malha: `dict` para GeoJSON e TopoJSON, `str`
+          com o SVG;
+        - "url": endereço da malha.
+        A malha não é uma tabela: `DadosAbertosBrasil.config.formato` não se
+        aplica.
+
+        !!! warning "Valores antigos"
+            No 2.x, `formato` era o tipo de arquivo. `formato='geojson'`,
+            `'json'` (TopoJSON) e `'svg'` (que retornava a URL) continuam
+            funcionando com `DeprecationWarning` e deixam de existir em uma
+            versão futura do 3.x. Use `tipo`.
+
+    verificar_certificado : bool, optional
+        Defina como `False` em caso de falha na verificação do certificado
+        SSL. Se omitido, usa `DadosAbertosBrasil.config.verificar_certificado`.
 
     Returns
     -------
+    dict
+        Malha em GeoJSON ou TopoJSON, com `formato='bruto'`.
     str
-        Se formato='svg', retorna a URL da malha da localidade desejada.
-    dict
-        Se formato='json', retorna a malha em formato TopoJSON.
-    dict
-        Se formato='geojson', retorna a malha em formato GeoJSON.
+        SVG da malha, com `tipo='svg'`, ou endereço da malha, com `formato='url'`.
 
     Raises
     ------
     DABLocalidadeError
-        Caso o nível geográfico seja inválido.
+        Caso o nível geográfico ou a subdivisão sejam inválidos.
+    DABInputError
+        Caso `tipo` e um valor antigo de `formato` peçam tipos diferentes.
 
     Notes
     -----
@@ -278,153 +401,89 @@ def malha(
 
     Examples
     --------
-    Captura a malha do Distrito Federal (localidade=53) em formato GeoJSON.
+    Malha do Distrito Federal (localidade=53) em GeoJSON.
 
-    >>> ibge.malha(localidade=53, formato='geojson')
+    >>> ibge.malha(localidade=53)
     {'type': 'FeatureCollection',
         'features': [{'type': 'Feature',
             'geometry': {'type': 'Polygon',
                 'coordinates': [[[-47.31, -16.0363], ...
 
-    Captura a malha de Joinville em formato SVG com qualidade mínima.
+    Endereço da malha de Joinville em SVG.
 
     >>> ibge.malha(
-    ...     nivel = 'municipios',
-    ...     localidade = 4209102,
-    ...     formato = 'svg',
-    ...     qualidade = 'minima'
+    ...     nivel='municipios',
+    ...     localidade=4209102,
+    ...     tipo='svg',
+    ...     formato='url',
     ... )
     'https://servicodados.ibge.gov.br/api/v3/malhas/municipios/4209102?...'
 
-    Captura a malha do Brasil subdividido por UF em formato TopoJSON.
+    Malha do Brasil subdividido por UF em TopoJSON.
 
     >>> ibge.malha(
-    ...     nivel = 'paises',
-    ...     localidade = 'BR',
-    ...     divisoes = 'uf',
-    ...     formato = 'json'
+    ...     nivel='paises',
+    ...     localidade='BR',
+    ...     divisoes='uf',
+    ...     tipo='topojson',
     ... )
     {'type': 'Topology',
-        'arcs': [[[32967, 111009], [-821, 372]],
-            [[32146, 111381],
-            [133, 124],
-            [15, 106], ...
+        'arcs': [[[32967, 111009], [-821, 372]], ...
 
     """
 
-    FORMATOS = {
-        "svg": "image/svg+xml",
-        "geojson": "application/vnd.geo+json",
-        "json": "application/json",
-    }
-
-    NIVEIS = {
-        "estados",
-        "mesorregioes",
-        "microrregioes",
-        "municipios",
-        "regioes-imediatas",
-        "regioes-intermediarias",
-        "regioes",
-        "paises",
-    }
-
-    DIVISOES = {
-        "uf",
-        "mesorregiao",
-        "microrregiao",
-        "municipio",
-        "regiao-imediata",
-        "regiao-intermediaria",
-        "regiao",
-    }
+    url_antiga = False
+    if formato in _FORMATOS_ANTIGOS_MALHA:
+        antigo = _FORMATOS_ANTIGOS_MALHA[formato]
+        if tipo != "geojson" and tipo != antigo:
+            raise DABInputError(
+                f"`formato={formato!r}` é o nome antigo de `tipo={antigo!r}` e conflita com `tipo={tipo!r}`. "
+                "Use só `tipo`."
+            )
+        sugestao = f"`tipo={antigo!r}" + (", formato='url'`" if formato == "svg" else "`")
+        descontinuado(
+            f"Em `ibge.malha`, `formato={formato!r}` agora é {sugestao}: `formato` passou a ser "
+            "'bruto' (conteúdo) ou 'url'."
+        )
+        tipo = antigo
+        # No 2.x, `formato='svg'` retornava a URL.
+        url_antiga = formato == "svg"
 
     nivel = nivel.lower()
-    if nivel not in NIVEIS:
+    if nivel not in _NIVEIS_MALHA:
         raise DABLocalidadeError(
-            f"""Nível inválido:
-        Preencha o argumento `nivel` com um dos seguintes valores:
-        {NIVEIS}"""
+            f"Nível inválido. Preencha o argumento `nivel` com um dos seguintes valores: {sorted(_NIVEIS_MALHA)}"
         )
 
-    path = ["malhas", nivel, localidade]
-
-    params = {
-        "periodo": periodo,
-        "qualidade": qualidade,
-        "formato": FORMATOS[formato],
-    }
-
+    params = {"periodo": periodo, "qualidade": qualidade, "formato": _TIPOS_MALHA[tipo]}
     if divisoes is not None:
         divisoes = divisoes.lower()
-        if divisoes not in DIVISOES:
+        if divisoes not in _DIVISOES_MALHA:
             raise DABLocalidadeError(
-                f"""Subdivisões inválida:
-            Preencha o argumento `divisoes` com um dos seguintes valores:
-            {DIVISOES}"""
+                "Subdivisão inválida. Preencha o argumento `divisoes` com um dos seguintes valores: "
+                f"{sorted(_DIVISOES_MALHA)}"
             )
         if nivel != divisoes:
             params["intrarregiao"] = divisoes
 
-    url = "https://servicodados.ibge.gov.br/api/v3/"
-    url += "/".join([str(p) for p in path])
-
-    data = requests.get(url=url, params=params, verify=config.verificar_certificado)
-
-    if formato.lower().endswith("json"):
-        return data.json()
-    else:
-        return data.url
-
-
-@validate_call
-def coordenadas(
-    formato: Literal["pandas", "polars", "url"] | None = None,
-) -> Output:
-    """Obtém as coordenadas de todas as localidades brasileiras, incluindo
-    latitude, longitude e altitude.
-
-    !!! warning "Descontinuada"
-        Esta função é removida no DadosAbertosBrasil 3.0, sem substituto
-        equivalente. As coordenadas dos municípios passam a vir de
-        `wiki.municipios()`, que é outro dado.
-
-    Parameters
-    ----------
-    formato : {"pandas", "polars", "url"}, optional
-        Formato do dado que será retornado:
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço do arquivo CSV.
-        Se omitido, usa `DadosAbertosBrasil.config.formato`.
-
-    Returns
-    -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str
-        Coordenadas de todas as localidade brasileiras.
-
-    Examples
-    --------
-    >>> ibge.coordenadas()
-           GM_PONTO     ID     CD_GEOCODIGO    TIPO   CD_GEOCODBA NM_BAIRRO  ...
-    0           NaN      1  110001505000001  URBANO  1.100015e+11   Redondo  ...
-    1           NaN      2  110001515000001  URBANO           NaN       NaN  ...
-    2           NaN      3  110001520000001  URBANO           NaN       NaN  ...
-    3           NaN      4  110001525000001  URBANO           NaN       NaN  ...
-    4           NaN      5  110001530000001  URBANO           NaN       NaN  ...
-    ..          ...     ..              ...     ...           ...       ...  ...
-
-    """
-
-    descontinuado(
-        "`ibge.coordenadas` é removida no DadosAbertosBrasil 3.0, sem substituto "
-        "equivalente. As coordenadas dos municípios passam a vir de "
-        "`wiki.municipios()`, que é outro dado."
+    requisicao = Requisicao(
+        "sidra",
+        ["malhas", nivel, localidade],
+        params,
+        verificar_certificado=verificar_certificado,
     )
-    URL = ENDPOINTS["wiki"] + "coordenadas.csv"
+    if formato == "url" or url_antiga:
+        return requisicao.url
+    if tipo == "svg":
+        return requisicao.texto()
+    return requisicao.bruto()
 
-    match config.resolver_formato(formato):
-        case "url":
-            return URL
-        case formato:
-            return converter(pd.read_csv(URL, sep=";"), formato)
+
+def coordenadas(*args, **kwargs):
+    """Removida no 3.0: o arquivo de coordenadas de setores e bairros saiu do repositório de dados.
+
+    !!! danger "Removida"
+        Chamar esta função levanta `DABFuncaoRemovidaError`. O stub deixa de
+        existir em uma versão futura do 3.x; veja o guia de migração.
+    """
+    raise removida("ibge.coordenadas", "O arquivo de coordenadas de setores e bairros saiu do repositório de dados, sem substituto equivalente. Para coordenadas de municípios, use `wiki.municipios()`.")

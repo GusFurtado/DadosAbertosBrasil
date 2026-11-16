@@ -45,15 +45,13 @@ demográficas e estatísticas.
 
 - [IBGE Cidades](https://cidades.ibge.gov.br/)
 - [Serviços IBGE](https://servicodados.ibge.gov.br/api/docs)
-- [SIDRA](http://api.sidra.ibge.gov.br/)
+- [SIDRA](https://apisidra.ibge.gov.br/)
 
 ## Referência
 
 ::: DadosAbertosBrasil.ibge.Galeria
 
 ::: DadosAbertosBrasil.ibge.Historia
-
-::: DadosAbertosBrasil.ibge.coordenadas
 
 ::: DadosAbertosBrasil.ibge.localidades
 

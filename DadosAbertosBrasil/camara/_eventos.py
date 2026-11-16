@@ -1,13 +1,25 @@
 from datetime import date
-from typing import Optional
+from typing import Any, Literal, overload
 
-from pydantic import validate_call, PositiveInt
+from pydantic import Field, PositiveInt, validate_call
 
-from .._config import config
-from ..utils import Base, Get, parse, Formato, Output, codigos_orgaos
+from ..utils.modelos import com_params
+from ..utils.objeto import Objeto
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from . import modelos as m
+from ._comum import Ordenacao, Periodo, consultar_camara, requisicao
 
 
-class Evento(Base):
+class _ParamsEventos(Ordenacao, Periodo):
+    tipo_evento: PositiveInt | None = Field(None, serialization_alias="codTipoEvento")
+    situacao: PositiveInt | None = Field(None, serialization_alias="codSituacao")
+    tipo_orgao: PositiveInt | None = Field(None, serialization_alias="codTipoOrgao")
+    orgao: PositiveInt | None = Field(None, serialization_alias="idOrgao")
+    hora_inicio: str | None = Field(None, serialization_alias="horaInicio")
+    hora_fim: str | None = Field(None, serialization_alias="horaFim")
+
+
+class Evento(Objeto):
     """Retorna um conjunto detalhado de informações sobre o evento da Câmara.
 
     Parameters
@@ -104,38 +116,13 @@ class Evento(Base):
 
     """
 
+    modelo = m.EventoDetalhes
+    chave_obrigatoria = "localCamara"
+
     def __init__(self, cod: int, verificar_certificado: bool | None = None):
         self.cod = cod
         self.verify = verificar_certificado
-        atributos = {
-            "andar": ["localCamara", "andar"],
-            "descricao": ["descricao"],
-            "descricao_tipo": ["descricaoTipo"],
-            "fases": ["fases"],
-            "fim": ["dataHoraFim"],
-            "inicio": ["dataHoraInicio"],
-            "local": ["localCamara", "nome"],
-            "local_externo": ["localExterno"],
-            "lista_orgaos": ["orgaos"],
-            "predio": ["localCamara", "predio"],
-            "requerimentos": ["requerimentos"],
-            "sala": ["localCamara", "sala"],
-            "situacao": ["situacao"],
-            "uri": ["uri"],
-            "uri_convidados": ["uriConvidados"],
-            "uri_deputados": ["uriDeputados"],
-            "url_documento_pauta": ["urlDocumentoPauta"],
-            "url_registro": ["urlRegistro"],
-        }
-
-        super().__init__(
-            endpoint="camara",
-            path=["eventos", str(cod)],
-            unpack_keys=["dados"],
-            error_key="localCamara",
-            atributos=atributos,
-            verify=self.verify,
-        )
+        self._carregar(requisicao(["eventos", cod], verificar_certificado=verificar_certificado))
 
     def __repr__(self) -> str:
         return f"DadosAbertosBrasil.camara: Evento {self.descricao}"
@@ -143,12 +130,30 @@ class Evento(Base):
     def __str__(self) -> str:
         return self.descricao
 
+    @overload
+    def deputados(self, url: bool = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def deputados(self, url: bool = ..., index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def deputados(self, url: bool = ..., index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Deputado]: ...
+
+    @overload
+    def deputados(self, url: bool = ..., index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def deputados(self, url: bool = ..., index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def deputados(self, url: bool = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
     def deputados(
         self,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Os deputados participantes do evento.
 
         Retorna uma lista de dados resumidos sobre deputados participantes do
@@ -160,59 +165,66 @@ class Evento(Base):
 
         Parameters
         ----------
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Os deputados participantes do evento.
 
         """
 
-        cols_to_rename = {
-            "id": "codigo",
-            "uri": "uri",
-            "nome": "nome",
-            "siglaPartido": "partido",
-            "uriPartido": "partido_uri",
-            "siglaUf": "uf",
-            "idLegislatura": "legislatura",
-            "urlFoto": "foto",
-            "email": "email",
-        }
-
-        return Get(
-            endpoint="camara",
-            path=["eventos", str(self.cod), "deputados"],
-            unpack_keys=["dados"],
-            cols_to_rename=cols_to_rename,
-            url_cols=["uri", "partido_uri", "foto", "email"],
-            remover_url=not url,
+        return consultar_camara(
+            ["eventos", self.cod, "deputados"],
+            None,
+            m.Deputado,
+            formato,
+            url=url,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
+
+    @overload
+    def orgaos(self, url: bool = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def orgaos(self, url: bool = ..., index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def orgaos(self, url: bool = ..., index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Orgao]: ...
+
+    @overload
+    def orgaos(self, url: bool = ..., index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def orgaos(self, url: bool = ..., index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def orgaos(self, url: bool = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
 
     def orgaos(
         self,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Lista de órgãos organizadores do evento.
 
         Retorna uma lista em que cada item é um conjunto mínimo de dados sobre
@@ -220,59 +232,66 @@ class Evento(Base):
 
         Parameters
         ----------
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Lista de órgãos organizadores do evento.
 
         """
 
-        cols_to_rename = {
-            "id": "codigo",
-            "uri": "uri",
-            "nome": "nome",
-            "siglaPartido": "partido",
-            "uriPartido": "partido_uri",
-            "siglaUf": "uf",
-            "idLegislatura": "legislatura",
-            "urlFoto": "foto",
-            "email": "email",
-        }
-
-        return Get(
-            endpoint="camara",
-            path=["eventos", str(self.cod), "orgaos"],
-            unpack_keys=["dados"],
-            cols_to_rename=cols_to_rename,
-            url_cols=["uri", "partido_uri", "foto", "email"],
-            remover_url=not url,
+        return consultar_camara(
+            ["eventos", self.cod, "orgaos"],
+            None,
+            m.Orgao,
+            formato,
+            url=url,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
+
+    @overload
+    def pauta(self, url: bool = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def pauta(self, url: bool = ..., index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def pauta(self, url: bool = ..., index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.ItemPauta]: ...
+
+    @overload
+    def pauta(self, url: bool = ..., index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def pauta(self, url: bool = ..., index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def pauta(self, url: bool = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
 
     def pauta(
         self,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Lista de proposições que foram ou deverão ser avaliadas em um evento
         de caráter deliberativo.
 
@@ -285,62 +304,69 @@ class Evento(Base):
 
         Parameters
         ----------
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `ordem` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Lista de proposições.
 
         """
 
-        cols_to_rename = {
-            "ordem": "ordem",
-            "topico": "topico",
-            "regime": "regime",
-            "codRegime": "regime_codigo",
-            "titulo": "titulo",
-            "proposicao_": "proposicao",
-            "relator": "relator",
-            "textoParecer": "parecer",
-            "proposicaoRelacionada_": "proposicao_relacionada",
-            "uriVotacao": "uri",
-            "situacaoItem": "situacao",
-        }
-
-        return Get(
-            endpoint="camara",
-            path=["eventos", str(self.cod), "pauta"],
-            unpack_keys=["dados"],
-            cols_to_rename=cols_to_rename,
-            url_cols=["uri"],
-            remover_url=not url,
-            index_col="ordem",
+        return consultar_camara(
+            ["eventos", self.cod, "pauta"],
+            None,
+            m.ItemPauta,
+            formato,
+            url=url,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            index_col="ordem",
+            verificar_certificado=self.verify,
+        )
+
+    @overload
+    def votacoes(self, url: bool = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def votacoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def votacoes(
+        self, url: bool = ..., index: bool = ..., *, formato: Literal["pydantic"]
+    ) -> list[m.VotacaoEvento]: ...
+
+    @overload
+    def votacoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def votacoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def votacoes(self, url: bool = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
 
     def votacoes(
         self,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Informações detalhadas de votações sobre o evento.
 
         Retorna uma lista de dados básicos sobre votações que tenham sido
@@ -350,76 +376,194 @@ class Evento(Base):
 
         Parameters
         ----------
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Informações detalhadas de votações sobre o evento.
 
         """
 
-        cols_to_rename = {
-            "id": "codigo",
-            "uri": "uri",
-            "data": "data",
-            "dataHoraRegistro": "data_registro",
-            "siglaOrgao": "orgao_sigla",
-            "uriOrgao": "orgao_uri",
-            "uriEvento": "evento_uri",
-            "proposicaoObjeto": "proposicao",
-            "uriProposicaoObjeto": "proposicao_uri",
-            "descricao": "descricao",
-            "aprovacao": "aprovacao",
-        }
-
-        return Get(
-            endpoint="camara",
-            path=["eventos", str(self.cod), "votacoes"],
-            unpack_keys=["dados"],
-            cols_to_rename=cols_to_rename,
-            cols_to_date=["data", "data_registro"],
-            url_cols=["uri", "orgao_uri", "evento_uri", "proposicao_uri"],
-            remover_url=not url,
+        return consultar_camara(
+            ["eventos", self.cod, "votacoes"],
+            None,
+            m.VotacaoEvento,
+            formato,
+            url=url,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
+
+
+@overload
+def lista_eventos(
+    tipo_evento: PositiveInt | None = ...,
+    situacao: PositiveInt | None = ...,
+    tipo_orgao: PositiveInt | None = ...,
+    orgao: PositiveInt | None = ...,
+    inicio: date = ...,
+    fim: date = ...,
+    hora_inicio: str | None = ...,
+    hora_fim: str | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_eventos(
+    tipo_evento: PositiveInt | None = ...,
+    situacao: PositiveInt | None = ...,
+    tipo_orgao: PositiveInt | None = ...,
+    orgao: PositiveInt | None = ...,
+    inicio: date = ...,
+    fim: date = ...,
+    hora_inicio: str | None = ...,
+    hora_fim: str | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_eventos(
+    tipo_evento: PositiveInt | None = ...,
+    situacao: PositiveInt | None = ...,
+    tipo_orgao: PositiveInt | None = ...,
+    orgao: PositiveInt | None = ...,
+    inicio: date = ...,
+    fim: date = ...,
+    hora_inicio: str | None = ...,
+    hora_fim: str | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Evento]: ...
+
+
+@overload
+def lista_eventos(
+    tipo_evento: PositiveInt | None = ...,
+    situacao: PositiveInt | None = ...,
+    tipo_orgao: PositiveInt | None = ...,
+    orgao: PositiveInt | None = ...,
+    inicio: date = ...,
+    fim: date = ...,
+    hora_inicio: str | None = ...,
+    hora_fim: str | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_eventos(
+    tipo_evento: PositiveInt | None = ...,
+    situacao: PositiveInt | None = ...,
+    tipo_orgao: PositiveInt | None = ...,
+    orgao: PositiveInt | None = ...,
+    inicio: date = ...,
+    fim: date = ...,
+    hora_inicio: str | None = ...,
+    hora_fim: str | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_eventos(
+    tipo_evento: PositiveInt | None = ...,
+    situacao: PositiveInt | None = ...,
+    tipo_orgao: PositiveInt | None = ...,
+    orgao: PositiveInt | None = ...,
+    inicio: date = ...,
+    fim: date = ...,
+    hora_inicio: str | None = ...,
+    hora_fim: str | None = ...,
+    pagina: PositiveInt = ...,
+    itens: PositiveInt | None = ...,
+    asc: bool = ...,
+    ordenar_por: str = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
+@com_params(_ParamsEventos)
 def lista_eventos(
-    tipo_evento: Optional[PositiveInt] = None,
-    situacao: Optional[PositiveInt] = None,
-    tipo_orgao: Optional[PositiveInt] = None,
-    orgao: Optional[PositiveInt] = None,
+    tipo_evento: PositiveInt | None = None,
+    situacao: PositiveInt | None = None,
+    tipo_orgao: PositiveInt | None = None,
+    orgao: PositiveInt | None = None,
     inicio: date = None,
     fim: date = None,
-    hora_inicio: Optional[str] = None,
-    hora_fim: Optional[str] = None,
+    hora_inicio: str | None = None,
+    hora_fim: str | None = None,
     pagina: PositiveInt = 1,
-    itens: Optional[PositiveInt] = None,
+    itens: PositiveInt | None = None,
     asc: bool = True,
     ordenar_por: str = "dataHoraInicio",
     url: bool = True,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Lista de eventos ocorridos ou previstos nos diversos órgãos da Câmara.
 
     Retorna uma lista cujos elementos trazem informações básicas sobre eventos
@@ -482,21 +626,23 @@ def lista_eventos(
         Qual dos elementos da representação deverá ser usado para aplicar
         ordenação à lista.
 
-    url : bool, default=False
+    url : bool, default=True
         Se False, remove as colunas contendo URI, URL e e-mails.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Vale para os formatos 'json', 'pandas' e 'polars'.
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -505,65 +651,17 @@ def lista_eventos(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista de eventos ocorridos ou previstos nos diversos órgãos da Câmara.
 
     """
 
-    params = {
-        "pagina": pagina,
-        "ordem": "asc" if asc else "desc",
-        "ordenarPor": ordenar_por,
-    }
-
-    if tipo_evento is not None:
-        params["codTipoEvento"] = tipo_evento
-    if situacao is not None:
-        params["codSituacao"] = situacao
-    if tipo_orgao is not None:
-        params["codTipoOrgao"] = tipo_orgao
-    if orgao is not None:
-        params["idOrgao"] = orgao
-    if inicio is not None:
-        params["dataInicio"] = parse.data(inicio, "camara")
-    if fim is not None:
-        params["dataFim"] = parse.data(fim, "camara")
-    if hora_inicio is not None:
-        params["horaInicio"] = hora_inicio
-    if hora_fim is not None:
-        params["horaFim"] = hora_fim
-    if itens is not None:
-        params["itens"] = itens
-
-    cols_to_rename = {
-        "id": "codigo",
-        "uri": "uri",
-        "dataHoraInicio": "data_inicio",
-        "dataHoraFim": "data_fim",
-        "situacao": "situacao",
-        "descricaoTipo": "descricao_tipo",
-        "descricao": "descricao",
-        "orgaos": "orgaos",
-        "urlRegistro": "registro",
-        "localExterno": "local_externo",
-        "localCamara.nome": "local_nome",
-        "localCamara.predio": "local_predio",
-        "localCamara.sala": "local_sala",
-        "localCamara.andar": "local_andar",
-    }
-
-    formato = config.resolver_formato(formato)
-    data = Get(
-        endpoint="camara",
-        path=["eventos"],
-        params=params,
-        unpack_keys=["dados"],
-        cols_to_rename=cols_to_rename,
-        cols_to_date=["data_inicio", "data_fim"],
-        url_cols=["uri"],
-        remover_url=not url,
+    return consultar_camara(
+        ["eventos"],
+        _ParamsEventos.de_locais(locals()),
+        m.Evento,
+        formato,
+        url=url,
         index=index,
-        verify=verificar_certificado,
-    ).get(formato)
-
-    return codigos_orgaos(data, formato)
+        verificar_certificado=verificar_certificado,
+    )

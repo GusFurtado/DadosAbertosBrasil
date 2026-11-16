@@ -1,9 +1,11 @@
 import pytest
-import pandas as pd
+
 from DadosAbertosBrasil import senado
 from DadosAbertosBrasil.senado._senadores import lista_senadores
 
-pytestmark = pytest.mark.online
+pd = pytest.importorskip("pandas")
+
+pytestmark = pytest.mark.vcr
 
 
 def test_lista_blocos():

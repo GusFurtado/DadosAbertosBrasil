@@ -1,4 +1,4 @@
-"""Avisos da versão de transição 2.3 para o 3.0."""
+"""Formato padrão, nomes antigos e funções removidas no 3.0."""
 
 import sys
 import warnings
@@ -7,7 +7,7 @@ import pytest
 import requests
 
 import DadosAbertosBrasil as dab
-from DadosAbertosBrasil import _config, favoritos, ibge, senado
+from DadosAbertosBrasil import _config, bacen, favoritos, ibge, senado
 from DadosAbertosBrasil.utils import errors
 
 
@@ -19,19 +19,20 @@ def config_limpa(monkeypatch):
     return _config.config
 
 
-def test_aviso_formato_uma_vez_por_sessao(config_limpa):
+def test_sem_formato_retorna_json_e_avisa_uma_vez(config_limpa):
     with pytest.warns(dab.DABFormatoWarning, match="json"):
-        assert config_limpa.resolver_formato(None) == "pandas"
+        assert config_limpa.resolver_formato(None) == "json"
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        assert config_limpa.resolver_formato(None) == "pandas"
+        assert config_limpa.resolver_formato(None) == "json"
 
 
-def test_definir_formato_silencia_aviso(config_limpa):
-    config_limpa.formato = "pandas"
+@pytest.mark.parametrize("formato", ["json", "pandas", "polars"])
+def test_definir_formato_silencia_aviso(config_limpa, formato):
+    config_limpa.formato = formato
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        assert config_limpa.resolver_formato(None) == "pandas"
+        assert config_limpa.resolver_formato(None) == formato
 
 
 def test_formato_explicito_nao_avisa(config_limpa):
@@ -65,7 +66,7 @@ def test_aviso_formato_aponta_para_quem_chama(monkeypatch, funcao):
 
 
 def test_aviso_formato_filtravel():
-    assert issubclass(dab.DABFormatoWarning, Warning)
+    assert issubclass(dab.DABFormatoWarning, UserWarning)
 
 
 @pytest.mark.parametrize("antigo, novo", errors.NOMES_ANTIGOS.items())
@@ -84,8 +85,8 @@ def test_excecoes_tem_base_comum():
     assert issubclass(dab.DABDataError, TypeError)
 
 
-def test_dab_deprecation_error_avisa():
-    with pytest.warns(DeprecationWarning, match="removido"):
+def test_dab_deprecation_error_removido():
+    with pytest.raises(AttributeError):
         dab.DAB_DeprecationError  # noqa: B018
 
 
@@ -108,12 +109,16 @@ def test_funcoes_renomeadas_do_senado(antigo, novo):
     assert url.startswith("https://") or url.startswith("http://")
 
 
+@pytest.mark.parametrize("funcao", [favoritos.perfil_eleitorado, ibge.coordenadas])
+def test_funcoes_removidas_viram_stubs(funcao):
+    with pytest.raises(dab.DABFuncaoRemovidaError, match="migracao"):
+        funcao(formato="pandas")
+    assert issubclass(dab.DABFuncaoRemovidaError, NotImplementedError)
+
+
 @pytest.mark.parametrize(
-    "funcao, arquivo",
-    [(favoritos.perfil_eleitorado, "eleitorado.csv"), (ibge.coordenadas, "coordenadas.csv")],
+    "chamada", [lambda: bacen.expectativas("instituicoes"), lambda: bacen.expectativas(expectativa="instituicoes")]
 )
-def test_funcoes_removidas_no_3_0_avisam(funcao, arquivo):
-    with pytest.warns(DeprecationWarning, match="3.0") as avisos:
-        url = funcao(formato="url")
-    assert avisos[0].filename == __file__
-    assert url == f"https://raw.githubusercontent.com/GusFurtado/DadosAbertosBrasil-wiki/2.x/data/{arquivo}"
+def test_expectativas_instituicoes_removida(chamada):
+    with pytest.raises(dab.DABFuncaoRemovidaError, match="migracao"):
+        chamada()

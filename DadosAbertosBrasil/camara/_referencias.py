@@ -1,15 +1,176 @@
+from typing import Any, Literal, overload
+
 from pydantic import validate_call
 
-from ..utils import Get, Formato, Output
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from . import modelos as m
+from ._comum import consultar_camara
+
+_REFERENCIAS = {
+    "autores": "proposicoes/codTipoAutor",
+    "temas": "proposicoes/codTema",
+    "eventos": "tiposEvento",
+    "orgaos": "tiposOrgao",
+    "proposicoes": "tiposProposicao",
+    "tramitacoes": "tiposTramitacao",
+    "ufs": "uf",
+    "situacoes_deputados": "situacoesDeputado",
+    "situacoes_eventos": "situacoesEvento",
+    "situacoes_orgaos": "situacoesOrgao",
+    "situacoes_proposicoes": "situacoesProposicao",
+}
+
+
+@overload
+def referencias(
+    lista: Literal[
+        "autores",
+        "temas",
+        "eventos",
+        "orgaos",
+        "proposicoes",
+        "tramitacoes",
+        "ufs",
+        "situacoes_deputados",
+        "situacoes_eventos",
+        "situacoes_orgaos",
+        "situacoes_proposicoes",
+    ],
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def referencias(
+    lista: Literal[
+        "autores",
+        "temas",
+        "eventos",
+        "orgaos",
+        "proposicoes",
+        "tramitacoes",
+        "ufs",
+        "situacoes_deputados",
+        "situacoes_eventos",
+        "situacoes_orgaos",
+        "situacoes_proposicoes",
+    ],
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def referencias(
+    lista: Literal[
+        "autores",
+        "temas",
+        "eventos",
+        "orgaos",
+        "proposicoes",
+        "tramitacoes",
+        "ufs",
+        "situacoes_deputados",
+        "situacoes_eventos",
+        "situacoes_orgaos",
+        "situacoes_proposicoes",
+    ],
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Referencia]: ...
+
+
+@overload
+def referencias(
+    lista: Literal[
+        "autores",
+        "temas",
+        "eventos",
+        "orgaos",
+        "proposicoes",
+        "tramitacoes",
+        "ufs",
+        "situacoes_deputados",
+        "situacoes_eventos",
+        "situacoes_orgaos",
+        "situacoes_proposicoes",
+    ],
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def referencias(
+    lista: Literal[
+        "autores",
+        "temas",
+        "eventos",
+        "orgaos",
+        "proposicoes",
+        "tramitacoes",
+        "ufs",
+        "situacoes_deputados",
+        "situacoes_eventos",
+        "situacoes_orgaos",
+        "situacoes_proposicoes",
+    ],
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def referencias(
+    lista: Literal[
+        "autores",
+        "temas",
+        "eventos",
+        "orgaos",
+        "proposicoes",
+        "tramitacoes",
+        "ufs",
+        "situacoes_deputados",
+        "situacoes_eventos",
+        "situacoes_orgaos",
+        "situacoes_proposicoes",
+    ],
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
 def referencias(
-    lista: str,
+    lista: Literal[
+        "autores",
+        "temas",
+        "eventos",
+        "orgaos",
+        "proposicoes",
+        "tramitacoes",
+        "ufs",
+        "situacoes_deputados",
+        "situacoes_eventos",
+        "situacoes_orgaos",
+        "situacoes_proposicoes",
+    ],
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Listas de valores válidos para as funções deste módulo.
 
     Parameters
@@ -30,15 +191,17 @@ def referencias(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -47,43 +210,17 @@ def referencias(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Listas de valores válidos para as funções deste módulo.
 
     """
 
-    referencia = {
-        "autores": "proposicoes/codTipoAutor",
-        "temas": "proposicoes/codTema",
-        "eventos": "tiposEvento",
-        "orgaos": "tiposOrgao",
-        "proposicoes": "tiposProposicao",
-        "tramitacoes": "tiposTramitacao",
-        "ufs": "uf",
-        "situacoes_deputados": "situacoesDeputado",
-        "situacoes_eventos": "situacoesEvento",
-        "situacoes_orgaos": "situacoesOrgao",
-        "situacoes_proposicoes": "situacoesProposicao",
-    }
-
-    if lista not in referencia.keys():
-        raise TypeError(
-            "Referência inválida. Insira um dos seguintes valores para `lista`: "
-            + ", ".join(list(referencia.keys()))
-        )
-
-    cols_to_rename = {
-        "cod": "codigo",
-        "sigla": "sigla",
-        "nome": "nome",
-        "descricao": "descricao",
-    }
-
-    return Get(
-        endpoint="camara",
-        path=["referencias", referencia[lista]],
-        unpack_keys=["dados"],
-        cols_to_rename=cols_to_rename,
+    return consultar_camara(
+        ["referencias", _REFERENCIAS[lista]],
+        None,
+        m.Referencia,
+        formato,
         index=index,
-        verify=verificar_certificado,
-    ).get(formato)
+        verificar_certificado=verificar_certificado,
+        cacheavel=True,
+    )

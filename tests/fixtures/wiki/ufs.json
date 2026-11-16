@@ -1,0 +1,512 @@
+{
+  "schema_version": 1,
+  "dataset": "ufs",
+  "descricao": "As 27 unidades federativas, com capital, área, coordenadas, gentílico, lema, bandeira e brasão.",
+  "licenca": "CC BY-SA 4.0 (conteúdo derivado da Wikipedia)",
+  "gerado_em": "2026-11-03T02:44:04Z",
+  "fontes": [
+    {
+      "titulo": "Wikidata",
+      "url": "https://query.wikidata.org/",
+      "revid": null,
+      "consulta": "SELECT ?item ?iso ?nome ?artigo ?capital ?area ?coordenadas ?bandeira ?brasao\n  (GROUP_CONCAT(DISTINCT STR(?gentilico); separator=\"|\") AS ?gentilicos) (SAMPLE(?lema_) AS ?lema)\nWHERE {\n  ?item wdt:P300 ?iso . FILTER(STRSTARTS(?iso, \"BR-\"))\n  OPTIONAL { ?item rdfs:label ?nome FILTER(LANG(?nome) = \"pt\") }\n  OPTIONAL { ?item wdt:P36 ?c . ?c rdfs:label ?capital FILTER(LANG(?capital) = \"pt\") }\n  OPTIONAL { ?item wdt:P2046 ?area }\n  OPTIONAL { ?item wdt:P625 ?coordenadas }\n  OPTIONAL { ?item wdt:P41 ?bandeira }\n  OPTIONAL { ?item wdt:P94 ?brasao }\n  OPTIONAL { ?item wdt:P1549 ?gentilico FILTER(LANG(?gentilico) IN (\"pt\", \"pt-br\")) }\n  OPTIONAL { ?item wdt:P1451 ?lema_ }\n  OPTIONAL { ?a schema:about ?item; schema:isPartOf <https://pt.wikipedia.org/>; schema:name ?artigo }\n}\nGROUP BY ?item ?iso ?nome ?artigo ?capital ?area ?coordenadas ?bandeira ?brasao"
+    },
+    {
+      "titulo": "Wikipedia: infoboxes de 27 artigos",
+      "url": "https://pt.wikipedia.org/",
+      "revid": null,
+      "consulta": null
+    }
+  ],
+  "dados": [
+    {
+      "sigla": "AC",
+      "codigo_ibge": 12,
+      "nome": "Acre",
+      "regiao": "Norte",
+      "wikidata": "Q40780",
+      "artigo": "Acre",
+      "capital": "Rio Branco",
+      "area_km2": 152581.0,
+      "latitude": -9.033333333,
+      "longitude": -70.516666666,
+      "gentilicos": [
+        "acriano"
+      ],
+      "lema": "Nec Luceo Pluribus Impar",
+      "bandeira": "Bandeira do Acre.svg",
+      "brasao": "Brasão do Acre.svg"
+    },
+    {
+      "sigla": "AL",
+      "codigo_ibge": 27,
+      "nome": "Alagoas",
+      "regiao": "Nordeste",
+      "wikidata": "Q40885",
+      "artigo": "Alagoas",
+      "capital": "Maceió",
+      "area_km2": 27767.0,
+      "latitude": -9.65,
+      "longitude": -36.683333333,
+      "gentilicos": [
+        "alagoano"
+      ],
+      "lema": "AD BONUM ET PROSPERITATEM",
+      "bandeira": "Bandeira de Alagoas.svg",
+      "brasao": "Brasão do Estado de Alagoas.svg"
+    },
+    {
+      "sigla": "AM",
+      "codigo_ibge": 13,
+      "nome": "Amazonas",
+      "regiao": "Norte",
+      "wikidata": "Q40040",
+      "artigo": "Amazonas",
+      "capital": "Manaus",
+      "area_km2": 1559167.9,
+      "latitude": -3.983333333,
+      "longitude": -64.633333333,
+      "gentilicos": [
+        "amazonense"
+      ],
+      "lema": null,
+      "bandeira": "Bandeira do Amazonas.svg",
+      "brasao": "Brasão do Amazonas.svg"
+    },
+    {
+      "sigla": "AP",
+      "codigo_ibge": 16,
+      "nome": "Amapá",
+      "regiao": "Norte",
+      "wikidata": "Q40130",
+      "artigo": "Amapá",
+      "capital": "Macapá",
+      "area_km2": 142814.6,
+      "latitude": 1.383333333,
+      "longitude": -51.8,
+      "gentilicos": [
+        "amapaense"
+      ],
+      "lema": "Aqui começa o Brasil",
+      "bandeira": "Bandeira do Amapá.svg",
+      "brasao": "Brasão do Amapá.svg"
+    },
+    {
+      "sigla": "BA",
+      "codigo_ibge": 29,
+      "nome": "Bahia",
+      "regiao": "Nordeste",
+      "wikidata": "Q40430",
+      "artigo": "Bahia",
+      "capital": "Salvador",
+      "area_km2": 565733.0,
+      "latitude": -12.52,
+      "longitude": -41.69,
+      "gentilicos": [
+        "baiana",
+        "baiano"
+      ],
+      "lema": "Per ardua surgo",
+      "bandeira": "Bandeira da Bahia.svg",
+      "brasao": "Brasão do estado da Bahia.svg"
+    },
+    {
+      "sigla": "CE",
+      "codigo_ibge": 23,
+      "nome": "Ceará",
+      "regiao": "Nordeste",
+      "wikidata": "Q40123",
+      "artigo": "Ceará",
+      "capital": "Fortaleza",
+      "area_km2": 146348.3,
+      "latitude": -5.2,
+      "longitude": -39.3,
+      "gentilicos": [
+        "cearense"
+      ],
+      "lema": "Terra da Luz",
+      "bandeira": "Bandeira do Ceará.svg",
+      "brasao": "Brasão do Ceará.svg"
+    },
+    {
+      "sigla": "DF",
+      "codigo_ibge": 53,
+      "nome": "Distrito Federal",
+      "regiao": "Centro-Oeste",
+      "wikidata": "Q119158",
+      "artigo": "Distrito Federal (Brasil)",
+      "capital": "Brasília",
+      "area_km2": 5760.8,
+      "latitude": -15.783333333,
+      "longitude": -47.75,
+      "gentilicos": [
+        "brasiliense"
+      ],
+      "lema": "Ventvris Ventis",
+      "bandeira": "Bandeira do Distrito Federal (Brasil).svg",
+      "brasao": "Brasão do Distrito Federal (Brasil).svg"
+    },
+    {
+      "sigla": "ES",
+      "codigo_ibge": 32,
+      "nome": "Espírito Santo",
+      "regiao": "Sudeste",
+      "wikidata": "Q43233",
+      "artigo": "Espírito Santo (estado)",
+      "capital": "Vitória",
+      "area_km2": 46077.5,
+      "latitude": -20.25,
+      "longitude": -40.25,
+      "gentilicos": [
+        "capixaba",
+        "espírito-santense"
+      ],
+      "lema": "Trabalha e Confia",
+      "bandeira": "Bandeira do Espírito Santo.svg",
+      "brasao": "Brasão do Espírito Santo.svg"
+    },
+    {
+      "sigla": "GO",
+      "codigo_ibge": 52,
+      "nome": "Goiás",
+      "regiao": "Centro-Oeste",
+      "wikidata": "Q41587",
+      "artigo": "Goiás",
+      "capital": "Goiânia",
+      "area_km2": 340086.0,
+      "latitude": -15.883333333,
+      "longitude": -49.833333333,
+      "gentilicos": [
+        "goiano"
+      ],
+      "lema": "Terra Querida, fruto da vida",
+      "bandeira": "Flag of Goiás.svg",
+      "brasao": "Brasão de Goiás.svg"
+    },
+    {
+      "sigla": "MA",
+      "codigo_ibge": 21,
+      "nome": "Maranhão",
+      "regiao": "Nordeste",
+      "wikidata": "Q42362",
+      "artigo": "Maranhão",
+      "capital": "São Luís",
+      "area_km2": 331983.2,
+      "latitude": -6.183333333,
+      "longitude": -45.6,
+      "gentilicos": [
+        "maranhense"
+      ],
+      "lema": null,
+      "bandeira": "Bandeira do Maranhão.svg",
+      "brasao": "Brasão do Maranhão.svg"
+    },
+    {
+      "sigla": "MG",
+      "codigo_ibge": 31,
+      "nome": "Minas Gerais",
+      "regiao": "Sudeste",
+      "wikidata": "Q39109",
+      "artigo": "Minas Gerais",
+      "capital": "Belo Horizonte",
+      "area_km2": 586514.0,
+      "latitude": -19.782222222,
+      "longitude": -43.951388888,
+      "gentilicos": [
+        "mineiro"
+      ],
+      "lema": "LIBERTAS QUÆ SERA TAMEN",
+      "bandeira": "Bandeira de Minas Gerais.svg",
+      "brasao": "Brasão de Minas Gerais.svg"
+    },
+    {
+      "sigla": "MS",
+      "codigo_ibge": 50,
+      "nome": "Mato Grosso do Sul",
+      "regiao": "Centro-Oeste",
+      "wikidata": "Q43319",
+      "artigo": "Mato Grosso do Sul",
+      "capital": "Campo Grande",
+      "area_km2": 357145.532,
+      "latitude": -20.183333333,
+      "longitude": -54.7,
+      "gentilicos": [
+        "sul-mato-grossense"
+      ],
+      "lema": null,
+      "bandeira": "Bandeira de Mato Grosso do Sul.svg",
+      "brasao": "Brasão de Mato Grosso do Sul.svg"
+    },
+    {
+      "sigla": "MT",
+      "codigo_ibge": 51,
+      "nome": "Mato Grosso",
+      "regiao": "Centro-Oeste",
+      "wikidata": "Q42824",
+      "artigo": "Mato Grosso",
+      "capital": "Cuiabá",
+      "area_km2": 903208.027,
+      "latitude": -12.833333333,
+      "longitude": -56.316666666,
+      "gentilicos": [
+        "mato-grossense"
+      ],
+      "lema": "Virtute Plusquam Auro",
+      "bandeira": "Bandeira de Mato Grosso.svg",
+      "brasao": "Brasão de Mato Grosso.svg"
+    },
+    {
+      "sigla": "PA",
+      "codigo_ibge": 15,
+      "nome": "Pará",
+      "regiao": "Norte",
+      "wikidata": "Q39517",
+      "artigo": "Pará",
+      "capital": "Belém",
+      "area_km2": 1245870.7,
+      "latitude": -3.85,
+      "longitude": -52.4,
+      "gentilicos": [
+        "paraense"
+      ],
+      "lema": "Sub lege progrediamur (latim)",
+      "bandeira": "Bandeira do Pará.svg",
+      "brasao": "Brasão do Pará.svg"
+    },
+    {
+      "sigla": "PB",
+      "codigo_ibge": 25,
+      "nome": "Paraíba",
+      "regiao": "Nordeste",
+      "wikidata": "Q38088",
+      "artigo": "Paraíba",
+      "capital": "João Pessoa",
+      "area_km2": 56584.6,
+      "latitude": -7.15,
+      "longitude": -36.816666666,
+      "gentilicos": [
+        "paraibano"
+      ],
+      "lema": null,
+      "bandeira": "Bandeira da Paraíba.svg",
+      "brasao": "Brasão da Paraíba.svg"
+    },
+    {
+      "sigla": "PE",
+      "codigo_ibge": 26,
+      "nome": "Pernambuco",
+      "regiao": "Nordeste",
+      "wikidata": "Q40942",
+      "artigo": "Pernambuco",
+      "capital": "Recife",
+      "area_km2": 98937.8,
+      "latitude": -8.34,
+      "longitude": -37.81,
+      "gentilicos": [
+        "pernambucano"
+      ],
+      "lema": "Ego sum qui fortissimus et dux",
+      "bandeira": "Bandeira de Pernambuco.svg",
+      "brasao": "Brasão de Pernambuco.svg"
+    },
+    {
+      "sigla": "PI",
+      "codigo_ibge": 22,
+      "nome": "Piauí",
+      "regiao": "Nordeste",
+      "wikidata": "Q42722",
+      "artigo": "Piauí",
+      "capital": "Teresina",
+      "area_km2": 251755.5,
+      "latitude": -7.416666666,
+      "longitude": -42.9,
+      "gentilicos": [
+        "piauiense"
+      ],
+      "lema": "Impavidum Ferient Ruinae",
+      "bandeira": "Bandeira do Piauí.svg",
+      "brasao": "Brasão do Piauí.svg"
+    },
+    {
+      "sigla": "PR",
+      "codigo_ibge": 41,
+      "nome": "Paraná",
+      "regiao": "Sul",
+      "wikidata": "Q15499",
+      "artigo": "Paraná",
+      "capital": "Curitiba",
+      "area_km2": 199314.9,
+      "latitude": -24.67,
+      "longitude": -51.62,
+      "gentilicos": [
+        "paranaense"
+      ],
+      "lema": null,
+      "bandeira": "Bandeira do Paraná.svg",
+      "brasao": "Brasão do Paraná.svg"
+    },
+    {
+      "sigla": "RJ",
+      "codigo_ibge": 33,
+      "nome": "Rio de Janeiro",
+      "regiao": "Sudeste",
+      "wikidata": "Q41428",
+      "artigo": "Rio de Janeiro (estado)",
+      "capital": "Rio de Janeiro",
+      "area_km2": 43696.1,
+      "latitude": -22.033333333,
+      "longitude": -42.7,
+      "gentilicos": [
+        "fluminense"
+      ],
+      "lema": "Recte rem publicam gerere",
+      "bandeira": "Bandeira do estado do Rio de Janeiro.svg",
+      "brasao": "Brasão do estado do Rio de Janeiro.svg"
+    },
+    {
+      "sigla": "RN",
+      "codigo_ibge": 24,
+      "nome": "Rio Grande do Norte",
+      "regiao": "Nordeste",
+      "wikidata": "Q43255",
+      "artigo": "Rio Grande do Norte",
+      "capital": "Natal",
+      "area_km2": 53306.8,
+      "latitude": -5.74,
+      "longitude": -36.55,
+      "gentilicos": [
+        "potiguar"
+      ],
+      "lema": null,
+      "bandeira": "Bandeira do Rio Grande do Norte.svg",
+      "brasao": "Brasão do Rio Grande do Norte.svg"
+    },
+    {
+      "sigla": "RO",
+      "codigo_ibge": 11,
+      "nome": "Rondônia",
+      "regiao": "Norte",
+      "wikidata": "Q43235",
+      "artigo": "Rondônia",
+      "capital": "Porto Velho",
+      "area_km2": 237765.3,
+      "latitude": -10.933333333,
+      "longitude": -62.816666666,
+      "gentilicos": [
+        "rondoniano"
+      ],
+      "lema": null,
+      "bandeira": "Bandeira de Rondônia.svg",
+      "brasao": "Brasão de Rondônia.svg"
+    },
+    {
+      "sigla": "RR",
+      "codigo_ibge": 14,
+      "nome": "Roraima",
+      "regiao": "Norte",
+      "wikidata": "Q42508",
+      "artigo": "Roraima",
+      "capital": "Boa Vista",
+      "area_km2": 223644.5,
+      "latitude": 2.133333333,
+      "longitude": -61.35,
+      "gentilicos": [
+        "roraimense"
+      ],
+      "lema": "Amazônia: patrimônio dos brasileiros",
+      "bandeira": "Bandeira de Roraima.svg",
+      "brasao": "Brasão de Roraima.svg"
+    },
+    {
+      "sigla": "RS",
+      "codigo_ibge": 43,
+      "nome": "Rio Grande do Sul",
+      "regiao": "Sul",
+      "wikidata": "Q40030",
+      "artigo": "Rio Grande do Sul",
+      "capital": "Porto Alegre",
+      "area_km2": 281707.1,
+      "latitude": -29.75,
+      "longitude": -53.15,
+      "gentilicos": [
+        "gaúcho"
+      ],
+      "lema": "Liberdade, Igualdade, Humanidade",
+      "bandeira": "Bandeira do Rio Grande do Sul.svg",
+      "brasao": "Brasão do Rio Grande do Sul.svg"
+    },
+    {
+      "sigla": "SC",
+      "codigo_ibge": 42,
+      "nome": "Santa Catarina",
+      "regiao": "Sul",
+      "wikidata": "Q41115",
+      "artigo": "Santa Catarina",
+      "capital": "Florianópolis",
+      "area_km2": 95730.7,
+      "latitude": -27.27,
+      "longitude": -50.49,
+      "gentilicos": [
+        "catarinense"
+      ],
+      "lema": null,
+      "bandeira": "Bandeira de Santa Catarina.svg",
+      "brasao": "Brasão de Santa Catarina.svg"
+    },
+    {
+      "sigla": "SE",
+      "codigo_ibge": 28,
+      "nome": "Sergipe",
+      "regiao": "Nordeste",
+      "wikidata": "Q43783",
+      "artigo": "Sergipe",
+      "capital": "Aracaju",
+      "area_km2": 22050.3,
+      "latitude": -10.59,
+      "longitude": -37.38,
+      "gentilicos": [
+        "sergipano"
+      ],
+      "lema": "SUB LEGE LIBERTAS",
+      "bandeira": "Bandeira de Sergipe.svg",
+      "brasao": "Brasão de Sergipe.svg"
+    },
+    {
+      "sigla": "SP",
+      "codigo_ibge": 35,
+      "nome": "São Paulo",
+      "regiao": "Sudeste",
+      "wikidata": "Q175",
+      "artigo": "São Paulo (estado)",
+      "capital": "São Paulo",
+      "area_km2": 248219.485,
+      "latitude": -22.07,
+      "longitude": -48.433611111,
+      "gentilicos": [
+        "paulista",
+        "bandeirante"
+      ],
+      "lema": "Pro Brasilia Fiant Eximia",
+      "bandeira": "Bandeira do estado de São Paulo.svg",
+      "brasao": "Brasão do estado de São Paulo.svg"
+    },
+    {
+      "sigla": "TO",
+      "codigo_ibge": 17,
+      "nome": "Tocantins",
+      "regiao": "Norte",
+      "wikidata": "Q43695",
+      "artigo": "Tocantins",
+      "capital": "Palmas",
+      "area_km2": 278420.7,
+      "latitude": -9.416666666,
+      "longitude": -48.15,
+      "gentilicos": [
+        "tocantinense"
+      ],
+      "lema": "Co yvy ore retama",
+      "bandeira": "Bandeira do Tocantins.svg",
+      "brasao": "Brasão do Tocantins.svg"
+    }
+  ]
+}

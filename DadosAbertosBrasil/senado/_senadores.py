@@ -1,13 +1,85 @@
 from datetime import date
-from typing import Literal, Optional
+from typing import Any, Literal, overload
 
-from pydantic import validate_call, PositiveInt
+from pydantic import Field, PositiveInt, computed_field, validate_call
 
-from .._config import config
-from ..utils import Base, Get, parse, Formato, Output, filtrar, filtrar_nome
+from ..utils.modelos import Maiusculo, SiglaUF, com_params
+from ..utils.objeto import Objeto
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from . import modelos as m
+from ._comum import ParamsSenado, consultar_senado, filtro_parlamentares, requisicao
 
 
-class Senador(Base):
+class _ParamsPronunciamentos(ParamsSenado):
+    casa: Maiusculo = None
+    inicio: date | None = Field(None, serialization_alias="dataInicio")
+    fim: date | None = Field(None, serialization_alias="dataFim")
+    numero_sessao: int | None = Field(None, serialization_alias="numeroSessao")
+    tipo_pronunciamento: str | None = Field(None, serialization_alias="tipoPronunciamento")
+    tipo_sessao: str | None = Field(None, serialization_alias="tipoSessao")
+
+
+class _ParamsMaterias(ParamsSenado):
+    ano: PositiveInt | None = None
+    numero: int | None = None
+    sigla: str | None = None
+    tramitando: bool | None = None
+
+
+class _ParamsAutorias(_ParamsMaterias):
+    primeiro_autor: bool | None = Field(None, exclude=True)
+
+    @computed_field
+    @property
+    def primeiro(self) -> str:
+        if self.primeiro_autor is None:
+            return "T"
+        return "S" if self.primeiro_autor else "N"
+
+
+class _ParamsRelatorias(_ParamsMaterias):
+    comissao: str | None = None
+
+
+class _ParamsComissoes(ParamsSenado):
+    comissao: str | None = None
+    ativos: bool | None = Field(None, serialization_alias="indAtivos")
+
+
+class _ParamsLicencas(ParamsSenado):
+    inicio: date | None = Field(None, serialization_alias="dataInicio")
+
+
+class _ParamsSenadores(ParamsSenado):
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = Field("atual", exclude=True)
+    uf: SiglaUF = None
+    sexo: Literal["f", "m"] | None = Field(None, exclude=True)
+    partido: str | None = Field(None, exclude=True)
+    contendo: str | None = Field(None, exclude=True)
+    excluindo: str | None = Field(None, exclude=True)
+
+    @computed_field
+    @property
+    def participacao(self) -> str | None:
+        return {"titulares": "T", "suplentes": "S"}.get(self.tipo)
+
+    def para_api(self) -> dict:
+        params = super().para_api()
+        # A lista de afastados não aceita `uf`: o filtro é feito pelo pacote.
+        if self.tipo == "afastados":
+            params.pop("uf", None)
+        return params
+
+
+_TIPOS_SENADORES = {
+    "titulares": ("atual", "ListaParlamentarEmExercicio"),
+    "suplentes": ("atual", "ListaParlamentarEmExercicio"),
+    "atual": ("atual", "ListaParlamentarEmExercicio"),
+    "afastados": ("afastados", "AfastamentoAtual"),
+}
+
+
+class Senador(Objeto):
     """Coleta os dados dos senadores.
 
     Parameters
@@ -113,7 +185,7 @@ class Senador(Base):
 
     Notes
     -----
-    http://legis.senado.gov.br/dadosabertos/docs/
+    https://legis.senado.gov.br/dadosabertos/docs/
 
     Examples
     --------
@@ -137,40 +209,20 @@ class Senador(Base):
 
     """
 
+    modelo = m.SenadorDetalhes
+    chave_obrigatoria = "IdentificacaoParlamentar"
+
     def __init__(self, cod: int, verificar_certificado: bool | None = None):
         self.cod = cod
         self.verify = verificar_certificado
-        atributos = {
-            "email": ["IdentificacaoParlamentar", "EmailParlamentar"],
-            "endereco": ["DadosBasicosParlamentar", "EnderecoParlamentar"],
-            "foto": ["IdentificacaoParlamentar", "UrlFotoParlamentar"],
-            "nascimento": ["DadosBasicosParlamentar", "DataNascimento"],
-            "naturalidade": ["DadosBasicosParlamentar", "Naturalidade"],
-            "nome": ["IdentificacaoParlamentar", "NomeParlamentar"],
-            "nome_completo": ["IdentificacaoParlamentar", "NomeCompletoParlamentar"],
-            "pagina": ["IdentificacaoParlamentar", "UrlPaginaParlamentar"],
-            "partido": ["IdentificacaoParlamentar", "SiglaPartidoParlamentar"],
-            "sexo": ["IdentificacaoParlamentar", "SexoParlamentar"],
-            "tratamento": ["IdentificacaoParlamentar", "FormaTratamento"],
-            "uf": ["IdentificacaoParlamentar", "UfParlamentar"],
-            "uf_naturalidade": ["DadosBasicosParlamentar", "UfNaturalidade"],
-        }
-
-        super().__init__(
-            endpoint="senado",
-            path=["senador", str(cod)],
-            unpack_keys=["DetalheParlamentar", "Parlamentar"],
-            error_key="IdentificacaoParlamentar",
-            atributos=atributos,
-            verify=self.verify,
+        self._carregar(
+            requisicao(["senador", cod], ["DetalheParlamentar", "Parlamentar"], verificar_certificado=verificar_certificado)
         )
-
-        if "Telefones" in self.dados:
-            lista_telefones = self.dados["Telefones"]["Telefone"]
-            if isinstance(lista_telefones, list):
-                self.telefones = [fone["NumeroTelefone"] for fone in lista_telefones]
-            elif isinstance(lista_telefones, dict):
-                self.telefones = [lista_telefones["NumeroTelefone"]]
+        telefones = (self.dados.get("Telefones") or {}).get("Telefone")
+        if isinstance(telefones, dict):
+            telefones = [telefones]
+        if telefones:
+            self.telefones = [fone["NumeroTelefone"] for fone in telefones]
 
     def __repr__(self) -> str:
         return f"<DadosAbertosBrasil.senado: Senador{'a' if self.sexo == 'Feminino' else ''} {self.nome}>"
@@ -178,18 +230,108 @@ class Senador(Base):
     def __str__(self) -> str:
         return self.nome_completo
 
+    @overload
     def apartes(
         self,
-        casa: Optional[Literal["sf", "cd", "cn", "pr", "cr", "ac"]] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
-        numero_sessao: Optional[int] = None,
-        tipo_pronunciamento: Optional[str] = None,
-        tipo_sessao: Optional[str] = None,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Aparte]: ...
+
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
+    @com_params(_ParamsPronunciamentos)
+    def apartes(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
+        numero_sessao: int | None = None,
+        tipo_pronunciamento: str | None = None,
+        tipo_sessao: str | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Obtém a relação de apartes do senador.
 
         Parameters
@@ -218,97 +360,131 @@ class Senador(Base):
         tipo_sessao : str, optional
             Tipo da sessão plenária.
 
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Apartes do senador.
 
         """
 
-        params = {}
-        if casa is not None:
-            params["casa"] = casa.upper()
-        if inicio is not None:
-            params["dataInicio"] = parse.data(inicio, "senado")
-        if fim is not None:
-            params["dataFim"] = parse.data(fim, "senado")
-        if numero_sessao is not None:
-            params["numeroSessao"] = numero_sessao
-        if tipo_pronunciamento is not None:
-            params["tipoPronunciamento"] = tipo_pronunciamento
-        if tipo_sessao is not None:
-            params["tipoSessao"] = tipo_sessao
-
-        cols_to_rename = {
-            "CodigoPronunciamento": "codigo",
-            "DataPronunciamento": "data",
-            "SiglaCasaPronunciamento": "casa_sigla",
-            "NomeCasaPronunciamento": "casa_nome",
-            "TextoResumo": "resumo",
-            "Indexacao": "indexacao",
-            "UrlTexto": "url",
-            "TipoUsoPalavra.Codigo": "uso_palavra",
-            "SessaoPlenaria.CodigoSessao": "sessao",
-            "Orador.CodigoParlamentar": "orador",
-            "Publicacoes.Publicacao.DescricaoVeiculoPublicacao": "publicacao_veiculo",
-            "Publicacoes.Publicacao.DataPublicacao": "publicacao_data",
-            "Publicacoes.Publicacao.NumeroPagInicioPublicacao": "publicacao_primeira_pagina",
-            "Publicacoes.Publicacao.NumeroPagFimPublicacao": "publicacao_ultima_pagina",
-            "Publicacoes.Publicacao.IndicadorRepublicacao": "republicacao",
-            "Publicacoes.Publicacao.UrlDiario": "publicacao_url",
-        }
-
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "apartes"],
-            params=params,
-            unpack_keys=["ApartesParlamentar", "Parlamentar", "Apartes", "Aparte"],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=[
-                "codigo",
-                "uso_palavra",
-                "sessao",
-                "orador",
-                "publicacao_primeira_pagina",
-                "publicacao_ultima_pagina",
-            ],
-            cols_to_date=["data", "publicacao_data"],
-            cols_to_bool=["republicacao"],
-            true_value="Sim",
-            false_value="Não",
-            url_cols=["url", "publicacao_url"],
-            remover_url=not url,
+        return consultar_senado(
+            ["senador", self.cod, "apartes"],
+            ["ApartesParlamentar", "Parlamentar", "Apartes", "Aparte"],
+            _ParamsPronunciamentos.de_locais(locals()),
+            m.Aparte,
+            formato,
+            url=url,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
 
+    @overload
     def autorias(
         self,
-        ano: Optional[PositiveInt] = None,
-        numero: Optional[int] = None,
-        primeiro_autor: Optional[bool] = None,
-        sigla: Optional[str] = None,
-        tramitando: Optional[bool] = None,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Autoria]: ...
+
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def autorias(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        primeiro_autor: bool | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
+    @com_params(_ParamsAutorias)
+    def autorias(
+        self,
+        ano: PositiveInt | None = None,
+        numero: int | None = None,
+        primeiro_autor: bool | None = None,
+        sigla: str | None = None,
+        tramitando: bool | None = None,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Obtém as matérias de autoria de um senador.
 
         Parameters
@@ -334,77 +510,71 @@ class Senador(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Matérias de autoria do senador.
 
         """
 
-        params = {}
-        if ano is not None:
-            params["ano"] = ano
-        if numero is not None:
-            params["numero"] = numero
-        if primeiro_autor is not None:
-            params["primeiro"] = "S" if primeiro_autor else "N"
-        else:
-            params["primeiro"] = "T"
-        if sigla is not None:
-            params["sigla"] = sigla
-        if tramitando is not None:
-            params["tramitando"] = "S" if tramitando else "N"
-
-        cols_to_rename = {
-            "IndicadorAutorPrincipal": "autor_principal",
-            "Materia.Codigo": "codigo",
-            "Materia.IdentificacaoProcesso": "processo",
-            "Materia.DescricaoIdentificacao": "descricao",
-            "Materia.Sigla": "sigla",
-            "Materia.Numero": "numero",
-            "Materia.Ano": "ano",
-            "Materia.Ementa": "ementa",
-            "Materia.Data": "data",
-            "IndicadorOutrosAutores": "outros_autores",
-        }
-
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "autorias"],
-            params=params,
-            unpack_keys=[
-                "MateriasAutoriaParlamentar",
-                "Parlamentar",
-                "Autorias",
-                "Autoria",
-            ],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=["codigo", "processo", "ano"],
-            cols_to_date=["data"],
-            cols_to_bool=["autor_principal", "outros_autores"],
-            true_value="Sim",
-            false_value="Não",
+        return consultar_senado(
+            ["senador", self.cod, "autorias"],
+            ["MateriasAutoriaParlamentar", "Parlamentar", "Autorias", "Autoria"],
+            _ParamsAutorias.de_locais(locals()),
+            m.Autoria,
+            formato,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
 
+    @overload
+    def cargos(
+        self, comissao: str | None = ..., ativos: bool | None = ..., formato: Literal["bruto"] | None = ...
+    ) -> Any: ...
+
+    @overload
+    def cargos(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["json"]
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def cargos(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["pydantic"]
+    ) -> list[m.Cargo]: ...
+
+    @overload
+    def cargos(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["pandas"]
+    ) -> DataFramePandas: ...
+
+    @overload
+    def cargos(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["polars"]
+    ) -> DataFramePolars: ...
+
+    @overload
+    def cargos(self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["url"]) -> str: ...
+
+    @com_params(_ParamsComissoes)
     def cargos(
         self,
-        comissao: Optional[str] = None,
-        ativos: Optional[bool] = None,
+        comissao: str | None = None,
+        ativos: bool | None = None,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Obtém a relação de cargos que o senador ja ocupou.
 
         Parameters
@@ -417,55 +587,68 @@ class Senador(Base):
             - False: Retorna apenas os cargos já finalizadas;
             - None: Retorna ambos.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Relação de cargos que o senador já ocupou.
 
         """
 
-        params = {}
-        if comissao is not None:
-            params["comissao"] = comissao
-        if ativos is not None:
-            params["indAtivos"] = "S" if ativos else "N"
+        return consultar_senado(
+            ["senador", self.cod, "cargos"],
+            ["CargoParlamentar", "Parlamentar", "Cargos", "Cargo"],
+            _ParamsComissoes.de_locais(locals()),
+            m.Cargo,
+            formato,
+            verificar_certificado=self.verify,
+        )
 
-        cols_to_rename = {
-            "CodigoCargo": "cargo_codigo",
-            "DescricaoCargo": "cargo_descricao",
-            "DataInicio": "data_inicio",
-            "DataFim": "data_fim",
-            "IdentificacaoComissao.CodigoComissao": "comissao_codigo",
-            "IdentificacaoComissao.SiglaComissao": "comissao_sigla",
-            "IdentificacaoComissao.NomeComissao": "comissao_nome",
-            "IdentificacaoComissao.SiglaCasaComissao": "casa",
-        }
+    @overload
+    def comissoes(
+        self, comissao: str | None = ..., ativos: bool | None = ..., formato: Literal["bruto"] | None = ...
+    ) -> Any: ...
 
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "cargos"],
-            params=params,
-            unpack_keys=["CargoParlamentar", "Parlamentar", "Cargos", "Cargo"],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=["cargo_codigo", "comisao_codigo"],
-            cols_to_date=["data_inicio", "data_fim"],
-            verify=self.verify,
-        ).get(formato)
+    @overload
+    def comissoes(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["json"]
+    ) -> list[dict[str, Any]]: ...
 
+    @overload
+    def comissoes(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["pydantic"]
+    ) -> list[m.MembroComissao]: ...
+
+    @overload
+    def comissoes(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["pandas"]
+    ) -> DataFramePandas: ...
+
+    @overload
+    def comissoes(
+        self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["polars"]
+    ) -> DataFramePolars: ...
+
+    @overload
+    def comissoes(self, comissao: str | None = ..., ativos: bool | None = ..., *, formato: Literal["url"]) -> str: ...
+
+    @com_params(_ParamsComissoes)
     def comissoes(
         self,
-        comissao: Optional[str] = None,
-        ativos: Optional[bool] = None,
+        comissao: str | None = None,
+        ativos: bool | None = None,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Obtém as comissões de que um senador é membro.
 
         Parameters
@@ -478,108 +661,185 @@ class Senador(Base):
             - False: Retorna apenas as comissões já finalizadas;
             - None: Retorna ambas.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Comissões que o senador é membro.
 
         """
 
-        params = {}
-        if comissao is not None:
-            params["comissao"] = comissao
-        if ativos is not None:
-            params["indAtivos"] = "S" if ativos else "N"
+        return consultar_senado(
+            ["senador", self.cod, "comissoes"],
+            ["MembroComissaoParlamentar", "Parlamentar", "MembroComissoes", "Comissao"],
+            _ParamsComissoes.de_locais(locals()),
+            m.MembroComissao,
+            formato,
+            verificar_certificado=self.verify,
+        )
 
-        cols_to_rename = {
-            "DescricaoParticipacao": "participacao",
-            "DataInicio": "data_inicio",
-            "DataFim": "data_fim",
-            "IdentificacaoComissao.CodigoComissao": "comissao_codigo",
-            "IdentificacaoComissao.SiglaComissao": "comissao_sigla",
-            "IdentificacaoComissao.NomeComissao": "comissao_nome",
-            "IdentificacaoComissao.SiglaCasaComissao": "casa",
-        }
+    @overload
+    def cursos(self, formato: Literal["bruto"] | None = ...) -> Any: ...
 
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "comissoes"],
-            params=params,
-            unpack_keys=[
-                "MembroComissaoParlamentar",
-                "Parlamentar",
-                "MembroComissoes",
-                "Comissao",
-            ],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=["comissao_codigo"],
-            cols_to_date=["data_inicio", "data_fim"],
-            verify=self.verify,
-        ).get(formato)
+    @overload
+    def cursos(self, *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
 
-    def cursos(self, formato: Formato | None = None) -> Output:
+    @overload
+    def cursos(self, *, formato: Literal["pydantic"]) -> list[m.Curso]: ...
+
+    @overload
+    def cursos(self, *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def cursos(self, *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def cursos(self, *, formato: Literal["url"]) -> str: ...
+
+    def cursos(self, formato: Formato | None = None) -> Saida:
         """Obtém o histórico acadêmico de um senador.
 
         Parameters
         ----------
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Histórico acadêmico do senador.
 
         """
 
-        cols_to_rename = {
-            "NomeCurso": "nome",
-            "GrauInstrucao": "grau_instrucao",
-            "Estabelecimento": "estabelecimento",
-            "Local": "local",
-        }
+        return consultar_senado(
+            ["senador", self.cod, "historicoAcademico"],
+            ["HistoricoAcademicoParlamentar", "Parlamentar", "HistoricoAcademico", "Curso"],
+            None,
+            m.Curso,
+            formato,
+            verificar_certificado=self.verify,
+        )
 
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "historicoAcademico"],
-            unpack_keys=[
-                "HistoricoAcademicoParlamentar",
-                "Parlamentar",
-                "HistoricoAcademico",
-                "Curso",
-            ],
-            cols_to_rename=cols_to_rename,
-            cols_to_bool=["atividade_principal"],
-            true_value="Sim",
-            false_value="Não",
-            verify=self.verify,
-        ).get(formato)
-
+    @overload
     def discursos(
         self,
-        casa: Optional[Literal["sf", "cd", "cn", "pr", "cr", "ac"]] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
-        numero_sessao: Optional[int] = None,
-        tipo_pronunciamento: Optional[str] = None,
-        tipo_sessao: Optional[str] = None,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Discurso]: ...
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        numero_sessao: int | None = ...,
+        tipo_pronunciamento: str | None = ...,
+        tipo_sessao: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
+    @com_params(_ParamsPronunciamentos)
+    def discursos(
+        self,
+        casa: Literal["sf", "cd", "cn", "pr", "cr", "ac"] | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
+        numero_sessao: int | None = None,
+        tipo_pronunciamento: str | None = None,
+        tipo_sessao: str | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Obtém a relação de discursos do senador.
 
         Se os argumentos `inicio` e `fim` não forem informados, retorna os
@@ -611,137 +871,101 @@ class Senador(Base):
         tipo_sessao : str, optional
             Tipo da sessão plenária.
 
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Relação de discursos do senador.
 
         """
 
-        params = {}
-        if casa is not None:
-            params["casa"] = casa.upper()
-        if inicio is not None:
-            params["dataInicio"] = parse.data(inicio, "senado")
-        if fim is not None:
-            params["dataFim"] = parse.data(fim, "senado")
-        if numero_sessao is not None:
-            params["numeroSessao"] = numero_sessao
-        if tipo_pronunciamento is not None:
-            params["tipoPronunciamento"] = tipo_pronunciamento
-        if tipo_sessao is not None:
-            params["tipoSessao"] = tipo_sessao
-
-        cols_to_rename = {
-            "CodigoPronunciamento": "codigo",
-            "DataPronunciamento": "data",
-            "SiglaCasaPronunciamento": "casa_sigla",
-            "NomeCasaPronunciamento": "casa_nome",
-            "TextoResumo": "resumo",
-            "Indexacao": "indexacao",
-            "UrlTexto": "url",
-            "TipoUsoPalavra.Codigo": "uso_palavra",
-            "SessaoPlenaria.CodigoSessao": "sessao",
-            "Publicacoes.Publicacao.DescricaoVeiculoPublicacao": "publicacao_veiculo",
-            "Publicacoes.Publicacao.DataPublicacao": "publicacao_data",
-            "Publicacoes.Publicacao.NumeroPagInicioPublicacao": "publicacao_primeira_pagina",
-            "Publicacoes.Publicacao.NumeroPagFimPublicacao": "publicacao_ultima_pagina",
-            "Publicacoes.Publicacao.IndicadorRepublicacao": "republicacao",
-            "Publicacoes.Publicacao.UrlDiario": "publicacao_url",
-        }
-
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "discursos"],
-            params=params,
-            unpack_keys=[
-                "DiscursosParlamentar",
-                "Parlamentar",
-                "Pronunciamentos",
-                "Pronunciamento",
-            ],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=[
-                "codigo",
-                "uso_palavra",
-                "sessao",
-                "publicacao_primeira_pagina",
-                "publicacao_ultima_pagina",
-            ],
-            cols_to_date=["data", "publicacao_data"],
-            cols_to_bool=["republicacao"],
-            true_value="Sim",
-            false_value="Não",
-            url_cols=["url", "publicacao_url"],
-            remover_url=not url,
+        return consultar_senado(
+            ["senador", self.cod, "discursos"],
+            ["DiscursosParlamentar", "Parlamentar", "Pronunciamentos", "Pronunciamento"],
+            _ParamsPronunciamentos.de_locais(locals()),
+            m.Discurso,
+            formato,
+            url=url,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
+
+    @overload
+    def filiacoes(self, index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def filiacoes(self, index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def filiacoes(self, index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Filiacao]: ...
+
+    @overload
+    def filiacoes(self, index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def filiacoes(self, index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def filiacoes(self, index: bool = ..., *, formato: Literal["url"]) -> str: ...
 
     def filiacoes(
         self,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Obtém as filiações partidárias que o senador já teve.
 
         Parameters
         ----------
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Filiações partidárias que o senador já teve.
 
         """
 
-        cols_to_rename = {
-            "Partido.CodigoPartido": "codigo",
-            "Partido.SiglaPartido": "sigla",
-            "Partido.NomePartido": "nome",
-            "DataFiliacao": "data_filiacao",
-            "DataDesfiliacao": "data_desfiliacao",
-        }
-
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "filiacoes"],
-            unpack_keys=["FiliacaoParlamentar", "Parlamentar", "Filiacoes", "Filiacao"],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=["codigo"],
-            cols_to_date=["data_filiacao", "data_desfiliacao"],
+        return consultar_senado(
+            ["senador", self.cod, "filiacoes"],
+            ["FiliacaoParlamentar", "Parlamentar", "Filiacoes", "Filiacao"],
+            None,
+            m.Filiacao,
+            formato,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
 
     def historico(self) -> dict:
         """Obtém todos os detalhes de um parlamentar no(s) mandato(s) como
@@ -754,126 +978,152 @@ class Senador(Base):
 
         """
 
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "historico"],
-            unpack_keys=["DetalheParlamentar", "Parlamentar"],
-        ).json
+        return requisicao(
+            ["senador", self.cod, "historico"], ["DetalheParlamentar", "Parlamentar"], verificar_certificado=self.verify
+        ).json()
+
+    @overload
+    def mandatos(self, index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def mandatos(self, index: bool = ..., *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def mandatos(self, index: bool = ..., *, formato: Literal["pydantic"]) -> list[m.Mandato]: ...
+
+    @overload
+    def mandatos(self, index: bool = ..., *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def mandatos(self, index: bool = ..., *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def mandatos(self, index: bool = ..., *, formato: Literal["url"]) -> str: ...
 
     def mandatos(
         self,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Obtém os mandatos que o senador já teve.
 
         Parameters
         ----------
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Mandatos que o senador já teve.
 
         """
 
-        cols_to_rename = {
-            "CodigoMandato": "codigo",
-            "UfParlamentar": "uf",
-            "DescricaoParticipacao": "participacao",
-            "PrimeiraLegislaturaDoMandato.NumeroLegislatura": "primeira_legislatura",
-            "PrimeiraLegislaturaDoMandato.DataInicio": "primeira_legislatura_inicio",
-            "PrimeiraLegislaturaDoMandato.DataFim": "primeira_legislatura_fim",
-            "SegundaLegislaturaDoMandato.NumeroLegislatura": "segunda_legislatura",
-            "SegundaLegislaturaDoMandato.DataInicio": "segunda_legislatura_inicio",
-            "SegundaLegislaturaDoMandato.DataFim": "segunda_legislatura_fim",
-        }
-
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "mandatos"],
-            unpack_keys=["MandatoParlamentar", "Parlamentar", "Mandatos", "Mandato"],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=["codigo"],
-            cols_to_date=[
-                "primeira_legislatura_inicio",
-                "primeira_legislatura_fim",
-                "segunda_legislatura_inicio",
-                "segunda_legislatura_fim",
-            ],
+        return consultar_senado(
+            ["senador", self.cod, "mandatos"],
+            ["MandatoParlamentar", "Parlamentar", "Mandatos", "Mandato"],
+            None,
+            m.Mandato,
+            formato,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
 
-    def liderancas(self, formato: Formato | None = None) -> Output:
+    @overload
+    def liderancas(self, formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def liderancas(self, *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def liderancas(self, *, formato: Literal["pydantic"]) -> list[m.Lideranca]: ...
+
+    @overload
+    def liderancas(self, *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def liderancas(self, *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def liderancas(self, *, formato: Literal["url"]) -> str: ...
+
+    def liderancas(self, formato: Formato | None = None) -> Saida:
         """Obtém os cargos de liderança de um senador.
 
         Parameters
         ----------
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Cargos de liderança do senador.
 
         """
 
-        cols_to_rename = {
-            "UnidadeLideranca": "lideranca",
-            "DescricaoTipoLideranca": "tipo",
-            "SiglaCasaLideranca": "casa_sigla",
-            "NomeCasaLideranca": "casa_nome",
-            "DataDesignacao": "data_designacao",
-            "DataFim": "data_fim",
-            "Partido.CodigoPartido": "partido_codigo",
-            "Partido.SiglaPartido": "partido_sigla",
-            "Partido.NomePartido": "partido_nome",
-            "Bloco.CodigoBloco": "bloco_codigo",
-            "Bloco.SiglaBloco": "bloco_sigla",
-            "Bloco.NomeBloco": "bloco_nome",
-            "Bloco.ApelidoBloco": "bloco_apelido",
-        }
+        return consultar_senado(
+            ["senador", self.cod, "liderancas"],
+            ["LiderancaParlamentar", "Parlamentar", "Liderancas", "Lideranca"],
+            None,
+            m.Lideranca,
+            formato,
+            verificar_certificado=self.verify,
+        )
 
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "liderancas"],
-            unpack_keys=[
-                "LiderancaParlamentar",
-                "Parlamentar",
-                "Liderancas",
-                "Lideranca",
-            ],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=["partido_codigo", "bloco_codigo"],
-            cols_to_date=["data_designacao", "data_fim"],
-            verify=self.verify,
-        ).get(formato)
+    @overload
+    def licencas(self, inicio: date | None = ..., index: bool = ..., formato: Literal["bruto"] | None = ...) -> Any: ...
 
+    @overload
+    def licencas(
+        self, inicio: date | None = ..., index: bool = ..., *, formato: Literal["json"]
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def licencas(
+        self, inicio: date | None = ..., index: bool = ..., *, formato: Literal["pydantic"]
+    ) -> list[m.Licenca]: ...
+
+    @overload
+    def licencas(
+        self, inicio: date | None = ..., index: bool = ..., *, formato: Literal["pandas"]
+    ) -> DataFramePandas: ...
+
+    @overload
+    def licencas(
+        self, inicio: date | None = ..., index: bool = ..., *, formato: Literal["polars"]
+    ) -> DataFramePolars: ...
+
+    @overload
+    def licencas(self, inicio: date | None = ..., index: bool = ..., *, formato: Literal["url"]) -> str: ...
+
+    @com_params(_ParamsLicencas)
     def licencas(
         self,
-        inicio: Optional[date] = None,
+        inicio: date | None = None,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Obtém as licenças de um senador.
 
         Parameters
@@ -883,100 +1133,167 @@ class Senador(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Licenças do senador.
 
         """
 
-        cols_to_rename = {
-            "Codigo": "codigo",
-            "DataInicio": "inicio",
-            "DataInicioPrevista": "inicio_previsto",
-            "DataFim": "fim",
-            "DataFimPrevista": "fim_previsto",
-            "SiglaTipoAfastamento": "afastamento_sigla",
-            "DescricaoTipoAfastamento": "afastamento_descricao",
-        }
-
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "licencas"],
-            params=(
-                {"dataInicio": parse.data(inicio, "senado")}
-                if inicio is not None
-                else {}
-            ),
-            unpack_keys=["LicencaParlamentar", "Parlamentar", "Licencas", "Licenca"],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=["codigo"],
-            cols_to_date=["inicio", "inicio_previsto", "fim", "fim_previsto"],
+        return consultar_senado(
+            ["senador", self.cod, "licencas"],
+            ["LicencaParlamentar", "Parlamentar", "Licencas", "Licenca"],
+            _ParamsLicencas.de_locais(locals()),
+            m.Licenca,
+            formato,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
 
-    def profissoes(self, formato: Formato | None = None) -> Output:
+    @overload
+    def profissoes(self, formato: Literal["bruto"] | None = ...) -> Any: ...
+
+    @overload
+    def profissoes(self, *, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+    @overload
+    def profissoes(self, *, formato: Literal["pydantic"]) -> list[m.Profissao]: ...
+
+    @overload
+    def profissoes(self, *, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+    @overload
+    def profissoes(self, *, formato: Literal["polars"]) -> DataFramePolars: ...
+
+    @overload
+    def profissoes(self, *, formato: Literal["url"]) -> str: ...
+
+    def profissoes(self, formato: Formato | None = None) -> Saida:
         """Obtém a(s) profissão(ões) de um senador.
 
         Parameters
         ----------
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Profissões do senador.
 
         """
 
-        cols_to_rename = {
-            "NomeProfissao": "nome",
-            "IndicadorAtividadePrincipal": "atividade_principal",
-        }
+        return consultar_senado(
+            ["senador", self.cod, "profissao"],
+            ["HistoricoAcademicoParlamentar", "Parlamentar", "Profissoes", "Profissao"],
+            None,
+            m.Profissao,
+            formato,
+            verificar_certificado=self.verify,
+        )
 
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "profissao"],
-            unpack_keys=[
-                "ProfissaoParlamentar",
-                "Parlamentar",
-                "Profissoes",
-                "Profissao",
-            ],
-            cols_to_rename=cols_to_rename,
-            cols_to_bool=["atividade_principal"],
-            true_value="Sim",
-            false_value="Não",
-            verify=self.verify,
-        ).get(formato)
-
+    @overload
     def relatorias(
         self,
-        ano: Optional[PositiveInt] = None,
-        comissao: Optional[str] = None,
-        numero: Optional[int] = None,
-        sigla: Optional[str] = None,
-        tramitando: Optional[bool] = None,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Relatoria]: ...
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def relatorias(
+        self,
+        ano: PositiveInt | None = ...,
+        comissao: str | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
+    @com_params(_ParamsRelatorias)
+    def relatorias(
+        self,
+        ano: PositiveInt | None = None,
+        comissao: str | None = None,
+        numero: int | None = None,
+        sigla: str | None = None,
+        tramitando: bool | None = None,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Obtém as matérias de relatoria de um senador.
 
         Parameters
@@ -998,68 +1315,114 @@ class Senador(Base):
             - False: Retorna apenas as que não estão tramitando;
             - None: Retorna ambas.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Matérias de relatoria do senador.
 
         """
 
-        params = {}
-        if ano is not None:
-            params["ano"] = ano
-        if comissao is not None:
-            params["comissao"] = comissao
-        if numero is not None:
-            params["numero"] = numero
-        if sigla is not None:
-            params["sigla"] = sigla
-        if tramitando is not None:
-            params["tramitando"] = "S" if tramitando else "N"
+        return consultar_senado(
+            ["senador", self.cod, "relatorias"],
+            ["MateriasRelatoriaParlamentar", "Parlamentar", "Relatorias", "Relatoria"],
+            _ParamsRelatorias.de_locais(locals()),
+            m.Relatoria,
+            formato,
+            verificar_certificado=self.verify,
+        )
 
-        cols_to_rename = {
-            "Materia.Codigo": "materia",
-            "Comissao.Codigo": "comissao",
-            "CodigoTipoRelator": "codigo",
-            "DescricaoTipoRelator": "descricao",
-            "DataDesignacao": "data_designacao",
-            "DataDestituicao": "data_destituicao",
-            "DescricaoMotivoDestituicao": "motivo_destituicao",
-        }
-
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "relatorias"],
-            params=params,
-            unpack_keys=[
-                "MateriasRelatoriaParlamentar",
-                "Parlamentar",
-                "Relatorias",
-                "Relatoria",
-            ],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=["codigo", "materia", "comissao"],
-            cols_to_date=["data_designacao", "data_destituicao"],
-            verify=self.verify,
-        ).get(formato)
-
+    @overload
     def votacoes(
         self,
-        ano: Optional[PositiveInt] = None,
-        numero: Optional[int] = None,
-        sigla: Optional[str] = None,
-        tramitando: Optional[bool] = None,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+    ) -> list[m.Voto]: ...
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+    ) -> DataFramePandas: ...
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+    ) -> DataFramePolars: ...
+
+    @overload
+    def votacoes(
+        self,
+        ano: PositiveInt | None = ...,
+        numero: int | None = ...,
+        sigla: str | None = ...,
+        tramitando: bool | None = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+    ) -> str: ...
+
+    @com_params(_ParamsMaterias)
+    def votacoes(
+        self,
+        ano: PositiveInt | None = None,
+        numero: int | None = None,
+        sigla: str | None = None,
+        tramitando: bool | None = None,
         index: bool = False,
         formato: Formato | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Obtém as votações de um senador.
 
         Parameters
@@ -1080,74 +1443,146 @@ class Senador(Base):
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Votações do senador.
 
         """
 
-        params = {}
-        if ano is not None:
-            params["ano"] = ano
-        if numero is not None:
-            params["numero"] = numero
-        if sigla is not None:
-            params["sigla"] = sigla
-        if tramitando is not None:
-            params["tramitando"] = "S" if tramitando else "N"
-
-        cols_to_rename = {
-            "CodigoSessaoVotacao": "codigo",
-            "SessaoPlenaria.CodigoSessao": "sessao",
-            "Materia.Codigo": "materia",
-            "Tramitacao.IdentificacaoTramitacao.CodigoTramitacao": "tramitacao",
-            "Sequencial": "sequencial",
-            "DescricaoVotacao": "descricao",
-            "IndicadorVotacaoSecreta": "votacao_secreta",
-            "SiglaDescricaoVoto": "voto",
-            "DescricaoResultado": "resultado",
-        }
-
-        return Get(
-            endpoint="senado",
-            path=["senador", str(self.cod), "votacoes"],
-            params=params,
-            unpack_keys=["VotacaoParlamentar", "Parlamentar", "Votacoes", "Votacao"],
-            cols_to_rename=cols_to_rename,
-            cols_to_int=["sequencial", "votacao", "sessao", "materia", "tramitacao"],
-            cols_to_bool=["votacao_secreta"],
-            true_value="Sim",
-            false_value="Não",
+        return consultar_senado(
+            ["senador", self.cod, "votacoes"],
+            ["VotacaoParlamentar", "Parlamentar", "Votacoes", "Votacao"],
+            _ParamsMaterias.de_locais(locals()),
+            m.Voto,
+            formato,
             index=index,
-            verify=self.verify,
-        ).get(formato)
+            verificar_certificado=self.verify,
+        )
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Senador]: ...
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_senadores(
+    tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
+@com_params(_ParamsSenadores)
 def lista_senadores(
     tipo: Literal["atual", "titulares", "suplentes", "afastados"] = "atual",
-    uf: Optional[str] = None,
-    sexo: Optional[Literal["f", "m"]] = None,
-    partido: Optional[str] = None,
-    contendo: Optional[str] = None,
-    excluindo: Optional[str] = None,
+    uf: str | None = None,
+    sexo: Literal["f", "m"] | None = None,
+    partido: str | None = None,
+    contendo: str | None = None,
+    excluindo: str | None = None,
     url: bool = True,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Lista de senadores da república.
 
     Parameters
@@ -1173,21 +1608,23 @@ def lista_senadores(
     excluindo : str, optional
         Exclui da consulta senadores contendo esse texto no nome.
 
-    url : bool, default=False
+    url : bool, default=True
         Se False, remove as colunas contendo URI, URL e e-mails.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Vale para os formatos 'json', 'pandas' e 'polars'.
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -1196,7 +1633,7 @@ def lista_senadores(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista de senadores da república.
 
     Raises
@@ -1253,74 +1690,22 @@ def lista_senadores(
     
     """
 
-    tipo = tipo.lower()
-    TIPOS = {
-        "titulares": {
-            "path": "atual",
-            "key": "ListaParlamentarEmExercicio",
-            "params": {"participacao": "T"},
-        },
-        "suplentes": {
-            "path": "atual",
-            "key": "ListaParlamentarEmExercicio",
-            "params": {"participacao": "S"},
-        },
-        "atual": {"path": "atual", "key": "ListaParlamentarEmExercicio", "params": {}},
-        "afastados": {"path": "afastados", "key": "AfastamentoAtual", "params": {}},
-    }
-
-    params = TIPOS[tipo]["params"]
-    if uf is not None:
-        params["uf"] = parse.uf(uf=uf)
-
-    cols_to_rename = {
-        "IdentificacaoParlamentar.CodigoParlamentar": "codigo",
-        "IdentificacaoParlamentar.NomeParlamentar": "nome_parlamentar",
-        "IdentificacaoParlamentar.NomeCompletoParlamentar": "nome_completo",
-        "IdentificacaoParlamentar.SexoParlamentar": "sexo",
-        "IdentificacaoParlamentar.FormaTratamento": "forma_tratamento",
-        "IdentificacaoParlamentar.UrlFotoParlamentar": "foto",
-        "IdentificacaoParlamentar.UrlPaginaParlamentar": "pagina_parlamentar",
-        "IdentificacaoParlamentar.UrlPaginaParticular": "pagina_particular",
-        "IdentificacaoParlamentar.EmailParlamentar": "email",
-        "IdentificacaoParlamentar.SiglaPartidoParlamentar": "partido",
-        "Mandato.UfParlamentar": "uf",
-        "Mandato.Exercicios.Exercicio.DataInicio": "data_inicio",
-        "Mandato.Exercicios.Exercicio.DataFim": "data_fim",
-        "Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento": "causa_afastamento",
-    }
-
-    formato = config.resolver_formato(formato)
-    data = Get(
-        endpoint="senado",
-        path=["senador", "lista", TIPOS[tipo]["path"]],
-        params=params,
-        unpack_keys=[TIPOS[tipo]["key"], "Parlamentares", "Parlamentar"],
-        cols_to_rename=cols_to_rename,
-        cols_to_int=["codigo"],
-        cols_to_date=["data_inicio", "data_fim"],
-        url_cols=["foto", "pagina_parlamentar", "pagina_particular", "email"],
-        remover_url=not url,
-        index=index,
-        verify=verificar_certificado,
-    ).get(formato)
-
-    if sexo is not None:
-        SEXOS = {"m": "Masculino", "f": "Feminino"}
-        data = filtrar(data, formato, "sexo", SEXOS[sexo])
-
-    if (uf is not None) and (tipo == "afastados"):
-        data = filtrar(data, formato, "uf", parse.uf(uf=uf))
-
-    if partido is not None:
-        data = filtrar(data, formato, "partido", partido.upper())
-
-    data = filtrar_nome(
-        data,
+    params = _ParamsSenadores.de_locais(locals())
+    caminho, chave = _TIPOS_SENADORES[tipo]
+    return consultar_senado(
+        ["senador", "lista", caminho],
+        [chave, "Parlamentares", "Parlamentar"],
+        params,
+        m.Senador,
         formato,
-        ["nome_parlamentar", "nome_completo"],
-        contendo=contendo,
-        excluindo=excluindo,
+        url=url,
+        index=index,
+        filtro=filtro_parlamentares(
+            sexo=sexo,
+            partido=partido,
+            uf=params.uf if tipo == "afastados" else None,
+            contendo=contendo,
+            excluindo=excluindo,
+        ),
+        verificar_certificado=verificar_certificado,
     )
-
-    return data

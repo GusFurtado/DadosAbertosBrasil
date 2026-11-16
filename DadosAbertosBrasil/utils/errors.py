@@ -38,15 +38,52 @@ class DABUFError(DABError, ValueError):
     """Erro gerado quando o usuário insere um valor inválido para a UF."""
 
 
-class DABFormatoWarning(FutureWarning):
-    """Aviso de que o formato padrão de retorno muda no DadosAbertosBrasil 3.0.
+class DABFuncaoRemovidaError(DABError, NotImplementedError):
+    """Erro gerado ao chamar uma função removida no 3.0.
 
-    Para silenciar, defina `DadosAbertosBrasil.config.formato`.
+    A mensagem explica o motivo, a alternativa (se houver) e aponta para o
+    guia de migração.
     """
 
 
-class _DABDeprecationError(DeprecationWarning):
-    """Erro gerado quando o usuário chama uma função depreciada."""
+def removida(funcao: str, motivo: str) -> DABFuncaoRemovidaError:
+    """Erro de uma função removida, com o link do guia de migração."""
+    return DABFuncaoRemovidaError(f"`{funcao}` foi removida no DadosAbertosBrasil 3.0. {motivo} Veja {GUIA_MIGRACAO}")
+
+
+class DABDadosWarning(UserWarning):
+    """Aviso de um arquivo do repositório de dados num formato mais novo que o suportado.
+
+    Atualize o pacote: `pip install -U DadosAbertosBrasil`.
+    """
+
+
+class DABFormatoWarning(UserWarning):
+    """Aviso de que a função foi chamada sem `formato` e sem `config.formato`.
+
+    Nesse caso o retorno é `"json"`. Para silenciar, defina
+    `DadosAbertosBrasil.config.formato`.
+    """
+
+
+class DABValidacaoWarning(UserWarning):
+    """Aviso de um valor da API que não corresponde ao modelo de saída.
+
+    Quase sempre indica que a API mudou. O valor é mantido como veio.
+    """
+
+
+def alias_descontinuado(antigo: str, novo: str) -> property:
+    """Atributo com nome antigo que lê o novo, com `DeprecationWarning`."""
+
+    def ler(self):
+        descontinuado(
+            f"`{type(self).__name__}.{antigo}` foi renomeado para `{novo}` e o nome antigo "
+            "deixa de existir em uma versão futura do 3.x."
+        )
+        return getattr(self, novo)
+
+    return property(ler, doc=f"Nome antigo de `{novo}`.")
 
 
 def descontinuado(mensagem: str, stacklevel: int | None = None) -> None:
@@ -84,12 +121,6 @@ def nome_antigo(nome: str):
             stacklevel=4,
         )
         return globals()[novo]
-    if nome == "DAB_DeprecationError":
-        descontinuado(
-            "`DAB_DeprecationError` não é usado pelo pacote e será removido no 3.0.",
-            stacklevel=4,
-        )
-        return _DABDeprecationError
     return None
 
 

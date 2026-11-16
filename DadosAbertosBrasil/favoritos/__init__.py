@@ -10,17 +10,28 @@ rápidas.
 
 """
 
+import csv
 from datetime import date
-from typing import Literal, Optional
+from typing import Any, Literal, overload
 
-import pandas as pd
-from pydantic import validate_call, PositiveInt
+from pydantic import PositiveInt, validate_call
 
-from .. import bacen, ipea
-from .._config import config
-from ..utils import Get, parse, Formato, Output, converter
-from ..utils.endpoints import ENDPOINTS
-from ..utils.errors import descontinuado
+from .. import bacen
+from ..bacen.modelos import ValorSerie
+from ..utils import parse
+from ..utils.errors import removida
+from ..utils.modelos import validar
+from ..utils.requisicao import Requisicao
+from ..utils.saida import consultar, resolver_formato, tabela
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from . import modelos as m
+
+
+def _serie_ipea(cod: str, formato, index: bool, verificar_certificado) -> Saida:
+    requisicao = Requisicao(
+        "ipea", [f"Metadados(SERCODIGO='{cod}')", "Valores"], chaves=["value"], verificar_certificado=verificar_certificado
+    )
+    return consultar(requisicao, m.ValorIpea, formato, index=index, index_col="data")
 
 
 @validate_call
@@ -163,24 +174,52 @@ def brasao(uf: str, tamanho: PositiveInt = 100) -> str:
     return URL + brasao[parse.uf(uf, extintos=True)]
 
 
+@overload
+def catalogo(formato: Literal["bruto"] | None = ...) -> Any: ...
+
+
+@overload
+def catalogo(*, formato: Literal["json"]) -> list[dict[str, Any]]: ...
+
+
+@overload
+def catalogo(*, formato: Literal["pydantic"]) -> list[m.Catalogo]: ...
+
+
+@overload
+def catalogo(*, formato: Literal["pandas"]) -> DataFramePandas: ...
+
+
+@overload
+def catalogo(*, formato: Literal["polars"]) -> DataFramePolars: ...
+
+
+@overload
+def catalogo(*, formato: Literal["url"]) -> str: ...
+
+
 @validate_call
 def catalogo(
-    formato: Literal["pandas", "polars", "url"] | None = None,
-) -> Output:
+    formato: Formato | None = None,
+) -> Saida:
     """Catálogo de iniciativas oficiais de dados abertos no Brasil.
 
     Parameters
     ----------
-    formato : {"pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço do arquivo CSV.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Catálogo de iniciativas de dados abertos.
 
     Notes
@@ -201,32 +240,66 @@ def catalogo(
 
     """
 
-    URL = "https://raw.githubusercontent.com/dadosgovbr/catalogos-dados-brasil/master/dados/catalogos.csv"
+    requisicao = Requisicao(
+        "https://raw.githubusercontent.com/", ["dadosgovbr", "catalogos-dados-brasil", "master", "dados", "catalogos.csv"]
+    )
+    formato = resolver_formato(formato)
+    if formato == "url":
+        return requisicao.url
+    linhas = list(csv.DictReader(requisicao.texto().splitlines()))
+    if formato == "bruto":
+        return linhas
+    return tabela(validar(m.Catalogo, linhas), m.Catalogo, formato)
 
-    match config.resolver_formato(formato):
-        case "url":
-            return URL
-        case formato:
-            return converter(pd.read_csv(URL), formato)
+
+@overload
+def codigos_municipios(formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...) -> Any: ...
+
+
+@overload
+def codigos_municipios(
+    *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def codigos_municipios(
+    *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.CodigoMunicipio]: ...
+
+
+@overload
+def codigos_municipios(*, formato: Literal["pandas"], verificar_certificado: bool | None = ...) -> DataFramePandas: ...
+
+
+@overload
+def codigos_municipios(*, formato: Literal["polars"], verificar_certificado: bool | None = ...) -> DataFramePolars: ...
+
+
+@overload
+def codigos_municipios(*, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
 
 
 @validate_call
 def codigos_municipios(
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Lista dos códigos dos municípios do IBGE e do TSE.
 
     Utilizado para correlacionar dados das duas APIs diferentes.
 
     Parameters
     ----------
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -235,7 +308,7 @@ def codigos_municipios(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Códigos do IBGE e do TSE para todos os municípios do Brasil.
 
     Notes
@@ -256,27 +329,99 @@ def codigos_municipios(
 
     """
 
-    return Get(
-        endpoint="github",
-        path=[
-            "betafcc",
-            "Municipios-Brasileiros-TSE",
-            "master",
-            "municipios_brasileiros_tse.json",
-        ],
-        verify=verificar_certificado,
-    ).get(formato)
+    return consultar(
+        Requisicao(
+            "github",
+            ["betafcc", "Municipios-Brasileiros-TSE", "master", "municipios_brasileiros_tse.json"],
+            verificar_certificado=verificar_certificado,
+            cacheavel=True,
+        ),
+        m.CodigoMunicipio,
+        formato,
+        index_col=None,
+    )
+
+
+@overload
+def ipca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def ipca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def ipca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[ValorSerie]: ...
+
+
+@overload
+def ipca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def ipca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def ipca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
 def ipca(
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Índice nacional de preços ao consumidor-amplo (IPCA).
 
     Esta é uma função de fácil acesso à série temporal 433 do módulo `bacen`.
@@ -299,12 +444,15 @@ def ipca(
         Define se a coluna 'data' será o index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -313,7 +461,7 @@ def ipca(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         DataFrame contendo os valores da série temporal.
 
     Notes
@@ -354,51 +502,79 @@ def ipca(
     )
 
 
-@validate_call
-def perfil_eleitorado(
-    formato: Literal["pandas", "polars", "url"] | None = None,
-) -> Output:
-    """Tabela com perfil do eleitorado por município.
+def perfil_eleitorado(*args, **kwargs):
+    """Removida no 3.0: dados eleitorais deixaram de fazer parte do pacote.
 
-    !!! warning "Descontinuada"
-        Esta função é removida no DadosAbertosBrasil 3.0, sem substituto:
-        dados eleitorais deixam de fazer parte do pacote.
-
-    Parameters
-    ----------
-    formato : {"pandas", "polars", "url"}, optional
-        Formato do dado que será retornado:
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço do arquivo CSV.
-        Se omitido, usa `DadosAbertosBrasil.config.formato`.
-
-    Returns
-    -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str
-        Perfil do eleitorado em todos os municípios.
-
-    Examples
-    --------
-    >>> favoritos.perfil_eleitorado()
-          NR_ANO_ELEICAO  CD_PAIS NM_PAIS SG_REGIAO NM_REGIAO SG_UF     NM_UF  ...
-    0               2020        1  Brasil         N     Norte    AC      Acre  ...
-    1               2020        1  Brasil         N     Norte    AC      Acre  ...
-    ..               ...      ...     ...       ...       ...   ...       ...  ...
-
+    !!! danger "Removida"
+        Chamar esta função levanta `DABFuncaoRemovidaError`. O stub deixa de
+        existir em uma versão futura do 3.x; veja o guia de migração.
     """
+    raise removida("favoritos.perfil_eleitorado", "Dados eleitorais deixaram de fazer parte do pacote, e não há substituto.")
 
-    descontinuado(
-        "`favoritos.perfil_eleitorado` é removida no DadosAbertosBrasil 3.0, sem "
-        "substituto: dados eleitorais deixam de fazer parte do pacote."
-    )
-    URL = ENDPOINTS["wiki"] + "eleitorado.csv"
 
-    match config.resolver_formato(formato):
-        case "url":
-            return URL
-        case formato:
-            return converter(pd.read_csv(URL, encoding="latin-1", sep=";"), formato)
+@overload
+def pib(
+    periodo: Literal["anual", "trimestral"] = ...,
+    tipo: Literal["nominal", "real"] = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def pib(
+    periodo: Literal["anual", "trimestral"] = ...,
+    tipo: Literal["nominal", "real"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def pib(
+    periodo: Literal["anual", "trimestral"] = ...,
+    tipo: Literal["nominal", "real"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.ValorIpea]: ...
+
+
+@overload
+def pib(
+    periodo: Literal["anual", "trimestral"] = ...,
+    tipo: Literal["nominal", "real"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def pib(
+    periodo: Literal["anual", "trimestral"] = ...,
+    tipo: Literal["nominal", "real"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def pib(
+    periodo: Literal["anual", "trimestral"] = ...,
+    tipo: Literal["nominal", "real"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
@@ -408,7 +584,7 @@ def pib(
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Variação percentual do Produto Interno Bruto Real.
 
     Esta é uma função de fácil acesso às séries temporais de PIB do módulo `ipea`.
@@ -426,12 +602,15 @@ def pib(
         Define a coluna `data` como index da tabela.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -440,7 +619,7 @@ def pib(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Valores do PIB real ou nominal.
 
     Examples
@@ -479,32 +658,89 @@ def pib(
             cod = "PAN4_PIBPMG4"
         case "trimestral", "nominal":
             cod = "PAN4_PIBPMV4"
+    return _serie_ipea(cod, formato, index, verificar_certificado)
 
-    formato = config.resolver_formato(formato)
-    df = ipea.serie(
-        cod=cod,
-        index=False,
-        formato="pandas" if formato == "polars" else formato,
-        verificar_certificado=verificar_certificado,
-    )
 
-    if formato not in ("pandas", "polars"):
-        return df
+@overload
+def rentabilidade_poupanca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
 
-    assert not df.empty, "Problema na série do IPEA"
-    df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
-    return converter(df, formato, index, "data")
+
+@overload
+def rentabilidade_poupanca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def rentabilidade_poupanca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[ValorSerie]: ...
+
+
+@overload
+def rentabilidade_poupanca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def rentabilidade_poupanca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def rentabilidade_poupanca(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
 def rentabilidade_poupanca(
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Rentailidade dos depósitos de poupança a partir de Maio de 2012.
 
     Esta é uma função de fácil acesso à série temporal 195 do módulo `bacen`.
@@ -527,12 +763,15 @@ def rentabilidade_poupanca(
         Define se a coluna 'data' será o index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -541,7 +780,7 @@ def rentabilidade_poupanca(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         DataFrame contendo os valores da série temporal.
 
     Notes
@@ -584,16 +823,93 @@ def rentabilidade_poupanca(
     )
 
 
+@overload
+def reservas_internacionais(
+    periodo: Literal["diario", "mensal"] = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def reservas_internacionais(
+    periodo: Literal["diario", "mensal"] = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def reservas_internacionais(
+    periodo: Literal["diario", "mensal"] = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[ValorSerie]: ...
+
+
+@overload
+def reservas_internacionais(
+    periodo: Literal["diario", "mensal"] = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def reservas_internacionais(
+    periodo: Literal["diario", "mensal"] = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def reservas_internacionais(
+    periodo: Literal["diario", "mensal"] = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 def reservas_internacionais(
     periodo: Literal["diario", "mensal"] = "mensal",
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Reservar internacionais mensais ou diárias.
 
     Esta é uma função de fácil acesso às séries temporais 3546 e 13621
@@ -620,12 +936,15 @@ def reservas_internacionais(
         Define se a coluna `"data"` será o index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -634,7 +953,7 @@ def reservas_internacionais(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         DataFrame contendo os valores da série temporal.
 
     Notes
@@ -687,12 +1006,46 @@ def reservas_internacionais(
     )
 
 
+@overload
+def risco_brasil(
+    index: bool = ..., formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...
+) -> Any: ...
+
+
+@overload
+def risco_brasil(
+    index: bool = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def risco_brasil(
+    index: bool = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.ValorIpea]: ...
+
+
+@overload
+def risco_brasil(
+    index: bool = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
+) -> DataFramePandas: ...
+
+
+@overload
+def risco_brasil(
+    index: bool = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
+) -> DataFramePolars: ...
+
+
+@overload
+def risco_brasil(index: bool = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
+
+
 @validate_call
 def risco_brasil(
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Valores diários do Risco-Brasil, disponibilizados pela J.P. Morgan
     desde 1994.
 
@@ -705,12 +1058,15 @@ def risco_brasil(
         Define a coluna `data` como index da tabela.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -719,7 +1075,7 @@ def risco_brasil(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Tabela contendo os valores diários do Risco-Brasil.
 
     Examples
@@ -735,35 +1091,82 @@ def risco_brasil(
 
     """
 
-    formato = config.resolver_formato(formato)
-    df = ipea.serie(
-        cod="JPM366_EMBI366",
-        index=False,
-        formato="pandas" if formato == "polars" else formato,
-        verificar_certificado=verificar_certificado,
-    )
+    return _serie_ipea("JPM366_EMBI366", formato, index, verificar_certificado)
 
-    if formato not in ("pandas", "polars"):
-        return df
 
-    df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
-    return converter(df, formato, index, "data")
+@overload
+def salario_minimo(
+    tipo: Literal["nominal", "ppc", "real"] = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def salario_minimo(
+    tipo: Literal["nominal", "ppc", "real"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def salario_minimo(
+    tipo: Literal["nominal", "ppc", "real"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.ValorIpea]: ...
+
+
+@overload
+def salario_minimo(
+    tipo: Literal["nominal", "ppc", "real"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def salario_minimo(
+    tipo: Literal["nominal", "ppc", "real"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def salario_minimo(
+    tipo: Literal["nominal", "ppc", "real"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
 def salario_minimo(
-    tipo: Literal["nominal", "pcc", "real"] = "nominal",
+    tipo: Literal["nominal", "ppc", "real"] = "nominal",
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Valores do salário-mínimo mensal brasileiro desde 1940.
 
     Esta é uma função de fácil acesso às série temporais do módulo `ipea`.
 
     Parameters
     ----------
-    tipo : {"nominal", "real", "pcc"}, default="nominal"
+    tipo : {"nominal", "real", "ppc"}, default="nominal"
         Tipo de salário-mínimo.
         - "nominal": Salário-mínimo nominal;
         - "real": Salário-mínimo real (abatido pela inflação);
@@ -773,12 +1176,15 @@ def salario_minimo(
         Define a coluna `data` como index da tabela.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -787,7 +1193,7 @@ def salario_minimo(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Tabela contendo os valores mensais do salário-mínimo.
 
     Examples
@@ -824,34 +1230,103 @@ def salario_minimo(
             cod = "GAC12_SALMINRE12"
         case "ppc":
             cod = "GAC12_SALMINDOL12"
+    return _serie_ipea(cod, formato, index, verificar_certificado)
 
-    formato = config.resolver_formato(formato)
-    df = ipea.serie(
-        cod=cod,
-        index=False,
-        formato="pandas" if formato == "polars" else formato,
-        verificar_certificado=verificar_certificado,
-    )
 
-    if formato not in ("pandas", "polars"):
-        return df
+@overload
+def selic(
+    periodo: Literal["diario", "mensal", "meta"] = ...,
+    anualizado: bool = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
 
-    assert not df.empty, "Problema na série do IPEA"
-    df.drop(columns=["codigo", "nivel", "territorio"], inplace=True)
-    return converter(df, formato, index, "data")
+
+@overload
+def selic(
+    periodo: Literal["diario", "mensal", "meta"] = ...,
+    anualizado: bool = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def selic(
+    periodo: Literal["diario", "mensal", "meta"] = ...,
+    anualizado: bool = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[ValorSerie]: ...
+
+
+@overload
+def selic(
+    periodo: Literal["diario", "mensal", "meta"] = ...,
+    anualizado: bool = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def selic(
+    periodo: Literal["diario", "mensal", "meta"] = ...,
+    anualizado: bool = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def selic(
+    periodo: Literal["diario", "mensal", "meta"] = ...,
+    anualizado: bool = ...,
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
 def selic(
     periodo: Literal["diario", "mensal", "meta"] = "meta",
     anualizado: bool = True,
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Taxa de juros - Meta Selic definida pelo COPOM.
 
     Esta é uma função de fácil acesso à série temporal 432 do módulo `bacen`.
@@ -884,12 +1359,15 @@ def selic(
         Define se a coluna "data" será o index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -898,7 +1376,7 @@ def selic(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         DataFrame contendo os valores da série temporal.
 
     Notes
@@ -970,15 +1448,86 @@ def selic(
     )
 
 
+@overload
+def taxa_referencial(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def taxa_referencial(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def taxa_referencial(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[ValorSerie]: ...
+
+
+@overload
+def taxa_referencial(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def taxa_referencial(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def taxa_referencial(
+    ultimos: PositiveInt | None = ...,
+    inicio: date | None = ...,
+    fim: date | None = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
+
+
 @validate_call
 def taxa_referencial(
-    ultimos: Optional[PositiveInt] = None,
-    inicio: Optional[date] = None,
-    fim: Optional[date] = None,
+    ultimos: PositiveInt | None = None,
+    inicio: date | None = None,
+    fim: date | None = None,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Taxa referencial (TR).
 
     Esta é uma função de fácil acesso à série temporal 226 do módulo `bacen`.
@@ -1001,12 +1550,15 @@ def taxa_referencial(
         Define se a coluna 'data' será o index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -1015,7 +1567,7 @@ def taxa_referencial(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         DataFrame contendo os valores da série temporal.
 
     Notes

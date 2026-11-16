@@ -1,15 +1,67 @@
-from pydantic import validate_call
+from typing import Any, Literal, overload
 
-from ..utils import Get, Formato, Output
+from pydantic import Field, validate_call
+
+from ..utils.modelos import com_params
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from . import modelos as m
+from ._comum import ParamsSenado, consultar_senado
+
+
+class _ParamsPartidos(ParamsSenado):
+    inativos: bool = Field(False, exclude=True)
+
+    def para_api(self) -> dict:
+        return {"indAtivos": "N"} if self.inativos else {}
+
+
+@overload
+def lista_partidos(
+    inativos: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_partidos(
+    inativos: bool = ..., index: bool = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_partidos(
+    inativos: bool = ..., index: bool = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
+) -> list[m.Partido]: ...
+
+
+@overload
+def lista_partidos(
+    inativos: bool = ..., index: bool = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_partidos(
+    inativos: bool = ..., index: bool = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_partidos(
+    inativos: bool = ..., index: bool = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...
+) -> str: ...
 
 
 @validate_call
+@com_params(_ParamsPartidos)
 def lista_partidos(
     inativos: bool = False,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Lista os partidos políticos.
 
     Parameters
@@ -20,15 +72,17 @@ def lista_partidos(
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -37,7 +91,7 @@ def lista_partidos(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista os partidos políticos.
 
     See Also
@@ -57,22 +111,13 @@ def lista_partidos(
 
     """
 
-    cols_to_rename = {
-        "Codigo": "codigo",
-        "Sigla": "sigla",
-        "Nome": "nome",
-        "DataCriacao": "data_criacao",
-        "DataExtincao": "data_extincao",
-    }
-
-    return Get(
-        endpoint="senado",
-        path=["senador", "partidos"],
-        params={"indAtivos": "N"} if inativos else {},
-        unpack_keys=["ListaPartidos", "Partidos", "Partido"],
-        cols_to_rename=cols_to_rename,
-        cols_to_int=["codigo"],
-        cols_to_date=["data_criacao", "data_extincao"],
+    return consultar_senado(
+        ["senador", "partidos"],
+        ["ListaPartidos", "Partidos", "Partido"],
+        _ParamsPartidos.de_locais(locals()),
+        m.Partido,
+        formato,
         index=index,
-        verify=verificar_certificado,
-    ).get(formato)
+        verificar_certificado=verificar_certificado,
+        cacheavel=True,
+    )

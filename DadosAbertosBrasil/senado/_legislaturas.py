@@ -1,29 +1,163 @@
 import functools
-from typing import Literal, Optional
+from typing import Any, Literal, overload
 
-from pydantic import validate_call
+from pydantic import Field, validate_call
 
-from .._config import config
-from ..utils import Formato, Get, Output, filtrar, filtrar_nome, parse
 from ..utils.errors import descontinuado
+from ..utils.modelos import SiglaUF, com_params
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from . import modelos as m
+from ._comum import ParamsSenado, consultar_senado, filtro_parlamentares
+
+
+class _ParamsLegislaturas(ParamsSenado):
+    inicio: int = Field(exclude=True)
+    fim: int | None = Field(None, exclude=True)
+    exercicio: bool | None = None
+    participacao: Literal["titulares", "suplentes"] | None = None
+    uf: SiglaUF = None
+    sexo: Literal["f", "m"] | None = Field(None, exclude=True)
+    partido: str | None = Field(None, exclude=True)
+    contendo: str | None = Field(None, exclude=True)
+    excluindo: str | None = Field(None, exclude=True)
+
+    def para_api(self) -> dict:
+        params = super().para_api()
+        if self.participacao is not None:
+            params["participacao"] = self.participacao[0].upper()
+        return params
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Senador]: ...
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def lista_legislaturas(
+    inicio: int,
+    fim: int | None = ...,
+    exercicio: bool | None = ...,
+    participacao: Literal["titulares", "suplentes"] | None = ...,
+    uf: str | None = ...,
+    sexo: Literal["f", "m"] | None = ...,
+    partido: str | None = ...,
+    contendo: str | None = ...,
+    excluindo: str | None = ...,
+    url: bool = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
+@com_params(_ParamsLegislaturas)
 def lista_legislaturas(
     inicio: int,
-    fim: int = None,
-    exercicio: Optional[str] = None,
-    participacao: Optional[Literal["titulares", "suplentes"]] = None,
-    uf: Optional[str] = None,
-    sexo: Optional[Literal["f", "m"]] = None,
-    partido: Optional[str] = None,
-    contendo: Optional[str] = None,
-    excluindo: Optional[str] = None,
+    fim: int | None = None,
+    exercicio: bool | None = None,
+    participacao: Literal["titulares", "suplentes"] | None = None,
+    uf: str | None = None,
+    sexo: Literal["f", "m"] | None = None,
+    partido: str | None = None,
+    contendo: str | None = None,
+    excluindo: str | None = None,
     url: bool = True,
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Lista senadores de uma legislatura ou de um intervalo de legislaturas.
 
     Parameters
@@ -62,21 +196,23 @@ def lista_legislaturas(
     excluindo : str, optional
         Exclui da consulta senadores contendo esse texto no nome.
 
-    url : bool, default=False
+    url : bool, default=True
         Se False, remove as colunas contendo URI, URL e e-mails.
-        Esse argumento é ignorado se `formato` for igual a 'json'.
+        Vale para os formatos 'json', 'pandas' e 'polars'.
 
     index : bool, default=False
         Se True, define a coluna `codigo` como index do DataFrame.
-        Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-        é ignorado com aviso.
+        Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -85,7 +221,7 @@ def lista_legislaturas(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Lista senadores de uma legislatura ou de um intervalo de legislaturas.
 
     Raises
@@ -127,68 +263,20 @@ def lista_legislaturas(
 
     """
 
-    path = ["senador", "lista", "legislatura", str(inicio)]
+    path = ["senador", "lista", "legislatura", inicio]
     if fim is not None:
         path.append(fim)
-
-    params = {}
-    if exercicio is not None:
-        params["exercicio"] = "S" if exercicio else "N"
-    if participacao is not None:
-        params["participacao"] = participacao[0].upper()
-    if uf is not None:
-        params["uf"] = parse.uf(uf)
-
-    keys = ["ListaParlamentarLegislatura", "Parlamentares", "Parlamentar"]
-
-    cols_to_rename = {
-        "IdentificacaoParlamentar.CodigoParlamentar": "codigo",
-        "IdentificacaoParlamentar.NomeParlamentar": "nome_parlamentar",
-        "IdentificacaoParlamentar.NomeCompletoParlamentar": "nome_completo",
-        "IdentificacaoParlamentar.SexoParlamentar": "sexo",
-        "IdentificacaoParlamentar.FormaTratamento": "forma_tratamento",
-        "IdentificacaoParlamentar.UrlFotoParlamentar": "foto",
-        "IdentificacaoParlamentar.UrlPaginaParlamentar": "pagina_parlamentar",
-        "IdentificacaoParlamentar.UrlPaginaParticular": "pagina_particular",
-        "IdentificacaoParlamentar.EmailParlamentar": "email",
-        "IdentificacaoParlamentar.SiglaPartidoParlamentar": "partido",
-        "Mandato.UfParlamentar": "uf",
-        "Mandato.Exercicios.Exercicio.DataInicio": "data_inicio",
-        "Mandato.Exercicios.Exercicio.DataFim": "data_fim",
-        "Mandato.Exercicios.Exercicio.DescricaoCausaAfastamento": "causa_afastamento",
-    }
-
-    formato = config.resolver_formato(formato)
-    data = Get(
-        endpoint="senado",
-        path=path,
-        params=params,
-        unpack_keys=keys,
-        cols_to_rename=cols_to_rename,
-        cols_to_int=["codigo"],
-        cols_to_date=["data_inicio", "data_fim"],
-        url_cols=["foto", "pagina_parlamentar", "pagina_particular", "email"],
-        remover_url=not url,
-        index=index,
-        verify=verificar_certificado,
-    ).get(formato)
-
-    if sexo is not None:
-        SEXOS = {"f": "Feminino", "m": "Masculino"}
-        data = filtrar(data, formato, "sexo", SEXOS[sexo])
-
-    if partido is not None:
-        data = filtrar(data, formato, "partido", partido.upper())
-
-    data = filtrar_nome(
-        data,
+    return consultar_senado(
+        path,
+        ["ListaParlamentarLegislatura", "Parlamentares", "Parlamentar"],
+        _ParamsLegislaturas.de_locais(locals()),
+        m.Senador,
         formato,
-        ["nome_parlamentar", "nome_completo"],
-        contendo=contendo,
-        excluindo=excluindo,
+        url=url,
+        index=index,
+        filtro=filtro_parlamentares(sexo=sexo, partido=partido, contendo=contendo, excluindo=excluindo),
+        verificar_certificado=verificar_certificado,
     )
-
-    return data
 
 
 @functools.wraps(lista_legislaturas)

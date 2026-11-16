@@ -3,15 +3,9 @@ import requests
 from pydantic import ValidationError
 
 import DadosAbertosBrasil as dab
-from DadosAbertosBrasil.utils import Get
+from DadosAbertosBrasil.utils.requisicao import Requisicao
 
-
-class _Resposta:
-    def raise_for_status(self):
-        pass
-
-    def json(self):
-        return [{"codigo": 1}]
+from .conftest import RespostaFalsa
 
 
 @pytest.fixture
@@ -20,15 +14,15 @@ def verify_usado(monkeypatch):
 
     def get(self, url, **kwargs):
         usados.append(kwargs["verify"])
-        return _Resposta()
+        return RespostaFalsa([{"codigo": 1}])
 
     monkeypatch.setattr(requests.Session, "get", get)
     yield usados
     dab.config.verificar_certificado = True
 
 
-def _consultar(**kwargs):
-    return Get(endpoint="camara", path=["x"], **kwargs).json
+def _consultar(verify=None):
+    return Requisicao("camara", ["x"], verificar_certificado=verify).json()
 
 
 def test_padrao_verifica_certificado(verify_usado):

@@ -5,14 +5,54 @@ Serve como um consolidador por UF de diversar funções do pacote DadosAbertosBr
 """
 
 from datetime import date
-from typing import Optional, Literal
+from typing import Any, Literal, overload
 
-from ._governador import Governador
-from .. import favoritos, ibge
+from .. import favoritos, ibge, wiki
 from ..camara import lista_deputados
+from ..camara.modelos import Deputado
 from ..senado import lista_senadores
-from ..utils import Get, parse, Formato, Output
+from ..senado.modelos import Senador
+from ..utils import parse
 from ..utils.errors import DABUFError
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from ._governador import Governador
+
+# O Brasil e as UFs extintas não estão em `wiki.ufs()`.
+_FORA_DO_WIKI = {
+    "BR": {
+        "nome": "Brasil",
+        "cod": 1,
+        "area": 8510295.914,
+        "capital": "Brasília",
+        "extinto": False,
+        "gentilico": ["brasileiro", "brasileira"],
+        "lema": "Ordem e Progresso",
+        "regiao": None,
+        "coordenadas": None,
+    },
+    "FN": {
+        "nome": "Fernando de Noronha",
+        "cod": 20,
+        "area": 18.609,
+        "capital": "Fernando de Noronha",
+        "extinto": True,
+        "gentilico": ["noronhense"],
+        "lema": None,
+        "regiao": "Nordeste",
+        "coordenadas": None,
+    },
+    "GB": {
+        "nome": "Guanabara",
+        "cod": 34,
+        "area": 1356,
+        "capital": "Rio de Janeiro",
+        "extinto": True,
+        "gentilico": None,
+        "lema": None,
+        "regiao": "Sudeste",
+        "coordenadas": None,
+    },
+}
 
 
 class UF:
@@ -47,8 +87,8 @@ class UF:
     extinto : bool
         True, caso UF tenha sido extinta (Fernando de Noronha ou Guanabara).
 
-    gentilico : set
-        Conjunto de gentílicos e variações.
+    gentilico : list[str]
+        Gentílicos e variações.
 
     lema : str
         Lema da UF.
@@ -58,6 +98,15 @@ class UF:
 
     coordenadas : dict[str, float]
         Dicionário contendo latitude e longitude.
+
+    wikidata : str
+        Identificador do item no Wikidata (só para as 27 UFs atuais).
+
+    artigo : str
+        Título do artigo na Wikipedia (só para as 27 UFs atuais).
+
+    registro : DadosAbertosBrasil.wiki.modelos.UF | None
+        Registro completo de `wiki.ufs()`; None para o Brasil e as UFs extintas.
 
     Properties
     ----------
@@ -77,7 +126,10 @@ class UF:
         Lista de municípios.
 
     populacao : int
-        População projetada pelo IBGE.
+        População residente estimada pelo IBGE (tabela 6579 do SIDRA).
+
+    prefeito : DadosAbertosBrasil.wiki.modelos.PrefeitoCapital
+        Prefeito em exercício da capital.
 
     Methods
     -------
@@ -90,7 +142,7 @@ class UF:
     deputados(nome, legislatura, partido, sexo, inicio, fim, pagina, itens...)
         Lista dos deputados federais em exercício.
 
-    malha(nivel, divisoes, periodo, formato, qualidade)
+    malha(nivel, divisoes, periodo, tipo, qualidade, formato)
         Obtém a URL para a malha referente à UF.
 
     senadores(tipo, sexo, partido, contendo, excluindo, url, index, formato)
@@ -101,6 +153,7 @@ class UF:
     def __init__(self, uf: str, verificar_certificado: bool | None = None):
         self.sigla = parse.uf(uf=uf, extintos=True)
         self.verify = verificar_certificado
+        self.registro = None
         data = self._get_data()
         for attr in data:
             setattr(self, attr, data[attr])
@@ -114,12 +167,24 @@ class UF:
     def _get_data(self) -> dict:
         """Buscar dados de UFs no DadosAbertosBrasil-wiki."""
 
-        data = Get(
-            endpoint="wiki",
-            path=["ufs.json"],
-            verify=self.verify,
-        ).json
-        return data[self.sigla]
+        if self.sigla in _FORA_DO_WIKI:
+            return dict(_FORA_DO_WIKI[self.sigla])
+        registros = wiki.ufs(formato="pydantic", verificar_certificado=self.verify)
+        self.registro = next(r for r in registros if r.sigla == self.sigla)
+        r = self.registro
+        return {
+            "nome": r.nome,
+            "cod": r.codigo_ibge,
+            "area": r.area_km2,
+            "capital": r.capital,
+            "extinto": False,
+            "gentilico": r.gentilicos,
+            "lema": r.lema,
+            "regiao": r.regiao,
+            "coordenadas": {"latitude": r.latitude, "longitude": r.longitude},
+            "wikidata": r.wikidata,
+            "artigo": r.artigo,
+        }
 
     def bandeira(self, tamanho: int = 100) -> str:
         """Gera a URL da WikiMedia para a bandeira do estado.
@@ -184,7 +249,7 @@ class UF:
     def densidade(self) -> float:
         """Densidade populacional (hab/km²) da UF.
 
-        É a razão entre a população projetada pelo IBGE (habitantes) e a área
+        É a razão entre a população estimada pelo IBGE (habitantes) e a área
         territorial da UF (quilómetros quadrados).
 
         Returns
@@ -199,8 +264,8 @@ class UF:
 
         See Also
         --------
-        DadosAbertosBrasil.ibge.populacao
-            Função utilizada para projetar a população da UF.
+        UF.populacao
+            População estimada da UF.
 
         Examples
         --------
@@ -212,26 +277,144 @@ class UF:
 
         if self.extinto:
             raise DABUFError("Método `densidade` indisponível para UFs extintas.")
-        pop = ibge.populacao(projecao="populacao", localidade=self.cod)
-        return pop / self.area
+        return self.populacao / self.area
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+        verificar_certificado: bool | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+        verificar_certificado: bool | None = ...,
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+        verificar_certificado: bool | None = ...,
+    ) -> list[Deputado]: ...
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+        verificar_certificado: bool | None = ...,
+    ) -> DataFramePandas: ...
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+        verificar_certificado: bool | None = ...,
+    ) -> DataFramePolars: ...
+
+    @overload
+    def deputados(
+        self,
+        nome: str | None = ...,
+        legislatura: int | None = ...,
+        partido: str | None = ...,
+        sexo: str | None = ...,
+        inicio: date | None = ...,
+        fim: date | None = ...,
+        pagina: int = ...,
+        itens: int | None = ...,
+        asc: bool = ...,
+        ordenar_por: str = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+        verificar_certificado: bool | None = ...,
+    ) -> str: ...
 
     def deputados(
         self,
-        nome: Optional[str] = None,
-        legislatura: Optional[int] = None,
-        partido: Optional[str] = None,
-        sexo: Optional[str] = None,
-        inicio: Optional[date] = None,
-        fim: Optional[date] = None,
+        nome: str | None = None,
+        legislatura: int | None = None,
+        partido: str | None = None,
+        sexo: str | None = None,
+        inicio: date | None = None,
+        fim: date | None = None,
         pagina: int = 1,
-        itens: Optional[int] = None,
+        itens: int | None = None,
         asc: bool = True,
         ordenar_por: str = "nome",
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
         verificar_certificado: bool | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Lista dos deputados federais da UF em exercício.
 
         Retorna uma lista de dados básicos sobre deputados que estiveram em
@@ -282,21 +465,23 @@ class UF:
             Qual dos elementos da representação deverá ser usado para aplicar
             ordenação à lista.
 
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `id` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         verificar_certificado : bool, optional
@@ -305,7 +490,7 @@ class UF:
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Tabela com informações básicas dos deputados federais.
 
         Raises
@@ -383,18 +568,10 @@ class UF:
     def governador(self) -> Governador:
         """Informações básicas do governador da UF.
 
-        Attributes
-        ----------
-        uf : str
-        nome : str
-        nome_completo : str
-        ano_eleicao : int
-        mandato_inicio : datetime.date
-        mandato_fim : datetime.date
-        partido : str
-        partido_sigla : str
-        cargo_anterior : str
-        vice_governador : str
+        Returns
+        -------
+        DadosAbertosBrasil.uf.Governador
+            Governador em exercício, a partir de `wiki.governadores()`.
 
         Raises
         ------
@@ -406,11 +583,8 @@ class UF:
         if self.cod == 1:
             raise DABUFError("Propriedade `governador` indisponível para 'Brasil'.")
         if self.extinto:
-            raise DABUFError(
-                "Propriedade `governador` indisponível para UFs extintas."
-            )
-
-        return Governador(self.sigla)
+            raise DABUFError("Propriedade `governador` indisponível para UFs extintas.")
+        return Governador(self.sigla, verificar_certificado=self.verify)
 
     @property
     def historia(self) -> ibge.Historia:
@@ -447,12 +621,13 @@ class UF:
     def malha(
         self,
         nivel: str = "estados",
-        divisoes: Optional[str] = None,
+        divisoes: str | None = None,
         periodo: int = 2020,
-        formato: str = "geojson",
-        qualidade: str = "minima",
-    ) -> dict | str:
-        """Obtém a malha referente à UF.
+        tipo: Literal["geojson", "topojson", "svg"] = "geojson",
+        qualidade: Literal["minima", "intermediaria", "maxima"] = "minima",
+        formato: Literal["bruto", "url", "svg", "json", "geojson"] = "bruto",
+    ) -> dict[str, Any] | str:
+        """Malha territorial da UF, em GeoJSON, TopoJSON ou SVG.
 
         Parameters
         ----------
@@ -460,31 +635,39 @@ class UF:
             Nível geográfico dos dados.
 
         divisoes : str, optional
-            Subdiviões intrarregionais do nível.
-            Se None, apresenta a malha sem subdivisões.
+            Subdivisões intrarregionais da malha, como 'municipio' ou
+            'microrregiao'. Se None, apresenta a malha sem subdivisões.
 
         periodo : int, default=2020
             Ano da revisão da malha.
 
-        formato : {'svg', 'json', 'geojson'}, default='geojson'
-            Formato dos dados da malha.
+        tipo : {'geojson', 'topojson', 'svg'}, default='geojson'
+            Tipo de arquivo da malha.
 
         qualidade : {'minima', 'intermediaria', 'maxima'}, default='minima'
-            Qualidade de imagem da malha.
+            Qualidade (nível de detalhe) da malha.
+
+        formato : {'bruto', 'url'}, default='bruto'
+            - "bruto": o conteúdo da malha: `dict` para GeoJSON e TopoJSON,
+              `str` com o SVG;
+            - "url": endereço da malha.
+            Os valores antigos 'geojson', 'json' e 'svg' continuam funcionando
+            com `DeprecationWarning`; use `tipo`.
 
         Returns
         -------
+        dict
+            Malha em GeoJSON ou TopoJSON, com `formato='bruto'`.
         str
-            Se formato='svg', retorna a URL da malha da localidade desejada.
-        dict
-            Se formato='json', retorna a malha em formato TopoJSON.
-        dict
-            Se formato='geojson', retorna a malha em formato GeoJSON.
+            SVG da malha, com `tipo='svg'`, ou endereço da malha, com
+            `formato='url'`.
 
         Raises
         ------
+        DABUFError
+            Caso seja uma UF extinta.
         DABLocalidadeError
-            Caso o nível geográfico seja inválido.
+            Caso o nível geográfico ou a subdivisão sejam inválidos.
 
         Notes
         -----
@@ -497,25 +680,20 @@ class UF:
 
         Examples
         --------
-        Captura a malha do Distrito Federal (localidade=53) em formato GeoJSON.
+        Malha do Distrito Federal em GeoJSON.
 
         >>> df = dab.UF('DF')
-        >>> df.malha(formato='geojson')
+        >>> df.malha()
         {'type': 'FeatureCollection',
             'features': [{'type': 'Feature',
                 'geometry': {'type': 'Polygon',
                     'coordinates': [[[-47.31, -16.0363], ...
 
-        Captura a malha de Alagoas em formato SVG com qualidade mínima com
-        subdivisões municipais.
+        SVG de Alagoas com as divisas dos municípios.
 
         >>> al = dab.UF('alagoas')
-        >>> al.malha(
-        ...     nivel = 'municipios',
-        ...     formato = 'svg',
-        ...     qualidade = 'minima'
-        ... )
-        'https://servicodados.ibge.gov.br/api/v3/malhas/...'
+        >>> al.malha(divisoes='municipio', tipo='svg')
+        '<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" ...'
 
         """
 
@@ -526,8 +704,9 @@ class UF:
             nivel=nivel,
             divisoes=divisoes,
             periodo=periodo,
-            formato=formato,
+            tipo=tipo,
             qualidade=qualidade,
+            formato=formato,
         )
 
     @property
@@ -555,17 +734,20 @@ class UF:
 
         if self.extinto:
             raise DABUFError("Método `municipios` indisponível para UFs extintas.")
-        df = ibge.localidades("municipios", index=True, formato="pandas")
-        return df.loc[df["UF_id"] == self.cod, "nome"].to_dict()
+        municipios = ibge.localidades("estados", divisoes="municipios", localidade=self.cod, formato="pydantic")
+        return {municipio.id: municipio.nome for municipio in municipios}
 
     @property
     def populacao(self) -> int:
-        """População projetada pelo IBGE.
+        """População residente estimada pelo IBGE.
+
+        Usa a estimativa mais recente da tabela 6579 do SIDRA. A API de
+        projeções populacionais do IBGE, usada até o 2.x, saiu do ar.
 
         Returns
         -------
         int
-            População projetada.
+            População residente estimada.
 
         Raises
         ------
@@ -574,8 +756,8 @@ class UF:
 
         See Also
         --------
-        DadosAbertosBrasil.ibge.populacao
-            Função original.
+        DadosAbertosBrasil.ibge.sidra
+            Função usada, com a tabela 6579.
 
         Examples
         --------
@@ -587,20 +769,138 @@ class UF:
 
         if self.extinto:
             raise DABUFError("Método `populacao` indisponível para UFs extintas.")
-        return ibge.populacao(projecao="populacao", localidade=self.cod)
+        nivel = {1: "all"} if self.cod == 1 else {3: self.cod}
+        estimativa = ibge.sidra(6579, variaveis=9324, localidades=nivel, formato="bruto",
+                                verificar_certificado=self.verify)
+        return int(estimativa[1]["V"])
+
+    @property
+    def prefeito(self) -> wiki.modelos.PrefeitoCapital:
+        """Prefeito em exercício da capital da UF.
+
+        Returns
+        -------
+        DadosAbertosBrasil.wiki.modelos.PrefeitoCapital
+            Registro de `wiki.prefeitos_capitais()`.
+
+        Raises
+        ------
+        DABUFError
+            Caso seja o Brasil, o Distrito Federal (sem prefeitura) ou uma UF
+            extinta.
+
+        Examples
+        --------
+        >>> UF("SC").prefeito.nome
+
+        """
+
+        if self.registro is None or self.sigla == "DF":
+            raise DABUFError("Propriedade `prefeito` indisponível para esta UF.")
+        prefeitos = wiki.prefeitos_capitais(uf=self.sigla, formato="pydantic", verificar_certificado=self.verify)
+        return prefeitos[0]
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        formato: Literal["bruto"] | None = ...,
+        verificar_certificado: bool | None = ...,
+    ) -> Any: ...
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["json"],
+        verificar_certificado: bool | None = ...,
+    ) -> list[dict[str, Any]]: ...
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pydantic"],
+        verificar_certificado: bool | None = ...,
+    ) -> list[Senador]: ...
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["pandas"],
+        verificar_certificado: bool | None = ...,
+    ) -> DataFramePandas: ...
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["polars"],
+        verificar_certificado: bool | None = ...,
+    ) -> DataFramePolars: ...
+
+    @overload
+    def senadores(
+        self,
+        tipo: Literal["atual", "titulares", "suplentes", "afastados"] = ...,
+        sexo: str | None = ...,
+        partido: str | None = ...,
+        contendo: str | None = ...,
+        excluindo: str | None = ...,
+        url: bool = ...,
+        index: bool = ...,
+        *,
+        formato: Literal["url"],
+        verificar_certificado: bool | None = ...,
+    ) -> str: ...
 
     def senadores(
         self,
         tipo: Literal["atual", "titulares", "suplentes", "afastados"] = "atual",
-        sexo: Optional[str] = None,
-        partido: Optional[str] = None,
-        contendo: Optional[str] = None,
-        excluindo: Optional[str] = None,
+        sexo: str | None = None,
+        partido: str | None = None,
+        contendo: str | None = None,
+        excluindo: str | None = None,
         url: bool = True,
         index: bool = False,
         formato: Formato | None = None,
         verificar_certificado: bool | None = None,
-    ) -> Output:
+    ) -> Saida:
         """Lista de senadores da república desta UF.
 
         Parameters
@@ -623,21 +923,23 @@ class UF:
         excluindo : str, optional
             Exclui da consulta senadores contendo esse texto no nome.
 
-        url : bool, default=False
+        url : bool, default=True
             Se False, remove as colunas contendo URI, URL e e-mails.
-            Esse argumento é ignorado se `formato` for igual a 'json'.
+            Vale para os formatos 'json', 'pandas' e 'polars'.
 
         index : bool, default=False
             Se True, define a coluna `codigo` como index do DataFrame.
-            Esse argumento é ignorado se `formato` for igual a 'json'; com 'polars',
-            é ignorado com aviso.
+            Só se aplica ao formato 'pandas'; com 'polars', é ignorado com aviso.
 
-        formato : {"json", "pandas", "polars", "url"}, optional
+        formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
             Formato do dado que será retornado:
-            - "json": Dicionário com as chaves e valores originais da API;
-            - "pandas": DataFrame formatado (pandas);
-            - "polars": DataFrame formatado (polars);
-            - "url": Endereço da API que retorna o arquivo JSON.
+            - "json": lista de registros (`list[dict]`), com os mesmos campos e
+              tipos das colunas do DataFrame;
+            - "bruto": JSON original da API, como veio;
+            - "pydantic": lista de modelos Pydantic, um por registro;
+            - "pandas": DataFrame pandas;
+            - "polars": DataFrame polars;
+            - "url": endereço da consulta.
             Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
         verificar_certificado : bool, optional
@@ -646,7 +948,7 @@ class UF:
 
         Returns
         -------
-        pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+        list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
             Lista de senadores.
 
         See Also

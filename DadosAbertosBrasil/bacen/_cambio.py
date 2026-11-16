@@ -1,24 +1,133 @@
-from datetime import date, datetime
-from typing import Literal, Optional
+from datetime import date
+from typing import Any, Literal, overload
 
-import pandas as pd
 from pydantic import Field, validate_call
 
-from .._config import config
-from ..utils import Get, parse, Formato, Output, converter
+from ..utils import parse
+from ..utils.errors import DABInputError
+from ..utils.modelos import Params, com_params, validar
+from ..utils.requisicao import Requisicao
+from ..utils.saida import resolver_formato, tabela
+from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from . import modelos as m
+
+_COTACAO = "CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)"
+
+
+class _ParamsCambio(Params):
+    formato_data = "'%m-%d-%Y'"
+
+    moedas: list[str] | str = Field(exclude=True)
+    inicio: date = Field(serialization_alias="@dataInicial")
+    fim: date = Field(serialization_alias="@dataFinalCotacao")
+    cotacao: Literal["compra", "venda"] = Field(exclude=True)
+    boletim: Literal["abertura", "fechamento", "intermediário"] = Field(exclude=True)
+
+    def da_moeda(self, moeda: str) -> dict:
+        return {
+            "@moeda": f"'{moeda}'",
+            **self.para_api(),
+            "$filter": f"contains(tipoBoletim,'{self.boletim.title()}')",
+            "$select": f"cotacao{self.cotacao.title()},dataHoraCotacao",
+            "$format": "json",
+        }
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    formato: Literal["bruto"] | None = ...,
+    verificar_certificado: bool | None = ...,
+) -> Any: ...
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["json"],
+    verificar_certificado: bool | None = ...,
+) -> list[dict[str, Any]]: ...
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pydantic"],
+    verificar_certificado: bool | None = ...,
+) -> list[m.Cotacao]: ...
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["pandas"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePandas: ...
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["polars"],
+    verificar_certificado: bool | None = ...,
+) -> DataFramePolars: ...
+
+
+@overload
+def cambio(
+    moedas: list[str] | str = ...,
+    inicio: date = ...,
+    fim: date | None = ...,
+    cotacao: Literal["compra", "venda"] = ...,
+    boletim: Literal["abertura", "fechamento", "intermediário"] = ...,
+    index: bool = ...,
+    *,
+    formato: Literal["url"],
+    verificar_certificado: bool | None = ...,
+) -> str: ...
 
 
 @validate_call
+@com_params(_ParamsCambio)
 def cambio(
     moedas: list[str] | str = ["USD"],
     inicio: date = date(2000, 1, 1),
-    fim: Optional[date] = Field(default_factory=date.today),
+    fim: date | None = Field(default_factory=date.today),
     cotacao: Literal["compra", "venda"] = "compra",
     boletim: Literal["abertura", "fechamento", "intermediário"] = "fechamento",
     index: bool = False,
     formato: Formato | None = None,
     verificar_certificado: bool | None = None,
-) -> Output:
+) -> Saida:
     """Taxa de câmbio das principais moedas internacionais.
 
     É possível escolher várias moedas inserindo uma lista no campo `moeda`.
@@ -49,12 +158,15 @@ def cambio(
         Define se a coluna "Data" será o index do DataFrame.
         Ignorado com aviso se `formato` for 'polars'.
 
-    formato : {"json", "pandas", "polars", "url"}, optional
+    formato : {"json", "bruto", "pydantic", "pandas", "polars", "url"}, optional
         Formato do dado que será retornado:
-        - "json": Dicionário com as chaves e valores originais da API;
-        - "pandas": DataFrame formatado (pandas);
-        - "polars": DataFrame formatado (polars);
-        - "url": Endereço da API que retorna o arquivo JSON.
+        - "json": lista de registros (`list[dict]`), com os mesmos campos e
+          tipos das colunas do DataFrame;
+        - "bruto": JSON original da API, como veio;
+        - "pydantic": lista de modelos Pydantic, um por registro;
+        - "pandas": DataFrame pandas;
+        - "polars": DataFrame polars;
+        - "url": endereço da consulta.
         Se omitido, usa `DadosAbertosBrasil.config.formato`.
 
     verificar_certificado : bool, optional
@@ -63,7 +175,7 @@ def cambio(
 
     Returns
     -------
-    pandas.core.frame.DataFrame | polars.DataFrame | str | dict | list[dict]
+    list[dict] | list[Registro] | pandas.DataFrame | polars.DataFrame | str | dict
         Cotações diárias das moedas selecionadas.
 
     Raises
@@ -118,49 +230,30 @@ def cambio(
 
     """
 
-    formato = config.resolver_formato(formato)
-    inicio = parse.data(inicio, "bacen")
-    fim = parse.data(fim, "bacen")
+    params = _ParamsCambio.de_locais(locals())
     moedas = parse.moeda(moedas)
+    requisicoes = {
+        moeda: Requisicao("bacen", [_COTACAO], params.da_moeda(moeda), ["value"], verificar_certificado)
+        for moeda in moedas
+    }
 
-    cotacoes = []
-    for moeda in moedas:
-        data = Get(
-            endpoint="bacen",
-            path=[
-                "CotacaoMoedaPeriodo("
-                + "moeda=@moeda,"
-                + "dataInicial=@dataInicial,"
-                + "dataFinalCotacao=@dataFinalCotacao)"
-                + f"?@moeda='{moeda}'"
-                + f"&@dataInicial='{inicio}'"
-                + f"&@dataFinalCotacao='{fim}'"
-                + f"&$filter=contains(tipoBoletim%2C'{boletim.title()}')"
-                + f"&$select=cotacao{cotacao.title()},dataHoraCotacao"
-            ],
-            unpack_keys=["value"],
-            verify=verificar_certificado,
-        ).get("pandas" if formato == "polars" else formato)
+    formato = resolver_formato(formato)
+    if formato == "url":
+        return [r.url for r in requisicoes.values()]
+    brutos = {moeda: r.bruto() for moeda, r in requisicoes.items()}
+    if formato == "bruto":
+        return list(brutos.values())
 
-        if formato in ("pandas", "polars"):
-            if data.empty:
-                raise ValueError(
-                    "Nenhum dado encontrado. Verifique os argumentos da função."
-                )
-            data["dataHoraCotacao"] = data["dataHoraCotacao"].apply(
-                lambda x: datetime.strptime(x[:10], "%Y-%m-%d")
-            )
-            data.rename(
-                columns={f"cotacao{cotacao.title()}": moeda, "dataHoraCotacao": "data"},
-                inplace=True,
-            )
-            data = data.groupby("data").last()
+    # Uma linha por dia, com a última cotação do dia de cada moeda.
+    campo = f"cotacao{cotacao.title()}"
+    linhas: dict[str, dict] = {}
+    for moeda, bruto in brutos.items():
+        for item in requisicoes[moeda].desembrulhar(bruto):
+            dia = item["dataHoraCotacao"][:10]
+            linhas.setdefault(dia, {"data": dia})[moeda] = item.get(campo)
+    if not linhas:
+        raise DABInputError("Nenhum dado encontrado. Verifique os argumentos da função.")
 
-        cotacoes.append(data)
-
-    if formato in ("pandas", "polars"):
-        cotacoes = pd.concat(cotacoes, axis=1).reset_index()
-        cotacoes["data"] = pd.to_datetime(cotacoes["data"], format="%Y-%m-%d %H:%M:%S")
-        return converter(cotacoes, formato, index, "data")
-
-    return cotacoes
+    modelo = m.modelo_cambio(moedas)
+    registros = validar(modelo, [linhas[dia] for dia in sorted(linhas)])
+    return tabela(registros, modelo, formato, index=index, index_col="data")

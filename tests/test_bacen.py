@@ -1,7 +1,7 @@
 from DadosAbertosBrasil import bacen
 import pytest
 
-pytestmark = pytest.mark.online
+pytestmark = pytest.mark.vcr
 
 
 def test_moedas():
@@ -11,7 +11,7 @@ def test_moedas():
 
 @pytest.mark.parametrize("cotacao", ["compra", "venda"])
 def test_cambio(cotacao):
-    df = bacen.cambio(index=True, cotacao=cotacao)
+    df = bacen.cambio(inicio="2024-01-01", fim="2024-03-01", index=True, cotacao=cotacao)
     assert not df.empty
 
 

@@ -4,7 +4,7 @@ Dados Abertos Brasil
 
 Dados Abertos Brasil é uma iniciativa para facilitar o acesso a dados abertos e APIs do governo brasileiro.
 
-É um pacote open-source para Python e Pandas e a forma mais simples de acessar dados de instituições como IBGE, IPEA, Banco Central, etc.
+É um pacote open-source para Python e a forma mais simples de acessar dados de instituições como IBGE, IPEA, Banco Central, etc.
 
 Módulos
 -------
@@ -15,6 +15,7 @@ Módulos
 - ``DadosAbertosBrasil.bacen``
 - ``DadosAbertosBrasil.favoritos``
 - ``DadosAbertosBrasil.uf``
+- ``DadosAbertosBrasil.wiki``
 
 Sobre
 -----
@@ -31,10 +32,10 @@ Para instalar, utilize o seguinte comando:
 
 Dependências
 ------------
-- `Python 3.10 ou superior <https://www.python.org/>`_
-- `Pandas <https://pandas.pydata.org/>`_
+- `Python 3.11 ou superior <https://www.python.org/>`_
 - `Pydantic <https://docs.pydantic.dev/latest/>`_
 - `Requests <https://requests.readthedocs.io/en/master/>`_
+- Opcionais: `pandas <https://pandas.pydata.org/>`_ (``[pandas]``) e `polars <https://pola.rs/>`_ (``[polars]``)
 
 Licença
 -------
@@ -43,7 +44,7 @@ Licença
 
 """
 
-from . import bacen, camara, ibge, ipea, senado, uf
+from . import bacen, camara, ibge, ipea, senado, uf, wiki
 from ._config import config
 from .favoritos import (
     bandeira,
@@ -64,6 +65,7 @@ from .utils.errors import (
     DABDataError,
     DABError,
     DABFormatoWarning,
+    DABFuncaoRemovidaError,
     DABInputError,
     DABLocalidadeError,
     DABMoedaError,
@@ -78,6 +80,7 @@ __all__ = [
     "ipea",
     "senado",
     "uf",
+    "wiki",
     "config",
     "bandeira",
     "brasao",
@@ -95,6 +98,7 @@ __all__ = [
     "DABDataError",
     "DABError",
     "DABFormatoWarning",
+    "DABFuncaoRemovidaError",
     "DABInputError",
     "DABLocalidadeError",
     "DABMoedaError",
@@ -102,7 +106,7 @@ __all__ = [
 ]
 
 __author__ = "Gustavo Furtado da Silva"
-__version__ = "2.3.0"
+__version__ = "3.0.0"
 
 
 def __getattr__(nome: str):
