@@ -56,3 +56,13 @@ API Original
 
 from ._referencias import lista_niveis, lista_paises, lista_temas, lista_territorios
 from ._serie import Serie, lista_series, serie
+
+__all__ = [
+    "Serie",
+    "lista_niveis",
+    "lista_paises",
+    "lista_series",
+    "lista_temas",
+    "lista_territorios",
+    "serie",
+]

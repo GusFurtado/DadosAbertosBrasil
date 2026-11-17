@@ -69,3 +69,20 @@ from ._cidades import Galeria, Historia
 from ._misc import coordenadas, localidades, malha, populacao
 from ._nomes import nomes, nomes_ranking, nomes_uf
 from ._sidra import Metadados, lista_pesquisas, lista_tabelas, referencias, sidra
+
+__all__ = [
+    "Galeria",
+    "Historia",
+    "Metadados",
+    "coordenadas",
+    "lista_pesquisas",
+    "lista_tabelas",
+    "localidades",
+    "malha",
+    "nomes",
+    "nomes_ranking",
+    "nomes_uf",
+    "populacao",
+    "referencias",
+    "sidra",
+]

@@ -54,3 +54,25 @@ from ._partidos import Partido, lista_partidos
 from ._proposicoes import Proposicao, lista_proposicoes
 from ._referencias import referencias
 from ._votacoes import Votacao, lista_votacoes
+
+__all__ = [
+    "Bloco",
+    "Deputado",
+    "Evento",
+    "Frente",
+    "Legislatura",
+    "Orgao",
+    "Partido",
+    "Proposicao",
+    "Votacao",
+    "lista_blocos",
+    "lista_deputados",
+    "lista_eventos",
+    "lista_frentes",
+    "lista_legislaturas",
+    "lista_orgaos",
+    "lista_partidos",
+    "lista_proposicoes",
+    "lista_votacoes",
+    "referencias",
+]

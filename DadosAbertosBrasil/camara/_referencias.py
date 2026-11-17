@@ -1,8 +1,8 @@
-from typing import Any, Literal, overload
+from typing import Literal
 
 from pydantic import validate_call
 
-from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from ..utils.typing import Formato, Saida
 from . import modelos as m
 from ._comum import consultar_camara
 
@@ -19,137 +19,6 @@ _REFERENCIAS = {
     "situacoes_orgaos": "situacoesOrgao",
     "situacoes_proposicoes": "situacoesProposicao",
 }
-
-
-@overload
-def referencias(
-    lista: Literal[
-        "autores",
-        "temas",
-        "eventos",
-        "orgaos",
-        "proposicoes",
-        "tramitacoes",
-        "ufs",
-        "situacoes_deputados",
-        "situacoes_eventos",
-        "situacoes_orgaos",
-        "situacoes_proposicoes",
-    ],
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def referencias(
-    lista: Literal[
-        "autores",
-        "temas",
-        "eventos",
-        "orgaos",
-        "proposicoes",
-        "tramitacoes",
-        "ufs",
-        "situacoes_deputados",
-        "situacoes_eventos",
-        "situacoes_orgaos",
-        "situacoes_proposicoes",
-    ],
-    index: bool = ...,
-    *,
-    formato: Literal["json"],
-    verificar_certificado: bool | None = ...,
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def referencias(
-    lista: Literal[
-        "autores",
-        "temas",
-        "eventos",
-        "orgaos",
-        "proposicoes",
-        "tramitacoes",
-        "ufs",
-        "situacoes_deputados",
-        "situacoes_eventos",
-        "situacoes_orgaos",
-        "situacoes_proposicoes",
-    ],
-    index: bool = ...,
-    *,
-    formato: Literal["pydantic"],
-    verificar_certificado: bool | None = ...,
-) -> list[m.Referencia]: ...
-
-
-@overload
-def referencias(
-    lista: Literal[
-        "autores",
-        "temas",
-        "eventos",
-        "orgaos",
-        "proposicoes",
-        "tramitacoes",
-        "ufs",
-        "situacoes_deputados",
-        "situacoes_eventos",
-        "situacoes_orgaos",
-        "situacoes_proposicoes",
-    ],
-    index: bool = ...,
-    *,
-    formato: Literal["pandas"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePandas: ...
-
-
-@overload
-def referencias(
-    lista: Literal[
-        "autores",
-        "temas",
-        "eventos",
-        "orgaos",
-        "proposicoes",
-        "tramitacoes",
-        "ufs",
-        "situacoes_deputados",
-        "situacoes_eventos",
-        "situacoes_orgaos",
-        "situacoes_proposicoes",
-    ],
-    index: bool = ...,
-    *,
-    formato: Literal["polars"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePolars: ...
-
-
-@overload
-def referencias(
-    lista: Literal[
-        "autores",
-        "temas",
-        "eventos",
-        "orgaos",
-        "proposicoes",
-        "tramitacoes",
-        "ufs",
-        "situacoes_deputados",
-        "situacoes_eventos",
-        "situacoes_orgaos",
-        "situacoes_proposicoes",
-    ],
-    index: bool = ...,
-    *,
-    formato: Literal["url"],
-    verificar_certificado: bool | None = ...,
-) -> str: ...
 
 
 @validate_call

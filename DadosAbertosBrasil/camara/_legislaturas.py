@@ -1,11 +1,10 @@
 from datetime import date
-from typing import Any, Literal, overload
 
 from pydantic import PositiveInt, validate_call
 
 from ..utils.modelos import com_params
 from ..utils.objeto import Objeto
-from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from ..utils.typing import Formato, Saida
 from . import modelos as m
 from ._comum import Ordenacao, Periodo, consultar_camara, requisicao
 
@@ -77,71 +76,6 @@ class Legislatura(Objeto):
     def __str__(self) -> str:
         return f"Legislatura {self.cod}"
 
-    @overload
-    def mesa(
-        self,
-        inicio: date | None = ...,
-        fim: date | None = ...,
-        url: bool = ...,
-        index: bool = ...,
-        formato: Literal["bruto"] | None = ...,
-    ) -> Any: ...
-
-    @overload
-    def mesa(
-        self,
-        inicio: date | None = ...,
-        fim: date | None = ...,
-        url: bool = ...,
-        index: bool = ...,
-        *,
-        formato: Literal["json"],
-    ) -> list[dict[str, Any]]: ...
-
-    @overload
-    def mesa(
-        self,
-        inicio: date | None = ...,
-        fim: date | None = ...,
-        url: bool = ...,
-        index: bool = ...,
-        *,
-        formato: Literal["pydantic"],
-    ) -> list[m.Membro]: ...
-
-    @overload
-    def mesa(
-        self,
-        inicio: date | None = ...,
-        fim: date | None = ...,
-        url: bool = ...,
-        index: bool = ...,
-        *,
-        formato: Literal["pandas"],
-    ) -> DataFramePandas: ...
-
-    @overload
-    def mesa(
-        self,
-        inicio: date | None = ...,
-        fim: date | None = ...,
-        url: bool = ...,
-        index: bool = ...,
-        *,
-        formato: Literal["polars"],
-    ) -> DataFramePolars: ...
-
-    @overload
-    def mesa(
-        self,
-        inicio: date | None = ...,
-        fim: date | None = ...,
-        url: bool = ...,
-        index: bool = ...,
-        *,
-        formato: Literal["url"],
-    ) -> str: ...
-
     @com_params(_ParamsMesa)
     def mesa(
         self,
@@ -204,95 +138,6 @@ class Legislatura(Objeto):
             index=index,
             verificar_certificado=self.verify,
         )
-
-
-@overload
-def lista_legislaturas(
-    data: date | None = ...,
-    pagina: PositiveInt = ...,
-    itens: PositiveInt | None = ...,
-    asc: bool = ...,
-    ordenar_por: str = ...,
-    url: bool = ...,
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def lista_legislaturas(
-    data: date | None = ...,
-    pagina: PositiveInt = ...,
-    itens: PositiveInt | None = ...,
-    asc: bool = ...,
-    ordenar_por: str = ...,
-    url: bool = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["json"],
-    verificar_certificado: bool | None = ...,
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def lista_legislaturas(
-    data: date | None = ...,
-    pagina: PositiveInt = ...,
-    itens: PositiveInt | None = ...,
-    asc: bool = ...,
-    ordenar_por: str = ...,
-    url: bool = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pydantic"],
-    verificar_certificado: bool | None = ...,
-) -> list[m.Legislatura]: ...
-
-
-@overload
-def lista_legislaturas(
-    data: date | None = ...,
-    pagina: PositiveInt = ...,
-    itens: PositiveInt | None = ...,
-    asc: bool = ...,
-    ordenar_por: str = ...,
-    url: bool = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pandas"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePandas: ...
-
-
-@overload
-def lista_legislaturas(
-    data: date | None = ...,
-    pagina: PositiveInt = ...,
-    itens: PositiveInt | None = ...,
-    asc: bool = ...,
-    ordenar_por: str = ...,
-    url: bool = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["polars"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePolars: ...
-
-
-@overload
-def lista_legislaturas(
-    data: date | None = ...,
-    pagina: PositiveInt = ...,
-    itens: PositiveInt | None = ...,
-    asc: bool = ...,
-    ordenar_por: str = ...,
-    url: bool = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["url"],
-    verificar_certificado: bool | None = ...,
-) -> str: ...
 
 
 @validate_call

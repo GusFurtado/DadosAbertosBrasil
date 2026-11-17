@@ -12,18 +12,17 @@ rápidas.
 
 import csv
 from datetime import date
-from typing import Any, Literal, overload
+from typing import Literal, NoReturn
 
 from pydantic import PositiveInt, validate_call
 
 from .. import bacen
-from ..bacen.modelos import ValorSerie
 from ..utils import parse
 from ..utils.errors import removida
 from ..utils.modelos import validar
 from ..utils.requisicao import Requisicao
 from ..utils.saida import consultar, resolver_formato, tabela
-from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from ..utils.typing import Formato, Saida
 from . import modelos as m
 
 
@@ -174,30 +173,6 @@ def brasao(uf: str, tamanho: PositiveInt = 100) -> str:
     return URL + brasao[parse.uf(uf, extintos=True)]
 
 
-@overload
-def catalogo(formato: Literal["bruto"] | None = ...) -> Any: ...
-
-
-@overload
-def catalogo(*, formato: Literal["json"]) -> list[dict[str, Any]]: ...
-
-
-@overload
-def catalogo(*, formato: Literal["pydantic"]) -> list[m.Catalogo]: ...
-
-
-@overload
-def catalogo(*, formato: Literal["pandas"]) -> DataFramePandas: ...
-
-
-@overload
-def catalogo(*, formato: Literal["polars"]) -> DataFramePolars: ...
-
-
-@overload
-def catalogo(*, formato: Literal["url"]) -> str: ...
-
-
 @validate_call
 def catalogo(
     formato: Formato | None = None,
@@ -250,34 +225,6 @@ def catalogo(
     if formato == "bruto":
         return linhas
     return tabela(validar(m.Catalogo, linhas), m.Catalogo, formato)
-
-
-@overload
-def codigos_municipios(formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...) -> Any: ...
-
-
-@overload
-def codigos_municipios(
-    *, formato: Literal["json"], verificar_certificado: bool | None = ...
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def codigos_municipios(
-    *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
-) -> list[m.CodigoMunicipio]: ...
-
-
-@overload
-def codigos_municipios(*, formato: Literal["pandas"], verificar_certificado: bool | None = ...) -> DataFramePandas: ...
-
-
-@overload
-def codigos_municipios(*, formato: Literal["polars"], verificar_certificado: bool | None = ...) -> DataFramePolars: ...
-
-
-@overload
-def codigos_municipios(*, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
 
 
 @validate_call
@@ -340,77 +287,6 @@ def codigos_municipios(
         formato,
         index_col=None,
     )
-
-
-@overload
-def ipca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def ipca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["json"],
-    verificar_certificado: bool | None = ...,
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def ipca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pydantic"],
-    verificar_certificado: bool | None = ...,
-) -> list[ValorSerie]: ...
-
-
-@overload
-def ipca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pandas"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePandas: ...
-
-
-@overload
-def ipca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["polars"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePolars: ...
-
-
-@overload
-def ipca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["url"],
-    verificar_certificado: bool | None = ...,
-) -> str: ...
 
 
 @validate_call
@@ -502,7 +378,7 @@ def ipca(
     )
 
 
-def perfil_eleitorado(*args, **kwargs):
+def perfil_eleitorado(*args, **kwargs) -> NoReturn:
     """Removida no 3.0: dados eleitorais deixaram de fazer parte do pacote.
 
     !!! danger "Removida"
@@ -510,71 +386,6 @@ def perfil_eleitorado(*args, **kwargs):
         existir em uma versão futura do 3.x; veja o guia de migração.
     """
     raise removida("favoritos.perfil_eleitorado", "Dados eleitorais deixaram de fazer parte do pacote, e não há substituto.")
-
-
-@overload
-def pib(
-    periodo: Literal["anual", "trimestral"] = ...,
-    tipo: Literal["nominal", "real"] = ...,
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def pib(
-    periodo: Literal["anual", "trimestral"] = ...,
-    tipo: Literal["nominal", "real"] = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["json"],
-    verificar_certificado: bool | None = ...,
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def pib(
-    periodo: Literal["anual", "trimestral"] = ...,
-    tipo: Literal["nominal", "real"] = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pydantic"],
-    verificar_certificado: bool | None = ...,
-) -> list[m.ValorIpea]: ...
-
-
-@overload
-def pib(
-    periodo: Literal["anual", "trimestral"] = ...,
-    tipo: Literal["nominal", "real"] = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pandas"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePandas: ...
-
-
-@overload
-def pib(
-    periodo: Literal["anual", "trimestral"] = ...,
-    tipo: Literal["nominal", "real"] = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["polars"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePolars: ...
-
-
-@overload
-def pib(
-    periodo: Literal["anual", "trimestral"] = ...,
-    tipo: Literal["nominal", "real"] = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["url"],
-    verificar_certificado: bool | None = ...,
-) -> str: ...
 
 
 @validate_call
@@ -659,77 +470,6 @@ def pib(
         case "trimestral", "nominal":
             cod = "PAN4_PIBPMV4"
     return _serie_ipea(cod, formato, index, verificar_certificado)
-
-
-@overload
-def rentabilidade_poupanca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def rentabilidade_poupanca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["json"],
-    verificar_certificado: bool | None = ...,
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def rentabilidade_poupanca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pydantic"],
-    verificar_certificado: bool | None = ...,
-) -> list[ValorSerie]: ...
-
-
-@overload
-def rentabilidade_poupanca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pandas"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePandas: ...
-
-
-@overload
-def rentabilidade_poupanca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["polars"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePolars: ...
-
-
-@overload
-def rentabilidade_poupanca(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["url"],
-    verificar_certificado: bool | None = ...,
-) -> str: ...
 
 
 @validate_call
@@ -821,83 +561,6 @@ def rentabilidade_poupanca(
         formato=formato,
         verificar_certificado=verificar_certificado,
     )
-
-
-@overload
-def reservas_internacionais(
-    periodo: Literal["diario", "mensal"] = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def reservas_internacionais(
-    periodo: Literal["diario", "mensal"] = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["json"],
-    verificar_certificado: bool | None = ...,
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def reservas_internacionais(
-    periodo: Literal["diario", "mensal"] = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pydantic"],
-    verificar_certificado: bool | None = ...,
-) -> list[ValorSerie]: ...
-
-
-@overload
-def reservas_internacionais(
-    periodo: Literal["diario", "mensal"] = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pandas"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePandas: ...
-
-
-@overload
-def reservas_internacionais(
-    periodo: Literal["diario", "mensal"] = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["polars"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePolars: ...
-
-
-@overload
-def reservas_internacionais(
-    periodo: Literal["diario", "mensal"] = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["url"],
-    verificar_certificado: bool | None = ...,
-) -> str: ...
 
 
 @validate_call
@@ -1006,40 +669,6 @@ def reservas_internacionais(
     )
 
 
-@overload
-def risco_brasil(
-    index: bool = ..., formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...
-) -> Any: ...
-
-
-@overload
-def risco_brasil(
-    index: bool = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def risco_brasil(
-    index: bool = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
-) -> list[m.ValorIpea]: ...
-
-
-@overload
-def risco_brasil(
-    index: bool = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
-) -> DataFramePandas: ...
-
-
-@overload
-def risco_brasil(
-    index: bool = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
-) -> DataFramePolars: ...
-
-
-@overload
-def risco_brasil(index: bool = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
-
-
 @validate_call
 def risco_brasil(
     index: bool = False,
@@ -1092,65 +721,6 @@ def risco_brasil(
     """
 
     return _serie_ipea("JPM366_EMBI366", formato, index, verificar_certificado)
-
-
-@overload
-def salario_minimo(
-    tipo: Literal["nominal", "ppc", "real"] = ...,
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def salario_minimo(
-    tipo: Literal["nominal", "ppc", "real"] = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["json"],
-    verificar_certificado: bool | None = ...,
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def salario_minimo(
-    tipo: Literal["nominal", "ppc", "real"] = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pydantic"],
-    verificar_certificado: bool | None = ...,
-) -> list[m.ValorIpea]: ...
-
-
-@overload
-def salario_minimo(
-    tipo: Literal["nominal", "ppc", "real"] = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pandas"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePandas: ...
-
-
-@overload
-def salario_minimo(
-    tipo: Literal["nominal", "ppc", "real"] = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["polars"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePolars: ...
-
-
-@overload
-def salario_minimo(
-    tipo: Literal["nominal", "ppc", "real"] = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["url"],
-    verificar_certificado: bool | None = ...,
-) -> str: ...
 
 
 @validate_call
@@ -1231,89 +801,6 @@ def salario_minimo(
         case "ppc":
             cod = "GAC12_SALMINDOL12"
     return _serie_ipea(cod, formato, index, verificar_certificado)
-
-
-@overload
-def selic(
-    periodo: Literal["diario", "mensal", "meta"] = ...,
-    anualizado: bool = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def selic(
-    periodo: Literal["diario", "mensal", "meta"] = ...,
-    anualizado: bool = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["json"],
-    verificar_certificado: bool | None = ...,
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def selic(
-    periodo: Literal["diario", "mensal", "meta"] = ...,
-    anualizado: bool = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pydantic"],
-    verificar_certificado: bool | None = ...,
-) -> list[ValorSerie]: ...
-
-
-@overload
-def selic(
-    periodo: Literal["diario", "mensal", "meta"] = ...,
-    anualizado: bool = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pandas"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePandas: ...
-
-
-@overload
-def selic(
-    periodo: Literal["diario", "mensal", "meta"] = ...,
-    anualizado: bool = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["polars"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePolars: ...
-
-
-@overload
-def selic(
-    periodo: Literal["diario", "mensal", "meta"] = ...,
-    anualizado: bool = ...,
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["url"],
-    verificar_certificado: bool | None = ...,
-) -> str: ...
 
 
 @validate_call
@@ -1446,77 +933,6 @@ def selic(
         formato=formato,
         verificar_certificado=verificar_certificado,
     )
-
-
-@overload
-def taxa_referencial(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def taxa_referencial(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["json"],
-    verificar_certificado: bool | None = ...,
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def taxa_referencial(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pydantic"],
-    verificar_certificado: bool | None = ...,
-) -> list[ValorSerie]: ...
-
-
-@overload
-def taxa_referencial(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pandas"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePandas: ...
-
-
-@overload
-def taxa_referencial(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["polars"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePolars: ...
-
-
-@overload
-def taxa_referencial(
-    ultimos: PositiveInt | None = ...,
-    inicio: date | None = ...,
-    fim: date | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["url"],
-    verificar_certificado: bool | None = ...,
-) -> str: ...
 
 
 @validate_call
