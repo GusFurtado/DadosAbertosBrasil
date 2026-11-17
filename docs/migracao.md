@@ -78,6 +78,9 @@ As funções declaram o retorno de cada `formato`. Type checkers e IDEs (mypy, p
 `polars.DataFrame` e que `formato="url"` é `str`. Sem `formato`, o retorno depende de
 `dab.config.formato` e é declarado como `Any`.
 
+O pandas não traz os próprios tipos: para o mypy reconhecer o `pandas.DataFrame`, instale também o
+`pandas-stubs`. O pyright e o VS Code já trazem esses tipos embutidos.
+
 ## Funções removidas
 
 Viram stubs que levantam `DABFuncaoRemovidaError` com o motivo. Os stubs saem de vez numa versão
