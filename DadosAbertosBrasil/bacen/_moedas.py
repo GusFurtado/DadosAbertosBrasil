@@ -1,35 +1,10 @@
-from typing import Any, Literal, overload
 
 from pydantic import validate_call
 
 from ..utils.requisicao import Requisicao
 from ..utils.saida import consultar
-from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from ..utils.typing import Formato, Saida
 from . import modelos as m
-
-
-@overload
-def moedas(formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...) -> Any: ...
-
-
-@overload
-def moedas(*, formato: Literal["json"], verificar_certificado: bool | None = ...) -> list[dict[str, Any]]: ...
-
-
-@overload
-def moedas(*, formato: Literal["pydantic"], verificar_certificado: bool | None = ...) -> list[m.Moeda]: ...
-
-
-@overload
-def moedas(*, formato: Literal["pandas"], verificar_certificado: bool | None = ...) -> DataFramePandas: ...
-
-
-@overload
-def moedas(*, formato: Literal["polars"], verificar_certificado: bool | None = ...) -> DataFramePolars: ...
-
-
-@overload
-def moedas(*, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
 
 
 @validate_call

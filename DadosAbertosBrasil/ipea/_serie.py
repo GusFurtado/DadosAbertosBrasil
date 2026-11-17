@@ -1,11 +1,12 @@
-from typing import Any, Literal, overload
+from datetime import datetime
+from typing import Any, Literal
 
 from pydantic import Field, validate_call
 
 from ..utils.modelos import Params, com_params, validar
 from ..utils.requisicao import Requisicao
 from ..utils.saida import consultar, resolver_formato, tabela
-from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from ..utils.typing import Formato, Saida
 from . import modelos as m
 
 
@@ -152,6 +153,26 @@ class Serie:
 
     """
 
+    valores: Any
+    dados: Any
+    cod: str
+    registro: m.Metadados
+    base: str | None
+    fonte_nome: str | None
+    fonte_sigla: str | None
+    fonte_url: str | None
+    multiplicador: str | None
+    periodo: str | None
+    ultima_atualizacao: datetime | None
+    comentario: str | None
+    nome: str | None
+    unidade: str | None
+    ativo: bool | None
+    tema: int | None
+    pais: str | None
+    numerica: bool | None
+    metadados: Any
+
     def __init__(
         self,
         cod: str,
@@ -196,89 +217,6 @@ class Serie:
 
     def __str__(self) -> str:
         return self.nome
-
-
-@overload
-def lista_series(
-    contendo: str | None = ...,
-    excluindo: str | list[str] | None = ...,
-    fonte: str | None = ...,
-    ativo: bool | None = ...,
-    numerica: bool | None = ...,
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def lista_series(
-    contendo: str | None = ...,
-    excluindo: str | list[str] | None = ...,
-    fonte: str | None = ...,
-    ativo: bool | None = ...,
-    numerica: bool | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["json"],
-    verificar_certificado: bool | None = ...,
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def lista_series(
-    contendo: str | None = ...,
-    excluindo: str | list[str] | None = ...,
-    fonte: str | None = ...,
-    ativo: bool | None = ...,
-    numerica: bool | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pydantic"],
-    verificar_certificado: bool | None = ...,
-) -> list[m.Metadados]: ...
-
-
-@overload
-def lista_series(
-    contendo: str | None = ...,
-    excluindo: str | list[str] | None = ...,
-    fonte: str | None = ...,
-    ativo: bool | None = ...,
-    numerica: bool | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["pandas"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePandas: ...
-
-
-@overload
-def lista_series(
-    contendo: str | None = ...,
-    excluindo: str | list[str] | None = ...,
-    fonte: str | None = ...,
-    ativo: bool | None = ...,
-    numerica: bool | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["polars"],
-    verificar_certificado: bool | None = ...,
-) -> DataFramePolars: ...
-
-
-@overload
-def lista_series(
-    contendo: str | None = ...,
-    excluindo: str | list[str] | None = ...,
-    fonte: str | None = ...,
-    ativo: bool | None = ...,
-    numerica: bool | None = ...,
-    index: bool = ...,
-    *,
-    formato: Literal["url"],
-    verificar_certificado: bool | None = ...,
-) -> str: ...
 
 
 @validate_call
@@ -393,40 +331,6 @@ def lista_series(
         index=index,
         filtro=filtro,
     )
-
-
-@overload
-def serie(
-    cod: str, index: bool = ..., formato: Literal["bruto"] | None = ..., verificar_certificado: bool | None = ...
-) -> Any: ...
-
-
-@overload
-def serie(
-    cod: str, index: bool = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def serie(
-    cod: str, index: bool = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
-) -> list[m.ValorSerie]: ...
-
-
-@overload
-def serie(
-    cod: str, index: bool = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
-) -> DataFramePandas: ...
-
-
-@overload
-def serie(
-    cod: str, index: bool = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
-) -> DataFramePolars: ...
-
-
-@overload
-def serie(cod: str, index: bool = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...) -> str: ...
 
 
 @validate_call

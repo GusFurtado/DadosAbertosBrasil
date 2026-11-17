@@ -1,9 +1,8 @@
-from typing import Any, Literal, overload
 
 from pydantic import Field, validate_call
 
 from ..utils.modelos import com_params
-from ..utils.typing import DataFramePandas, DataFramePolars, Formato, Saida
+from ..utils.typing import Formato, Saida
 from . import modelos as m
 from ._comum import ParamsSenado, consultar_senado
 
@@ -13,45 +12,6 @@ class _ParamsPartidos(ParamsSenado):
 
     def para_api(self) -> dict:
         return {"indAtivos": "N"} if self.inativos else {}
-
-
-@overload
-def lista_partidos(
-    inativos: bool = ...,
-    index: bool = ...,
-    formato: Literal["bruto"] | None = ...,
-    verificar_certificado: bool | None = ...,
-) -> Any: ...
-
-
-@overload
-def lista_partidos(
-    inativos: bool = ..., index: bool = ..., *, formato: Literal["json"], verificar_certificado: bool | None = ...
-) -> list[dict[str, Any]]: ...
-
-
-@overload
-def lista_partidos(
-    inativos: bool = ..., index: bool = ..., *, formato: Literal["pydantic"], verificar_certificado: bool | None = ...
-) -> list[m.Partido]: ...
-
-
-@overload
-def lista_partidos(
-    inativos: bool = ..., index: bool = ..., *, formato: Literal["pandas"], verificar_certificado: bool | None = ...
-) -> DataFramePandas: ...
-
-
-@overload
-def lista_partidos(
-    inativos: bool = ..., index: bool = ..., *, formato: Literal["polars"], verificar_certificado: bool | None = ...
-) -> DataFramePolars: ...
-
-
-@overload
-def lista_partidos(
-    inativos: bool = ..., index: bool = ..., *, formato: Literal["url"], verificar_certificado: bool | None = ...
-) -> str: ...
 
 
 @validate_call

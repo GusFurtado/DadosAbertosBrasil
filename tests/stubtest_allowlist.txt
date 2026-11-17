@@ -1,0 +1,9 @@
+# Diferenças entre stubs e código que o stubtest acusa, mas não são erros.
+
+# O default de `fim` é `Field(default_factory=date.today)`, resolvido pelo
+# pydantic na chamada: o stub declara `date | None`.
+DadosAbertosBrasil.bacen._cambio.cambio
+
+# Aliases de `Literal[...]`: o stubtest os compara como uniões.
+DadosAbertosBrasil.ibge._misc.TipoMalha
+DadosAbertosBrasil.wiki._datasets.Dataset

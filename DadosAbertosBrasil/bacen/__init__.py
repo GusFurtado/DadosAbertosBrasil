@@ -19,3 +19,10 @@ from ._cambio import cambio
 from ._expectativas import expectativas
 from ._moedas import moedas
 from ._serie import serie
+
+__all__ = [
+    "cambio",
+    "expectativas",
+    "moedas",
+    "serie",
+]

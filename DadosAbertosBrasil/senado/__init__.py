@@ -45,3 +45,15 @@ from ._orcamentos import lista_orcamentos
 from ._partidos import lista_partidos
 from ._senadores import Senador, lista_senadores
 from ._usos_palavras import lista_tipos_uso_palavra, lista_uso_palavra
+
+__all__ = [
+    "Senador",
+    "lista_blocos",
+    "lista_legislatura",
+    "lista_legislaturas",
+    "lista_orcamentos",
+    "lista_partidos",
+    "lista_senadores",
+    "lista_tipos_uso_palavra",
+    "lista_uso_palavra",
+]

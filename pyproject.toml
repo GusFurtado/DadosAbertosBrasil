@@ -60,6 +60,7 @@ include = ["DadosAbertosBrasil*"]
 
 [tool.setuptools.package-data]
 DadosAbertosBrasil = ["py.typed"]
+"*" = ["*.pyi"]
 
 [tool.ruff]
 target-version = "py311"
@@ -78,6 +79,7 @@ addopts = "--record-mode=none"
 
 [dependency-groups]
 dev = [
+    "mypy>=2.4.1",
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
     "pytest-recording>=0.13",
