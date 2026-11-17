@@ -58,6 +58,9 @@ Download = "https://github.com/GusFurtado/DadosAbertosBrasil/archive/3.0.0.tar.g
 [tool.setuptools.packages.find]
 include = ["DadosAbertosBrasil*"]
 
+[tool.setuptools.package-data]
+DadosAbertosBrasil = ["py.typed"]
+
 [tool.ruff]
 target-version = "py311"
 line-length = 120
