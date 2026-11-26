@@ -14,3 +14,8 @@
 .md-header[data-md-state="shadow"] {
   box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.4), 0 0.2rem 0.4rem rgba(0, 0, 0, 0.5);
 }
+
+/* Imagem de abertura da página inicial: o card do projeto em gustavofurtado.com. */
+.md-typeset img.hero {
+  border-radius: 0.4rem;
+}
